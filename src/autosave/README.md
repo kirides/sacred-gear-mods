@@ -41,7 +41,7 @@ by an older version is migrated into it once (including the panel key) and not r
 | `slots` | `{97, 98, 99}` | (`config` only.)  The slots to rotate through, 1 to 509, up to 8. Keep them clear of the numbers the game gives to manual saves. |
 | `name` | `'Autosave %H:%M'` | The display name in the savegame list; `os.date` format, 60 characters at most. |
 | `show_confirmation` | `true` | The note after each autosave. |
-| key `panel` | `f6` | Key of the settings panel, rebound in the Keys page of the Mods screen (F7 is the layout edit mode, F8 the loot filter, F10 the shared stash, F11 the Mods screen). |
+| key `panel` | `f6` | Key of the settings panel, rebound in the Keys page of the Mods screen (F7 is the layout edit mode, F5 the loot filter, F10 the shared stash, F11 the Mods screen). |
 
 The panel also shows the time to the next autosave, why one waits and the last slot written, and has a **Save now**
 button.
