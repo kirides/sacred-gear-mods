@@ -30,17 +30,18 @@ It saves with the game's own save request, `gear.game.save`, which needs a Sacre
 
 ## Settings
 
-`mod.lua` holds the defaults, the in-game panel (**F6**) changes them and **Save settings** writes `settings.json` in
-this folder, which overrides `mod.lua` from then on (delete it to go back to the defaults).
+`mod.lua` holds the defaults. The settings are Sacred Gear's mod manager settings: change them in its **Mods** screen
+(**F11**) or in the mod's own panel (**F6**); they are saved at once in `mods\gear_mods.json`. A `settings.json` written
+by an older version is migrated into it once (including the panel key) and not read again.
 
 | Setting | Default | |
 |---|---|---|
 | `enabled` | `true` | Autosave on / off. |
-| `interval_minutes` | `5` | Minutes of active play between autosaves (0.05 to 240; the panel's slider is whole minutes 1 to 60). |
-| `slots` | `{97, 98, 99}` | The slots to rotate through, 1 to 509, up to 8. Keep them clear of the numbers the game gives to manual saves. |
+| `interval_minutes` | `5` | Minutes of active play between autosaves (the screens' slider is whole minutes 1 to 60; `config` and `autosave.configure` take 0.05 to 240). |
+| `slots` | `{97, 98, 99}` | (`config` only.)  The slots to rotate through, 1 to 509, up to 8. Keep them clear of the numbers the game gives to manual saves. |
 | `name` | `'Autosave %H:%M'` | The display name in the savegame list; `os.date` format, 60 characters at most. |
 | `show_confirmation` | `true` | The note after each autosave. |
-| `settings_key` | `'f6'` | Key of the settings panel (also read from `settings.json`; F7 is the layout edit mode, F8 the loot filter, F10 the shared stash). |
+| key `panel` | `f6` | Key of the settings panel, rebound in the Keys page of the Mods screen (F7 is the layout edit mode, F8 the loot filter, F10 the shared stash, F11 the Mods screen). |
 
 The panel also shows the time to the next autosave, why one waits and the last slot written, and has a **Save now**
 button.

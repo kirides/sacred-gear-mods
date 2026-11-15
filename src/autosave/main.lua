@@ -14,8 +14,8 @@ local ui = gear.ui
 local game = gear.game
 local cfg = gear.config
 
-local SETTINGS_FILE = 'settings.json'
-local SAVED_KEYS = {'enabled', 'interval_minutes', 'slots', 'name', 'show_confirmation', 'settings_key'}
+local SAVED_KEYS = {'enabled', 'interval_minutes', 'slots', 'name', 'show_confirmation'}
+local SETTING_IDS = {'enabled', 'interval_minutes', 'name', 'show_confirmation'}   -- those the Mods screen lists
 local DEFAULT_SLOTS = {97, 98, 99}
 local MAX_SLOTS = 8
 local MIN_INTERVAL, MAX_INTERVAL = 0.05, 240     -- minutes
@@ -55,33 +55,43 @@ local function check_config()
     cfg.show_confirmation = cfg.show_confirmation ~= false
 end
 
-local function load_settings()
-    local text = gear.read(SETTINGS_FILE)
-    if not text then return end
-    local s, err = gear.json.decode(text)
-    if type(s) ~= 'table' then
-        print('settings.json ignored: ' .. tostring(err))
-        return
+-- The settings are kept by the mod manager (gear.settings, saved in gear_mods.json); `cfg` is the working copy the
+-- rest of the mod reads. pull() takes the player's values into it, push() writes it back (the panel, 'persist').
+local S = gear.settings
+local pushing = false
+
+local function pull()
+    for _, k in ipairs(SETTING_IDS) do
+        if S.is_set(k) then cfg[k] = S.get(k) end
     end
+    check_config()
+end
+
+local function push()
+    pushing = true
+    for _, k in ipairs(SETTING_IDS) do S.set(k, cfg[k]) end
+    pushing = false
+end
+
+local function save_settings() push() end
+
+-- The old settings.json of this folder (written by the panel's Save button), once.
+S.migrate('settings.json', function(old)
     for _, k in ipairs(SAVED_KEYS) do
-        if s[k] ~= nil then cfg[k] = s[k] end
+        if old[k] ~= nil then cfg[k] = old[k] end
     end
-    print('settings.json loaded')
-end
-
-local saved_note = 0
-
-local function save_settings()
-    local s = {}
-    for _, k in ipairs(SAVED_KEYS) do s[k] = cfg[k] end
-    local ok, err = gear.save(SETTINGS_FILE, gear.json.encode(s))
-    saved_note = gear.time() + 2
-    if not ok then print('cannot save the settings: ' .. tostring(err)) end
-    return ok
-end
-
-load_settings()
+    check_config()
+    push()
+    if type(old.settings_key) == 'string' then gear.keys.set('panel', old.settings_key) end
+    print('settings.json migrated to the mod manager')
+end)
+pull()
 check_config()
+gear.on('settings.changed', function(id, value)
+    if pushing then return end
+    cfg[id] = value
+    check_config()
+end)
 
 ---------------------------------------------------------------------------------------------------------------
 -- The timer: active play time since the last autosave
@@ -271,25 +281,24 @@ local function settings_panel()
         ui.text(('Last: slot %d, %s ago'):format(last.slot, mmss(gear.time() - last.time)), x, y + 114,
             {color = 0xFFC0C0C0, size = 11})
     end
-    if changed then check_config() end
+    if changed then check_config(); push() end
 
     if ui.button('now', x, y + 138, 100, 22, 'Save now', {enabled = not requested,
         tooltip = 'Autosave right away (into the next slot)'}) then
         due, next_try = true, 0
     end
-    if ui.button('save', x + 110, y + 138, 100, 22, 'Save settings',
-        {tooltip = 'Writes settings.json in the mod folder'}) then
-        save_settings()
-    end
-    if ui.button('close', x + 220, y + 138, 100, 22, 'Close') then ui.show_panel('settings', false) end
-    if gear.time() < saved_note then ui.text('saved', x, y + 166, {color = 0xFF80FF80}) end
+    if ui.button('close', x + 110, y + 138, 100, 22, 'Close') then ui.show_panel('settings', false) end
+    ui.text('Also in the Mods screen (F11)', x, y + 166, {color = 0xFFC0C0C0, size = 11})
 end
 
 gear.on('draw', function(s)
     if not s then return end
     draw_note(s)
     if s.mode == 'game' and not s.exclusive then
-        if ui.key_pressed(cfg.settings_key or 'f6') then ui.show_panel('settings', not ui.panel_open('settings')) end
         settings_panel()
     end
+end)
+
+gear.keys.on('panel', function()
+    ui.show_panel('settings', not ui.panel_open('settings'))
 end)

@@ -2,16 +2,24 @@
 return {
     id = 'shared-stash',
     name = 'Shared stash',
-    version = '0.1.0',
+    version = '0.2.0',
+    author = 'kirides',
+    description = 'A stash shared by all your heroes, in a panel beside the chest window.',
     automation = true,      -- only for its self test (-gear-auto)
-    -- The defaults; config.lua in this folder overrides them.
+    -- The defaults; config.lua in this folder overrides them. The settings below are changed in the Mods screen.
     config = {
         enabled = true,
-        hotkey = 'f10',         -- opens and closes the stash panel in game ('' for none)
-        max_items = 200,        -- the stash holds at most this many items (its file is limited to 1 MB)
-        allow_special = false,  -- also move "special" items (horse gear, ...); quest items and gold never move
-        recent = 30,            -- how many withdrawn items the file remembers for "Recent withdrawals"
         -- self test only (-gear-auto): 'deposit', 'withdraw', 'ui' or 'roundtrip'; see selftest.lua
         selftest = false,
+    },
+    settings = {
+        {id = 'max_items', type = 'number', label = 'Items the stash holds', min = 10, max = 200, step = 10, default = 200,
+         tooltip = 'The stash file is limited to 1 MB'},
+        {id = 'allow_special', type = 'bool', label = 'Also move special items', default = false,
+         tooltip = 'Horse gear and the like; quest items and gold never move'},
+        {id = 'recent', type = 'number', label = 'Recent withdrawals remembered', min = 0, max = 100, step = 5, default = 30},
+    },
+    keys = {
+        {id = 'toggle', label = 'Open or close the stash panel', default = 'f10'},
     },
 }

@@ -2,8 +2,10 @@
 return {
     id = 'autosave',
     name = 'Autosave',
-    version = '1.0.0',
-    -- The defaults; settings.json in this folder (written by the in-game panel, F6) overrides them.
+    version = '1.1.0',
+    author = 'kirides',
+    description = 'Saves the game every few minutes of play into its own slots.',
+    -- The defaults; the Mods screen (or the in-game panel, F6) overrides them; an old settings.json is migrated once.
     config = {
         enabled = true,
         -- Minutes of active play between autosaves (fractions are fine: 0.5 is 30 s).
@@ -16,9 +18,18 @@ return {
         name = 'Autosave %H:%M',
         -- A short note on screen after a successful autosave.
         show_confirmation = true,
-        -- The key that opens the settings panel.
-        settings_key = 'f6',
         -- Where the confirmation is drawn (1024x768 layout).
         note_y = 60,
+    },
+    settings = {
+        {id = 'enabled', type = 'bool', label = 'Autosave on', default = true},
+        {id = 'interval_minutes', type = 'number', label = 'Minutes of play between autosaves', min = 1, max = 60,
+         step = 1, default = 5},
+        {id = 'show_confirmation', type = 'bool', label = 'Show a note after each autosave', default = true},
+        {id = 'name', type = 'text', label = 'Savegame name', default = 'Autosave %H:%M', max_length = 40,
+         tooltip = '%H:%M is replaced with the time'},
+    },
+    keys = {
+        {id = 'panel', label = 'Open the autosave panel', default = 'f6'},
     },
 }

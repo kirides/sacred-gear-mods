@@ -1,6 +1,9 @@
 -- Shared stash: a stash of items shared by the heroes of this player, kept in stash.json in this folder.
--- See README.md. The panel opens from a button below the chest window (and with config.hotkey).
+-- See README.md. The panel opens from a button below the chest window (and with its key, F10 by default).
 local cfg = gear.config
+-- The settings (Mods screen) live in gear.settings; `cfg` (shared with transfer.lua) holds their current values.
+for _, id in ipairs({'max_items', 'allow_special', 'recent'}) do cfg[id] = gear.settings.get(id) end
+gear.on('settings.changed', function(id, value) cfg[id] = value end)
 if not cfg.enabled then return end
 
 local ui, world = gear.ui, gear.world
@@ -164,7 +167,8 @@ local function open_button()
     if not w or not w.drawn then return end
     local b = w.bounds
     local bx, by, bw, bh = b and b.x or w.x, b and b.y or w.y, b and b.w or w.width, b and b.h or w.height
-    local hint = cfg.hotkey ~= '' and (' (' .. cfg.hotkey:upper() .. ')') or ''
+    local key = gear.keys.binding('toggle')
+    local hint = key ~= '' and (' (' .. key:upper() .. ')') or ''
     if ui.button('open', bx + bw - 130, by + bh + 4, 126, 20, 'Shared stash',
         {tooltip = 'Items shared between your heroes' .. hint}) then
         ui.show_panel('stash', not ui.panel_open('stash'))
@@ -173,12 +177,13 @@ end
 
 ui.show_panel('stash', false)
 
+gear.keys.on('toggle', function()
+    if gear.ui.state().mode == 'game' then ui.show_panel('stash', not ui.panel_open('stash')) end
+end)
+
 gear.on('draw', function(state)
     if state.mode ~= 'game' then return end
     if view.force_open then ui.show_panel('stash', true) end
-    if cfg.hotkey ~= '' and ui.key_pressed(cfg.hotkey) then
-        ui.show_panel('stash', not ui.panel_open('stash'))
-    end
     if state.exclusive then return end
     open_button()
     panel()

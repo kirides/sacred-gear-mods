@@ -17,7 +17,8 @@ Items are shown by their type's file name, size and quality colour; the tooltip 
 The panel is a list, not the chest's picture grid: Sacred Gear cannot draw the game's item graphics yet.
 
 Single player only (the panel says so otherwise). Gold and quest items never move; "special" items (horse gear ...)
-only with `allow_special = true` in `config.lua`. The stash holds `max_items` (200) items.
+only with the *Also move special items* setting. The stash holds up to 200 items. These settings and the key (F10) are in
+Sacred Gear's **Mods** screen (F11), saved in `mods\gear_mods.json`; `config.lua` still sets their defaults.
 
 ## The file
 
