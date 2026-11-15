@@ -196,15 +196,12 @@ local function panel()
             src = e.bytes
         end
         if src then
-            local mx, my = ui.mouse()
-            -- The popup's x / y are its top-left corner; its width is known from the tooltip shown before (a first guess
-            -- at first). Beside the panel, level with the cursor.
-            local px = p.x or 646
-            local tw = view.tip_w or 340
-            local tx = px > 400 and (px - tw - 8) or (px + p.w + 8)
-            local ok, a, b = ui.item_tooltip(src, tx, my - 12)
-            view.tip_ok, view.tip_err = ok, ok and nil or a
-            if ok and a > 0 then view.tip_w = a end
+            -- The popup's x / y are its top-left corner and its size is known from the tooltip shown before (a first
+            -- guess at first); Sacred Gear places it clear of the cursor and inside the screen.
+            local tx, ty = ui.tooltip_rect(view.tip_w or 340, view.tip_h or 200)
+            local ok, a, b = ui.item_tooltip(src, tx, ty)
+            view.tip_ok, view.tip_err = ok, (not ok) and a or nil
+            if ok and a > 0 then view.tip_w, view.tip_h = a, b end
         end
     end
 
