@@ -63,6 +63,7 @@ gear.task(function()
         return finish()
     end
 
+    results.initial = query()    -- what the mod manager's settings (mods\gear_mods.json) made of the mod
     local game_api = gear.game
     local ok, why = game_api.can_save()
     check('can_save in the game', ok, why)

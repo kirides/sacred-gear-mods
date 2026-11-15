@@ -30,21 +30,20 @@ It saves with the game's own save request, `gear.game.save`, which needs a Sacre
 
 ## Settings
 
-`mod.lua` holds the defaults. The settings are Sacred Gear's mod manager settings: change them in its **Mods** screen
-(**F11**) or in the mod's own panel (**F6**); they are saved at once in `mods\gear_mods.json`. A `settings.json` written
-by an older version is migrated into it once (including the panel key) and not read again.
+Sacred Gear's mod manager keeps them: press **F11** (or **Mods** under the escape menu), pick Autosave and change
+them on its **Settings** page; they are saved at once in `mods\gear_mods.json`. `mod.lua` holds the defaults.
 
 | Setting | Default | |
 |---|---|---|
 | `enabled` | `true` | Autosave on / off. |
-| `interval_minutes` | `5` | Minutes of active play between autosaves (the screens' slider is whole minutes 1 to 60; `config` and `autosave.configure` take 0.05 to 240). |
-| `slots` | `{97, 98, 99}` | (`config` only.)  The slots to rotate through, 1 to 509, up to 8. Keep them clear of the numbers the game gives to manual saves. |
-| `name` | `'Autosave %H:%M'` | The display name in the savegame list; `os.date` format, 60 characters at most. |
+| `interval_minutes` | `5` | Minutes of active play between autosaves (slider, whole minutes 1 to 60; `autosave.configure` takes 0.05 to 240). |
+| `slots` | `97, 98, 99` | The slots to rotate through (text: numbers 1 to 509 separated by commas, up to 8). Keep them clear of the numbers the game gives to manual saves. |
+| `name` | `Autosave %H:%M` | The display name in the savegame list; `os.date` format, 60 characters at most. |
 | `show_confirmation` | `true` | The note after each autosave. |
-| key `panel` | `f6` | Key of the settings panel, rebound in the Keys page of the Mods screen (F7 is the layout edit mode, F5 the loot filter, F10 the shared stash, F11 the Mods screen). |
+| key `save_now` | `f6` | Autosave right away, into the next slot. Rebind it on the Keys page (F7 is the layout edit mode, F5 the loot filter, F10 the shared stash, F11 the Mods screen). |
 
-The panel also shows the time to the next autosave, why one waits and the last slot written, and has a **Save now**
-button.
+The **More** tab of the mod's page shows the time to the next autosave, why one waits and the last slot written, and has
+a **Save now** button.
 
 ## Recovery: loading an autosave
 

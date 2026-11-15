@@ -14,8 +14,8 @@ local ui = gear.ui
 local game = gear.game
 local cfg = gear.config
 
-local SAVED_KEYS = {'enabled', 'interval_minutes', 'slots', 'name', 'show_confirmation'}
-local SETTING_IDS = {'enabled', 'interval_minutes', 'name', 'show_confirmation'}   -- those the Mods screen lists
+local SAVED_KEYS = {'enabled', 'interval_minutes', 'slots', 'name', 'show_confirmation'}   -- autosave.configure
+local SETTING_IDS = {'enabled', 'interval_minutes', 'name', 'show_confirmation'}   -- the plain ones of the Mods screen
 local DEFAULT_SLOTS = {97, 98, 99}
 local MAX_SLOTS = 8
 local MIN_INTERVAL, MAX_INTERVAL = 0.05, 240     -- minutes
@@ -55,41 +55,38 @@ local function check_config()
     cfg.show_confirmation = cfg.show_confirmation ~= false
 end
 
--- The settings are kept by the mod manager (gear.settings, saved in gear_mods.json); `cfg` is the working copy the
--- rest of the mod reads. pull() takes the player's values into it, push() writes it back (the panel, 'persist').
+-- The settings are kept by the mod manager (gear.settings, saved in mods\gear_mods.json, changed in its Mods screen);
+-- `cfg` is the working copy the rest of the mod reads (gear.config holds what has no screen: note_y).
 local S = gear.settings
 local pushing = false
 
+--- "97, 98 99" -> {97, 98, 99}
+---@param text string
+---@return integer[]
+local function parse_slots(text)
+    local list = {}
+    for n in tostring(text):gmatch('%d+') do list[#list + 1] = tonumber(n) end
+    return list
+end
+
 local function pull()
-    for _, k in ipairs(SETTING_IDS) do
-        if S.is_set(k) then cfg[k] = S.get(k) end
-    end
+    for _, k in ipairs(SETTING_IDS) do cfg[k] = S.get(k) end
+    cfg.slots = parse_slots(S.get('slots'))
     check_config()
 end
 
+--- Writes the working copy back (after autosave.configure with persist).
 local function push()
     pushing = true
     for _, k in ipairs(SETTING_IDS) do S.set(k, cfg[k]) end
+    S.set('slots', table.concat(cfg.slots, ', '))
     pushing = false
 end
 
-local function save_settings() push() end
-
--- The old settings.json of this folder (written by the panel's Save button), once.
-S.migrate('settings.json', function(old)
-    for _, k in ipairs(SAVED_KEYS) do
-        if old[k] ~= nil then cfg[k] = old[k] end
-    end
-    check_config()
-    push()
-    if type(old.settings_key) == 'string' then gear.keys.set('panel', old.settings_key) end
-    print('settings.json migrated to the mod manager')
-end)
 pull()
-check_config()
 gear.on('settings.changed', function(id, value)
     if pushing then return end
-    cfg[id] = value
+    if id == 'slots' then cfg.slots = parse_slots(value) else cfg[id] = value end
     check_config()
 end)
 
@@ -212,7 +209,7 @@ gear.on('autosave.configure', function(settings)
         if settings[k] ~= nil then cfg[k] = settings[k] end
     end
     check_config()
-    if settings.persist then save_settings() end
+    if settings.persist then push() end
 end)
 
 gear.on('autosave.query', function(out)
@@ -225,10 +222,8 @@ gear.on('autosave.query', function(out)
 end)
 
 ---------------------------------------------------------------------------------------------------------------
--- UI: the note after a save, and the settings panel
+-- UI: the note after a save, and the state page
 ---------------------------------------------------------------------------------------------------------------
-ui.show_panel('settings', false)
-
 local function mmss(seconds)
     seconds = math.max(0, math.floor(seconds))
     return ('%d:%02d'):format(math.floor(seconds / 60), seconds % 60)
@@ -250,55 +245,32 @@ local function draw_note(s)
         color = note.ok and 0xFFA0FFA0 or 0xFFFF9080})
 end
 
-local function settings_panel()
-    local p = ui.panel('settings', 'Autosave', 300, 120, 360, 232)
-    if not p.open then return end
-    local x, y = p.content_x, p.content_y
-    local changed, c = false, nil
-    c, cfg.enabled = ui.checkbox('enabled', x, y, 'Autosave on', cfg.enabled,
-        {tooltip = 'Saves into its own slots every few minutes of play'})
-    changed = changed or c
-    ui.text('Every', x, y + 30, {height = 18, valign = 'middle'})
-    c, cfg.interval_minutes = ui.slider('interval', x + 50, y + 30, 200, 1, 60, math.floor(cfg.interval_minutes + 0.5),
-        {step = 1, tooltip = 'Minutes of active play between autosaves'})
-    changed = changed or c
-    ui.text(('%d min'):format(math.floor(cfg.interval_minutes + 0.5)), x + 262, y + 30,
-        {height = 18, valign = 'middle'})
-    c, cfg.show_confirmation = ui.checkbox('confirm', x, y + 58, 'Show a note after each autosave',
-        cfg.show_confirmation)
-    changed = changed or c
-
-    local slots = {}
-    for i, s in ipairs(cfg.slots) do slots[i] = ('GAME%02d'):format(s) end
-    ui.text('Slots: ' .. table.concat(slots, ', '), x, y + 84, {color = 0xFFC0C0C0, size = 11})
+-- A "More" tab in the mod's page of the Mods screen: the state, and Save now.
+gear.mods.page(function(x, y, w, h)
     local status
     if not cfg.enabled then status = 'off'
     elseif requested then status = 'saving ...'
     elseif due then status = 'waiting: ' .. tostring(waiting_reason or 'retrying')
     else status = 'next in ' .. mmss(cfg.interval_minutes * 60 - active) end
-    ui.text('Status: ' .. status, x, y + 100, {color = 0xFFC0C0C0, size = 11})
+    ui.text('Status: ' .. status, x, y, {height = 18, valign = 'middle'})
+    local names = {}
+    for i, n in ipairs(cfg.slots) do names[i] = ('GAME%02d'):format(n) end
+    ui.text('Slots: ' .. table.concat(names, ', '), x, y + 20, {height = 18, valign = 'middle'})
     if last then
-        ui.text(('Last: slot %d, %s ago'):format(last.slot, mmss(gear.time() - last.time)), x, y + 114,
-            {color = 0xFFC0C0C0, size = 11})
+        ui.text(('Last: slot %d, %s ago'):format(last.slot, mmss(gear.time() - last.time)), x, y + 40,
+            {height = 18, valign = 'middle'})
     end
-    if changed then check_config(); push() end
-
-    if ui.button('now', x, y + 138, 100, 22, 'Save now', {enabled = not requested,
+    if ui.button('now', x, y + 68, 120, 22, 'Save now', {enabled = not requested,
         tooltip = 'Autosave right away (into the next slot)'}) then
         due, next_try = true, 0
     end
-    if ui.button('close', x + 110, y + 138, 100, 22, 'Close') then ui.show_panel('settings', false) end
-    ui.text('Also in the Mods screen (F11)', x, y + 166, {color = 0xFFC0C0C0, size = 11})
-end
-
-gear.on('draw', function(s)
-    if not s then return end
-    draw_note(s)
-    if s.mode == 'game' and not s.exclusive then
-        settings_panel()
-    end
+    return 96
 end)
 
-gear.keys.on('panel', function()
-    ui.show_panel('settings', not ui.panel_open('settings'))
+gear.on('draw', function(s)
+    if s then draw_note(s) end
+end)
+
+gear.keys.on('save_now', function()
+    if cfg.enabled and not requested then due, next_try = true, 0 end
 end)
