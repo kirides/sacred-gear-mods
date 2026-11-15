@@ -2,7 +2,7 @@
 -- See README.md. The panel opens from a button below the chest window (and with its key, F10 by default).
 local cfg = gear.config
 -- The settings (Mods screen) live in gear.settings; `cfg` (shared with transfer.lua) holds their current values.
-for _, id in ipairs({'max_items', 'allow_special', 'recent'}) do cfg[id] = gear.settings.get(id) end
+for _, id in ipairs({'max_items', 'allow_special'}) do cfg[id] = gear.settings.get(id) end
 gear.on('settings.changed', function(id, value) cfg[id] = value end)
 if not cfg.enabled then return end
 
@@ -22,7 +22,6 @@ local COLS, ROWS = 11, 6        -- the size of one page of a grid
 
 local view = {
     stash_page = 0, source_page = 0,
-    mode = 'deposit',       -- 'deposit' or 'recent' (the lower grid)
     sources = {}, sources_at = -10,
     message = nil, message_until = 0, message_ok = true,
     force_open = false,     -- self tests
@@ -54,13 +53,6 @@ local function entry_type(e)
         e.type_id = b and (b:byte(1) + b:byte(2) * 256 + b:byte(3) * 65536 + b:byte(4) * 16777216) or 0
     end
     return e.type_id
-end
-
-local function tip(e)
-    local parts = {e.quality or '?', e.category or '?'}
-    if e.class and e.class ~= 'any' then parts[#parts + 1] = 'for ' .. e.class end
-    if e.from then parts[#parts + 1] = 'from a ' .. tostring(e.from) end
-    return table.concat(parts, ', ')
 end
 
 -- Packs cells (each {w, h, ...}) into pages of COLS x ROWS cells, first fit in reading order; sets cx, cy, cw, ch and
@@ -113,13 +105,14 @@ local function grid(id, x, y, cells, page)
     for _, c in ipairs(cells) do
         if c.page == page + 1 then
             local px, py, pw, ph = x + c.cx * CELL, y + c.cy * CELL, c.cw * CELL, c.ch * CELL
-            local r = ui.region(id .. c.id, px, py, pw, ph, {tooltip = c.tip, enabled = c.enabled})
+            local r = ui.region(id .. c.id, px, py, pw, ph, {enabled = c.enabled})
             local hot = r.hover and c.enabled
             ui.rect(px + 1, py + 1, pw - 1, ph - 1, hot and 0x80506090 or 0x50203040)
             ui.item_icon(c.icon, px + 2, py + 2, pw - 3, ph - 3)
             ui.frame(px, py, pw + 1, ph + 1, hot and 0xFFFFFFFF or (c.color or 0xFF606060))
             if not c.enabled then ui.rect(px + 1, py + 1, pw - 1, ph - 1, 0xA0000000) end
             if r.clicked and c.enabled then clicked = c end
+            if r.hover then view.hover = c end
         end
     end
     return clicked
@@ -139,15 +132,16 @@ local function entry_cells(list, hint)
         cells[#cells + 1] = {
             id = 'e' .. e.uid, entry = e, w = e.w or 1, h = e.h or 1, icon = entry_type(e),
             color = QUALITY_COLOR[e.quality], enabled = true,
-            tip = e.name .. '\n' .. tip(e) .. '\n' .. hint,
+            tipsrc = e, hint = hint,
         }
     end
     return cells
 end
 
 local function panel()
-    local p = ui.panel('stash', 'Shared stash', 646, 6, 372, 560, {closable = true})
+    local p = ui.panel('stash', 'Shared stash', 646, 6, 372, 500, {closable = true})
     if not p.open then return end
+    view.hover = nil
     local x, y, w = p.content_x + 4, p.content_y + 2, p.w - 16
     if stash.problem then
         ui.text(stash.problem, x, y, {width = w, color = 0xFFFF8080, size = 12})
@@ -167,12 +161,8 @@ local function panel()
     local withdraw = grid('s', x, y, scells, view.stash_page)
     y = y + ROWS * CELL + 8
 
-    if ui.button('mode-deposit', x, y, 150, 20, 'Your items', {enabled = view.mode ~= 'deposit'}) then view.mode = 'deposit' end
-    if ui.button('mode-recent', x + 156, y, 196, 20, 'Recent withdrawals', {enabled = view.mode ~= 'recent'}) then view.mode = 'recent' end
-    y = y + 28
-
-    local deposit, restore
-    if view.mode == 'deposit' then
+    local deposit
+    do
         refresh_sources(false)
         local cells = {}
         for _, s in ipairs(view.sources) do
@@ -180,8 +170,7 @@ local function panel()
             cells[#cells + 1] = {
                 id = 'b' .. it.id, src = s, w = it.w, h = it.h, icon = it, color = QUALITY_COLOR[it.quality],
                 enabled = s.ok,
-                tip = transfer.pretty_name(it) .. '\n' .. it.quality .. ', ' .. it.category .. ' (' .. s.where .. ')\n' ..
-                    (s.ok and 'Click: put it into the stash' or s.why),
+                tipsrc = it, hint = s.ok and ('Click: put it into the stash (from the ' .. s.where .. ')') or s.why,
             }
         end
         local pages = pack(cells)
@@ -190,20 +179,33 @@ local function panel()
         y = y + 22
         deposit = grid('b', x, y, cells, view.source_page)
         y = y + ROWS * CELL
-    else
-        local cells = entry_cells(stash.recent(),
-            'Click: back into the stash file. Use this if an older savegame lost the item; the copy in your\n' ..
-            'character, if it still has one, stays where it is.')
-        local pages = pack(cells)
-        ui.label('rec-title', 'Withdrawn lately (click: back into the stash)', x, y, {color = ui.COLORS.accent})
-        view.source_page = pager('rp', x + w - 100, y - 1, view.source_page, pages)
-        y = y + 22
-        restore = grid('r', x, y, cells, view.source_page)
-        y = y + ROWS * CELL
     end
 
     if view.message and gear.time() < view.message_until then
         ui.text(view.message, x, y + 6, {width = w, size = 12, color = view.message_ok and 0xFF80FF80 or 0xFFFF8080})
+    elseif view.hover then
+        ui.text(view.hover.hint, x, y + 6, {width = w, size = 12, color = 0xFFC0C0C0})
+    end
+
+    -- The game's own item tooltip for the item under the cursor, beside the panel (never under the cursor).
+    if view.hover then
+        local src = view.hover.tipsrc
+        if src.data then
+            local e = src
+            if not e.bytes then e.bytes = gear.inv.unhex(e.data) end
+            src = e.bytes
+        end
+        if src then
+            local mx, my = ui.mouse()
+            -- The popup's x / y are its top-left corner; its width is known from the tooltip shown before (a first guess
+            -- at first). Beside the panel, level with the cursor.
+            local px = p.x or 646
+            local tw = view.tip_w or 340
+            local tx = px > 400 and (px - tw - 8) or (px + p.w + 8)
+            local ok, a, b = ui.item_tooltip(src, tx, my - 12)
+            view.tip_ok, view.tip_err = ok, ok and nil or a
+            if ok and a > 0 then view.tip_w = a end
+        end
     end
 
     -- Changes after drawing, so the grids above were consistent for the frame.
@@ -217,27 +219,29 @@ local function panel()
         local ok, err = transfer.deposit(s.container, s.item)
         if ok then say(('%s put into the stash'):format(transfer.pretty_name(s.item))) else say(err, false) end
         refresh_sources(true)
-    elseif restore then
-        local e = restore.entry
-        local ok, err = transfer.restore(e)
-        if ok then say(e.name .. ' is in the stash again') else say(err, false) end
     end
 end
 
+-- The "Shared stash" button is a small panel of its own, so it is a layout panel like any other: F7 (the layout editor)
+-- moves it and its place is kept in mods\gear_layout.json. Default: to the right of the chest and the inventory, below
+-- the stash panel, clear of the game's buttons. Shown while the chest window is open (and in edit mode, so it can be
+-- placed anywhere).
 local function open_button()
     local w = ui.window('UI_WND_CHEST')
-    if not w or not (w.drawn or view.force_button) then return end
-    local b = w.bounds
-    local bx, by, bw, bh = b and b.x or w.x, b and b.y or w.y, b and b.w or w.width, b and b.h or w.height
+    if not ((w and (w.drawn or view.force_button)) or ui.edit_mode()) then return end
+    local p = ui.panel('open', 'Shared stash', 646, 572, 160, 50, {closable = false})
+    if not p.open then return end
     local key = gear.keys.binding('toggle')
     local hint = key ~= '' and (' (' .. key:upper() .. ')') or ''
-    if ui.button('open', bx + bw - 130, by + bh + 4, 126, 20, 'Shared stash',
+    local open = ui.panel_open('stash')
+    if ui.button('toggle', p.content_x + 2, p.content_y + 2, p.content_w - 4, 20, open and 'Close the stash' or 'Open the stash',
         {tooltip = 'Items shared between your heroes' .. hint}) then
-        ui.show_panel('stash', not ui.panel_open('stash'))
+        ui.show_panel('stash', not open)
     end
 end
 
 ui.show_panel('stash', false)
+ui.show_panel('open', true)
 
 gear.keys.on('toggle', function()
     if gear.ui.state().mode == 'game' then ui.show_panel('stash', not ui.panel_open('stash')) end

@@ -65,7 +65,54 @@ return function(M, stash, transfer)
             end
             check(#bp:items() == before + #entries, 'backpack grew by ' .. #entries)
             check(#stash.items() == 0, 'stash empty')
-            check(#stash.recent() >= #entries, 'recent withdrawals kept')
+
+        elseif cfg.selftest == 'sockets' or cfg.selftest == 'filled' then
+            -- 'sockets': fills the free sockets of backpack items with the backpack's runes (the engine's own socket
+            -- call), then deposits those items. 'filled': deposits the items that already hold a rune.
+            local function info(b)
+                local n = b:byte(5) + 256 * b:byte(6)
+                local rec = 6 + n * 130
+                local caps = 0
+                for i = 0, 7 do if b:byte(rec + 0x0C + i + 1) ~= 0 then caps = caps + 1 end end
+                return caps, n, b:sub(rec + 1, rec + 130)
+            end
+            local targets, runes = {}, {}
+            for _, it in ipairs(bp:items()) do
+                local b = inv.export(it.id)
+                local caps, n = info(b)
+                if it.category == 'rune' then runes[#runes + 1] = it
+                elseif (cfg.selftest == 'sockets' and caps > n) or (cfg.selftest == 'filled' and n > 0) then
+                    targets[#targets + 1] = {it = it, caps = caps, n = n}
+                end
+            end
+            note(('targets %d, runes %d'):format(#targets, #runes))
+            check(#targets > 0, 'there are items to work on')
+            for _, t in ipairs(targets) do
+                local it = t.it
+                local before = inv.export(it.id)
+                if cfg.selftest == 'sockets' then
+                    for k = t.n + 1, t.caps do
+                        local rune = table.remove(runes)
+                        if not rune then note('no rune left for ' .. it.type_name) break end
+                        local okt = bp:take(rune.id)
+                        local ok, err = inv.socket(it.id, rune.id)
+                        check(okt and ok, ('socket %s into %s: %s'):format(rune.type_name, it.type_name, tostring(err)))
+                    end
+                    local after = inv.export(it.id)
+                    local _, n2, rec2 = info(after)
+                    local _, _, rec1 = info(before)
+                    check(n2 > t.n, it.type_name .. ' has ' .. n2 .. ' entries now')
+                    check(rec2 ~= rec1, it.type_name .. ' record (bonuses) changed by the socketing')
+                end
+                local expected = inv.hex(inv.export(it.id))
+                local ok, err = transfer.deposit(bp, it)
+                check(ok, 'deposit ' .. it.type_name .. ' ' .. tostring(err))
+                local stored
+                for _, e in ipairs(stash.items()) do if e.data == expected then stored = true end end
+                check(stored, 'the stash holds the exact export of ' .. it.type_name)
+                out.deposited = out.deposited or {}
+                out.deposited[#out.deposited + 1] = {name = it.type_name, bytes = #expected / 2}
+            end
 
         elseif cfg.selftest == 'ui' then
             M.view.force_open = true
@@ -75,6 +122,25 @@ return function(M, stash, transfer)
             M.say('Axe put into the stash')
             gear.wait(2)
             gear.auto.screenshot('stash-panel')
+            -- hover the cells: a stash item (the first cell of the stash grid), then a backpack item
+            local panel
+            for _, p in ipairs(gear.ui.panels()) do if p.key == 'shared-stash:stash' then panel = p end end
+            local keys = {}
+            for _, p in ipairs(gear.ui.panels()) do keys[#keys + 1] = p.key .. ' movable=' .. tostring(p.draggable ~= false) end
+            out.panel_keys = keys
+            if panel then
+                out.panel = gear.json.encode({x = panel.x, y = panel.y, w = panel.w, h = panel.h})
+                local gx, gy = panel.x + 8, panel.y + 24 + 22 + 2
+                local function hover(name, lx, ly)
+                    local px, py = gear.auto.ui_to_pixels(lx, ly)
+                    gear.auto.move(px, py)
+                    gear.wait(1.5)
+                    gear.auto.screenshot(name)
+                    out['tip_' .. name] = tostring(M.view.tip_ok) .. ' ' .. tostring(M.view.tip_err)
+                end
+                hover('stash-tip-stash', gx + 16, gy + 16)
+                hover('stash-tip-backpack', gx + 16, gy + 6 * 32 + 8 + 22 + 16)
+            end
         end
         finish()
     end)

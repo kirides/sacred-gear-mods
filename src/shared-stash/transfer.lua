@@ -55,7 +55,7 @@ function M.deposit(container, it)
     if not entry then return nil, aerr end
     local got, rerr = inv.remove(container, it.id)
     if not got then
-        stash.discard(entry.uid)
+        stash.remove(entry.uid)
         return nil, rerr
     end
     return true
@@ -77,18 +77,12 @@ function M.withdraw(entry)
         end
     end
     if not placed then return nil, 'no room in the backpack or the chest' end
-    local taken, terr = stash.take(entry.uid, cfg.recent)
+    local taken, terr = stash.remove(entry.uid)
     if not taken then
         inv.remove(placed[1], placed[2])
         return nil, terr
     end
     return true, where
-end
-
--- Puts a recently withdrawn entry back into the stash file only (the item in the character stays where it is).
-function M.restore(entry)
-    if stash.problem then return nil, stash.problem end
-    return stash.restore(entry.uid, cfg.max_items)
 end
 
 return M

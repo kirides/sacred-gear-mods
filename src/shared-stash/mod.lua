@@ -17,7 +17,6 @@ return {
          tooltip = 'The stash file is limited to 1 MB'},
         {id = 'allow_special', type = 'bool', label = 'Also move special items', default = false,
          tooltip = 'Horse gear and the like; quest items and gold never move'},
-        {id = 'recent', type = 'number', label = 'Recent withdrawals remembered', min = 0, max = 100, step = 5, default = 30},
     },
     keys = {
         {id = 'toggle', label = 'Open or close the stash panel', default = 'f10'},
