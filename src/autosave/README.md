@@ -1,0 +1,76 @@
+# Autosave
+
+A [Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md) mod: saves a single player game every
+few minutes of play, into slots of its own, so a crash costs minutes instead of an hour. It answers
+[kirides/sacred-bild#10](https://github.com/kirides/sacred-bild/issues/10). It is separate from Sacred Gold's own
+"Auto-Save" option (which saves at important points).
+
+## Install
+
+Copy this folder to `mods\autosave` in the game folder (next to `Sacred.exe`; Sacred Gear and SacredBild installed).
+It saves with the game's own save request, `gear.game.save`, which needs a Sacred Gear that has it.
+
+## What it does
+
+- **Active play time only.** The timer runs while the hero plays: the game is shown and no window (inventory, map,
+  trade ...), escape menu, message box or help screen is open. It stops in the main menu, loading screens, cinematics
+  and menus (Sacred Gear runs mods only in game frames). A single frame counts at most one second.
+- **Waits for a valid moment.** When the interval is up, the save starts at the first moment the game can save:
+  single player, a living hero, the game itself shown, no window drawn alone, no cinematic, no save or load pending, and
+  none of the trade / chest / blacksmith windows that make the engine refuse. Until then it asks again every
+  2 seconds (not every frame).
+- **Own slots, rotating, oldest first.** Default: `Save\GAME97.PAK`, `GAME98.PAK`, `GAME99.PAK`. A slot that does not
+  exist yet is used first, then the oldest file by modification time, so the two earlier autosaves survive. The
+  quicksave (`GAME00.PAK`, F9) and the manual saves (the game's savegame window numbers them from `GAME01`) are never
+  written.
+- **Confirmation and failures.** After a successful save a note ("Autosaved (slot 97)") shows for four seconds
+  below the top of the screen. A refused or failed save is written to `SacredGear.log` (`[autosave] ...`) and retried
+  after 10, 30, 60, then every 120 seconds; the timer keeps counting meanwhile, so the next autosave happens as soon as
+  it can.
+
+## Settings
+
+`mod.lua` holds the defaults, the in-game panel (**F6**) changes them and **Save settings** writes `settings.json` in
+this folder, which overrides `mod.lua` from then on (delete it to go back to the defaults).
+
+| Setting | Default | |
+|---|---|---|
+| `enabled` | `true` | Autosave on / off. |
+| `interval_minutes` | `5` | Minutes of active play between autosaves (0.05 to 240; the panel's slider is whole minutes 1 to 60). |
+| `slots` | `{97, 98, 99}` | The slots to rotate through, 1 to 509, up to 8. Keep them clear of the numbers the game gives to manual saves. |
+| `name` | `'Autosave %H:%M'` | The display name in the savegame list; `os.date` format, 60 characters at most. |
+| `show_confirmation` | `true` | The note after each autosave. |
+| `settings_key` | `'f6'` | Key of the settings panel (also read from `settings.json`; F7 is the layout edit mode, F8 the loot filter, F10 the shared stash). |
+
+The panel also shows the time to the next autosave, why one waits and the last slot written, and has a **Save now**
+button.
+
+## Recovery: loading an autosave
+
+The autosaves appear in the game's savegame list under their slot (`GAME97` ... `GAME99`) with the name
+"Autosave HH:MM". They are normal savegames: load the newest one (check the time in its name, or the file dates).
+If the newest is damaged (the game crashed while writing it), take the one before: the previous autosave is still in
+the next slot. To keep an autosave for good, copy `Save\GAME97.PAK` to a free number (`GAME06.PAK` ...) or rename it.
+
+## For other mods
+
+```lua
+gear.emit('autosave.configure', {enabled = true, interval_minutes = 10, slots = {95, 96}, persist = false})
+local out = {}
+gear.emit('autosave.query', out)   -- enabled, interval_minutes, slots, active_seconds, due, requested, fails, saves, last_slot, ...
+```
+
+`gear.game.can_save()`, `gear.game.save(slot, name)`, `gear.game.save_info(slot)` and the events `game.saved` /
+`game.save_failed` are Sacred Gear's ([GearApi.md](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md)).
+
+## Test
+
+`mods\autosave_selftest` (a sibling folder in this repository) is the automation self test:
+
+```
+Sacred.exe -gear-auto -gear-instance=autosave -gear-load=1 -gear-mods=autosave,autosave_selftest
+```
+
+It checks that the timer stops in the escape menu, that four autosaves rotate through 97, 98, 99, 97, and that the
+quicksave and the loaded savegame stay untouched. Results: `GearAutomation\autosave\autosave.json`. Back up `Save\`
+first; the test writes slots 97 to 99.
