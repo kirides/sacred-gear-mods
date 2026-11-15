@@ -6,15 +6,19 @@ A mod for [Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Ge
 ## Use
 
 Copy this folder to `mods\shared-stash` in the game folder (Sacred Gear and the `mods` folder as described in its
-docs). In game, open the chest: a **Shared stash** button appears below the chest window (or press **F10** anywhere
+docs). In game, open the chest: a **Shared stash** button appears below the chest window (or press **F10** (rebindable in the Mods screen) anywhere
 in game). The panel:
 
-- **In the stash** (top): click an item to take it into the backpack (into the chest if the backpack has no room).
-- **Your items** (bottom): the items of the backpack and the chest; click one to put it into the stash.
+- **In the stash** (top): a grid of the stashed items' 3D icons, each as many 32-unit cells as in the game's inventory
+  (11 x 6 cells a page, pages with < >). Click an item to take it into the backpack (into the chest if the backpack has
+  no room).
+- **Your items** (bottom): the items of the backpack and the chest, packed into the same kind of grid (not at their real
+  places); click one to put it into the stash. Items that cannot move (quest items, gold) are greyed out.
 - **Recent withdrawals**: the items taken out lately; click one to put its entry back into the stash (see below).
 
-Items are shown by their type's file name, size and quality colour; the tooltip adds the class and which hero put it in.
-The panel is a list, not the chest's picture grid: Sacred Gear cannot draw the game's item graphics yet.
+The tooltip of an icon gives its name, quality, class and which hero put it in. Icons come from `gear.ui.item_icon`:
+items in the backpack are drawn from the live object, stashed ones by their type (Gear makes a temporary item for the
+frame, at most 48 types a frame; a page of the grid is at most 66 cells).
 
 Single player only (the panel says so otherwise). Gold and quest items never move; "special" items (horse gear ...)
 only with the *Also move special items* setting. The stash holds up to 200 items. These settings and the key (F10) are in

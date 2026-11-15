@@ -69,6 +69,9 @@ return function(M, stash, transfer)
 
         elseif cfg.selftest == 'ui' then
             M.view.force_open = true
+            M.view.force_button = true
+            local cw = gear.ui.window('UI_WND_CHEST')
+            out.chest_window = cw and gear.json.encode({x = cw.x, y = cw.y, w = cw.width, h = cw.height, visible = cw.visible, drawn = cw.drawn, bounds = cw.bounds})
             M.say('Axe put into the stash')
             gear.wait(2)
             gear.auto.screenshot('stash-panel')
