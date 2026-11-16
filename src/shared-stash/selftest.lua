@@ -304,6 +304,32 @@ return function(M, stash, transfer)
             check(#bp:items() == before, 'nothing changed')
             check(gear.world.can_change(), 'flag cleared: changes allowed again')
 
+        elseif cfg.selftest == 'tipcmp' then
+            -- The tooltip words of a live item against those of a scratch item (made from its export, never registered),
+            -- twice (the price must not change), for every item of the backpack; socketed items included.
+            local same, diff, errs = 0, 0, 0
+            local examples = {}
+            local items = bp:items()
+            for _, it in ipairs(items) do
+                local live, e1 = gear.ui.item_tooltip_text(it.id)
+                local bytes = inv.export(it.id)
+                local s1, e2 = gear.ui.item_tooltip_text(bytes)
+                local s2 = gear.ui.item_tooltip_text(bytes)
+                if not live or not s1 then
+                    errs = errs + 1
+                    note('error ' .. it.type_name .. ': ' .. tostring(e1 or e2))
+                elseif live == s1 and s1 == s2 then
+                    same = same + 1
+                else
+                    diff = diff + 1
+                    if #examples < 3 then examples[#examples + 1] = {it.type_name, live, s1, s2} end
+                end
+            end
+            out.examples = examples
+            note(('items %d: identical %d, different %d, errors %d'):format(#items, same, diff, errs))
+            check(errs == 0, 'every tooltip could be read')
+            check(diff == 0, 'scratch tooltips equal the live ones')
+
         elseif cfg.selftest == 'ui' or cfg.selftest == 'chest' then
             -- 'chest': the stash exists only while the chest window is open. 'ui': screenshots of the open stash and of
             -- the tooltips of its first stash and backpack cells.
