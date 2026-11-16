@@ -25,30 +25,13 @@ confirms each save. Your own saves and the quicksave are never touched.
 Both are set in the **Mod manager** (**F11**, or the *Mods* button under the escape menu): switch each mod on or off,
 change its settings and re-bind its keys.
 
-![The Mods screen](docs/images/mod-manager.jpg)
+### Also for Sacred Gear, in the sacred-bild repository
 
-### More mods, in the sacred-bild repository
-
-These ship with Sacred Gear's examples in [sacred-bild](https://github.com/kirides/sacred-bild#for-players), whose
-README describes them as well. Copy their folders (`gear/examples/lootfilter`, `layout`, `realms`) to `mods` the same
-way.
-
-**Loot filter** (settings with **F5**): your hero picks up only what is worth it: items for its class, above a quality
-you choose, per category and per potion type. Filtered items' labels are dimmed so the good drops stand out, and while
-you hold **Alt** an overlay shows the active rules.
-
-![The loot filter's overlay with the item labels](docs/images/loot-filter-overlay.jpg)
-
-![The loot filter settings](docs/images/loot-filter-settings.jpg)
-
-**Layout editor**, like the edit mode of an MMO: hold **Alt** (the game shows its labels) and click *Edit layout* at
-the top left. Every game window and mod panel gets an overlay; click one and drag it anywhere, it snaps to screen edges
-and to other windows, and your layout is remembered. This includes the shared stash's button.
-
-![The layout editor with the inventory selected](docs/images/layout-editor.jpg)
-
-**Realm picker**: chooses the server of the game's online play (Closed / Open Internet) from a page in the Mods
-screen, so a private realm can be used without editing `Settings.cfg`. See
+The mod manager, the **loot filter** (class, quality and category rules, dimmed labels, **F5**), the **layout editor**
+(move every window and mod panel, **Alt** + *Edit layout*) and the **realm picker** (a private online play server) are
+part of [sacred-bild](https://github.com/kirides/sacred-bild#what-you-get-from-sacred-gear-sacredgeardll), with
+screenshots there. The loot filter, layout editor and realm picker are its examples (`gear/examples/lootfilter`,
+`layout`, `realms`): copy them to `mods` like the mods here. See also
 [Realms](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md#realms).
 
 ### Sacred ReBorn

@@ -7,5 +7,5 @@ return {
     description = 'Automation only: takes the screenshots of the README (see run.ps1).',
     automation = true,
     priority = 200,
-    config = {phase = 'mods'},
+    config = {phase = 'autosave'},
 }
