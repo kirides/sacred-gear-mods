@@ -105,14 +105,19 @@ local function grid(id, x, y, cells, page)
     for _, c in ipairs(cells) do
         if c.page == page + 1 then
             local px, py, pw, ph = x + c.cx * CELL, y + c.cy * CELL, c.cw * CELL, c.ch * CELL
-            local r = ui.region(id .. c.id, px, py, pw, ph, {enabled = c.enabled})
+            local as_text = view.net and type(c.icon) == 'number'    -- no temporary items (icons, tooltips) in a network game
+            local r = ui.region(id .. c.id, px, py, pw, ph, {enabled = c.enabled, tooltip = as_text and c.tipText or nil})
             local hot = r.hover and c.enabled
             ui.rect(px + 1, py + 1, pw - 1, ph - 1, hot and 0x80506090 or 0x50203040)
-            ui.item_icon(c.icon, px + 2, py + 2, pw - 3, ph - 3)
+            if as_text then
+                ui.text(c.label or '', px + 3, py + 2, {width = pw - 5, height = ph - 4, size = 10, color = c.color or 0xFFFFFFFF})
+            else
+                ui.item_icon(c.icon, px + 2, py + 2, pw - 3, ph - 3)
+            end
             ui.frame(px, py, pw + 1, ph + 1, hot and 0xFFFFFFFF or (c.color or 0xFF606060))
             if not c.enabled then ui.rect(px + 1, py + 1, pw - 1, ph - 1, 0xA0000000) end
             if r.clicked and c.enabled then clicked = c end
-            if r.hover then view.hover = c end
+            if r.hover and not as_text then view.hover = c end
         end
     end
     return clicked
@@ -132,7 +137,8 @@ local function entry_cells(list, hint)
         cells[#cells + 1] = {
             id = 'e' .. e.uid, entry = e, w = e.w or 1, h = e.h or 1, icon = entry_type(e),
             color = QUALITY_COLOR[e.quality], enabled = true,
-            tipsrc = e, hint = hint,
+            tipsrc = e, hint = hint, label = e.name,
+            tipText = e.name .. '\n' .. (e.quality or '?') .. ', ' .. (e.category or '?') .. '\n' .. hint,
         }
     end
     return cells
@@ -147,8 +153,10 @@ local function panel()
         ui.text(stash.problem, x, y, {width = w, color = 0xFFFF8080, size = 12})
         return
     end
-    if not world.can_change() then
-        ui.text('The shared stash works in single player games only.', x, y, {width = w, color = 0xFFFFC080, size = 12})
+    local can, network = gear.inv.can_change()
+    view.net = network
+    if not can then
+        ui.text('The shared stash cannot change your inventory right now.', x, y, {width = w, color = 0xFFFFC080, size = 12})
         return
     end
 

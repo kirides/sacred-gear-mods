@@ -114,29 +114,71 @@ return function(M, stash, transfer)
                 out.deposited[#out.deposited + 1] = {name = it.type_name, bytes = #expected / 2}
             end
 
+        elseif cfg.selftest == 'stress' then
+            -- The user's crash: chest open, stash open, items moved back and forth. Deposits several items, opens the
+            -- stash and moves items between it and the backpack for `cfg.stress_seconds`, noting how the object ids move.
+            local picked = 0
+            for _, it in ipairs(bp:items()) do
+                if picked < 8 and transfer.transferable(it) and it.category ~= 'rune' then
+                    if transfer.deposit(bp, it) then picked = picked + 1 end
+                end
+            end
+            check(picked >= 4, 'stashed ' .. picked .. ' items')
+            gear.auto.show_window('UI_WND_CHEST', true)
+            gear.wait(1)
+            local function panel_of(key)
+                for _, p in ipairs(gear.ui.panels()) do if p.key == key then return p end end
+            end
+            local op = panel_of('shared-stash:open')
+            if op then gear.auto.ui_click(op.x + 80, op.y + 34) end
+            gear.wait(1)
+            local t0, cycles, fails, maxid = gear.time(), 0, 0, 0
+            local lastid = 0
+            while gear.time() - t0 < (cfg.stress_seconds or 60) do
+                local e = stash.items()[1]
+                if e then
+                    local ok, where = transfer.withdraw(e)
+                    if not ok then fails = fails + 1 note('withdraw failed: ' .. tostring(where)) end
+                end
+                gear.wait(0.3)
+                local list = bp:items()
+                local it = list[#list]
+                if it then
+                    local ok = transfer.deposit(bp, it)
+                    if not ok then fails = fails + 1 end
+                    lastid = it.id
+                    if it.id > maxid then maxid = it.id end
+                end
+                cycles = cycles + 1
+                gear.wait(0.3)
+            end
+            note(('cycles %d, failures %d, highest item id seen %d, last %d, stash %d'):format(cycles, fails, maxid, lastid, #stash.items()))
+            check(fails == 0, 'no failed transfers')
+            gear.auto.screenshot('stress-end')
+
         elseif cfg.selftest == 'net' then
-            -- A network game (also a host nobody joined) must refuse every change: the engine would announce the objects
-            -- the stash makes and destroys to peers that do not know them (a crash 2.5 s after a stash transfer in a hosted
-            -- game came from this).
+            -- The guards in a (simulated) network game: the world stays closed (spawn, temporary items), the inventory is
+            -- open for the hero's own backpack and the chest only, through the engine's announcing calls. Nothing is
+            -- really changed here: the flag is only set for the checks.
             local before = #bp:items()
-            local stashed = #stash.items()
-            check(gear.world.can_change(), 'single player: changes allowed')
+            check(gear.world.can_change(), 'single player: world changes allowed')
             gear.auto.network_flag(true)
-            local can = gear.world.can_change()
-            local it = bp:items()[1]
-            local okd, whyd = transfer.deposit(bp, it)
-            local bytes = inv.export(it.id)
-            local id, err = inv.create(bytes)
-            local ids, ierr = inv.add(bp, bytes)
+            local can_world = gear.world.can_change()
+            local can_inv, network = gear.inv.can_change()
+            local other = gear.inv.container(5)
+            local item = bp:items()[1]
+            local bytes = inv.export(item.id)
+            local okp, errp = pcall(function() return gear.world.spawn('BOW_LONG.GRN', 0, 0) end)
+            local tip_ok, tip_err = gear.ui.item_tooltip(bytes, 100, 100)
+            local oth_id, oth_err
+            if other then oth_id, oth_err = inv.add(other, bytes) end
             gear.auto.network_flag(false)
-            check(can == false, 'network game: can_change is false')
-            check(not okd, 'network game: deposit refused: ' .. tostring(whyd))
-            check(id == nil, 'network game: inv.create refused: ' .. tostring(err))
-            check(ids == nil, 'network game: inv.add refused: ' .. tostring(ierr))
-            check(#bp:items() == before and #stash.items() == stashed, 'nothing changed')
+            check(can_world == false, 'network game: world changes refused')
+            check(can_inv == true and network == true, 'network game: the inventory may be changed (announced)')
+            check(tip_ok == nil, 'network game: no temporary item for a tooltip: ' .. tostring(tip_err))
+            check(oth_id == nil, 'network game: another container is refused: ' .. tostring(oth_err))
+            check(#bp:items() == before, 'nothing changed')
             check(gear.world.can_change(), 'flag cleared: changes allowed again')
-            local ok2, why2 = transfer.deposit(bp, it)
-            check(ok2, 'single player again: deposit works ' .. tostring(why2))
 
         elseif cfg.selftest == 'ui' or cfg.selftest == 'chest' then
             -- 'chest': the stash exists only while the chest window is open. 'ui': screenshots of the open stash and of

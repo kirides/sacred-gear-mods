@@ -60,7 +60,7 @@ end
 
 -- Deposits item `it` (an entry of container:items()) of `container`. true | nil, message.
 function M.deposit(container, it)
-    if not world.can_change() then return nil, 'only in a single player game' end
+    if not inv.can_change() then return nil, 'the inventory cannot be changed now' end
     if not M.chest_open() then return nil, 'open a chest first' end
     if stash.problem then return nil, stash.problem end
     local ok, why = M.transferable(it)
@@ -80,7 +80,7 @@ end
 -- Withdraws stash entry `entry` into the backpack (or the chest when the backpack has no room). true, where | nil,
 -- message.
 function M.withdraw(entry)
-    if not world.can_change() then return nil, 'only in a single player game' end
+    if not inv.can_change() then return nil, 'the inventory cannot be changed now' end
     if not M.chest_open() then return nil, 'open a chest first' end
     if stash.problem then return nil, stash.problem end
     local bytes = inv.unhex(entry.data)
