@@ -1,5 +1,6 @@
 -- Shared stash: a stash of items shared by the heroes of this player, kept in stash.json in this folder.
--- See README.md. The panel opens from a button below the chest window (and with its key, F10 by default).
+-- See README.md. The panel opens only from the "Shared stash" button that shows while the game's chest window is open,
+-- and closes with it.
 local cfg = gear.config
 -- The settings (Mods screen) live in gear.settings; `cfg` (shared with transfer.lua) holds their current values.
 for _, id in ipairs({'max_items', 'allow_special'}) do cfg[id] = gear.settings.get(id) end
@@ -24,7 +25,6 @@ local view = {
     stash_page = 0, source_page = 0,
     sources = {}, sources_at = -10,
     message = nil, message_until = 0, message_ok = true,
-    force_open = false,     -- self tests
 }
 local M = {view = view}
 
@@ -221,18 +221,15 @@ end
 
 -- The "Shared stash" button is a small panel of its own, so it is a layout panel like any other: F7 (the layout editor)
 -- moves it and its place is kept in mods\gear_layout.json. Default: to the right of the chest and the inventory, below
--- the stash panel, clear of the game's buttons. Shown while the chest window is open (and in edit mode, so it can be
--- placed anywhere).
-local function open_button()
-    local w = ui.window('UI_WND_CHEST')
-    if not ((w and (w.drawn or view.force_button)) or ui.edit_mode()) then return end
+-- the stash panel, clear of the game's buttons. It is clickable only while the chest window is open; in the layout
+-- editor it is shown (greyed out) so it can be placed without a chest.
+local function open_button(chest_is_open)
     local p = ui.panel('open', 'Shared stash', 646, 572, 160, 50, {closable = false})
     if not p.open then return end
-    local key = gear.keys.binding('toggle')
-    local hint = key ~= '' and (' (' .. key:upper() .. ')') or ''
     local open = ui.panel_open('stash')
+    local enabled = chest_is_open and not ui.edit_mode()
     if ui.button('toggle', p.content_x + 2, p.content_y + 2, p.content_w - 4, 20, open and 'Close the stash' or 'Open the stash',
-        {tooltip = 'Items shared between your heroes' .. hint}) then
+        {enabled = enabled, tooltip = enabled and 'Items shared between your heroes' or 'Open a chest to use the stash'}) then
         ui.show_panel('stash', not open)
     end
 end
@@ -240,15 +237,16 @@ end
 ui.show_panel('stash', false)
 ui.show_panel('open', true)
 
-gear.keys.on('toggle', function()
-    if gear.ui.state().mode == 'game' then ui.show_panel('stash', not ui.panel_open('stash')) end
-end)
-
 gear.on('draw', function(state)
-    if state.mode ~= 'game' then return end
-    if view.force_open then ui.show_panel('stash', true) end
-    if state.exclusive then return end
-    open_button()
+    -- The stash exists only while the game's chest window is open (it opens only near a chest and closes when the hero
+    -- walks away): closed with it, in the menus, in cinematics, with a dead hero.
+    local chest_is_open = state.mode == 'game' and not state.exclusive and transfer.chest_window_open()
+    if not chest_is_open then
+        ui.show_panel('stash', false)
+        if state.mode == 'game' and not state.exclusive and ui.edit_mode() then open_button(false) end
+        return
+    end
+    open_button(true)
     panel()
 end)
 

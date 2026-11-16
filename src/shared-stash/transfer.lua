@@ -10,6 +10,21 @@ local M = {}
 local cfg = gear.config
 local inv, world = gear.inv, gear.world
 
+-- Whether the game's chest window is open now (it opens only when the hero uses a chest nearby and closes when the hero
+-- walks away) and the hero is alive: the stash is usable only then. Self tests (config.selftest) skip it, except the
+-- 'chest' test that checks it.
+function M.chest_window_open()
+    local w = gear.ui.window('UI_WND_CHEST')
+    local hero = world.hero()
+    return (w and w.drawn and hero and not hero:is_dead()) and true or false
+end
+
+-- The same for the transfers; the self tests that move items without a chest skip it (all but 'chest').
+function M.chest_open()
+    if cfg.selftest and cfg.selftest ~= 'chest' then return true end
+    return M.chest_window_open()
+end
+
 -- Whether an item may move: gold, quest items and (unless config.allow_special) "special" items never do.
 function M.transferable(it)
     if it.gold then return false, 'gold cannot be stashed' end
@@ -46,6 +61,7 @@ end
 -- Deposits item `it` (an entry of container:items()) of `container`. true | nil, message.
 function M.deposit(container, it)
     if not world.can_change() then return nil, 'only in a single player game' end
+    if not M.chest_open() then return nil, 'open a chest first' end
     if stash.problem then return nil, stash.problem end
     local ok, why = M.transferable(it)
     if not ok then return nil, why end
@@ -65,6 +81,7 @@ end
 -- message.
 function M.withdraw(entry)
     if not world.can_change() then return nil, 'only in a single player game' end
+    if not M.chest_open() then return nil, 'open a chest first' end
     if stash.problem then return nil, stash.problem end
     local bytes = inv.unhex(entry.data)
     if not bytes then return nil, 'the stash entry is damaged' end

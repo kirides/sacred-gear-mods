@@ -6,9 +6,13 @@ A mod for [Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Ge
 ## Use
 
 Copy this folder to `mods\shared-stash` in the game folder (Sacred Gear and the `mods` folder as described in its
-docs). In game, open the chest: a **Shared stash** button appears below the chest window (or press **F10** (rebindable in the Mods screen) anywhere
-in game). The button is a small panel of its own: move it in Sacred Gear's layout editor (F7); its place is kept in
-`mods/gear_layout.json`. The panel:
+docs). In game, use a chest (the personal chest window opens only near a chest): a **Shared stash** button
+appears, by default to the right of the chest and the inventory (below the stash panel); click it to open the stash.
+**The stash is only available while the chest window is open**: the button exists only then, the panel closes the
+moment the chest window closes (walking away, Esc, the menus, a dead hero), and a deposit or withdrawal is refused
+unless the chest window is open right then. There is no hotkey. The button is a small panel of its own: move it in
+Sacred Gear's layout editor (F7; it is shown greyed out there so it can be placed without a chest); its place is kept
+in `mods/gear_layout.json`. The panel:
 
 - **In the stash** (top): a grid of the stashed items' 3D icons, each as many 32-unit cells as in the game's inventory
   (11 x 6 cells a page, pages with < >). Click an item to take it into the backpack (into the chest if the backpack has
@@ -23,7 +27,7 @@ backpack are read from the live object, stashed ones through a temporary item ma
 different item types a frame are drawn as icons; a grid page is at most 66 cells).
 
 Single player only (the panel says so otherwise). Gold and quest items never move; "special" items (horse gear ...)
-only with the *Also move special items* setting. The stash holds up to 200 items. These settings and the key (F10) are in
+only with the *Also move special items* setting. The stash holds up to 200 items. These settings are in
 Sacred Gear's **Mods** screen (F11), saved in `mods\gear_mods.json`; `config.lua` still sets their defaults.
 
 ## The file
@@ -61,7 +65,7 @@ duplicate it).
 `return {selftest = 'deposit', selftest_slot = 1}`: loads savegame N, runs the step, writes
 `GearAutomation\NAME\sharedstash.json` and quits. `deposit` moves a weapon, an armour piece, a jewel and a shield from
 the backpack into the stash; `withdraw` (another savegame, a new game process) takes everything out again and checks
-each item is byte-identical to what went in; `sockets` fills the free sockets of backpack items with the backpack's runes (the engine's own socketing) and deposits them, `filled` deposits items that already hold a rune; `ui` takes screenshots of the panel and of the tooltips of the first stash and backpack cells.
+each item is byte-identical to what went in; `sockets` fills the free sockets of backpack items with the backpack's runes (the engine's own socketing) and deposits them, `filled` deposits items that already hold a rune; `ui` takes screenshots of the panel and of the tooltips of the first stash and backpack cells; `chest` checks that the stash exists only while the chest window is open (the window is shown and hidden with `gear.auto.show_window`, the button clicked, F10 pressed, a deposit and a withdrawal tried with the chest closed).
 
 ## Files
 

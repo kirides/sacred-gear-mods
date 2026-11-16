@@ -114,32 +114,71 @@ return function(M, stash, transfer)
                 out.deposited[#out.deposited + 1] = {name = it.type_name, bytes = #expected / 2}
             end
 
-        elseif cfg.selftest == 'ui' then
-            M.view.force_open = true
-            M.view.force_button = true
+        elseif cfg.selftest == 'ui' or cfg.selftest == 'chest' then
+            -- 'chest': the stash exists only while the chest window is open. 'ui': screenshots of the open stash and of
+            -- the tooltips of its first stash and backpack cells.
+            local function panel_of(key)
+                for _, p in ipairs(gear.ui.panels()) do if p.key == key then return p end end
+            end
+            local function click_button()
+                local p = panel_of('shared-stash:open')
+                if not p then return false end
+                gear.auto.ui_click(p.x + 80, p.y + 34)
+                gear.wait(1)
+                return true
+            end
+            local function stash_open() return gear.ui.panel_open('stash') and panel_of('shared-stash:stash') ~= nil end
+            gear.wait(1)
+            check(not panel_of('shared-stash:open'), 'no button while the chest window is closed')
+            check(not stash_open(), 'no stash panel while the chest window is closed')
+            if cfg.selftest == 'chest' then
+                gear.auto.press('f10')
+                gear.wait(1)
+                check(not stash_open(), 'F10 does not open the stash')
+                local ok, why = transfer.deposit(bp, bp:items()[1])
+                check(not ok and why == 'open a chest first', 'deposit refused without a chest: ' .. tostring(why))
+            end
+            check(gear.auto.show_window('UI_WND_CHEST', true), 'chest window shown')
+            gear.wait(1.5)
             local cw = gear.ui.window('UI_WND_CHEST')
-            out.chest_window = cw and gear.json.encode({x = cw.x, y = cw.y, w = cw.width, h = cw.height, visible = cw.visible, drawn = cw.drawn, bounds = cw.bounds})
-            M.say('Axe put into the stash')
-            gear.wait(2)
-            gear.auto.screenshot('stash-panel')
-            -- hover the cells: a stash item (the first cell of the stash grid), then a backpack item
-            local panel
-            for _, p in ipairs(gear.ui.panels()) do if p.key == 'shared-stash:stash' then panel = p end end
-            local keys = {}
-            for _, p in ipairs(gear.ui.panels()) do keys[#keys + 1] = p.key .. ' movable=' .. tostring(p.draggable ~= false) end
-            out.panel_keys = keys
-            if panel then
-                out.panel = gear.json.encode({x = panel.x, y = panel.y, w = panel.w, h = panel.h})
-                local gx, gy = panel.x + 8, panel.y + 24 + 22 + 2
-                local function hover(name, lx, ly)
-                    local px, py = gear.auto.ui_to_pixels(lx, ly)
-                    gear.auto.move(px, py)
-                    gear.wait(1.5)
-                    gear.auto.screenshot(name)
-                    out['tip_' .. name] = tostring(M.view.tip_ok) .. ' ' .. tostring(M.view.tip_err)
+            out.chest_window = cw and gear.json.encode({x = cw.x, y = cw.y, w = cw.width, h = cw.height, visible = cw.visible, drawn = cw.drawn})
+            check(cw and cw.drawn, 'chest window is drawn')
+            check(panel_of('shared-stash:open') ~= nil, 'the button shows with the chest window open')
+            gear.auto.screenshot('chest-open')
+            check(click_button(), 'clicked the button')
+            check(stash_open(), 'the stash panel opens from the button')
+            gear.auto.screenshot('chest-stash')
+            if cfg.selftest == 'chest' then
+                local ok, err = transfer.deposit(bp, bp:items()[1])
+                check(ok, 'deposit works with the chest open: ' .. tostring(err))
+                gear.auto.show_window('UI_WND_CHEST', false)
+                gear.wait(1)
+                check(not stash_open(), 'the stash closes with the chest window')
+                check(not panel_of('shared-stash:open'), 'the button goes with the chest window')
+                local it2 = bp:items()[1]
+                local ok2, why2 = transfer.deposit(bp, it2)
+                check(not ok2 and why2 == 'open a chest first', 'deposit refused after the chest closed: ' .. tostring(why2))
+                local e = stash.items()[1]
+                local ok3, why3 = transfer.withdraw(e)
+                check(not ok3 and why3 == 'open a chest first', 'withdraw refused after the chest closed: ' .. tostring(why3))
+                -- reopening does not bring the panel back by itself
+                gear.auto.show_window('UI_WND_CHEST', true)
+                gear.wait(1)
+                check(not stash_open(), 'the stash stays closed when the chest opens again')
+            else
+                local panel = panel_of('shared-stash:stash')
+                if panel then
+                    out.panel = gear.json.encode({x = panel.x, y = panel.y, w = panel.w, h = panel.h})
+                    local gx, gy = panel.x + 8, panel.y + 24 + 22 + 2
+                    local function hover(name, lx, ly)
+                        local px, py = gear.auto.ui_to_pixels(lx, ly)
+                        gear.auto.move(px, py)
+                        gear.wait(1.5)
+                        gear.auto.screenshot(name)
+                    end
+                    hover('stash-tip-stash', gx + 16, gy + 16)
+                    hover('stash-tip-backpack', gx + 16, gy + 6 * 32 + 8 + 22 + 16)
                 end
-                hover('stash-tip-stash', gx + 16, gy + 16)
-                hover('stash-tip-backpack', gx + 16, gy + 6 * 32 + 8 + 22 + 16)
             end
         end
         finish()

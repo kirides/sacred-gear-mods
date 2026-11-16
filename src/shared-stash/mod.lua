@@ -18,7 +18,4 @@ return {
         {id = 'allow_special', type = 'bool', label = 'Also move special items', default = false,
          tooltip = 'Horse gear and the like; quest items and gold never move'},
     },
-    keys = {
-        {id = 'toggle', label = 'Open or close the stash panel', default = 'f10'},
-    },
 }
