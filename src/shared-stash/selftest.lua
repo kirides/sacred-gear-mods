@@ -15,7 +15,7 @@ return function(M, stash, transfer)
 
     gear.task(function()
         gear.auto.wait_for_menu(120)
-        if cfg.selftest == 'lan' then
+        if cfg.selftest == 'lan' or cfg.selftest == 'lanui' then
             -- Hosts a LAN game through the menus (as gear/examples/lanhosttest does): the game starts GameServer.exe and
             -- the hero joins it as a client, so this process is a network game.
             local A = gear.auto
@@ -139,6 +139,52 @@ return function(M, stash, transfer)
                 out.deposited = out.deposited or {}
                 out.deposited[#out.deposited + 1] = {name = it.type_name, bytes = #expected / 2}
             end
+
+        elseif cfg.selftest == 'lanui' then
+            -- In a hosted LAN game: the stash grid with real icons and the game's own tooltip for a stashed item next to the
+            -- tooltip of the same item in the backpack, then a minute of hovering with the panel open.
+            local network = select(2, gear.inv.can_change())
+            check(network == true, 'this is a network game')
+            local picked = 0
+            for _, it in ipairs(bp:items()) do
+                if picked < 6 and transfer.transferable(it) and it.category ~= 'rune' and it.category ~= 'potion' then
+                    if transfer.deposit(bp, it) then picked = picked + 1 end
+                end
+            end
+            check(picked >= 3, 'stashed ' .. picked .. ' items')
+            gear.auto.show_window('UI_WND_CHEST', true)
+            gear.wait(1)
+            local function panel_of(key)
+                for _, p in ipairs(gear.ui.panels()) do if p.key == key then return p end end
+            end
+            local op = panel_of('shared-stash:open')
+            if op then gear.auto.ui_click(op.x + 80, op.y + 34) end
+            gear.wait(1.5)
+            local panel = panel_of('shared-stash:stash')
+            check(panel ~= nil, 'the stash panel is open')
+            if panel then
+                local gx, gy = panel.x + 8, panel.y + 24 + 22 + 2
+                local function hover(name, lx, ly)
+                    local px, py = gear.auto.ui_to_pixels(lx, ly)
+                    gear.auto.move(px, py)
+                    gear.wait(1.5)
+                    gear.auto.screenshot(name)
+                end
+                hover('lan-tip-stash', gx + 16, gy + 16)
+                hover('lan-tip-backpack', gx + 16, gy + 6 * 32 + 8 + 22 + 16)
+                -- a minute of hovering over the cells, the panel open
+                local t0, n = gear.time(), 0
+                while gear.time() - t0 < (cfg.lan_hover_seconds or 45) do
+                    local col, row = n % 6, math.floor(n / 6) % 3
+                    local px, py = gear.auto.ui_to_pixels(gx + 16 + col * 32, gy + 16 + row * 32)
+                    gear.auto.move(px, py)
+                    gear.wait(0.15)
+                    n = n + 1
+                end
+                note('hover moves: ' .. n)
+            end
+            check(gear.world.hero() ~= nil, 'the hero is still there')
+            gear.auto.screenshot('lan-ui-end')
 
         elseif cfg.selftest == 'lan' then
             -- In a hosted LAN game (network flag set by the engine): the stash through the engine's announcing calls.
