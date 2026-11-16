@@ -1,9 +1,8 @@
 -- Screenshots for the README. Needs -gear-auto; the phase comes from config.lua (written by run.ps1):
---   mods     the mod manager (F11)
 --   loot     the loot filter's overlay with the labels (Alt) and its settings panel
 --   layout   the layout editor (Alt, "Edit layout"), a window selected
 --   autosave the note after an autosave
--- (mods: run.ps1 deletes this folder while the game runs, so that the Mods screen does not list it.)
+-- (The Mods screen picture is taken by run.ps1 inside a copy of the autosave mod: this mod would be listed there.)
 -- Files go to GearAutomation\<instance>\.
 if not gear.auto then return end
 local A, ui, W = gear.auto, gear.ui, gear.world
@@ -41,14 +40,7 @@ gear.task(function()
     A.wait_for_menu(120)
     if not A.wait_for_game(180) then A.write('error.txt', 'no game') return A.quit(1) end
     gear.wait(4)
-    if phase == 'mods' then
-        -- run.ps1 removes this mod's folder once it sees ready.txt, so that the Mods screen lists only the real mods
-        A.write('ready.txt', 'ready')
-        gear.wait(8)
-        A.press('f11')
-        gear.wait(1.5)
-        A.screenshot('mod-manager')
-    elseif phase == 'loot' then
+    if phase == 'loot' then
         local n = spawn_items()
         A.write('spawned.txt', tostring(n))
         gear.wait(2)
