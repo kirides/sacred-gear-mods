@@ -114,6 +114,30 @@ return function(M, stash, transfer)
                 out.deposited[#out.deposited + 1] = {name = it.type_name, bytes = #expected / 2}
             end
 
+        elseif cfg.selftest == 'net' then
+            -- A network game (also a host nobody joined) must refuse every change: the engine would announce the objects
+            -- the stash makes and destroys to peers that do not know them (a crash 2.5 s after a stash transfer in a hosted
+            -- game came from this).
+            local before = #bp:items()
+            local stashed = #stash.items()
+            check(gear.world.can_change(), 'single player: changes allowed')
+            gear.auto.network_flag(true)
+            local can = gear.world.can_change()
+            local it = bp:items()[1]
+            local okd, whyd = transfer.deposit(bp, it)
+            local bytes = inv.export(it.id)
+            local id, err = inv.create(bytes)
+            local ids, ierr = inv.add(bp, bytes)
+            gear.auto.network_flag(false)
+            check(can == false, 'network game: can_change is false')
+            check(not okd, 'network game: deposit refused: ' .. tostring(whyd))
+            check(id == nil, 'network game: inv.create refused: ' .. tostring(err))
+            check(ids == nil, 'network game: inv.add refused: ' .. tostring(ierr))
+            check(#bp:items() == before and #stash.items() == stashed, 'nothing changed')
+            check(gear.world.can_change(), 'flag cleared: changes allowed again')
+            local ok2, why2 = transfer.deposit(bp, it)
+            check(ok2, 'single player again: deposit works ' .. tostring(why2))
+
         elseif cfg.selftest == 'ui' or cfg.selftest == 'chest' then
             -- 'chest': the stash exists only while the chest window is open. 'ui': screenshots of the open stash and of
             -- the tooltips of its first stash and backpack cells.
