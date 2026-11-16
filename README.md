@@ -22,7 +22,10 @@ confirms each save. Your own saves and the quicksave are never touched.
 
 ![An autosave note at the top of the screen](docs/images/autosave.jpg)
 
-Both are set in the **Mod manager** (**F11**, or the *Mods* button under the escape menu): switch each mod on or off,
+**Drop tuning**: more or fewer drops, a tilt of the rarity odds (the best items, set and unique items) and an optional fair random generator for drops,
+all from sliders on its page of the Mods screen. Off by default in effect: every setting starts at "as the game has it".
+
+Each of them is set in the **Mod manager** (**F11**, or the *Mods* button under the escape menu): switch each mod on or off,
 change its settings and re-bind its keys.
 
 ### Also for Sacred Gear, in the sacred-bild repository
@@ -44,7 +47,7 @@ The mod for Sacred ReBorn lives in a repository of its own:
 1. Install [SacredBild and Sacred Gear](https://github.com/kirides/sacred-bild#install): extract a release zip into
    the game folder. `SacredGear.dll` next to the game loads with SacredBild.
 2. Copy the folders you want from `src` to the game's `mods` folder: `src\autosave` becomes `mods\autosave`,
-   `src\shared-stash` becomes `mods\shared-stash`. Leave `autosave_selftest` out; it is a test.
+   `src\shared-stash` becomes `mods\shared-stash`. Leave the `*_selftest` folders out; they are tests.
 3. Start the game and press **F11**: the mods are listed, each can be switched on or off.
 
 Details, settings, controller use and limits: [Install](docs/Install.md), [Autosave](docs/Autosave.md),
@@ -64,6 +67,8 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 |---|---|
 | `src/autosave` | Periodic autosave. [README](src/autosave/README.md) |
 | `src/autosave_selftest` | Automation self test of the autosave mod |
+| `src/drop-tuning` | Drop chance, rarity weights and drop random numbers on `gear.drops`. [Doc](docs/DropTuning.md) |
+| `src/drop-tuning_selftest` | Automation self test of the drop-tuning mod |
 | `src/shared-stash` | The shared stash, built on `gear.inv`; includes its self tests. [README](src/shared-stash/README.md) |
 | `tools/readme-shots` | Takes this README's screenshots in a copy of the game folder ([how](docs/Screenshots.md)) |
 
@@ -77,6 +82,7 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 |---|---|
 | [Install](docs/Install.md) | Installing Sacred Gear and the mods, the Mods screen, updating |
 | [Autosave](docs/Autosave.md) | Timer, slots, settings, loading an autosave |
+| [Drop tuning](docs/DropTuning.md) | Drop chance, rarity weights, the generator; the self test |
 | [Shared stash](docs/SharedStash.md) | Using the stash, LAN, limits, the file, savegame caveats |
 | [Controller](docs/Controller.md) | Using the mods with a gamepad |
 | [Screenshots](docs/Screenshots.md) | Re-taking the README's screenshots |

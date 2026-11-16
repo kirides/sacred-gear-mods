@@ -1,0 +1,28 @@
+---@type GearModManifest
+return {
+    id = 'drop-tuning',
+    name = 'Drop tuning',
+    version = '1.0.0',
+    author = 'kirides',
+    description = 'Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, and can swap the game\'s random numbers for a fair generator.',
+    settings = {
+        {id = 'chance', type = 'number', label = 'Drop chance (x)', min = 0, max = 5, step = 0.1, default = 1,
+         section = 'How often',
+         tooltip = '1 is the game as it is, 2 doubles the chance of every drop attempt of creatures, 0 turns random drops off'},
+        {id = 'find', type = 'number', label = 'Effect of magic find (x)', min = 0, max = 5, step = 0.1, default = 1,
+         tooltip = 'How strongly the rarity bonus (magic find, a creature\'s own bonus) widens the odds of rarer equipment'},
+        {id = 'special', type = 'number', label = 'Set and unique drops (x)', min = 0, max = 5, step = 0.1, default = 1,
+         section = 'Rarity weights',
+         tooltip = 'The two rows of the rarity table that hand the roll to the special resource selection'},
+        {id = 'low', type = 'number', label = 'Qualities 1 to 4 (x)', min = 0, max = 5, step = 0.1, default = 1},
+        {id = 'mid', type = 'number', label = 'Qualities 5 to 9 (x)', min = 0, max = 5, step = 0.1, default = 1},
+        {id = 'high', type = 'number', label = 'Qualities 10 to 14 (x)', min = 0, max = 5, step = 0.1, default = 1,
+         tooltip = 'The rarest tiers: the odds of the best items'},
+        {id = 'rng', type = 'choice', label = 'Random numbers', default = 'game', section = 'Randomness',
+         choices = {{value = 'game', label = 'The game\'s own'}, {value = 'fair', label = 'Fair (no modulo bias)'},
+                    {value = 'seeded', label = 'Fair, same drops every run'}},
+         tooltip = 'The game\'s rarity roll favours the first part of its range; the fair generator does not'},
+        {id = 'seed', type = 'number', label = 'Seed', min = 0, max = 99999, step = 1, default = 1,
+         tooltip = 'Used by "Fair, same drops every run"'},
+    },
+}
