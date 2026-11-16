@@ -14,10 +14,36 @@ return function(M, stash, transfer)
     end
 
     gear.task(function()
-        gear.auto.wait_for_menu(60)
-        gear.auto.load_save(cfg.selftest_slot or 1)
-        if not gear.auto.wait_for_game(120) then check(false, 'game loaded') return finish() end
-        gear.wait(3)
+        gear.auto.wait_for_menu(120)
+        if cfg.selftest == 'lan' then
+            -- Hosts a LAN game through the menus (as gear/examples/lanhosttest does): the game starts GameServer.exe and
+            -- the hero joins it as a client, so this process is a network game.
+            local A = gear.auto
+            local function px(x, y) return (x - 200) / 1.1719, y / 1.1719 end
+            gear.wait(8)
+            A.ui_click(512, 352)                    -- Multiplayer
+            gear.wait(2)
+            A.ui_click(512, 352 - 38 / 1.1719)      -- LAN
+            gear.wait(3)
+            A.ui_click(px(820, 400))                -- a hero
+            gear.wait(2)
+            A.ui_click(px(910, 838))                -- Weiter
+            gear.wait(3)
+            A.ui_click(px(553, 448))                -- Erstellen
+            gear.wait(3)
+            A.ui_click(px(747, 448))                -- Erstellen: starts the gameserver and connects
+            if not A.wait_for_game(120) then
+                A.screenshot('lan-no-game')
+                check(false, 'the hosted game started')
+                return finish()
+            end
+            gear.wait(8)
+            A.screenshot('lan-in-game')
+        else
+            gear.auto.load_save(cfg.selftest_slot or 1)
+            if not gear.auto.wait_for_game(120) then check(false, 'game loaded') return finish() end
+            gear.wait(3)
+        end
         local bp = inv.container('backpack')
         check(bp ~= nil, 'backpack container')
 
@@ -113,6 +139,58 @@ return function(M, stash, transfer)
                 out.deposited = out.deposited or {}
                 out.deposited[#out.deposited + 1] = {name = it.type_name, bytes = #expected / 2}
             end
+
+        elseif cfg.selftest == 'lan' then
+            -- In a hosted LAN game (network flag set by the engine): the stash through the engine's announcing calls.
+            local can, network = gear.inv.can_change()
+            check(network == true, 'this is a network game')
+            check(can == true, 'the inventory may be changed in a network game')
+            check(gear.world.can_change() == false, 'the world stays closed')
+            check(#bp:items() > 0, 'backpack has ' .. #bp:items() .. ' items')
+            local before = #bp:items()
+            local list = {}
+            for _, it in ipairs(bp:items()) do
+                if transfer.transferable(it) and it.category ~= 'rune' and #list < 3 then list[#list + 1] = it end
+            end
+            local sent = {}
+            for _, it in ipairs(list) do
+                local b = inv.export(it.id)
+                local ok, err = transfer.deposit(bp, it)
+                check(ok, 'deposit ' .. it.type_name .. ' ' .. tostring(err))
+                sent[#sent + 1] = inv.hex(b)
+                gear.wait(0.5)
+            end
+            check(#stash.items() == #list, 'stash holds ' .. #stash.items())
+            gear.wait(2)
+            local entries = {}
+            for _, e in ipairs(stash.items()) do entries[#entries + 1] = e end
+            for _, e in ipairs(entries) do
+                local ok, where = transfer.withdraw(e)
+                check(ok, 'withdraw ' .. e.name .. ' ' .. tostring(where))
+                gear.wait(0.5)
+                local found
+                for _, it in ipairs(bp:items()) do
+                    if inv.hex(inv.export(it.id)) == e.data then found = true break end
+                end
+                check(found, 'identical item back in the backpack: ' .. e.name)
+            end
+            check(#stash.items() == 0, 'stash empty again')
+            check(#bp:items() == before, 'backpack has the same number of items again: ' .. #bp:items())
+            -- back and forth for a while, as the user did
+            local t0, fails = gear.time(), 0
+            for i = 1, (cfg.lan_cycles or 20) do
+                local l2 = bp:items()
+                local it = l2[#l2]
+                local okd = transfer.deposit(bp, it)
+                gear.wait(0.2)
+                local e = stash.items()[1]
+                local okw = e and transfer.withdraw(e)
+                gear.wait(0.2)
+                if not (okd and okw) then fails = fails + 1 end
+            end
+            check(fails == 0, 'back and forth: ' .. (cfg.lan_cycles or 20) .. ' cycles, ' .. fails .. ' failures')
+            check(#bp:items() == before and #stash.items() == 0, 'counts unchanged after the cycles')
+            gear.auto.screenshot('lan-end')
 
         elseif cfg.selftest == 'stress' then
             -- The user's crash: chest open, stash open, items moved back and forth. Deposits several items, opens the
