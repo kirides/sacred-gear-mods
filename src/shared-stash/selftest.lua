@@ -304,6 +304,42 @@ return function(M, stash, transfer)
             check(#bp:items() == before, 'nothing changed')
             check(gear.world.can_change(), 'flag cleared: changes allowed again')
 
+        elseif cfg.selftest == 'noinst' then
+            -- 1000 tooltips of exports and several seconds of stash icons with the panel open, then a real item is still made fine
+            -- (single player only: the probe makes a real item).
+            local function probe()
+                local bytes = inv.export(bp:items()[1].id)
+                local id = inv.create(bytes)
+                if id then inv.destroy(id) end
+                return id
+            end
+            local a = probe()
+            local items = bp:items()
+            local texts = 0
+            for i = 1, 1000 do
+                local it = items[(i % #items) + 1]
+                if gear.ui.item_tooltip_text(inv.export(it.id)) then texts = texts + 1 end
+            end
+            local b = probe()
+            check(texts == 1000, '1000 tooltips from exports')
+            note(('next item id before %s, after the tooltips %s (the game itself creates objects meanwhile, so this only shows it works)'):format(tostring(a), tostring(b)))
+            local picked = 0
+            for _, it in ipairs(bp:items()) do
+                if picked < 8 and transfer.transferable(it) and it.category ~= 'rune' then
+                    if transfer.deposit(bp, it) then picked = picked + 1 end
+                end
+            end
+            gear.auto.show_window('UI_WND_CHEST', true)
+            gear.wait(1)
+            local op
+            for _, p in ipairs(gear.ui.panels()) do if p.key == 'shared-stash:open' then op = p end end
+            if op then gear.auto.ui_click(op.x + 80, op.y + 34) end
+            gear.wait(6)
+            local c = probe()
+            note('next item id after 6 s of stash icons ' .. tostring(c))
+            check(c ~= nil, 'the game is still creating items normally')
+            gear.auto.screenshot('noinst-end')
+
         elseif cfg.selftest == 'tipcmp' then
             -- The tooltip words of a live item against those of a scratch item (made from its export, never registered),
             -- twice (the price must not change), for every item of the backpack; socketed items included.
