@@ -40,7 +40,7 @@ them on its **Settings** page; they are saved at once in `mods\gear_mods.json`. 
 | `slots` | `97, 98, 99` | The slots to rotate through (text: numbers 1 to 509 separated by commas, up to 8). Keep them clear of the numbers the game gives to manual saves. |
 | `name` | `Autosave %H:%M` | The display name in the savegame list; `os.date` format, 60 characters at most. |
 | `show_confirmation` | `true` | The note after each autosave. |
-| key `save_now` | `f6` | Autosave right away, into the next slot. Rebind it on the Keys page (F7 is the layout edit mode, F5 the loot filter, F10 the shared stash, F11 the Mods screen). |
+| key `save_now` | `f6` | Autosave right away, into the next slot. Rebind it on the Keys page (F5 is the loot filter, F11 the Mods screen; the layout edit mode is on Alt). |
 
 The **More** tab of the mod's page shows the time to the next autosave, why one waits and the last slot written, and has
 a **Save now** button.

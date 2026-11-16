@@ -221,7 +221,7 @@ local function panel()
     end
 end
 
--- The "Shared stash" button is a small panel of its own, so it is a layout panel like any other: F7 (the layout editor)
+-- The "Shared stash" button is a small panel of its own, so it is a layout panel like any other: Alt + Edit layout (the layout editor)
 -- moves it and its place is kept in mods\gear_layout.json. Default: to the right of the chest and the inventory, below
 -- the stash panel, clear of the game's buttons. It is clickable only while the chest window is open; in the layout
 -- editor it is shown (greyed out) so it can be placed without a chest.

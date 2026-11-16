@@ -11,7 +11,7 @@ appears, by default to the right of the chest and the inventory (below the stash
 **The stash is only available while the chest window is open**: the button exists only then, the panel closes the
 moment the chest window closes (walking away, Esc, the menus, a dead hero), and a deposit or withdrawal is refused
 unless the chest window is open right then. There is no hotkey. The button is a small panel of its own: move it in
-Sacred Gear's layout editor (F7; it is shown greyed out there so it can be placed without a chest); its place is kept
+Sacred Gear's layout editor (hold Alt, *Edit layout*; it is shown greyed out there so it can be placed without a chest); its place is kept
 in `mods/gear_layout.json`. The panel:
 
 - **In the stash** (top): a grid of the stashed items' 3D icons, each as many 32-unit cells as in the game's inventory
@@ -26,7 +26,7 @@ never covers the cursor. Icons and tooltips come from `gear.ui.item_icon` and `g
 backpack are read from the live object, stashed ones through a temporary item made for the hovered cell (at most 48
 different item types a frame are drawn as icons; a grid page is at most 66 cells).
 
-Single player only (the panel says so otherwise). Gold and quest items never move; "special" items (horse gear ...)
+It works in single player and in LAN games (in a network game the stash's changes go through `gear.inv`'s announcing calls). Gold and quest items never move; "special" items (horse gear ...)
 only with the *Also move special items* setting. The stash holds up to 200 items. These settings are in
 Sacred Gear's **Mods** screen (F11), saved in `mods\gear_mods.json`; `config.lua` still sets their defaults.
 
