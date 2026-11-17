@@ -1,7 +1,8 @@
--- Auction house: see README.md and DESIGN.md. The market (core.lua) runs where the game is hosted: in single player
--- in this game, in a network game in the host's game; every player's game runs the client (client.lua) and the
--- panel (ui.lua). They talk over Sacred Gear's mod channel (gear.mp.send, channel 'ah'), or directly when the market
--- is in this game.
+-- Auction house: see README.md and DESIGN.md. The market (core.lua) runs on our C# GameServer when it has the
+-- script auction_house.lua (net channel 'auction', gear.net), else where the game is hosted: in single player in this
+-- game, in a network game in the host's game (the stock GameServer.exe); every player's game runs the client
+-- (client.lua) and the panel (ui.lua). They talk over gear.net to the server, over Sacred Gear's mod channel
+-- (gear.mp.send, channel 'ah') to the host, or directly when the market is in this game.
 local cfg = gear.config
 if not cfg.enabled then return end
 
@@ -18,6 +19,10 @@ math.randomseed(os.time() + math.floor((gear.time() % 1) * 1e6))
 
 local mp = gear.mp
 local has_channel = mp and mp.send ~= nil
+local net = gear.net
+local SERVER_CHANNEL = 'auction'
+local server_ch = net and net.channel and net.channel(SERVER_CHANNEL) or nil
+local PROBE_SECONDS = 12        -- after a game starts: how long to look for a market on the game server
 
 local function settings()
     local d = {}
@@ -32,11 +37,24 @@ local function settings()
 end
 cfg.allow_special = gear.settings.get('allow_special')
 
--- Is the market in this game? Single player, or this game is the host of a network game.
-local function market_here()
-    if not (mp and mp.active and mp.active()) then return true end
-    return mp.is_host and mp.is_host() or false
+-- Where the market is: 'server' (the game server answered on 'auction'), 'probe' (a network game just started and the
+-- server may still answer: only hellos go out), 'here' (single player, or this game hosts) or 'host'.
+local server_market = false
+local session_t, probe_t = nil, -1e9
+
+local function network_game() return mp and mp.active and mp.active() or false end
+
+local function route()
+    if server_market then return 'server' end
+    if server_ch and network_game() and session_t and gear.time() - session_t < PROBE_SECONDS then
+        if net.supported and net.supported() or gear.time() - session_t < 4 then return 'probe' end
+    end
+    if not network_game() then return 'here' end
+    return (mp.is_host and mp.is_host()) and 'here' or 'host'
 end
+
+-- Is the market in this game? Single player, or this game is the host of a network game (and the server has none).
+local function market_here() return route() == 'here' end
 
 local function local_slot()
     return (mp and mp.local_slot and mp.local_slot()) or 1
@@ -117,12 +135,28 @@ local function ensure_market()
 end
 
 client = clientmod.new(function(msg)
-    if market_here() and not via_channel then
+    local where = route()
+    if where == 'server' then
+        server_ch:send(msg, 'server')
+    elseif where == 'probe' then
+        if msg.op == 'hello' then server_ch:send(msg, 'server') end      -- the rest is resent once the market is found
+    elseif where == 'here' and not via_channel then
         to_market[#to_market + 1] = msg
     elseif has_channel then
         mp.send(CHANNEL, msg, 'host')
     end
 end)
+
+if server_ch then
+    server_ch:on(function(from, payload)
+        if type(payload) ~= 'table' or (from and from.slot ~= 0) then return end
+        if payload.op == 'info' and payload.where == 'server' and not server_market then
+            server_market = true
+            gear.log('auction house: the market is on the game server')
+        end
+        if server_market then client:receive(payload) end
+    end)
+end
 
 gear.on('settings.changed', function(id, value)
     if id == 'allow_special' then cfg.allow_special = value end
@@ -143,14 +177,24 @@ if has_channel then
     end)
 end
 
-gear.on('session.start', function() client:session_start() end)
+gear.on('session.start', function()
+    server_market, session_t, probe_t = false, gear.time(), -1e9
+    client:session_start()
+end)
 gear.on('session.stop', function()
+    server_market, session_t = false, nil
     client:session_stop()
     panel.close()
 end)
 
 gear.on('frame', function()
-    if market_here() then
+    local where = route()
+    client.where = where
+    if where == 'probe' and gear.time() - probe_t > 2 then
+        probe_t = gear.time()
+        client:send({op = 'hello'})
+    end
+    if where == 'here' then
         local m = ensure_market()
         if #to_market > 0 then
             local me = client:me()
@@ -188,7 +232,7 @@ gear.on('draw', function(state)
         if state.mode == 'game' and not state.exclusive and ui.edit_mode() then panel.open_button(false, client) end
         return
     end
-    if mp and mp.active and mp.active() and not has_channel then
+    if network_game() and not has_channel and not server_market then
         panel.open_button(false, client)
         return
     end
@@ -196,6 +240,6 @@ gear.on('draw', function(state)
     panel.panel(client, cfg)
 end)
 
-local M = {client = client, panel = panel, market = function() return market end, ensure_market = ensure_market,
+local M = {client = client, panel = panel, market = function() return market end, ensure_market = ensure_market, route = route,
     via_channel = function(on) via_channel = (on and has_channel) and true or false end}
 if gear.auto and cfg.selftest then require('selftest')(M) end

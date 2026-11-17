@@ -26,6 +26,10 @@ fields have a **Kbd** button for an on-screen keyboard).
 
 ## Where the market lives
 
+On our C# GameServer with the script `auction_house.lua` (SacredEngineRemake `Sacred.GameServer/scripts-examples`), the
+**server** keeps the market: it is open whenever the server runs, the server names the players, and in Closed Net with
+`--authoritative` every transfer is checked in the server's own hero state and saved there first (DESIGN.md, section 4).
+The panel says where the market is. Otherwise (the stock GameServer.exe):
 Single player: in your own game (`market.json` in this folder). A network game: in the **host's** game, in the host's
 `mods\auction-house\market.json`; when the host is not in the game the market is closed (nothing is lost). Your own
 computer keeps `journal.json`: the transfers on their way and a secret that ties your hero's name to you on each
@@ -52,4 +56,5 @@ the market again. Details: [DESIGN.md](DESIGN.md), section 4.
 ## Tests
 
 `luajit tests/core_test.lua` (the market's rules) and `luajit tests/sim_test.lua` (the whole mod against a fake game,
-including a restart with an unsaved sale), from this folder.
+including a restart with an unsaved sale and a market on the game server, LAN and Closed Net), from this folder. After a
+change of `core.lua`: `luajit tools/inline_core.lua core.lua <SacredEngineRemake>/Sacred.GameServer/scripts-examples/auction_house.lua`.

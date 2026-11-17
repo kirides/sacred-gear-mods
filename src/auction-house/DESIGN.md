@@ -42,7 +42,7 @@ in. So it can run anywhere:
 |---|---|---|
 | 1 (built now) | Single player: in the player's own game. Network game: in the **host's** `sacred.exe` (the player whose game started the server). Its files live in the host's `mods\auction-house\` folder. | `gear.mp.send('ah', ..., 'host')` |
 | 2 | In GameServer.exe, through the planned headless Gear (docs/GearServerMods.md, phase 2) | Same messages; the server answers as slot 0 |
-| 3 | In the C# GameServer's planned server Lua API (SacredEngineRemake, authoritative mode). The authoritative server already owns hero saves and inventories, so it can also check that a listed item really left the seller's inventory and save the hero right after each transfer (no crash dupes at all). | Same messages |
+| 3 (built) | In the C# GameServer's server Lua (SacredEngineRemake `scripts-examples/auction_house.lua`, core.lua inlined). In Closed Net with `--authoritative` the server owns hero saves and inventories, so it checks that a listed item really left the seller's inventory and saves the hero before each transfer counts (section 4). | gear.net channel `auction` (slot 0); falls back to the host's market on a stock GameServer.exe |
 
 The client never assumes a slot: the market announces itself (`hello` with its slot and market id) and clients
 address whoever announced. A market in the server would announce as slot 0. Nothing in the protocol depends on the
@@ -120,7 +120,33 @@ save, the item is gone from that save: like the shared stash, loss is preferred 
 **Identity.** A player is `name:class` (the hero), as for the other server-side mods, plus a secret per hero that the
 client creates and keeps in its own folder: the first request binds it to the key, later requests must carry it, so
 another player cannot join with the same hero name to empty a wallet. Later the realm account replaces the key
-(`<realm id>:<account>`).
+(`<realm id>:<account>`). On our GameServer the server names the player: `uid` (an opaque per-server hero id) and the
+character name; no secret is needed (`from.verified`).
+
+**The market on our GameServer** (`auction_house.lua`, net channel `auction`). The client looks for it for 12 s after
+a network game starts (hellos only), then falls back to the host's market (the stock GameServer.exe has no channel).
+The market state is in the mod's storage in chunks; every batch is written with `server.flush` (temporary file,
+flushed to the disk, moved) before any answer of it goes out, requests that arrive meanwhile wait for the next batch,
+and a failed write undoes the batch and refuses it.
+
+**What each mode guarantees.**
+
+| | Single player, LAN, Open Net (host or our server) | Closed Net on our server with `--authoritative` |
+|---|---|---|
+| Market state | never duplicated or lost: written before answering, rids, rollback on a failed write (host: `gear.save`; server: `server.flush`) | the same |
+| Who is the truth for the hero | the client's savegame (the client can edit it) | the server's hero save at the lobby |
+| Item into the market | the client takes it out, journals it; the crash check revokes a listing whose item is back in a reloaded save | the server must see the item leave its own hero state (0x13E pick, 0x167 destroy of that object, the same value records as the listing's data) and the lobby must confirm a hero save without it (`server.save_hero`, result 12) before the listing exists |
+| Gold into the wallet | as items, with the hero's gold before/after | `prepare` first (the server notes the hero's gold), then the server must see exactly that much leave and the lobby confirm the save |
+| Delivery out (collect, withdraw) | the entry is reserved for the rid; removed when the client confirms; a crash before the next save loses the item (never twice; "save after collecting") | removed only after the server saw the new item (its id, the delivery's records) in the hero's inventory, or the gold rise by the amount, and the lobby confirmed a save with it |
+| Crash, reconnect | the client's crash check (revoke) | no revoke: the server's saved hero is the truth. A delivery handed out before the crash is given out again only if no hero save went out since (`server.hero_upload_time`); with a save since, an item found in the reloaded hero counts as collected, otherwise the entry stays reserved (logged, for the server owner) |
+| A cheating client | can lie about what it gave or got (as it can edit its save) | cannot list or deposit what the server did not see leave its hero, cannot confirm a delivery the server did not see arrive; it can still make items or gold locally (the authoritative mode has no item/gold plausibility for that yet) |
+
+Open in Closed Net (unverified with a real client): that Gear's `inv.remove` reaches the server as 0x13E + 0x167 and
+`inv.add` as 0x16F/0x16C + 0x13F, that the export's value records equal the server's in order, and how soon the client
+reports a gold change in its hero state (a deposit waits `verify_seconds`, 30 s, then is refused and the gold given
+back). A gold delivery whose hero spent gold before the server saw the rise stays unconfirmed (reserved, not lost, not
+doubled). A delivery is reserved with the server's own memory of the hero's gold at the time it went out; a server
+restart in between leaves that gold delivery to the reconnect rule.
 
 ## 5. Market rules (host settings, Mods screen)
 

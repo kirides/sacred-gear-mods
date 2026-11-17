@@ -291,5 +291,122 @@ local open = 0
 for _, e in ipairs(client.journal.entries) do if e.op == 'collect' then open = open + 1 end end
 check(open == 0, 'no open collect in the journal')
 
+---------------------------------------------------------------------------------------------------------------
+-- a network game on our GameServer with auction_house.lua: the market answers on gear.net channel 'auction'
+-- (slot 0); this game is the host, but the server's market wins and no host market is made
+---------------------------------------------------------------------------------------------------------------
+local function server_game(authoritative)
+    local to_client, srv_files = {}, {}
+    local channel_handler
+    local srv = core.new({
+        now = os.time,
+        load = function() return srv_files.state and json.decode(srv_files.state) or nil end,
+        save_async = function(state, done) srv_files.state = json.encode(state) done(true) end,
+        send = function(slot, msg)
+            if msg.op == 'info' then msg.where = 'server' msg.authoritative = authoritative or nil end
+            to_client[#to_client + 1] = json.decode(json.encode(msg))
+        end,
+    })
+    local seen = {}             -- what reached the server (after a JSON round trip)
+    local g = {srv = srv, seen = seen}
+    function g.on_server(msg)
+        seen[#seen + 1] = msg
+        if msg.op == 'prepare' then
+            to_client[#to_client + 1] = {op = 'prepared', rid = msg.rid, gold = msg.gold}
+            return
+        end
+        if g.intercept and g.intercept(msg) then return end
+        srv:handle({slot = 1, key = 'uid-anna', name = 'Anna', verified = true}, msg)
+        srv:flush()
+    end
+    gear.mp = {active = function() return true end, is_host = function() return true end, local_slot = function() return 1 end,
+        send = function() return true end, local_player = function() return {slot = 1, name = 'Anna', key = 'anna:seraphim'} end}
+    gear.net = {supported = function() return true end, channel = function(name)
+        check(name == 'auction', 'the client uses the channel auction')
+        return {on = function(_, fn) channel_handler = fn end,
+            send = function(_, payload, to)
+                check(to == 'server', 'requests go to the server')
+                g.on_server(json.decode(json.encode(payload)))
+                return true
+            end}
+    end}
+    files['market.json'] = nil
+    boot()
+    panel = package.loaded.ui
+    panel.panel = function(c, cfg) client = c return orig(c, cfg) end
+    function g.run(n)
+        for _ = 1, n or 1 do
+            frames(1)
+            local list = to_client
+            to_client = {}
+            for _, msg in ipairs(list) do channel_handler({slot = 0}, msg) end
+        end
+    end
+    g.run(10)
+    return g
+end
+
+do
+    hero_gold = 1000
+    local g = server_game(false)
+    check(client and client.where == 'server', 'LAN on our server: the market is on the server (' .. tostring(client and client.where) .. ')')
+    check(client:online() and not client:authoritative(), 'online, client-trusted (journal and crash check)')
+    local d = {}
+    client:deposit(300, function(ok, err) d.dep = {ok, err} end)
+    g.run(4)
+    check(d.dep and d.dep[1], 'deposit to the server market: ' .. tostring(d.dep and d.dep[2]))
+    check(g.srv:wallet('uid-anna') == 300 and hero_gold == 700, 'wallet on the server 300, gold left the hero')
+    check(files['market.json'] == nil, 'no host market was made in this game')
+    table.insert(containers.backpack.list, make_item(string.char(0x2c, 0x01, 0, 0) .. string.rep('\17', 40)))
+    local it = containers.backpack.list[#containers.backpack.list]
+    client:sell(containers.backpack, it, panel.meta_of(it, it.bytes), 500, 1, function(ok, err) d.sell = {ok, err} end)
+    g.run(4)
+    check(d.sell and d.sell[1], 'sell on the server: ' .. tostring(d.sell and d.sell[2]))
+    check(#g.srv.state.listings == 1, 'listed on the server')
+    local sell
+    for _, m in ipairs(g.seen) do if m.op == 'sell' then sell = m end end
+    check(sell and sell.ref == it.id, 'the sale carries the item id')
+    local ok, err = pcall(g.run, 2)
+    check(ok, 'the panel draws with the server market: ' .. tostring(err))
+end
+
+do
+    hero_gold = 1000
+    local g = server_game(true)
+    check(client:authoritative(), 'Closed Net: the server keeps the hero')
+    local d = {}
+    client:deposit(200, function(ok, err) d.dep = {ok, err} end)
+    g.run(6)
+    check(d.dep and d.dep[1], 'deposit after prepare: ' .. tostring(d.dep and d.dep[2]))
+    local ops = {}
+    for _, m in ipairs(g.seen) do if m.op == 'prepare' or m.op == 'deposit' then ops[#ops + 1] = m.op end end
+    check(table.concat(ops, ',') == 'prepare,deposit', 'prepare, then deposit (' .. table.concat(ops, ',') .. ')')
+    check(hero_gold == 800, 'gold left the hero after the prepare')
+    -- a refused sale with keep: the item is not given back here (the server still has it in the hero)
+    table.insert(containers.backpack.list, make_item(string.char(0x2d, 0x01, 0, 0) .. string.rep('\18', 40)))
+    local it = containers.backpack.list[#containers.backpack.list]
+    local before = #containers.backpack.list - 1
+    g.intercept = function(msg)
+        if msg.op ~= 'sell' then return false end
+        g.srv.deps.send(1, {op = 'result', rid = msg.rid, ok = false, err = 'still in your inventory', keep = true})
+        return true
+    end
+    client:sell(containers.backpack, it, panel.meta_of(it, it.bytes), 500, 1, function(ok) d.kept = ok end)
+    g.run(4)
+    g.intercept = nil
+    check(d.kept == false, 'refused')
+    check(#containers.backpack.list == before, 'nothing given back (no second copy)')
+    local open = 0
+    for _, e in ipairs(client.journal.entries) do if e.op == 'sell' and e.state ~= 'done' then open = open + 1 end end
+    check(open == 0, 'and the journal entry is gone')
+    client:withdraw(50, function(ok) d.wd = ok end)
+    g.run(6)
+    check(d.wd and hero_gold == 850, 'withdraw (' .. hero_gold .. ')')
+    local confirmed
+    for _, m in ipairs(g.seen) do if m.op == 'collected' then confirmed = m end end
+    check(confirmed ~= nil, 'the delivery was confirmed')
+    check(#g.srv.state.mail == 0, 'the server removed the mailbox entry')
+end
+
 print(('%d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
