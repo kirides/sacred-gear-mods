@@ -38,6 +38,11 @@ function M.pretty_name(it)
     return n
 end
 
+-- The fields the server keeps next to an item's data (Closed Net).
+function M.entry_fields(it)
+    return {name = M.pretty_name(it), quality = it.quality, w = it.w, h = it.h}
+end
+
 local function entry_of(it, bytes)
     local hero = world.hero()
     return {
@@ -60,6 +65,7 @@ end
 
 -- Deposits item `it` (an entry of container:items()) of `container`. true | nil, message.
 function M.deposit(container, it)
+    if stash.closed() then return nil, 'Closed Net: the local stash is not used' end
     if not inv.can_change() then return nil, 'the inventory cannot be changed now' end
     if not M.chest_open() then return nil, 'open a chest first' end
     if stash.problem then return nil, stash.problem end
@@ -80,6 +86,7 @@ end
 -- Withdraws stash entry `entry` into the backpack (or the chest when the backpack has no room). true, where | nil,
 -- message.
 function M.withdraw(entry)
+    if stash.closed() then return nil, 'Closed Net: the local stash is not used' end
     if not inv.can_change() then return nil, 'the inventory cannot be changed now' end
     if not M.chest_open() then return nil, 'open a chest first' end
     if stash.problem then return nil, stash.problem end

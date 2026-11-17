@@ -30,6 +30,17 @@ It works in single player and in LAN games (in a network game the stash's change
 only with the *Also move special items* setting. The stash holds up to 200 items. These settings are in
 Sacred Gear's **Mods** screen (F11), saved in `mods\gear_mods.json`; `config.lua` still sets their defaults.
 
+## Where the stash lives: by kind of game
+
+`gear.mp.mode()` decides. **Single player, LAN and Open Net** use the local `stash.json` (below). **Closed Net** (the server checks
+lobby identities) never touches it: the stash is the server's, kept per lobby account by the GameServer's `shared_stash.lua`
+script over the Gear net channel `shared-stash`, shared by all heroes of the account. A deposit counts only after the server
+saw the item leave your hero and the lobby stored the hero without it; a withdrawal only after it saw the new item in your hero
+and the lobby stored the hero with it, so a killed client or a restored save cannot duplicate an item. If the server does not
+offer the channel (a stock `GameServer.exe`, a server without the script or without `--authoritative`) the panel says "The shared
+stash is not available on this server": the local stash is **not** used as a fallback, and `stash.json` is neither read, written
+nor shown in Closed Net. Items you leave behind in `stash.json` from earlier games stay there for the other modes.
+
 ## The file
 
 `stash.json` in the mod's folder (`stash.bak.json` is the version before the last write). **Do not delete it when you
@@ -65,7 +76,7 @@ duplicate it).
 `return {selftest = 'deposit', selftest_slot = 1}`: loads savegame N, runs the step, writes
 `GearAutomation\NAME\sharedstash.json` and quits. `deposit` moves a weapon, an armour piece, a jewel and a shield from
 the backpack into the stash; `withdraw` (another savegame, a new game process) takes everything out again and checks
-each item is byte-identical to what went in; `sockets` fills the free sockets of backpack items with the backpack's runes (the engine's own socketing) and deposits them, `filled` deposits items that already hold a rune; `ui` takes screenshots of the panel and of the tooltips of the first stash and backpack cells; `chest` checks that the stash exists only while the chest window is open (the window is shown and hidden with `gear.auto.show_window`, the button clicked, F10 pressed, a deposit and a withdrawal tried with the chest closed).
+each item is byte-identical to what went in; `sockets` fills the free sockets of backpack items with the backpack's runes (the engine's own socketing) and deposits them, `filled` deposits items that already hold a rune; `ui` takes screenshots of the panel and of the tooltips of the first stash and backpack cells; `gating` (the kind of game: in a simulated Closed Net nothing reads or writes `stash.json`, local deposits and withdrawals are refused, the remote path says "not available" without a server; LAN, Open Net and single player keep the file) and `remote` (the Closed Net client against a fake server in Lua: refused deposit gives the item back, accepted deposit, withdrawal with confirmation) are the tests of that; `chest` checks that the stash exists only while the chest window is open (the window is shown and hidden with `gear.auto.show_window`, the button clicked, F10 pressed, a deposit and a withdrawal tried with the chest closed).
 
 ## Files
 
@@ -74,4 +85,5 @@ each item is byte-identical to what went in; `sockets` fills the free sockets of
 | `mod.lua`, `main.lua` | manifest and defaults; the panel |
 | `stash.lua` | the file: load, backup, atomic writes |
 | `transfer.lua` | deposit and withdraw in the order described above |
+| `remote.lua` | the Closed Net stash: requests to the server's `shared_stash.lua`, resent until answered |
 | `selftest.lua` | the self test |

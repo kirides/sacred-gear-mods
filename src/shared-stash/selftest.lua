@@ -304,6 +304,153 @@ return function(M, stash, transfer)
             check(#bp:items() == before, 'nothing changed')
             check(gear.world.can_change(), 'flag cleared: changes allowed again')
 
+        elseif cfg.selftest == 'gating' then
+            -- The kind of game decides where the stash lives. In Closed Net nothing may touch stash.json (no read, no write, no
+            -- local deposit or withdrawal, no panel path) and a server without the stash channel gives "not available".
+            -- Single player stands in for the game; the flags gear.mp.mode() reads are set with gear.auto.network_mode.
+            local A, remote = gear.auto, require('remote')
+            local touched = {}
+            local read0, save0 = gear.read, gear.save
+            gear.read = function(name, ...) touched[#touched + 1] = 'read ' .. tostring(name) return read0(name, ...) end
+            gear.save = function(name, ...) touched[#touched + 1] = 'save ' .. tostring(name) return save0(name, ...) end
+            local function stash_touched()
+                local n = 0
+                for _, s in ipairs(touched) do if s:find('stash', 1, true) then n = n + 1 end end
+                return n
+            end
+            for _, m in ipairs({'lan', 'open', 'closed', 'single'}) do
+                check(A.network_mode(m) == true and gear.mp.mode() == m, 'gear.mp.mode() reads ' .. m)
+            end
+            check(gear.mp.mode() == 'single', 'single player reads single')
+            local before = #bp:items()
+            local it
+            for _, cand in ipairs(bp:items()) do if transfer.transferable(cand) then it = cand break end end
+            check(it ~= nil, 'a transferable item')
+
+            -- Closed Net
+            check(A.network_mode('closed'), 'closed set')
+            touched = {}
+            check(stash.closed(), 'stash.closed() in Closed Net')
+            check(#stash.items() == 0, 'the local stash shows nothing in Closed Net')
+            stash.load()
+            check(stash.add({name = 'x', data = '00'}, 10) == nil, 'stash.add refused in Closed Net')
+            check(stash.remove(1) == nil, 'stash.remove refused in Closed Net')
+            local ok, err = transfer.deposit(bp, it)
+            check(not ok and tostring(err):find('Closed Net', 1, true), 'local deposit refused: ' .. tostring(err))
+            local wok, werr = transfer.withdraw({uid = 1, data = string.rep('00', 40), name = 'x'})
+            check(not wok and tostring(werr):find('Closed Net', 1, true), 'local withdraw refused: ' .. tostring(werr))
+            check(#bp:items() == before, 'the backpack did not change')
+            -- no server channel here: the stash is "not available", never local
+            local avail, why = remote.available()
+            check(avail == false, 'no server stash without a server: ' .. tostring(why))
+            local rok, rerr = remote.deposit(bp, it, transfer.entry_fields(it))
+            check(not rok and tostring(rerr):find('not available', 1, true), 'remote deposit refused: ' .. tostring(rerr))
+            check(#bp:items() == before, 'the item stayed in the backpack')
+            -- the panel with the chest open
+            gear.auto.show_window('UI_WND_CHEST', true)
+            gear.wait(1)
+            local bp_panel
+            for _, p in ipairs(gear.ui.panels()) do if p.key == 'shared-stash:open' then bp_panel = p end end
+            check(bp_panel ~= nil, 'the button shows')
+            if bp_panel then A.ui_click(bp_panel.x + 80, bp_panel.y + 34) end
+            gear.wait(2)
+            check(gear.ui.panel_open('stash'), 'the panel is open')
+            A.screenshot('gating-closed')
+            check(stash_touched() == 0, 'no access to stash files in Closed Net (' .. table.concat(touched, ', ') .. ')')
+            A.network_mode('single')
+            gear.auto.show_window('UI_WND_CHEST', false)
+
+            -- outside Closed Net the same code reads the file
+            touched = {}
+            check(stash.closed() == false, 'not closed again')
+            local n = #stash.items()
+            check(stash_touched() >= 1, 'the local stash reads its file in single player (' .. table.concat(touched, ', ') .. ')')
+            A.network_mode('lan')
+            check(not stash.closed(), 'LAN keeps the local stash')
+            A.network_mode('open')
+            check(not stash.closed(), 'Open Net keeps the local stash')
+            A.network_mode('single')
+            gear.read, gear.save = read0, save0
+            note('stash items ' .. n)
+
+        elseif cfg.selftest == 'remote' then
+            -- remote.lua (the Closed Net client) against a fake server in Lua: the real inventory calls, the messages of the
+            -- server's script (info, list, entry/listed, deposit/result, withdraw/release, collected). Single player stands in.
+            local server_entries, queue, nextid, refuse = {}, {}, 1, false
+            local handler
+            local fake = {
+                on = function(_, fn) handler = fn return fn end,
+                transport = function() return 'custom' end,
+                send = function(_, msg) queue[#queue + 1] = msg return true end,
+            }
+            local remote = require('remote')
+            remote.use_channel(fake)
+            local said = {}
+            remote.notify = function(text, ok) said[#said + 1] = (ok and 'ok: ' or 'no: ') .. text end
+            local function reply(m) handler(nil, m) end
+            local function pump()
+                while #queue > 0 do
+                    local msg = table.remove(queue, 1)
+                    if msg.op == 'info' then reply({op = 'info', closed = true, count = #server_entries, max = 200})
+                    elseif msg.op == 'list' then
+                        reply({op = 'info', closed = true, count = #server_entries, max = 200})
+                        for _, e in ipairs(server_entries) do reply({op = 'entry', id = e.id, data = e.data, name = e.name, w = e.w, h = e.h}) end
+                        reply({op = 'listed', count = #server_entries})
+                    elseif msg.op == 'deposit' then
+                        if refuse then reply({op = 'result', rid = msg.rid, ok = false, err = 'your hero could not be saved (test)'})
+                        else
+                            local e = {id = nextid, data = msg.data, name = msg.name, w = msg.w, h = msg.h}
+                            nextid = nextid + 1
+                            server_entries[#server_entries + 1] = e
+                            reply({op = 'result', rid = msg.rid, ok = true, id = e.id, count = #server_entries})
+                        end
+                    elseif msg.op == 'withdraw' then
+                        for _, e in ipairs(server_entries) do
+                            if e.id == msg.id then reply({op = 'release', rid = msg.rid, id = e.id, data = e.data}) end
+                        end
+                    elseif msg.op == 'collected' then
+                        for i, e in ipairs(server_entries) do
+                            if e.id == msg.rid_entry or true then end
+                        end
+                        server_entries = {}   -- one entry in this test
+                        reply({op = 'collected', rid = msg.rid, ok = true, count = 0})
+                    elseif msg.op == 'abort' then reply({op = 'result', rid = msg.rid, ok = true, aborted = true}) end
+                end
+            end
+            remote.refresh(true) pump()
+            check(remote.available() == true, 'the server said it keeps the stash')
+            local before = #bp:items()
+            local it
+            for _, cand in ipairs(bp:items()) do if transfer.transferable(cand) then it = cand break end end
+            check(it ~= nil, 'a transferable item')
+            -- a refused deposit gives the item back
+            refuse = true
+            local ok, err = remote.deposit(bp, it, transfer.entry_fields(it))
+            check(ok, 'deposit sent: ' .. tostring(err))
+            check(#bp:items() == before - 1, 'the item left the backpack while the server decides')
+            pump()
+            check(#bp:items() == before, 'a refused deposit gives the item back (' .. tostring(said[#said]) .. ')')
+            check(not remote.busy(), 'nothing pending after the refusal')
+            -- an accepted one (the item given back is a new object)
+            refuse = false
+            for _, cand in ipairs(bp:items()) do if transfer.transferable(cand) then it = cand break end end
+            ok, err = remote.deposit(bp, it, transfer.entry_fields(it))
+            check(ok, 'deposit sent again')
+            pump()
+            check(#bp:items() == before - 1 and #server_entries == 1, 'accepted: the item is on the server only')
+            check(#remote.entries == 1 and remote.count == 1, 'the list shows it')
+            check(not remote.busy(), 'nothing pending after the answer')
+            -- withdraw
+            if not remote.entries[1] then check(false, 'an entry to withdraw') return finish() end
+            ok, err = remote.withdraw(remote.entries[1])
+            check(ok, 'withdraw sent: ' .. tostring(err))
+            pump()
+            check(#bp:items() == before, 'the item is in the backpack again')
+            check(#server_entries == 0 and #remote.entries == 0, 'the server entry is gone after the confirmation')
+            check(not remote.busy(), 'nothing pending at the end')
+            note(table.concat(said, ' | '))
+            remote.use_channel(nil)
+
         elseif cfg.selftest == 'noinst' then
             -- 1000 tooltips of exports and several seconds of stash icons with the panel open, then a real item is still made fine
             -- (single player only: the probe makes a real item).

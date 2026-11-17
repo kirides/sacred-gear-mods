@@ -18,6 +18,13 @@ local state = {items = {}, next_uid = 1}
 M.problem = nil         -- text when the stash cannot be used (shown in the panel); transfers are off
 M.note = nil            -- text about what load() did (restored from the backup ...)
 
+local loaded = false
+
+-- Closed Net: the stash is the server's (remote.lua). Nothing of this file is read, written or shown there, whatever else
+-- asks: every entry point below checks it.
+local NO_LOCAL = 'the local stash is not used in Closed Net'
+function M.closed() return gear.mp ~= nil and gear.mp.mode ~= nil and gear.mp.mode() == 'closed' end
+
 local function empty(t) return type(t) ~= 'table' or next(t) == nil end
 
 local function parse(text)
@@ -47,6 +54,8 @@ end
 
 function M.load()
     M.problem, M.note = nil, nil
+    if M.closed() then return end
+    loaded = true
     state = {items = {}, next_uid = 1}
     local text = gear.read(FILE)
     if not text then
@@ -75,6 +84,7 @@ function M.load()
 end
 
 local function save()
+    if M.closed() then return nil, NO_LOCAL end
     if M.problem then return nil, M.problem end
     local text = gear.json.encode({version = VERSION, next_uid = state.next_uid, items = state.items})
     if #text > LIMIT then return nil, 'the stash file would be larger than 1 MB' end
@@ -85,7 +95,14 @@ local function save()
     return true
 end
 
-function M.items() return state.items end
+-- Loads the file the first time it is needed (never in Closed Net: not even at the start of the game).
+function M.ensure() if not loaded and not M.closed() then M.load() end end
+
+function M.items()
+    if M.closed() then return {} end
+    M.ensure()
+    return state.items
+end
 
 local function index_of(list, uid)
     for i, e in ipairs(list) do if e.uid == uid then return i end end
@@ -93,6 +110,8 @@ end
 
 -- Adds an entry (uid is assigned) and writes the file; nil, message if it could not be written (nothing changed).
 function M.add(entry, max_items)
+    if M.closed() then return nil, NO_LOCAL end
+    M.ensure()
     if M.problem then return nil, M.problem end
     if #state.items >= max_items then return nil, 'the stash is full (' .. max_items .. ' items)' end
     entry.uid = state.next_uid
@@ -109,6 +128,8 @@ end
 -- Removes an entry (a deposit that did not work out, or a withdrawal) and writes the file; nil, message and no change
 -- if that fails.
 function M.remove(uid)
+    if M.closed() then return nil, NO_LOCAL end
+    M.ensure()
     local i = index_of(state.items, uid)
     if not i then return nil, 'no such entry' end
     local e = table.remove(state.items, i)

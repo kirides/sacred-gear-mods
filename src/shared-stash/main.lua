@@ -10,10 +10,11 @@ if not cfg.enabled then return end
 local ui, world = gear.ui, gear.world
 local stash = require('stash')
 local transfer = require('transfer')
+local remote = require('remote')
 
-stash.load()
-if stash.problem then gear.log('stash disabled: ' .. stash.problem) end
-if stash.note then gear.log(stash.note) end
+-- The kind of game decides where the stash lives: stash.json (single player, LAN, Open Net) or the server (Closed Net,
+-- remote.lua; never stash.json). stash.lua loads its file only when it is first used outside Closed Net.
+local function closed() return stash.closed() end
 
 local QUALITY_COLOR = {
     normal = 0xFFEFEFEF, magic = 0xFFA0A0FF, rare = 0xFFF0E040, unique = 0xFFC19A33, set = 0xFF15FF25,
@@ -130,7 +131,7 @@ local function entry_cells(list, hint)
     local cells = {}
     for _, e in ipairs(list) do
         cells[#cells + 1] = {
-            id = 'e' .. e.uid, entry = e, w = e.w or 1, h = e.h or 1, icon = entry_type(e),
+            id = 'e' .. (e.uid or e.id), entry = e, w = e.w or 1, h = e.h or 1, icon = entry_type(e),
             color = QUALITY_COLOR[e.quality], enabled = true,
             tipsrc = e, hint = hint,
         }
@@ -143,7 +144,19 @@ local function panel()
     if not p.open then return end
     view.hover = nil
     local x, y, w = p.content_x + 4, p.content_y + 2, p.w - 16
-    if stash.problem then
+    local net = closed()
+    if net then
+        remote.refresh(false)
+        local ok, why = remote.available()
+        if not ok then
+            ui.text('The shared stash is not available on this server.', x, y, {width = w, color = 0xFFFF8080, size = 13})
+            ui.text(tostring(why), x, y + 22, {width = w, color = 0xFFC0C0C0, size = 12})
+            return
+        end
+    else
+        stash.ensure()
+    end
+    if not net and stash.problem then
         ui.text(stash.problem, x, y, {width = w, color = 0xFFFF8080, size = 12})
         return
     end
@@ -154,10 +167,10 @@ local function panel()
         return
     end
 
-    local items = stash.items()
+    local items = net and remote.entries or stash.items()
     local scells = entry_cells(items, 'Click: take it into the backpack')
     local spages = pack(scells)
-    ui.label('stash-title', ('In the stash: %d / %d'):format(#items, cfg.max_items), x, y, {color = ui.COLORS.accent})
+    ui.label('stash-title', ('In the stash: %d / %d'):format(#items, net and (remote.max or cfg.max_items) or cfg.max_items), x, y, {color = ui.COLORS.accent})
     view.stash_page = pager('sp', x + w - 100, y - 1, view.stash_page, spages)
     y = y + 22
     local withdraw = grid('s', x, y, scells, view.stash_page)
@@ -210,13 +223,27 @@ local function panel()
     -- Changes after drawing, so the grids above were consistent for the frame.
     if withdraw then
         local e = withdraw.entry
-        local ok, where = transfer.withdraw(e)
-        if ok then say(('%s taken into the %s'):format(e.name, where)) else say(where, false) end
+        if net then
+            local ok, err = remote.withdraw(e)
+            if ok then say('Asking the server ...') else say(err, false) end
+        else
+            local ok, where = transfer.withdraw(e)
+            if ok then say(('%s taken into the %s'):format(e.name, where)) else say(where, false) end
+        end
         refresh_sources(true)
     elseif deposit then
         local s = deposit.src
-        local ok, err = transfer.deposit(s.container, s.item)
-        if ok then say(('%s put into the stash'):format(transfer.pretty_name(s.item))) else say(err, false) end
+        if net then
+            local ok, err = transfer.transferable(s.item)
+            if ok then
+                if not transfer.chest_open() then ok, err = nil, 'open a chest first'
+                else ok, err = remote.deposit(s.container, s.item, transfer.entry_fields(s.item)) end
+            end
+            if ok then say('Asking the server ...') else say(err, false) end
+        else
+            local ok, err = transfer.deposit(s.container, s.item)
+            if ok then say(('%s put into the stash'):format(transfer.pretty_name(s.item))) else say(err, false) end
+        end
         refresh_sources(true)
     end
 end
@@ -240,6 +267,7 @@ ui.show_panel('stash', false)
 ui.show_panel('open', true)
 
 gear.on('draw', function(state)
+    if closed() then remote.tick() end
     -- The stash exists only while the game's chest window is open (it opens only near a chest and closes when the hero
     -- walks away): closed with it, in the menus, in cinematics, with a dead hero.
     local chest_is_open = state.mode == 'game' and not state.exclusive and transfer.chest_window_open()
@@ -253,5 +281,7 @@ gear.on('draw', function(state)
 end)
 
 M.say = say
+remote.notify = say
+gear.on('session.stop', function() remote.reset() end)
 M.refresh_sources = refresh_sources
 if gear.auto and cfg.selftest then require('selftest')(M, stash, transfer) end
