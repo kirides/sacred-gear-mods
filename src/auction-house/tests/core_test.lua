@@ -300,5 +300,84 @@ do
     eq(l and l.meta.name, 'item 298', 'a name of codes only falls back to the type')
 end
 
+-- a market in a server that identifies its players itself (from.verified): no secret
+do
+    local w = world()
+    local m = core.new(w.deps)
+    local S = {slot = 4, key = 'uid-0123', name = 'Cara', verified = true}
+    m:handle(S, {op = 'deposit', rid = 's1', gold = 50})
+    m:flush()
+    check(w.last(4).ok, 'a verified player needs no secret')
+    eq(m.state.players['uid-0123'].name, 'Cara', 'the server\'s name is kept')
+    m:handle({slot = 4, key = 'uid-0123', name = 'Cara2', verified = true}, {op = 'hello'})
+    m:flush()
+    eq(m.state.players['uid-0123'].name, 'Cara2', 'a renamed hero gets its new name')
+    m:handle({slot = 5, key = 'uid-0123', name = 'Cara'}, {op = 'hello', secret = 'whatever-secret'})
+    m:flush()
+    eq(w.last(5).op, 'error', 'an unverified request for a verified key needs the (absent) secret: refused')
+end
+
+-- asynchronous durable writes (deps.save_async): answers after the write, requests in between wait
+do
+    local w = world()
+    local pending, rolled = {}, nil
+    w.deps.save = nil
+    w.deps.save_async = function(state, done)
+        pending[#pending + 1] = {state = core.copy(state), done = done}
+    end
+    w.deps.rolled_back = function(state) rolled = core.copy(state) end
+    local m = core.new(w.deps)
+    local S = {slot = 4, key = 'uid-1', name = 'Cara', verified = true}
+    local T = {slot = 5, key = 'uid-2', name = 'Dan', verified = true}
+    m:handle(S, {op = 'deposit', rid = 'd1', gold = 100})
+    m:flush()
+    eq(#pending, 1, 'one write started')
+    eq(#w.take(4), 0, 'no answer before the write is done')
+    check(m:busy(), 'busy while writing')
+    m:handle(T, {op = 'deposit', rid = 'd2', gold = 7})
+    m:handle(S, {op = 'hello'})
+    m:sweep(true)
+    m:flush()
+    eq(#pending, 1, 'requests during a write wait (no second write yet)')
+    eq(m:wallet('uid-2'), 0, '...and change nothing yet')
+    pending[1].done(true)
+    local a = w.take(4)
+    check(a[1] and a[1].ok and a[1].wallet == 100, 'the first answer after its write')
+    eq(#pending, 2, 'the waiting requests ran as the next batch')
+    eq(m:wallet('uid-2'), 7, 'the waiting deposit applied')
+    eq(#w.take(5), 0, 'its answer waits for its own write')
+    pending[2].done(nil, 'disk full')
+    local r = w.last(5)
+    check(r and not r.ok and r.rid == 'd2', 'a failed write refuses its batch')
+    eq(m:wallet('uid-2'), 0, 'the failed batch is undone')
+    eq(m:wallet('uid-1'), 100, 'the batch before it stays')
+    check(rolled and rolled.wallets['uid-1'] == 100 and not rolled.wallets['uid-2'], 'rolled_back gets the undone state')
+    check(not m:busy(), 'not busy after the last write')
+    pending[2].done(true)
+    eq(#w.take(5), 0, 'a second call of done changes nothing')
+    -- the info of the waiting hello went out with the failed batch's refusal (it was not a change)
+end
+
+-- release: a delivery the hero never got becomes collectable again
+do
+    local w = world()
+    local m = core.new(w.deps)
+    local S = {slot = 4, key = 'uid-1', name = 'Cara', verified = true}
+    m:handle(S, {op = 'deposit', rid = 'r1', gold = 100}) m:flush()
+    m:handle(S, {op = 'withdraw', rid = 'r2', gold = 40}) m:flush()
+    local d = w.last(4)
+    eq(d.op, 'deliver', 'withdraw delivers')
+    check(m:delivery('uid-1', 'r2') ~= nil, 'the entry is reserved for r2')
+    check(m:release('uid-1', 'r2'), 'released')
+    m:flush()
+    check(m:delivery('uid-1', 'r2') == nil, 'no longer reserved')
+    m:handle(S, {op = 'collect', rid = 'r3', mid = d.mid}) m:flush()
+    local again = w.last(4)
+    check(again.op == 'deliver' and again.rid == 'r3' and again.gold == 40, 'collected anew under a new rid')
+    m:handle(S, {op = 'collected', rid = 'r3'}) m:flush()
+    check(w.last(4).removed, 'and confirmed')
+    eq(m:wallet('uid-1'), 60, 'the wallet paid once')
+end
+
 print(('%d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

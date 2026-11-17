@@ -8,6 +8,12 @@
 --   collect  asked -> received             an item or gold from the mailbox (also a gold withdrawal)
 --   return   (an item a refused sale gave back that did not fit into the inventory; collected from the mailbox tab)
 -- A request is resent with the same rid until it is answered; the market answers a repeated rid the same way.
+--
+-- A market on a server that writes the heroes (Closed Net with --authoritative; `info.authoritative`) checks every
+-- transfer in its own hero state and saves the hero before it answers (DESIGN.md, section 4): a sale carries the item's
+-- id (`ref`), a deposit is announced first (`prepare`, the server notes the gold), a delivery is confirmed with the new
+-- item's id; a refused sale with `keep` stays where the server sees it (nothing is given back here); the crash check
+-- never revokes (the server's save is the truth).
 local M = {}
 
 local inv, world = gear.inv, gear.world
@@ -131,6 +137,8 @@ function C:query(msg)
     return self.req
 end
 
+function C:authoritative() return self.info ~= nil and self.info.authoritative == true end
+
 function C:online()
     return self.info ~= nil and not self.info.problem and gear.time() - self.info_at < 60
 end
@@ -183,7 +191,7 @@ function C:receive(msg)
         elseif msg.kind == 'expired' then
             self:note(('Not sold: %s is back in your mailbox'):format(msg.name or '?'))
         end
-    elseif op == 'result' or op == 'deliver' or op == 'collected' or op == 'revoked' then
+    elseif op == 'result' or op == 'deliver' or op == 'collected' or op == 'revoked' or op == 'prepared' then
         self:answer(msg)
     elseif op == 'error' then
         self:note('market: ' .. tostring(msg.err), false)
@@ -194,7 +202,7 @@ end
 -- A delivery we asked for and have not confirmed: confirm it, or ask for it again with the same rid.
 function C:reask(e)
     if e.state == 'received' then
-        self:send({op = 'collected', rid = e.rid})
+        self:confirm(e)
     elseif e.kind == 'gold' and not e.mid then
         self:request({op = 'withdraw', rid = e.rid, gold = e.gold})
     elseif e.mid then
@@ -202,12 +210,34 @@ function C:reask(e)
     end
 end
 
+-- Tells the market a delivery arrived (with the new item's id, for a server that checks it); resent until answered.
+function C:confirm(e)
+    local msg = {op = 'collected', rid = e.rid, ref = e.ref}
+    self.pending[e.rid] = {msg = msg, at = gear.time()}
+    self:send(msg)
+end
+
 function C:answer(msg)
     local p = self.pending[msg.rid]
     self.pending[msg.rid] = nil
     local e = self:entry(msg.rid)
+    if msg.op == 'prepared' then
+        if p and p.cb then p.cb(msg) end
+        return
+    end
     if msg.op == 'deliver' then
         self:delivered(msg, e)
+    elseif msg.op == 'collected' and msg.ok == false then
+        if msg.released then
+            -- the server found the delivery never reached the saved hero: it is in the mailbox again
+            if e then self:drop(msg.rid) self:save_journal() end
+            self:note(msg.err or 'collect it again from the mailbox', false)
+            self:refresh_mail()
+        elseif msg.retry and e then
+            self.pending[msg.rid] = {msg = {op = 'collected', rid = msg.rid, ref = e.ref}, at = gear.time()}
+        else
+            self:note('market: ' .. tostring(msg.err), false)
+        end
     elseif msg.op == 'collected' then
         if e then self:drop(msg.rid) self:save_journal() end
         self:refresh_mail()
@@ -217,6 +247,11 @@ function C:answer(msg)
         if msg.ok then
             e.state, e.id = 'done', msg.id
             self:save_journal()
+        elseif msg.keep then
+            -- the server still holds the item (it saves the hero with it): nothing is given back here
+            self:drop(e.rid)
+            self:save_journal()
+            self:note(msg.err or 'the item stays with your hero on the server', false)
         else
             self:give_back(e)
         end
@@ -277,6 +312,7 @@ function C:delivered(msg, e)
             local bytes = msg.data and inv.unhex(msg.data)
             if not bytes then return self:note('the delivered item is damaged; it stays in the mailbox', false) end
             local id, where = place(bytes)
+            e.ref = id
             if not id then
                 -- the market keeps it reserved for this rid; collect again with room
                 return self:note('no room in the backpack or the chest: make room and collect again', false)
@@ -286,7 +322,7 @@ function C:delivered(msg, e)
         e.state = 'received'
         self:save_journal()
     end
-    self:send({op = 'collected', rid = msg.rid})
+    self:confirm(e)
 end
 
 ---------------------------------------------------------------------------------------------------------------
@@ -322,6 +358,21 @@ function C:deposit(gold, cb)
     if gold <= 0 then return cb and cb(false, 'nothing to deposit') end
     if gold > have then return cb and cb(false, ('you carry %d gold'):format(have)) end
     local rid = self:new_rid()
+    if self:authoritative() then
+        -- the server notes the hero's gold first, then sees exactly this much leave
+        return self:request({op = 'prepare', rid = rid, gold = gold}, function(a)
+            if a.op ~= 'prepared' then return cb and cb(false, a.err) end
+            self:take_gold(rid, gold, cb)
+        end)
+    end
+    self:take_gold(rid, gold, cb)
+end
+
+function C:take_gold(rid, gold, cb)
+    local hero = world.hero()
+    if not hero then return cb and cb(false, 'no hero') end
+    local have = hero:gold() or 0
+    if gold > have then return cb and cb(false, ('you carry %d gold'):format(have)) end
     local e = {rid = rid, op = 'deposit', state = 'prepared', gold = gold, before = have, session = self.session,
         market = self.info and self.info.market, t = os.time()}
     table.insert(self.journal.entries, e)
@@ -384,7 +435,8 @@ function C:sell(container, it, meta, price, days, cb)
         end
         e.state = 'sent'
         self:save_journal()
-        self:request({op = 'sell', rid = rid, data = e.data, price = price, days = days, meta = meta}, function(a)
+        e.ref = it.id
+        self:request({op = 'sell', rid = rid, data = e.data, price = price, days = days, meta = meta, ref = it.id}, function(a)
             cb(a.ok, a.err)
         end)
     end)
@@ -476,6 +528,24 @@ function C:crash_check()
             keep[#keep + 1] = e
         elseif e.op == 'sell' and e.state == 'prepared' then
             changed = true      -- never sent; the item went down with the crash: the savegame has it
+        elseif self:authoritative() and (e.op == 'sell' or e.op == 'deposit') and e.state ~= 'return' then
+            -- the server's saved hero is the truth: what it accepted was saved without the item or gold, so no revoke.
+            -- Still in the reloaded hero: it never left in a save (drop the entry). Else an unanswered request is resent.
+            local found
+            if e.op == 'sell' then
+                have = have or inventory_exports()
+                found = have[e.data]
+            else
+                found = hero and hero:gold() == e.before
+            end
+            if e.state == 'sent' and not found then
+                e.session = self.session
+                keep[#keep + 1] = e
+                self:request(e.op == 'sell'
+                    and {op = 'sell', rid = e.rid, data = e.data, price = e.price, days = e.days, meta = e.meta, ref = e.ref}
+                    or {op = 'deposit', rid = e.rid, gold = e.gold})
+            end
+            changed = true
         elseif e.op == 'sell' and (e.state == 'sent' or e.state == 'done') then
             have = have or inventory_exports()
             if have[e.data] then

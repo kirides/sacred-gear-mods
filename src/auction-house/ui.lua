@@ -614,7 +614,14 @@ function M.panel(client, cfg)
     y = y + 30
     local status, scolor
     if client.info and client.info.problem then status, scolor = client.info.problem, BAD
-    elseif not client:online() then status, scolor = 'The market is not answering (the host is not in the game?)', BAD
+    elseif client.where == 'probe' then status, scolor = 'Looking for the market on the game server...', DIM
+    elseif not client:online() then
+        status, scolor = client.where == 'server' and 'The market on the game server is not answering'
+            or 'The market is not answering (the host is not in the game?)', BAD
+    else
+        status = ({server = 'Market: on the game server', host = 'Market: in the host\'s game', here = 'Market: in this game'})[client.where]
+        if status and client:authoritative() then status = status .. ' (the server keeps your hero: every transfer is saved there)' end
+        scolor = DIM
     end
     if status then
         ui.text(status, x, y, {size = 12, color = scolor, width = w})
