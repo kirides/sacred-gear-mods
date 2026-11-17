@@ -14,6 +14,21 @@ return function(M, stash, transfer)
     end
 
     gear.task(function()
+        if cfg.selftest == 'strict' then
+            -- Closed Net with --auth-strict-items=on: a copy of a backpack item that the client makes without a server token is refused
+            -- (the server gives it no state, so it is never saved); the log of the server and the next login show it.
+            local A = gear.auto
+            check(A.wait_for_game(400), 'the Closed Net world loaded')
+            gear.wait(8)
+            local bp = inv.container('backpack')
+            local before = #bp:items()
+            local bytes = inv.export(bp:items()[1].id)
+            local id, err = inv.add(bp, bytes)
+            check(id ~= nil, 'the client made a copy of an item without a token: ' .. tostring(err))
+            gear.wait(5)
+            note(('backpack before %d, after %d (the client sees its own copy; the server must not keep it)'):format(before, #bp:items()))
+            return finish()
+        end
         if cfg.selftest == 'e2e' then
             -- A real Closed Net game (gear/examples/closedtest drives the menus into a loopback game server with shared_stash.lua).
             local A, remote, kind = gear.auto, require('remote'), require('kind')
