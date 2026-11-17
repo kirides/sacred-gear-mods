@@ -47,7 +47,7 @@ eq(core.parse({st = 'active', here = 'yes'}).here, false, 'only true counts as h
 eq(core.parse({st = 'idle', next_in = 30, here = true}).here, false, 'idle is never here')
 
 -- the model
-local active = {st = 'active', title = 'Orc hunt', text = 'Slay 1000 orcs', count = 370, target = 1000, left = 100, dur = 7200,
+local active = {st = 'active', title = 'Orc hunt', text = 'Slay 1000 orcs', unit = 'orcs', count = 370, target = 1000, left = 100, dur = 7200,
     here = true, mine = 3, need = 10, people = 4, reward = 'gold', n = 7}
 local m = core.new()
 check(m:view(0, {area = 'sector'}) == nil, 'nothing before the first state')
@@ -58,7 +58,16 @@ eq(v.title, 'Orc hunt', 'title')
 eq(v.percent, 37, 'view percent')
 eq(v.count_text, '370 / 1,000', 'view count text')
 eq(v.time_text, '1:40', 'view time')
-eq(v.mine_text, 'Your share: 3 of 10 needed', 'share below the minimum')
+eq(v.mine_text, 'Your share: 3 (10 needed for the reward)', 'share below the minimum')
+eq(v.line2, '370 / 1,000 orcs', 'second line: count and unit')
+eq(v.tip[1], 'Orc hunt', 'tooltip: title')
+eq(v.tip[2], 'Slay 1000 orcs', 'tooltip: goal')
+eq(v.tip[3], '370 / 1,000 orcs (37%), 630 to go', 'tooltip: progress')
+eq(v.tip[4], 'Time left: 1:40', 'tooltip: time')
+eq(v.tip[#v.tip - 1], v.mine_text, 'tooltip: share')
+eq(v.tip[#v.tip], 'Reward: gold', 'tooltip: reward')
+eq(v.alpha, 1, 'active is opaque')
+check(math.abs(v.time_frac - 100 / 7200) < 1e-9, 'time ring: the share of the duration left')
 eq(v.qualifies, false, 'does not qualify yet')
 eq(v.late, false, 'not late')
 -- the time counts down between pushes
@@ -77,6 +86,7 @@ eq(v.mine_text, 'Your share: 12', 'share when qualified')
 eq(v.qualifies, true, 'qualifies')
 m:receive({st = 'active', title = 'T', text = 'x', count = 1, target = 2, left = 10, here = true, mine = 0, need = 0}, 0)
 eq(m:view(0, {area = 'sector'}).qualifies, true, 'no minimum')
+eq(m:view(0, {area = 'sector'}).line2, '1 / 2', 'no unit: just the count')
 
 -- area
 m:receive({st = 'active', title = 'T', text = 'x', count = 1, target = 2, left = 10, here = false}, 0)
@@ -93,7 +103,10 @@ m:receive({st = 'won', title = 'Orc hunt', text = 'x', count = 1000, target = 10
 v = m:view(20, {area = 'sector', results = true})
 eq(v.kind, 'won', 'won')
 eq(v.text, 'Completed!', 'won text')
-eq(v.mine_text, '6 heroes took part', 'won people')
+eq(v.line2, 'Completed!', 'one short line')
+eq(v.tip[#v.tip], '6 heroes took part', 'won people in the tooltip')
+eq(v.alpha, 1, 'result before the fade')
+check(math.abs(m:view(10 + 60 - 3, {area = 'sector', results = true}).alpha - 0.5) < 1e-9, 'result fades out in the last seconds')
 eq(v.frac, 1, 'full bar')
 check(m:view(69, {area = 'sector', results = true}) ~= nil, 'result held')
 check(m:view(70, {area = 'sector', results = true}) == nil, 'result gone after the hold')
@@ -108,6 +121,18 @@ check(not m:receive({st = 'nope'}, 1), 'bad state refused')
 check(m:view(1, {area = 'sector'}) ~= nil, 'the last good state stays')
 m:reset()
 check(m:view(1, {area = 'everywhere'}) == nil, 'reset')
+
+-- pulses: the mark a push crosses (same event only)
+local pm = core.new()
+local function push(n, count) return pm:receive({st = 'active', title = 'T', text = 'x', count = count, target = 100, left = 10, n = n}, 0) end
+local ok1, c1 = push(1, 10); check(ok1 and c1 == nil, 'the first state pulses nothing')
+local _, c2 = push(1, 24); check(c2 == nil, 'below 25 %: no pulse')
+local _, c3 = push(1, 25); eq(c3, 25, '25 % crossed')
+local _, c4 = push(1, 26); check(c4 == nil, 'not again')
+local _, c5 = push(1, 80); eq(c5, 75, 'several at once: the highest')
+local _, c6 = push(2, 90); check(c6 == nil, 'another event: no pulse')
+local _, c7 = push(2, 50); check(c7 == nil, 'going down: no pulse')
+local okb, cb = pm:receive({st = 'nope'}, 0); check(okb == false and cb == nil, 'a bad push pulses nothing')
 
 print(('world-events core: %d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

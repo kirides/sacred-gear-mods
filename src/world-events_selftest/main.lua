@@ -3,9 +3,11 @@
 --     Sacred.exe -gear-auto -gear-instance=worldevents -gear-load=1 -gear-mods=world-events,world-events_selftest
 --
 -- loads savegame 1, feeds the mod states through gear.emit('world-events.state', ...) (what the server's pushes would be) and
--- checks what the bar does in the real game: a panel 'world-events:bar' in the layout (so the layout editor can move it),
--- hidden with "Only while Alt" and elsewhere in "where the event counts", a sample while the layout editor is on, the
--- result banner, and a move through gear.ui.set_panel_rect. Screenshots go to GearAutomation\<instance>\.
+-- checks what the pill does in the real game (it needs a SacredGear.dll with gear.ui.panel's `bare` option): a bare panel
+-- 'world-events:bar' in the layout (so the layout editor can move it), hidden with "Only while Alt" and elsewhere in "where the
+-- event counts", a sample while the layout editor is on, a bigger size kept by an older version brought back, the result line,
+-- and a move through gear.ui.set_panel_rect. Screenshots (pill-*.bmp: normal, hover, Alt, pulse, layout editor, result) go to
+-- GearAutomation\<instance>\. Add the layout example mod (gear/examples/layout, without its self test) to get its overlay.
 if not gear.auto then
     print('no automation (start the game with -gear-auto): nothing to do')
     return
@@ -35,7 +37,7 @@ local function bar()
     end
 end
 
-local active = {st = 'active', title = 'Orc hunt', text = 'Slay 1000 orcs', count = 370, target = 1000, left = 4325, dur = 7200,
+local active = {st = 'active', title = 'Orc hunt', text = 'Slay 1000 orcs', unit = 'orcs', count = 370, target = 1000, left = 4325, dur = 7200,
     here = true, mine = 12, need = 10, people = 5, reward = 'gold, an item', n = 1}
 
 local function feed(t)
@@ -53,25 +55,55 @@ gear.task(function()
     if not game then return finish() end
     gear.wait(3)
 
-    check('no bar before a state', bar() == nil)
+    check('no pill before a state', bar() == nil)
 
     feed()
     local p = bar()
-    check('the bar is a panel of the mod', p ~= nil)
+    check('the pill is a panel of the mod', p ~= nil)
     if p then
-        check('titled with the event', p.title == 'Orc hunt', p.title)
+        check('the default size is small', p.w == 220 and p.h == 46, ('%s x %s'):format(p.w, p.h))
         check('resizable', p.resizable == true)
         A.write('panel.json', gear.json.encode(p))
     end
-    A.screenshot('bar-active')
+    -- far from the pill: the plain look
+    local px, py = A.ui_to_pixels(300, 500)
+    A.move(px, py)
+    gear.wait(0.5)
+    A.screenshot('pill-normal')
 
-    -- "Only while Alt is held": hidden without Alt
+    -- the details on hover
+    if p then
+        local hx, hy = A.ui_to_pixels(p.x + p.w / 2, p.y + p.h / 2)
+        A.move(hx, hy)
+        gear.wait(0.8)
+        A.screenshot('pill-hover')
+        A.move(px, py)
+        gear.wait(0.4)
+    end
+    -- ... and with Alt (the game's "show text")
+    A.key_down('alt')
+    gear.wait(0.8)
+    check('Alt: show_text', ui.state().show_text)
+    A.screenshot('pill-alt')
+    A.key_up('alt')
+    gear.wait(0.4)
+
+    -- "Only while Alt is held": hidden without Alt, shown with it
     gear.emit('world-events.configure', {visibility = 'alt'})
     gear.wait(0.6)
-    check('alt mode: no bar without Alt', bar() == nil)
+    check('alt mode: no pill without Alt', bar() == nil)
+    A.key_down('alt')
+    gear.wait(0.6)
+    check('alt mode: the pill with Alt', bar() ~= nil)
+    A.key_up('alt')
     gear.emit('world-events.configure', {visibility = 'always'})
     gear.wait(0.6)
-    check('always again: bar back', bar() ~= nil)
+    check('always again: pill back', bar() ~= nil)
+
+    -- a pulse at a quarter mark
+    feed({count = 240})
+    feed({count = 260})
+    A.screenshot('pill-pulse')
 
     -- where the event counts
     feed({here = false})
@@ -82,29 +114,43 @@ gear.task(function()
     gear.emit('world-events.configure', {area = 'sector'})
     feed()
 
-    -- the layout editor's mode shows a sample when nothing runs, and the bar can be moved
+    -- a bigger size kept by the first version (300 x 86) is brought back
+    ui.set_panel_rect(KEY, 400, 40, 300, 86)
+    gear.wait(0.3)
+    feed()
+    gear.wait(0.8)
+    local c = bar()
+    check('an old kept size is reset', c ~= nil and c.w <= 220.5 and c.h <= 46.5, c and ('%s x %s'):format(c.w, c.h) or 'no panel')
+
+    -- the layout editor's mode shows a sample when nothing runs, and the pill can be moved
     feed({st = 'idle', here = false})
-    check('idle: no bar', bar() == nil)
+    check('idle: no pill', bar() == nil)
     ui.set_edit_mode(true)
-    gear.wait(0.6)
-    check('layout editor: a sample bar to place', bar() ~= nil)
-    A.screenshot('bar-editing')
+    gear.wait(0.8)
+    check('layout editor: a sample to place', bar() ~= nil)
+    A.screenshot('pill-layout')
     local moved = ui.set_panel_rect(KEY, 120, 300)
     gear.wait(0.6)
     local q = bar()
     check('set_panel_rect finds the panel', moved == true)
-    check('the bar moved', q ~= nil and math.abs(q.x - 120) < 2 and math.abs(q.y - 300) < 2,
+    check('the pill moved', q ~= nil and math.abs(q.x - 120) < 2 and math.abs(q.y - 300) < 2,
         q and ('%d,%d'):format(q.x, q.y) or 'no panel')
     ui.set_edit_mode(false)
     gear.wait(0.3)
     ui.reset_panel(KEY)
+    gear.wait(0.3)
 
-    -- the result of an event
+    -- the result of an event: one line, fading out
     feed({st = 'won', hold = 30, people = 6, count = 1000})
-    check('result bar', bar() ~= nil)
-    A.screenshot('bar-won')
+    check('result pill', bar() ~= nil)
+    A.screenshot('pill-won')
     feed({st = 'failed', hold = 30, count = 400})
-    A.screenshot('bar-failed')
+    A.screenshot('pill-failed')
+    feed({st = 'won', hold = 3, people = 6, count = 1000})
+    gear.wait(1.5)
+    A.screenshot('pill-fading')
+    gear.wait(2.5)
+    check('the result is gone after its hold', bar() == nil)
 
     finish()
 end)

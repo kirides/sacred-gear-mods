@@ -1,10 +1,10 @@
 # World events
 
 A [Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md) mod that shows the **world event** of a game
-server as a movable progress bar: a realm-wide goal such as *"slay 1000 orcs in 2 hours"*. Everybody who takes part shares the
+server as a small movable indicator: a realm-wide goal such as *"slay 1000 orcs in 2 hours"*. Everybody who takes part shares the
 reward when the realm makes it; the server announces the start, 25 / 50 / 75 % and the result in chat.
 
-![The bar](../../docs/images/world-events.jpg)
+![The pill, and its details on hover](../../docs/images/world-events.jpg)
 
 ## What you need
 
@@ -18,23 +18,34 @@ reward when the realm makes it; the server announces the start, 25 / 50 / 75 % a
 Players need no other setup: the server pushes the state when you join, when you enter another sector, when the progress
 changes and every few seconds while an event runs. Names on the server's public dashboard page are character names only.
 
-## The bar
+## The pill
 
-Title bar: the event's name. Inside: the goal, the time left (counting down on your computer between the server's pushes, so the
-clocks do not matter), a bar with the percentage and `count / target`, and your own share (`Your share: 12 of 10 needed` until you
-reached the minimum for the reward). In the last minute the bar and the clock turn red. When an event ends the bar stays for
-a while (2 minutes by default, set by the server) and says **Completed!** or **Failed**.
+A small, dark, rounded pill (about a third opaque, no frame, no title bar) with a **double ring**: the gold ring is the
+realm's progress, the thin blue ring inside it drains with the time left (it turns orange in the last minute), and the
+percentage is in the middle. To the right: the event's name, then `370 / 1,000 orcs · 1:12:04` (the timer in blue).
 
-* **Move it:** hold **Alt** and press *Edit layout* (the layout editor from Sacred Gear's examples), drag the bar, resize it by its
-  corner. While you edit, the bar shows a sample if no event runs, so you can place it any time. The place is kept in
-  `mods\gear_layout.json`.
+* **Details:** hover the pill with the cursor, or hold **Alt** (the game's "show text"), and a small tooltip lists the goal,
+  the progress with what is left, the time left, **your share** (`Your share: 12 (10 needed for the reward)` until you
+  reached the minimum) and the reward. The controller's mod menu (LT + LB by default) has **World events: pin / unpin the
+  details**.
+* **Pulse:** the pill glows for a moment when the realm passes 25, 50 or 75 % (a setting).
+* **Result:** when an event ends, the pill shows one short line, **Completed!** or **Failed**, in a green or red ring, and fades
+  out over its last seconds (the time is the server's `result_hold`, 2 minutes by default).
+* **Move it:** hold **Alt** and press *Edit layout* (the layout editor from Sacred Gear's examples), drag it, resize it by its
+  corner (the text and rings scale with its height). While you edit it shows a sample if no event runs, so you can place it
+  any time. The place is kept in `mods\gear_layout.json`; a bigger size an older version of this mod kept (the old bar was
+  300 x 86) is brought back to the new default (220 x 46).
 * **Settings** (*Mods* screen, **F11**, or the *Mods* button under the escape menu; all reachable with the controller):
-  * *Show the bar*: **always while an event runs** (default) or **only while Alt is held** (like the game's own labels).
-  * *Where*: **where the event counts** (default) or **everywhere**. An event that counts only in some sectors shows its bar
+  * *Show the bar*: **always while an event runs** (default) or **only while Alt is held**. The controller's mod menu has an entry
+    **World events: always / only with Alt** that switches it.
+  * *Where*: **where the event counts** (default) or **everywhere**. An event that counts only in some sectors shows its pill
     while you stand in one of them; an event without sectors shows everywhere.
-  * *Show the result for a while*: on / off.
-* **Controller:** the mod has no buttons and binds no key. The *Mods* screen reaches the settings, and the controller's mod menu
-  (LT + LB by default) has an entry **World events: bar always / only with Alt** that switches the first setting.
+  * *Pulse at 25, 50 and 75 %* and *Show the result for a while*: on / off.
+* **No key** is bound and there are no buttons: the pill takes no clicks (the mouse goes on to the game), so it never gets in
+  the way.
+
+The pill is a **bare panel** (`gear.ui.panel` with `bare = true`, added to Sacred Gear for it: no window chrome, but still a layout
+panel). It needs a SacredGear.dll that has the option; an older one draws a plain panel with its title bar instead.
 
 ## How it talks to the server
 
@@ -42,7 +53,7 @@ Channel `worldevents:state` of `gear.net` (custom opcodes). The mod says `{hello
 available, when a game starts and every 30 seconds; the server answers with the state for this player:
 
 ```lua
-{ v = 1, st = 'active', n = <event number>, title, text, count, target, left = <seconds>, dur, here = <counts where you are>,
+{ v = 1, st = 'active', n = <event number>, title, text, unit = 'orcs', count, target, left = <seconds>, dur, here = <counts where you are>,
   mine = <your share>, need = <minimum for the reward>, people, reward }
 { v = 1, st = 'won' | 'failed', n, title, text, count, target, hold = <seconds to keep showing>, here, people }
 { v = 1, st = 'idle', next_in = <seconds> }
@@ -58,10 +69,10 @@ No game needed (LuaJIT, from this folder):
 
 ```
 luajit tests/core_test.lua     the state, percent / time / count formats, area, results, stale states
-luajit tests/main_test.lua     main.lua against a fake gear: who may push, hello, what is drawn when, the controller entry
+luajit tests/main_test.lua     main.lua against a fake gear: who may push, hello, what is drawn when, details, pulse, the controller entries
 ```
 
-`src/world-events_selftest` runs in the real game (`-gear-auto`, a copy of the game folder, see its header): the bar as a layout panel,
-hidden with "only while Alt" and outside the event's sector, a sample in the layout editor, the result banner, a move.
+`src/world-events_selftest` runs in the real game (`-gear-auto`, a copy of the game folder, see its header): the pill as a bare layout panel,
+hidden with "only while Alt" and outside the event's sector, a sample in the layout editor, an old kept size brought back, the result line, a move; screenshots `pill-*.bmp`.
 
 The server half has its own tests in the remake repository (`WorldEventsScriptTests`).

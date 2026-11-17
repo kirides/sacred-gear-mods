@@ -1,7 +1,9 @@
--- World events: a movable progress bar for the realm-wide goal the game server runs (the server script world_events.lua,
--- see README.md). The server pushes the state over the custom net channel 'worldevents:state'; this mod only displays it.
--- It binds no key and has no buttons: the bar is moved in the layout editor (hold Alt, "Edit layout"), its settings are on
--- its page of the Mods screen, and the controller's mod menu has an entry that switches "always" and "only while Alt".
+-- World events: a small movable indicator for the realm-wide goal the game server runs (the server script world_events.lua,
+-- see README.md): a dark pill with a double ring (gold: the progress, blue: the time left) and two lines of text. The
+-- server pushes the state over the custom net channel 'worldevents:state'; this mod only displays it.
+-- It binds no key and has no buttons: the pill is moved in the layout editor (hold Alt, "Edit layout"), the details show on hover or
+-- while Alt is held, its settings are on its page of the Mods screen, and the controller's mod menu has entries that switch
+-- "always / only with Alt" and pin the details.
 local core = require('core')
 local ui, S = gear.ui, gear.settings
 
@@ -11,6 +13,15 @@ local HELLO_EVERY = 30      -- seconds: asks the server for the state again (a l
 local model = core.new()
 local channel
 local last_hello = -1e9
+local pulse_until = 0       -- gear.time() until which the pill pulses (a 25 / 50 / 75 % mark was crossed)
+local pinned = false        -- the details stay up (the controller's mod menu)
+
+local PULSE = 1.6
+
+local function feed(payload)
+    local ok, crossed = model:receive(payload, gear.time())
+    if ok and crossed and S.get('pulse') ~= false then pulse_until = gear.time() + PULSE end
+end
 
 local function ensure_channel()
     if channel then return channel end
@@ -23,9 +34,7 @@ local function ensure_channel()
     end
     ch:on(function(from, payload)
         -- only the server pushes states (slot 0); a message from another player is ignored
-        if from and from.slot == 0 and type(payload) == 'table' then
-            model:receive(payload, gear.time())
-        end
+        if from and from.slot == 0 and type(payload) == 'table' then feed(payload) end
     end)
     channel = ch
     return ch
@@ -53,51 +62,146 @@ gear.on('frame', function() hello(false) end)
 gear.on('world-events.configure', function(values)
     for id, value in pairs(values or {}) do S.set(id, value) end
 end)
-
--- Other mods (and tests) can feed a state: gear.emit('world-events.state', {st = 'active', ...}).
-gear.on('world-events.state', function(payload) model:receive(payload, gear.time()) end)
+-- ... and feed a state: gear.emit('world-events.state', {st = 'active', ...}).
+gear.on('world-events.state', feed)
 
 ---------------------------------------------------------------------------------------------------------------
--- the bar
+-- the pill
 ---------------------------------------------------------------------------------------------------------------
-local W, H = 300, 86                -- the panel's default size (layout units); it can be resized in the layout editor
-local X, Y = 362, 48                -- top centre, clear of the minimap and the action bar
+local W, H = 220, 46                -- the panel's default size (layout units); the layout editor can change both
+local X, Y = 402, 40                -- top centre, clear of the minimap and the action bar
+local MAX_W, MAX_H = 420, 64        -- an older version's bigger kept size (300 x 86) is brought back to the default
 
 local COLOR = {
-    back = 0xFF14100B, edge = 0xFF5A4A36, fill = 0xFFD9A441, fill_late = 0xFFD2603A, fill_won = 0xFF58B45A,
-    fill_failed = 0xFF8A4A4A, text = 0xFFEFE6D6, dim = 0xFFB4A78F, good = 0xFF8FD08F, shadow = 0xD0000000,
+    pill = 0x59101014,              -- about 35 % opaque
+    glow = 0x55E3B341,
+    ring = 0xFFE3B341, ring_off = 0x30E3B341,
+    time = 0xFF86C3F2, time_off = 0x2886C3F2, time_late = 0xFFE88A68,
+    won = 0xFF63C269, failed = 0xFFB86060,
+    title = 0xFFF2D58A, count = 0xFFD2CCBE, timer = 0xFF9CCBF5, percent = 0xFFFFF2D0,
+    tip_back = 0xE60E0E14, tip_edge = 0xFF5A4A36, tip_text = 0xFFE6DFD0, tip_title = 0xFFF2D58A,
 }
 
-local function fill_color(view)
-    if view.kind == 'won' then return COLOR.fill_won end
-    if view.kind == 'failed' then return COLOR.fill_failed end
-    return view.late and COLOR.fill_late or COLOR.fill
+-- A color with its opacity multiplied by `factor` (0..1).
+local function with_alpha(color, factor)
+    if factor >= 1 then return color end
+    local a = math.floor(math.floor(color / 0x1000000) % 256 * factor + 0.5)
+    return a * 0x1000000 + color % 0x1000000
 end
 
-local function draw_bar(view)
-    local panel = ui.panel('bar', view.title ~= '' and view.title or 'World event', X, Y, W, H,
-        {closable = false, draggable = true, resizable = true, min_width = 220, min_height = 70, passive = true})
-    if not panel or not panel.open then return end
-    local x, y = panel.content_x or 0, panel.content_y or 0
-    local w = panel.content_w or ((panel.w or W) - 12)
-    -- the goal on the left, the time left on the right
-    ui.text(view.text, x, y, {size = 12, color = COLOR.text, shadow = true, width = w - 56, height = 16})
+-- A rounded pill from one-pixel rows (rectangles are all gear.ui has).
+local function draw_pill(x, y, w, h, color)
+    local r = h / 2
+    for i = 0, math.floor(h) - 1 do
+        local dy = i + 0.5 - r
+        local inset = r - math.sqrt(math.max(0, r * r - dy * dy))
+        ui.rect(x + inset, y + i, w - 2 * inset, 1, color)
+    end
+end
+
+local SIN, COS = {}, {}
+local function unit_circle(n)
+    if not SIN[n] then
+        SIN[n], COS[n] = {}, {}
+        for i = 0, n - 1 do
+            local a = -math.pi / 2 + 2 * math.pi * i / n
+            SIN[n][i], COS[n][i] = math.sin(a), math.cos(a)
+        end
+    end
+    return SIN[n], COS[n]
+end
+
+-- A ring of dots from the top, clockwise: the first `lit` (0..1) of the circle in `on`, the rest in `off`.
+local function draw_ring(cx, cy, radius, n, dot, lit, on, off)
+    local sin, cos = unit_circle(n)
+    local half = dot / 2
+    for i = 0, n - 1 do
+        ui.rect(cx + radius * cos[i] - half, cy + radius * sin[i] - half, dot, dot, ((i + 0.5) / n <= lit) and on or off)
+    end
+end
+
+local function text_width(text, font)
+    local w = ui.text_size(text, font)
+    return w or (#text * (font.size or 12) * 0.55)
+end
+
+-- The details: next to the cursor on hover, else under the pill (above it at the bottom of the screen).
+local function draw_tooltip(view, x, y, h, hover, state)
+    local lines = view.tip or {}
+    if #lines == 0 then return end
+    local tw, th = 0, 0
+    for i, line in ipairs(lines) do
+        tw = math.max(tw, text_width(line, i == 1 and {size = 13, bold = true} or {size = 12}))
+        th = th + (i == 1 and 18 or 16)
+    end
+    local bw, bh = tw + 16, th + 12
+    local bx, by
+    if hover then
+        bx, by = ui.tooltip_rect(bw, bh)
+    else
+        bx, by = x, y + h + 4
+        if by + bh > (state.screen_bottom or 768) then by = y - bh - 4 end
+        bx = math.max(state.screen_left or 0, math.min(bx, (state.screen_right or 1024) - bw))
+    end
+    ui.rect(bx, by, bw, bh, COLOR.tip_back)
+    ui.frame(bx, by, bw, bh, COLOR.tip_edge, 1)
+    local ty = by + 6
+    for i, line in ipairs(lines) do
+        ui.text(line, bx + 8, ty, i == 1 and {size = 13, bold = true, color = COLOR.tip_title, shadow = true}
+            or {size = 12, color = COLOR.tip_text, shadow = true})
+        ty = ty + (i == 1 and 18 or 16)
+    end
+end
+
+local function draw_view(view, state)
+    local p = ui.panel('bar', 'World event', X, Y, W, H, {bare = true, resizable = true, min_width = 150, min_height = 30})
+    if not p or not p.open then return end
+    local x, y, w, h = p.content_x or X, p.content_y or Y, p.content_w or W, p.content_h or H
+    -- a bigger kept size of an older version: back to the default (once)
+    if (w > MAX_W or h > MAX_H) and ui.set_panel_rect then
+        ui.set_panel_rect(p.key or 'world-events:bar', x, y, math.min(w, W), math.min(h, H))
+    end
+    local k = math.max(0.65, math.min(h / H, 1.8))          -- the contents follow the panel's height
+    local fade = view.alpha or 1
+    local now = gear.time()
+
+    -- the pill; a pulse warms it for a moment
+    draw_pill(x, y, w, h, with_alpha(COLOR.pill, fade))
+    if now < pulse_until then
+        local t = (pulse_until - now) / PULSE
+        draw_pill(x, y, w, h, with_alpha(COLOR.glow, math.sin(t * math.pi) * fade))
+    end
+
+    -- the double ring: gold = progress, blue = the time left; the percent in the middle
+    local d = math.min(42 * k, h - 2)
+    local cx, cy = x + 2 + d / 2, y + h / 2
+    local outer_on = view.kind == 'won' and COLOR.won or view.kind == 'failed' and COLOR.failed or COLOR.ring
+    draw_ring(cx, cy, d / 2 - 2.5 * k, math.floor(86 * k), 3 * k, view.frac, with_alpha(outer_on, fade), with_alpha(COLOR.ring_off, fade))
+    if view.kind == 'active' then
+        draw_ring(cx, cy, d / 2 - 7 * k, math.floor(58 * k), 2 * k, view.time_frac,
+            with_alpha(view.late and COLOR.time_late or COLOR.time, fade), with_alpha(COLOR.time_off, fade))
+    end
+    ui.text(view.percent .. '%', cx - d / 2, cy - d / 2, {
+        size = 11 * k, bold = true, color = with_alpha(COLOR.percent, fade), shadow = true, width = d, height = d,
+        align = 'center', valign = 'middle'})
+
+    -- two lines: the title, then the count and the time left (blue)
+    local tx = x + d + 10
+    local tw = math.max(20, w - (tx - x) - 10)
+    ui.text(view.title, tx, y + h / 2 - 15 * k, {size = 12.5 * k, bold = true, color = with_alpha(COLOR.title, fade), shadow = true,
+        width = tw, height = 15 * k})
+    local f2 = {size = 11.5 * k}
+    ui.text(view.line2, tx, y + h / 2 + 1 * k, {size = f2.size, color = with_alpha(COLOR.count, fade), shadow = true, height = 14 * k})
     if view.time_text ~= '' then
-        ui.text(view.time_text, x, y, {size = 12, color = view.late and COLOR.fill_late or COLOR.dim, shadow = true, width = w,
-            align = 'right', height = 16})
+        local lw = text_width(view.line2 .. ' ', f2)
+        ui.text('\194\183 ' .. view.time_text, tx + lw, y + h / 2 + 1 * k, {size = f2.size, color = with_alpha(COLOR.timer, fade),
+            shadow = true, height = 14 * k})
     end
-    -- the bar with the percentage and the counts in it
-    local by, bh = y + 20, 18
-    ui.rect(x, by, w, bh, COLOR.back)
-    ui.rect(x, by, math.floor(w * view.frac + 0.5), bh, fill_color(view))
-    ui.frame(x, by, w, bh, COLOR.edge, 1)
-    ui.text(('%d%%   %s'):format(view.percent, view.count_text), x, by, {
-        size = 12, bold = true, color = 0xFFFFFFFF, outline = true, width = w, height = bh, align = 'center', valign = 'middle'})
-    -- your share
-    if view.mine_text ~= '' then
-        ui.text(view.mine_text, x, by + bh + 4, {size = 11, color = (view.qualifies == false) and COLOR.dim or COLOR.good,
-            shadow = true, width = w, height = 14})
-    end
+
+    -- the details: on hover, with Alt (the game's "show text") or pinned from the controller's mod menu
+    local mx, my = ui.mouse()
+    local hover = mx >= x and mx < x + w and my >= y and my < y + h
+    if hover or state.show_text or pinned then draw_tooltip(view, x, y, h, hover, state) end
 end
 
 ui.show_panel('bar', true)
@@ -108,14 +212,15 @@ gear.on('draw', function(state)
     local view = model:view(gear.time(), {area = S.get('area'), results = S.get('results'), preview = editing})
     if not view then return end
     if not editing and S.get('visibility') == 'alt' and not state.show_text then return end
-    draw_bar(view)
+    draw_view(view, state)
 end)
 
--- The controller's mod menu: the same switch as the setting, for players without a keyboard.
+-- The controller's mod menu: the same switches for players without a keyboard.
 if ui.menu_item then
-    ui.menu_item('visibility', 'World events: bar always / only with Alt', function()
+    ui.menu_item('visibility', 'World events: always / only with Alt', function()
         S.set('visibility', S.get('visibility') == 'alt' and 'always' or 'alt')
     end)
+    ui.menu_item('details', 'World events: pin / unpin the details', function() pinned = not pinned end)
 end
 
 local M = {model = model}
