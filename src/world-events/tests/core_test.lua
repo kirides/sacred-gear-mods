@@ -62,7 +62,7 @@ eq(v.mine_text, 'Your share: 3 (10 needed for the reward)', 'share below the min
 eq(v.line2, '370 / 1,000 orcs', 'second line: count and unit')
 eq(v.tip[1], 'Orc hunt', 'tooltip: title')
 eq(v.tip[2], 'Slay 1000 orcs', 'tooltip: goal')
-eq(v.tip[3], '370 / 1,000 orcs (37%), 630 to go', 'tooltip: progress')
+eq(v.tip[3], '370 / 1,000 orcs (37%)', 'tooltip: progress')
 eq(v.tip[4], 'Time left: 1:40', 'tooltip: time')
 eq(v.tip[#v.tip - 1], v.mine_text, 'tooltip: share')
 eq(v.tip[#v.tip], 'Reward: gold', 'tooltip: reward')

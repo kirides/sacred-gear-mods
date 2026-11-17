@@ -25,7 +25,7 @@ realm's progress, the thin blue ring inside it drains with the time left (it tur
 percentage is in the middle. To the right: the event's name, then `370 / 1,000 orcs · 1:12:04` (the timer in blue).
 
 * **Details:** hover the pill with the cursor, or hold **Alt** (the game's "show text"), and a small tooltip lists the goal,
-  the progress with what is left, the time left, **your share** (`Your share: 12 (10 needed for the reward)` until you
+  the progress (`370 / 1,000 orcs (37%)`), the time left, **your share** (`Your share: 12 (10 needed for the reward)` until you
   reached the minimum) and the reward. The controller's mod menu (LT + LB by default) has **World events: pin / unpin the
   details**.
 * **Pulse:** the pill glows for a moment when the realm passes 25, 50 or 75 % (a setting).

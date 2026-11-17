@@ -148,7 +148,7 @@ function Model:view(now, opts)
             and ('Your share: %d (%d needed for the reward)'):format(s.mine, s.need) or ('Your share: %d'):format(s.mine)
         local tip = {s.title}
         if s.text ~= '' then tip[#tip + 1] = s.text end
-        tip[#tip + 1] = ('%s%s (%d%%), %s to go'):format(count_text, unit, pct, M.group(math.max(0, s.target - s.count)))
+        tip[#tip + 1] = ('%s%s (%d%%)'):format(count_text, unit, pct)
         tip[#tip + 1] = 'Time left: ' .. time_text
         tip[#tip + 1] = mine_text
         if s.reward ~= '' then tip[#tip + 1] = 'Reward: ' .. s.reward end
