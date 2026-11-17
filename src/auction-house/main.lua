@@ -7,6 +7,7 @@ local cfg = gear.config
 if not cfg.enabled then return end
 
 local core = require('core')
+local kind = require('kind')
 local clientmod = require('client')
 local panel = require('ui')
 local ui, world = gear.ui, gear.world
@@ -44,8 +45,15 @@ local session_t, probe_t = nil, -1e9
 
 local function network_game() return mp and mp.active and mp.active() or false end
 
+-- 'closed': Closed Net without a market on the game server (nothing is sent, nothing runs here): the host's market and a local one never serve Closed Net.
 local function route()
     if server_market then return 'server' end
+    if kind.closed() then
+        if server_ch and session_t and gear.time() - session_t < PROBE_SECONDS and (net.supported and net.supported() or gear.time() - session_t < 4) then
+            return 'probe'
+        end
+        return 'closed'
+    end
     if server_ch and network_game() and session_t and gear.time() - session_t < PROBE_SECONDS then
         if net.supported and net.supported() or gear.time() - session_t < 4 then return 'probe' end
     end
@@ -138,6 +146,8 @@ client = clientmod.new(function(msg)
     local where = route()
     if where == 'server' then
         server_ch:send(msg, 'server')
+    elseif where == 'closed' then
+        return                                                           -- Closed Net, no server market: nothing goes anywhere
     elseif where == 'probe' then
         if msg.op == 'hello' then server_ch:send(msg, 'server') end      -- the rest is resent once the market is found
     elseif where == 'here' and not via_channel then
@@ -150,6 +160,7 @@ end)
 if server_ch then
     server_ch:on(function(from, payload)
         if type(payload) ~= 'table' or (from and from.slot ~= 0) then return end
+        if payload.op == 'info' and payload.where == 'server' and payload.closed == true then kind.server_closed = true end
         if payload.op == 'info' and payload.where == 'server' and not server_market then
             server_market = true
             gear.log('auction house: the market is on the game server')
@@ -166,6 +177,7 @@ end)
 if has_channel then
     gear.on('mp_message', function(from, channel, payload)
         if channel ~= CHANNEL or type(payload) ~= 'table' then return end
+        if kind.closed() then return end                -- Closed Net: no host market, no answers from one
         if payload.secret then
             -- a request: only the market answers it
             if not market_here() then return end
@@ -179,10 +191,12 @@ end
 
 gear.on('session.start', function()
     server_market, session_t, probe_t = false, gear.time(), -1e9
+    kind.reset()
     client:session_start()
 end)
 gear.on('session.stop', function()
     server_market, session_t = false, nil
+    kind.reset()
     client:session_stop()
     panel.close()
 end)

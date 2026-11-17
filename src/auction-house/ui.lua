@@ -615,6 +615,8 @@ function M.panel(client, cfg)
     local status, scolor
     if client.info and client.info.problem then status, scolor = client.info.problem, BAD
     elseif client.where == 'probe' then status, scolor = 'Looking for the market on the game server...', DIM
+    elseif client.where == 'closed' then
+        status, scolor = 'The market is closed: this game needs the game server market (Closed Net), and this server has none', BAD
     elseif not client:online() then
         status, scolor = client.where == 'server' and 'The market on the game server is not answering'
             or 'The market is not answering (the host is not in the game?)', BAD

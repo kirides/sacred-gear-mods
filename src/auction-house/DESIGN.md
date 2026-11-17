@@ -139,14 +139,35 @@ and a failed write undoes the batch and refuses it.
 | Gold into the wallet | as items, with the hero's gold before/after | `prepare` first (the server notes the hero's gold), then the server must see exactly that much leave and the lobby confirm the save |
 | Delivery out (collect, withdraw) | the entry is reserved for the rid; removed when the client confirms; a crash before the next save loses the item (never twice; "save after collecting") | removed only after the server saw the new item (its id, the delivery's records) in the hero's inventory, or the gold rise by the amount, and the lobby confirmed a save with it |
 | Crash, reconnect | the client's crash check (revoke) | no revoke: the server's saved hero is the truth. A delivery handed out before the crash is given out again only if no hero save went out since (`server.hero_upload_time`); with a save since, an item found in the reloaded hero counts as collected, otherwise the entry stays reserved (logged, for the server owner) |
-| A cheating client | can lie about what it gave or got (as it can edit its save) | cannot list or deposit what the server did not see leave its hero, cannot confirm a delivery the server did not see arrive; it can still make items or gold locally (the authoritative mode has no item/gold plausibility for that yet) |
+| Items the client creates | n/a | with `--auth-strict-items` (`log`, then `on`) the server refuses an item the client creates that no token covers: the market mints a one-time token for exactly the delivered item (`server.item_token`, label `auction:<rid>`, about 120 s) when it sends the delivery; a repeated rid reuses it, a released or abandoned delivery revokes it, the arrival's `claim_item` consumes it. Where no token can be minted the delivery works as before |
+| A cheating client | can lie about what it gave or got (as it can edit its save) | cannot list or deposit what the server did not see leave its hero, cannot confirm a delivery the server did not see arrive; it can still make items or gold locally except where the strict item gate applies (items); gold has no general gate, only the market's own check below |
 
 Open in Closed Net (unverified with a real client): that Gear's `inv.remove` reaches the server as 0x13E + 0x167 and
 `inv.add` as 0x16F/0x16C + 0x13F, that the export's value records equal the server's in order, and how soon the client
 reports a gold change in its hero state (a deposit waits `verify_seconds`, 30 s, then is refused and the gold given
-back). A gold delivery whose hero spent gold before the server saw the rise stays unconfirmed (reserved, not lost, not
-doubled). A delivery is reserved with the server's own memory of the hero's gold at the time it went out; a server
-restart in between leaves that gold delivery to the reconnect rule.
+back).
+
+**Gold withdrawals (the market's own check, not a general gold gate).** The client adds withdrawn gold itself (`add_gold`) and
+the item gate has no gold hook, so the market's script keeps a watch per withdrawal: the hero's gold in the server's copy when
+the delivery went out (`mark`) and the lowest value seen since (`low`, sampled twice a second), so gold the hero spent before
+the report does not hide the increase. The withdrawal counts as done when the gold rose by the amount from `low` (or stands at
+`mark` plus the amount) and the lobby confirmed the hero save. After `gold_timeout` (120 s) without it the server saves the hero
+and the saved copy decides: an increase confirms, none credits the wallet back (`collected` answers `refunded`, the rid is
+closed). Limits: gold picked up at the same moment looks like the withdrawal, and a client that adds the gold after the refund
+keeps both (a general gold gate is the real fix). The watch survives a reload and a restart (storage key `gold_watch`); a
+delivery that never reached a saved hero is released as before.
+
+**Hot reload.** The market is stored at every change; the unload hook stores the gold watches, and for a reload the join times,
+the token ids (the tokens live in the server) and the prepared deposits. Checks in flight are resumed by the client's resend with
+the same rid (a sale is claimed only after the hero save, so a reload in between loses nothing). The rules (durations, fee per
+day, sale cut, listings per seller and in total, `allow_special`, expiry interval, ...) are data in the mod's storage (`config`,
+applied within 2 s, web UI page `/auction`, shown on `/mods/auction_house/`); the script's table only seeds a new install.
+
+**Which market (client).** `kind.lua` reads `gear.mp.mode()` (default-deny: the Internet menu without proof, or a hero delivered
+by the server, reads `closed`) and a server `info` with `closed = true` (sent when `server.authoritative(player)`). In Closed Net
+the client never uses the host's market or a market in this game: only the server's, and with none the market shows as closed
+(nothing is sent, no `market.json` is read, answers of a host market are ignored). An engine without `gear.mp.mode` in a network
+game reads closed too.
 
 ## 5. Market rules (host settings, Mods screen)
 

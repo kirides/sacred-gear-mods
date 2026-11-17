@@ -303,7 +303,7 @@ local function server_game(authoritative)
         load = function() return srv_files.state and json.decode(srv_files.state) or nil end,
         save_async = function(state, done) srv_files.state = json.encode(state) done(true) end,
         send = function(slot, msg)
-            if msg.op == 'info' then msg.where = 'server' msg.authoritative = authoritative or nil end
+            if msg.op == 'info' then msg.where = 'server' msg.authoritative = authoritative or nil msg.closed = authoritative and true or false end
             to_client[#to_client + 1] = json.decode(json.encode(msg))
         end,
     })
@@ -320,7 +320,8 @@ local function server_game(authoritative)
         srv:flush()
     end
     gear.mp = {active = function() return true end, is_host = function() return true end, local_slot = function() return 1 end,
-        send = function() return true end, local_player = function() return {slot = 1, name = 'Anna', key = 'anna:seraphim'} end}
+        send = function() return true end, local_player = function() return {slot = 1, name = 'Anna', key = 'anna:seraphim'} end,
+        mode = function() return authoritative and 'closed' or 'lan' end}
     gear.net = {supported = function() return true end, channel = function(name)
         check(name == 'auction', 'the client uses the channel auction')
         return {on = function(_, fn) channel_handler = fn end,
@@ -406,6 +407,95 @@ do
     for _, m in ipairs(g.seen) do if m.op == 'collected' then confirmed = m end end
     check(confirmed ~= nil, 'the delivery was confirmed')
     check(#g.srv.state.mail == 0, 'the server removed the mailbox entry')
+end
+
+---------------------------------------------------------------------------------------------------------------
+-- the kind of game decides where the market may live (kind.lua; gear.mp.mode is default-deny)
+---------------------------------------------------------------------------------------------------------------
+do
+    local reads, sent_ah = {}, 0
+    local read0 = gear.read
+    gear.read = function(n) reads[#reads + 1] = n return read0(n) end
+    local function market_files()
+        local n = 0
+        for _, r in ipairs(reads) do if r:find('market', 1, true) then n = n + 1 end end
+        return n
+    end
+    local function game(mode, opts)
+        opts = opts or {}
+        reads, sent_ah = {}, 0
+        files['market.json'], files['market.bak.json'] = nil, nil
+        local g = {to_srv = {}}
+        gear.mp = {active = function() return mode ~= 'single' end, is_host = function() return true end, local_slot = function() return 1 end,
+            send = function() sent_ah = sent_ah + 1 return true end,
+            local_player = function() return {slot = 1, name = 'Anna', key = 'anna:seraphim'} end}
+        if not opts.no_mode then gear.mp.mode = function() return mode end end
+        if opts.net then
+            gear.net = {supported = function() return true end, channel = function()
+                return {on = function(_, fn) g.handler = fn end, send = function(_, p) g.to_srv[#g.to_srv + 1] = json.decode(json.encode(p)) return true end}
+            end}
+        else gear.net = nil end
+        boot()
+        panel = package.loaded.ui
+        panel.panel = function(c, cfg) client = c return orig(c, cfg) end
+        frames(3)
+        g.kind = package.loaded.kind
+        return g
+    end
+    local function info(closed) return {op = 'info', where = 'server', closed = closed, authoritative = closed or nil, wallet = 0, market = 'm', now = os.time(),
+        rules = {durations = {1}, fee_per_day = 0, fee_min = 0, sale_cut = 0, max_per_seller = 5, max_listings = 5, price_min = 1, price_max = 100, page_size = 10}} end
+
+    -- the kinds that keep the old routes
+    for _, mode in ipairs({'single', 'lan', 'open'}) do
+        game(mode)
+        check(client.where == 'here', mode .. ': the market is in this game (' .. tostring(client.where) .. ')')
+    end
+    local g = game('lan', {net = true})
+    g.handler({slot = 0}, info(false))
+    frames(2)
+    check(client.where == 'server' and not g.kind.closed(), 'LAN: a server market that is not closed stays a LAN market')
+
+    -- Closed Net without a server market: closed, nothing sent, no market file, no host market
+    g = game('closed')
+    check(client.where == 'closed', 'Closed Net without a game server channel: closed (' .. tostring(client.where) .. ')')
+    check(sent_ah == 0 and market_files() == 0, 'nothing sent to a host, no market file read')
+    check(pcall(frames, 5), 'the closed panel draws')
+    gear.mp.mode = function() return 'closed' end
+    fire('mp_message', {slot = 2, key = 'host'}, 'ah', {op = 'info', wallet = 999, market = 'host-market', now = os.time(), rules = {}})
+    check(client.info == nil, 'an answer from a host market is ignored in Closed Net')
+    check(files['market.json'] == nil and market_files() == 0, 'still no market file')
+
+    -- a server channel that never answers: probing for a while, then closed (never the host or a local market)
+    g = game('closed', {net = true})
+    check(client.where == 'probe', 'Closed Net probes the server first (' .. tostring(client.where) .. ')')
+    check(#g.to_srv > 0 and g.to_srv[1].op == 'hello', 'a hello went to the server')
+    frames(300)
+    check(client.where == 'closed', 'no server market: closed after the probe (' .. tostring(client.where) .. ')')
+    local n = #g.to_srv
+    frames(100)
+    check(#g.to_srv == n and sent_ah == 0 and market_files() == 0, 'closed: no more messages, no host, no local market')
+    -- the server's market shows up late: it serves
+    g.handler({slot = 0}, info(true))
+    frames(2)
+    check(client.where == 'server' and g.kind.closed(), 'a market on the server serves Closed Net')
+
+    -- the engine says Open Net, the server says closed: closed (until the game ends)
+    g = game('open', {net = true})
+    check(not g.kind.closed(), 'Open Net by the engine')
+    g.handler({slot = 0}, info(true))
+    frames(2)
+    check(g.kind.closed() and client.where == 'server', 'a server that says closed makes it Closed Net')
+    g.kind.server_closed = true
+    gear.net = nil
+    fire('session.stop')
+    check(not g.kind.closed(), 'the game ended: the server flag is forgotten')
+
+    -- default-deny: an engine that cannot tell the kind of a network game reads closed
+    g = game('lan', {no_mode = true})
+    check(g.kind.mode() == 'closed' and client.where == 'closed', 'a network game without gear.mp.mode reads closed (' .. tostring(client.where) .. ')')
+    gear.read = read0
+    gear.net = nil
+    gear.mp = nil
 end
 
 print(('%d passed, %d failed'):format(passed, failed))
