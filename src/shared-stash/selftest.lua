@@ -322,6 +322,15 @@ return function(M, stash, transfer)
                 check(A.network_mode(m) == true and gear.mp.mode() == m, 'gear.mp.mode() reads ' .. m)
             end
             check(gear.mp.mode() == 'single', 'single player reads single')
+            -- default-deny: the Internet menu with nothing proven reads closed; a hero delivered by the server too
+            check(A.network_mode('internet') and gear.mp.mode() == 'closed', 'the Internet menu without proof reads closed')
+            check(A.network_mode('open') and gear.mp.mode() == 'open', 'Open Net proven reads open')
+            A.hero_from_server(true)
+            check(gear.mp.mode() == 'closed', 'a hero from the server reads closed even if everything else says open')
+            A.hero_from_server(false)
+            check(gear.mp.mode() == 'open', 'no hero from the server: open again')
+            check(A.network_mode('lan') and gear.mp.mode() == 'lan', 'the LAN menu reads lan')
+            A.network_mode('single')
             local before = #bp:items()
             local it
             for _, cand in ipairs(bp:items()) do if transfer.transferable(cand) then it = cand break end end
