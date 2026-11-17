@@ -3,6 +3,11 @@
 --   'lan'  hosts a LAN game through the menus (the hero at config.hero_x / hero_y of the LAN hero list, 1600x900
 --          screenshot pixels); the host's own requests and the market's answers go through gear.mp.send with
 --          gear.mp.force_network(true), so out through the real chat carrier and back.
+--   'closed' a REAL Closed Net game: the menus (Multiplayer > Closed Internet, lobby login, join) lead into a loopback game server
+--          (config host/port/account/password, realm 'ahclosed'; create = true makes the account's hero first; see tools/closed-net-test.md).
+--          The market is the server's (auction_house.lua), no forced network. Roles: 'closed' = the whole seller flow, 'closed_sell' = sell
+--          and stay (state in closed-state.json), 'closed_check' = rejoin and look for a duplicate, 'closed_buy' = buy that listing,
+--          'closed_collect' = collect the bought item, 'closed_gold' = deposit/withdraw gold only.
 -- Both: deposit gold, sell a backpack item, browse finds it with the seller's name, the panel draws every tab
 -- (a screenshot of each), cancel, collect the item back byte-identical, withdraw the gold, check the hero's gold.
 -- Delete market.json and journal.json in this folder before a run. Results: GearAutomation\<instance>\auction.json.
@@ -60,6 +65,61 @@ return function(M)
         end
     end
 
+    local function enter_closed()
+        gear.wait(6)
+        gear.realm.add({id = 'ahclosed', name = 'AH closed', host = cfg.host, port = cfg.port})
+        gear.realm.use('ahclosed')
+        A.ui_click(512, 352)            -- Multiplayer
+        gear.wait(2)
+        A.ui_click(512, 352)            -- Closed Internet (second entry)
+        gear.wait(3)
+        A.screenshot('cn-1-login')
+        local fields = {{512, 183, cfg.account}, {512, 249, cfg.password or ''}, {430, 319, 'AAAA'}, {430, 379, 'AAAA'}}
+        for i, f in ipairs(fields) do
+            A.ui_click(f[1], f[2]) gear.wait(0.4)
+            if i <= 2 then for _ = 1, 24 do A.press('back') end gear.wait(0.2) end
+            if f[3] ~= '' then A.type(f[3]) end gear.wait(0.4)
+        end
+        A.screenshot('cn-2-filled')
+        A.ui_click(512, 577)            -- Einloggen
+        gear.wait(6)
+        A.screenshot('cn-3-after-login')
+        A.ui_click(508, 438) gear.wait(2)       -- Ok on a message (invalid data block / reservation key)
+        gear.wait(4)
+        A.screenshot('cn-4-select')
+        if cfg.create then
+            A.ui_click(94, 495) gear.wait(1.5)      -- an empty slot
+            A.ui_click(508, 662) gear.wait(5)       -- Neuer Charakter
+            A.screenshot('cn-4b-newchar')
+            A.ui_click(cfg.class_x or 102, cfg.class_y or 480) gear.wait(2.5)
+            A.screenshot('cn-4c-class')
+            A.ui_click(512, 585) gear.wait(0.5)     -- the name
+            for _ = 1, 16 do A.press('back') end
+            A.type(cfg.hero or 'Seller')
+            gear.wait(0.5)
+            A.ui_click(608, 713) gear.wait(4)       -- Ok
+            A.screenshot('cn-5-created')
+        end
+        A.ui_click(102, 480) gear.wait(2)       -- the hero (slot 1)
+        A.screenshot('cn-6-hero')
+        A.ui_click(580, 713) gear.wait(4)       -- Lobby
+        A.screenshot('cn-7-lobby')
+        A.ui_click(222, 97) gear.wait(1)        -- the channel
+        A.ui_click(469, 382) gear.wait(4)       -- Betreten
+        A.screenshot('cn-8-games')
+        A.ui_click(222, 65) gear.wait(1)        -- the game
+        A.ui_click(469, 382) gear.wait(3)       -- Beitreten
+        A.screenshot('cn-9-joining')
+        -- the join turns into the "Starten" screen (hero profile of the players): click it until the world loads
+        for i = 1, 8 do
+            gear.wait(5)
+            if A.wait_for_game(1) then return end
+            A.ui_click(484, 381)                -- Starten
+            if i == 1 then A.screenshot('cn-10-starten') end
+            if A.wait_for_game(12) then return end
+        end
+    end
+
     local function host_lan()
         local function px(x, y) return (x - 200) / 1.1719, y / 1.1719 end
         gear.wait(8)
@@ -85,7 +145,32 @@ return function(M)
 
     gear.task(function()
         A.wait_for_menu(120)
-        if mode == 'lan' then
+        if mode:find('^closed') then
+            enter_closed()
+            if not A.wait_for_game(240) then
+                A.screenshot('cn-no-game')
+                check(false, 'joined the Closed Net game')
+                return finish()
+            end
+            gear.wait(8)
+            check(gear.mp.mode() == 'closed', "gear.mp.mode() reads closed (" .. tostring(gear.mp.mode()) .. ')')
+            out.channel_before = 0
+            if cfg.nudge ~= false then
+                -- the engine tells the server about the hero's gold with its next hero update: walk the hero now and then
+                -- so there is one (an idle hero sends none); every walk is logged with the time for the gold timing
+                gear.task(function()
+                    local pts = {{420, 330}, {600, 420}, {500, 300}, {620, 380}}
+                    local i = 0
+                    while true do
+                        gear.wait(cfg.nudge_every or 6)
+                        i = i % #pts + 1
+                        A.ui_click(pts[i][1], pts[i][2])
+                        out.nudges = (out.nudges or 0) + 1
+                        gear.log(('auction selftest: nudge %d at %.1f'):format(out.nudges, gear.time()))
+                    end
+                end)
+            end
+        elseif mode == 'lan' then
             host_lan()
             if not A.wait_for_game(240) then
                 A.screenshot('ah-lan-no-game')
@@ -108,6 +193,116 @@ return function(M)
         local hero = gear.world.hero()
         local bp = inv.container('backpack')
         if not check(hero ~= nil and bp ~= nil, 'hero and backpack') then return finish() end
+        if mode == 'closed_sell' or mode == 'closed_check' or mode == 'closed_buy' or mode == 'closed_proceeds' or mode == 'closed_relogin' then
+            -- the multi-run flow of a real Closed Net game (state between the runs in closed-state.json of the mod's folder):
+            --   closed_sell      seller: deposit gold, sell an item, remember it, then wait to be killed (no save, no quit)
+            --   closed_check     seller again: no duplicate in the backpack, the listing still stands
+            --   closed_buy       buyer: deposit, buy the listing, collect the item from the mailbox, remember it
+            --   closed_relogin   buyer again: the collected item is (still) in the backpack after the relogin
+            --   closed_proceeds  seller again: the wallet holds the sale less the cut, withdraw it
+            local function load_state() local t = gear.read('closed-state.json') return t and gear.json.decode(t) or {} end
+            local function save_state(st) gear.save('closed-state.json', gear.json.encode(st)) end
+            local st = load_state()
+            local online = gear.wait_until(function() return client:online() end, 30)
+            if not check(online, 'the market answers (info)') then return finish() end
+            check(client:authoritative(), 'the server says it keeps the hero (authoritative)')
+            local g0 = hero:gold()
+            out.gold_start = g0
+            note('gold ' .. tostring(g0) .. ', wallet ' .. tostring(client:wallet()) .. ', backpack ' .. #bp:items())
+            if mode == 'closed_sell' then
+                local DEP = 1000
+                local got, ok, err = await('deposit', 30, function(cb) client:deposit(DEP, cb) end)
+                check(got and ok, 'deposit: ' .. tostring(err))
+                local pick
+                for _, it in ipairs(bp:items()) do if panel.sellable(it, false) then pick = it break end end
+                if not check(pick ~= nil, 'a sellable item') then return finish() end
+                local hex = inv.hex(inv.export(pick.id))
+                local meta = panel.meta_of(pick)
+                local count0 = #bp:items()
+                got, ok, err = await('sell', 60, function(cb) client:sell(bp, pick, meta, 500, 1, cb) end)
+                check(got and ok, 'sell ' .. meta.name .. ': ' .. tostring(err))
+                check(not bp_has(hex) and #bp:items() == count0 - 1, 'the item left the backpack')
+                local listing
+                for _, e in ipairs(client.journal.entries) do if e.op == 'sell' and e.data == hex then listing = e.id end end
+                save_state({hex = hex, listing = listing, name = meta.name, count_before = count0, price = 500, sold_at = os.time()})
+                A.write('auction.json', gear.json.encode(out))
+                note('state saved; waiting to be killed')
+                gear.wait(600)
+                return finish()
+            end
+            if mode == 'closed_check' then
+                check(st.hex ~= nil, 'state of the sale present')
+                local same = 0
+                for _, it in ipairs(bp:items()) do
+                    local b = inv.export(it.id)
+                    if b and inv.hex(b) == st.hex then same = same + 1 end
+                end
+                -- (identical items, e.g. potions, can be in the backpack more than once: the count decides)
+                out.identical_left = same
+                note('identical items still in the backpack: ' .. same)
+                check(#bp:items() == st.count_before - 1, ('NO duplicate after the kill and rejoin: backpack %d (was %d, one sold)'):format(#bp:items(), st.count_before))
+                client.page = nil
+                client:browse({text = ''}, 'newest', true, 1)
+                gear.wait_until(function() return client.page ~= nil end, 20)
+                local found
+                for _, r in ipairs(client.page and client.page.rows or {}) do if r.name == st.name then found = r end end
+                check(found ~= nil, 'the listing is still on the market after the rejoin')
+                return finish()
+            end
+            if mode == 'closed_buy' then
+                client.page = nil
+                client:browse({text = ''}, 'newest', true, 1)
+                gear.wait_until(function() return client.page ~= nil end, 20)
+                local row
+                for _, r in ipairs(client.page and client.page.rows or {}) do if r.name == st.name then row = r end end
+                if not check(row ~= nil, 'the listing is there for the buyer') then return finish() end
+                local count0 = #bp:items()
+                local got, ok, err = await('buy', 60, function(cb) client:buy(row, cb) end)
+                check(got and ok, 'buy: ' .. tostring(err))
+                client.mail = nil
+                client:refresh_mail()
+                gear.wait_until(function() return client.mail ~= nil end, 20)
+                local entry
+                for _, m in ipairs(client.mail and client.mail.entries or {}) do if m.kind == 'item' then entry = m end end
+                if not check(entry ~= nil, 'the bought item is in the mailbox of the buyer') then return finish() end
+                got, ok, err = await('collect', 60, function(cb) client:collect(entry.mid, cb) end)
+                check(got and ok, 'collect: ' .. tostring(err))
+                check(bp_has(st.hex) ~= nil, 'the item arrived in the backpack, byte-identical')
+                check(#bp:items() == count0 + 1, ('backpack %d (was %d)'):format(#bp:items(), count0))
+                st.buyer_count = #bp:items()
+                st.bought_at = os.time()
+                save_state(st)
+                gear.wait(20)           -- the hero save after the arrival
+                return finish()
+            end
+            if mode == 'closed_relogin' then
+                check(bp_has(st.hex or 'x') ~= nil, 'the item the buyer collected is in the backpack after the relogin')
+                check(#bp:items() == st.buyer_count, ('backpack %d (was %d before the relogin)'):format(#bp:items(), st.buyer_count or -1))
+                return finish()
+            end
+            if mode == 'closed_proceeds' then
+                local w = client:wallet()
+                out.wallet = w
+                check(w > 0, 'the wallet of the seller holds the proceeds: ' .. tostring(w))
+                local got, ok, err = await('withdraw', 60, function(cb) client:withdraw(w, cb) end)
+                check(got and ok, ('withdraw %d: %s'):format(w, tostring(err)))
+                gear.wait(5)
+                check(hero:gold() == g0 + w, ('hero gold %d = %d + %d'):format(hero:gold(), g0, w))
+                return finish()
+            end
+        end
+        if mode == 'closed_goldtime' then
+            -- how long until the server hears of a gold change by Gear (hero update 0x169/0x16B/0x16C/0x16E/0x16F with the hero's
+            -- slot): the server log (--trace) holds the arrival; here the wall clock of the change
+            gear.wait(15)
+            local g0 = hero:gold()
+            local t0 = os.time()
+            local ok, err = hero:add_gold(-1000)
+            out.gold_change = {at_epoch = t0, at_gear = gear.time(), before = g0, after = hero:gold(), ok = ok, err = err}
+            note(('gold %d -> %d at epoch %d (gear %.1f)'):format(g0, hero:gold(), t0, gear.time()))
+            gear.wait(cfg.watch or 420)
+            return finish()
+        end
         local me = client:me()
         out.me = me
         note(('hero %s (%s)'):format(tostring(me.name), tostring(me.key)))
@@ -163,7 +358,7 @@ return function(M)
         for _, r in ipairs(client.page and client.page.rows or {}) do if r.id == listing then row = r end end
         check(row ~= nil, 'browse finds the listing (' .. tostring(client.page and client.page.total) .. ' found)')
         if row then
-            check(row.seller == me.name and row.seller_key == me.key, ('seller %s / %s'):format(tostring(row.seller), tostring(row.seller_key)))
+            check(row.seller == me.name and (mode:find('^closed') or row.seller_key == me.key), ('seller %s / %s'):format(tostring(row.seller), tostring(row.seller_key)))
             check(row.price == PRICE and row.name == meta.name, ('row %s for %s'):format(tostring(row.name), tostring(row.price)))
         end
         -- searching by a word of its name finds it too
