@@ -135,7 +135,7 @@ gear = {
         region = function() return {hover = false, clicked = false} end,
         item_icon = function() end,
         item_tooltip = function() return true, 300, 200 end,
-        item_tooltip_text = function() return 'Sword of Tests\nDamage 10-20\nRequired level 12' end,
+        item_tooltip_text = function() return '\\cffefefefSword of Tests\nDamage 10-20\nLevel: 12\nMinimum Level: 8' end,
         tooltip_rect = function() return 0, 0 end,
         key_pressed = function() return false end, key_down = function() return false end,
         show_panel = function() end, panel_open = function() return true end, edit_mode = function() return false end,

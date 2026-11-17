@@ -309,7 +309,16 @@ function M.meta_of(it, bytes)
         if line ~= '' then name = line break end
     end
     if not name then name = (it.type_name or ('item ' .. tostring(it.type))):gsub('%.%w+$', ''):gsub('_', ' ') end
-    local level = tonumber(text:lower():match('level[^%d\n]*(%d+)')) or 0
+    -- the item's level line ("Level: 9"; German "Stufe: 9", French "Niveau", Spanish "Nivel", Italian "Livello"),
+    -- not "Minimum Level" / "Minimum Stufe"
+    local level = 0
+    for line in text:lower():gmatch('[^\n]+') do
+        line = line:gsub('^%s+', '')
+        local n = line:match('^level%s*:?%s*(%d+)') or line:match('^stufe%s*:?%s*(%d+)')
+            or line:match('^niveau%s*:?%s*(%d+)') or line:match('^nivel%s*:?%s*(%d+)')
+            or line:match('^livello%s*:?%s*(%d+)')
+        if n then level = tonumber(n) break end
+    end
     return {name = name, level = level, quality = it.quality, category = it.category, w = it.w, h = it.h,
         classes = it.classes or {}, type = it.type, text = text:sub(1, 2000)}
 end
