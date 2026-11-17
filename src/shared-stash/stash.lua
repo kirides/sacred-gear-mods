@@ -23,7 +23,7 @@ local loaded = false
 -- Closed Net: the stash is the server's (remote.lua). Nothing of this file is read, written or shown there, whatever else
 -- asks: every entry point below checks it.
 local NO_LOCAL = 'the local stash is not used in Closed Net'
-function M.closed() return gear.mp ~= nil and gear.mp.mode ~= nil and gear.mp.mode() == 'closed' end
+function M.closed() return require('kind').closed() end
 
 local function empty(t) return type(t) ~= 'table' or next(t) == nil end
 

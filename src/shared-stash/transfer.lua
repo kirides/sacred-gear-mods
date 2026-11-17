@@ -4,7 +4,8 @@
 --   deposit:  write the stash file (with the item) -> take the item out of the character
 --   withdraw: put the item into the character     -> write the stash file (without it)
 -- If the second step of either fails, the first is undone. See README.md for the policy on older savegames.
-local stash = require('stash')
+-- The local stash module (stash.lua, the file) is loaded the first time something uses it, never in Closed Net.
+local stash = setmetatable({}, {__index = function(_, k) return require('stash')[k] end})
 
 local M = {}
 local cfg = gear.config
@@ -65,7 +66,7 @@ end
 
 -- Deposits item `it` (an entry of container:items()) of `container`. true | nil, message.
 function M.deposit(container, it)
-    if stash.closed() then return nil, 'Closed Net: the local stash is not used' end
+    if require('kind').closed() then return nil, 'Closed Net: the local stash is not used' end
     if not inv.can_change() then return nil, 'the inventory cannot be changed now' end
     if not M.chest_open() then return nil, 'open a chest first' end
     if stash.problem then return nil, stash.problem end
@@ -86,7 +87,7 @@ end
 -- Withdraws stash entry `entry` into the backpack (or the chest when the backpack has no room). true, where | nil,
 -- message.
 function M.withdraw(entry)
-    if stash.closed() then return nil, 'Closed Net: the local stash is not used' end
+    if require('kind').closed() then return nil, 'Closed Net: the local stash is not used' end
     if not inv.can_change() then return nil, 'the inventory cannot be changed now' end
     if not M.chest_open() then return nil, 'open a chest first' end
     if stash.problem then return nil, stash.problem end

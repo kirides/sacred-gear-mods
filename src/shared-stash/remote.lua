@@ -79,7 +79,9 @@ function M.receive(msg)
     if type(msg) ~= 'table' then return end
     local op = msg.op
     if op == 'info' then
+        M.answered = true
         if msg.closed then
+            require('kind').server_closed = true            -- the server keeps the stash: Closed Net whatever the engine's flags say
             info_ok_at, M.reason = gear.time(), nil
             M.count, M.max = msg.count or M.count, msg.max or M.max
         else
@@ -101,6 +103,18 @@ function M.receive(msg)
     elseif op == 'collected' then
         M.on_collected(msg)
     end
+end
+
+-- Outside Closed Net, once per game: asks the server whether it keeps the stash. Returns 'wait' (asked, no answer yet: the
+-- local stash must not be used), or 'done' (answered, or no server that could answer within PROBE seconds).
+local PROBE = 3
+function M.probe()
+    if M.answered then return 'done' end
+    if not M.reachable() then M.answered = true return 'done' end
+    local now = gear.time()
+    if not M.probed_at then M.probed_at = now send({op = 'info'}) end
+    if now - M.probed_at > PROBE then M.answered = true return 'done' end
+    return 'wait'
 end
 
 function M.refresh(force)
@@ -253,6 +267,8 @@ end
 
 -- Forgets what the server told (a new game, another server).
 function M.reset()
+    require('kind').reset()
+    M.probed_at, M.answered = nil, false
     M.entries, M.count, M.max, M.reason, incoming = {}, 0, nil, nil, nil
     info_ok_at, info_at, list_at = nil, -100, -100
     M.pending = {}

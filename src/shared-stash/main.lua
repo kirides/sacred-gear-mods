@@ -8,13 +8,15 @@ gear.on('settings.changed', function(id, value) cfg[id] = value end)
 if not cfg.enabled then return end
 
 local ui, world = gear.ui, gear.world
-local stash = require('stash')
+local kind = require('kind')
+-- stash.lua (the local file) loads when first used, never in Closed Net
+local stash = setmetatable({}, {__index = function(_, k) return require('stash')[k] end})
 local transfer = require('transfer')
 local remote = require('remote')
 
 -- The kind of game decides where the stash lives: stash.json (single player, LAN, Open Net) or the server (Closed Net,
 -- remote.lua; never stash.json). stash.lua loads its file only when it is first used outside Closed Net.
-local function closed() return stash.closed() end
+local function closed() return kind.closed() end
 
 local QUALITY_COLOR = {
     normal = 0xFFEFEFEF, magic = 0xFFA0A0FF, rare = 0xFFF0E040, unique = 0xFFC19A33, set = 0xFF15FF25,
@@ -154,6 +156,12 @@ local function panel()
             return
         end
     else
+        -- a network game that is not (yet) known to be Closed Net: ask the server first (it may keep the stash), then the file
+        if kind.mode() ~= 'single' and remote.probe() == 'wait' then
+            ui.text('Asking the server about the shared stash ...', x, y, {width = w, color = 0xFFC0C0C0, size = 12})
+            return
+        end
+        if closed() then return end                         -- the server said so meanwhile: the next frame draws the server's stash
         stash.ensure()
     end
     if not net and stash.problem then

@@ -360,6 +360,16 @@ return function(M, stash, transfer)
             A.network_mode('single')
             gear.auto.show_window('UI_WND_CHEST', false)
 
+            -- the server says it keeps the stash (info closed = true) while the engine's flags say 'open': closed all the same
+            touched = {}
+            A.network_mode('open')
+            require('kind').server_closed = true
+            check(stash.closed(), 'a server that keeps the stash makes it Closed Net whatever the flags say')
+            check(#stash.items() == 0 and stash.add({name = 'x', data = '00'}, 10) == nil, 'and the local stash is dead')
+            check(stash_touched() == 0, 'no stash file access then')
+            require('kind').reset()
+            A.network_mode('single')
+
             -- outside Closed Net the same code reads the file
             touched = {}
             check(stash.closed() == false, 'not closed again')
@@ -419,6 +429,7 @@ return function(M, stash, transfer)
             end
             remote.refresh(true) pump()
             check(remote.available() == true, 'the server said it keeps the stash')
+            check(require('kind').server_closed, "its info made the stash 'closed' for the mod")
             local before = #bp:items()
             local it
             for _, cand in ipairs(bp:items()) do if transfer.transferable(cand) then it = cand break end end
@@ -450,6 +461,8 @@ return function(M, stash, transfer)
             check(not remote.busy(), 'nothing pending at the end')
             note(table.concat(said, ' | '))
             remote.use_channel(nil)
+            remote.reset()
+            check(not require('kind').server_closed, 'reset forgets what the server said')
 
         elseif cfg.selftest == 'noinst' then
             -- 1000 tooltips of exports and several seconds of stash icons with the panel open, then a real item is still made fine
