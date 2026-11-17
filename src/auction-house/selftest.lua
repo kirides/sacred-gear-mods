@@ -74,6 +74,13 @@ return function(M)
         A.ui_click(px(553, 448))                -- create
         gear.wait(3)
         A.ui_click(px(747, 448))                -- create: the game starts its gameserver and connects to it
+        -- the dialog turns into "join game" with Starten at the same place once the server is up: press it until in game
+        for _ = 1, 8 do
+            gear.wait(5)
+            if A.wait_for_game(1) then return end
+            A.ui_click(px(747, 448))            -- Starten
+            if A.wait_for_game(10) then return end
+        end
     end
 
     gear.task(function()
@@ -87,7 +94,9 @@ return function(M)
             end
             gear.wait(8)
             local mp = gear.mp
-            check(mp.active() and mp.is_host(), 'a network game, this game is the host (slot ' .. tostring(mp.local_slot()) .. ')')
+            -- (mp.active() means "more than one player": false while the host is alone)
+            local network = select(2, gear.inv.can_change())
+            check(network == true and mp.is_host(), 'a network game, this game is the host (slot ' .. tostring(mp.local_slot()) .. ')')
             mp.force_network(true)
             M.via_channel(true)
             out.channel_before = mp._channel and mp._channel.received or 0
