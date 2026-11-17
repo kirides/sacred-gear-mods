@@ -71,6 +71,8 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/drop-tuning_selftest` | Automation self test of the drop-tuning mod |
 | `src/world-events` | A movable progress bar for the game server's world event (needs the remake server's `world_events.lua`). [README](src/world-events/README.md) |
 | `src/world-events_selftest` | Automation self test of the world-events mod |
+| `src/sector-tools` | For server admins: the sector id and grid cell you stand in, boundaries on the ground, recording areas by walking, copy-to-clipboard of the config line for the server's `world_events.lua`. [README](src/sector-tools/README.md) |
+| `src/sector-tools_selftest` | Automation self test of the sector-tools mod |
 | `src/shared-stash` | The shared stash, built on `gear.inv`; includes its self tests. [README](src/shared-stash/README.md) |
 | `tools/readme-shots` | Takes this README's screenshots in a copy of the game folder ([how](docs/Screenshots.md)) |
 
