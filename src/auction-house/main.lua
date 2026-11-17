@@ -86,6 +86,9 @@ local market            -- the market object when it runs here
 local to_market = {}    -- requests of this game's own client to a market in this game
 local to_client = {}    -- answers of a market in this game to this game's own client
 local client
+-- Self test only: the host's own requests and the market's answers to it go through gear.mp.send (with
+-- gear.mp.force_network, out through the real chat carrier) instead of the in-game queues.
+local via_channel = false
 
 local function hex_id()
     return ('%08x%08x'):format(math.random(0, 0x7FFFFFFF), math.random(0, 0x7FFFFFFF))
@@ -100,7 +103,7 @@ local function ensure_market()
         random_id = hex_id,
         log = function(t) gear.log('market: ' .. t) end,
         send = function(slot, msg)
-            if slot == local_slot() or not (mp and mp.active and mp.active()) then
+            if not via_channel and (slot == local_slot() or not (mp and mp.active and mp.active())) then
                 to_client[#to_client + 1] = msg
             elseif has_channel then
                 mp.send(CHANNEL, msg, slot)
@@ -114,7 +117,7 @@ local function ensure_market()
 end
 
 client = clientmod.new(function(msg)
-    if market_here() then
+    if market_here() and not via_channel then
         to_market[#to_market + 1] = msg
     elseif has_channel then
         mp.send(CHANNEL, msg, 'host')
@@ -193,5 +196,6 @@ gear.on('draw', function(state)
     panel.panel(client, cfg)
 end)
 
-local M = {client = client, panel = panel, market = function() return market end, ensure_market = ensure_market}
+local M = {client = client, panel = panel, market = function() return market end, ensure_market = ensure_market,
+    via_channel = function(on) via_channel = (on and has_channel) and true or false end}
 if gear.auto and cfg.selftest then require('selftest')(M) end
