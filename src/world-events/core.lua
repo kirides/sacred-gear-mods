@@ -11,6 +11,14 @@ function M.clamp(v, lo, hi)
     return v
 end
 
+-- A percent as the server sends it: 30, or 12.5 (nothing for a missing one).
+function M.number(value)
+    value = tonumber(value)
+    if not value then return '?' end
+    local text = ('%.1f'):format(value):gsub('%.0$', '')
+    return text
+end
+
 -- Seconds as 1:12:05, 12:30 or 0:45.
 function M.format_time(seconds)
     seconds = math.max(0, math.floor((tonumber(seconds) or 0) + 0.5))
@@ -67,12 +75,18 @@ function M.parse(payload)
     s.n = tonumber(payload.n) or 0
     s.people = tonumber(payload.people) or 0
     s.unit = M.clean(payload.unit, 24)
+    s.area = M.clean(payload.area, 40)
     if st == 'active' then
         s.left = math.max(0, tonumber(payload.left) or 0)
         s.dur = math.max(1, tonumber(payload.dur) or 1)
         s.mine = math.max(0, tonumber(payload.mine) or 0)
         s.need = math.max(0, tonumber(payload.need) or 0)
         s.reward = M.clean(payload.reward, 60)
+        -- the reward odds (text from the server: the current row and the next one) and the percent they start at
+        s.odds = M.clean(payload.odds, 120)
+        s.odds_at = tonumber(payload.odds_at)
+        s.odds_next = M.clean(payload.odds_next, 120)
+        s.odds_next_at = tonumber(payload.odds_next_at)
     else
         s.hold = math.max(0, tonumber(payload.hold) or 0)
     end
@@ -116,6 +130,8 @@ end
 M.SAMPLE = {
     st = 'active', title = 'Orc hunt', text = 'Slay 1000 orcs', unit = 'orcs', count = 370, target = 1000, left = 4325, dur = 7200,
     here = true, mine = 12, need = 10, people = 5, reward = 'gold, an item', n = 1,
+    odds = 'Rare 20%, Magic 30%, Common 50%', odds_at = 30, odds_next = 'Legendary 2%, Epic 8%, Rare 25%, Magic 30%, Common 35%',
+    odds_next_at = 80,
 }
 
 -- The seconds over which a result fades out at the end of its hold.
@@ -147,13 +163,20 @@ function Model:view(now, opts)
         local mine_text = (s.need > 0 and s.mine < s.need)
             and ('Your share: %d (%d needed for the reward)'):format(s.mine, s.need) or ('Your share: %d'):format(s.mine)
         local tip = {s.title}
+        if s.area ~= '' then tip[#tip + 1] = 'Around ' .. s.area end
         if s.text ~= '' then tip[#tip + 1] = s.text end
         tip[#tip + 1] = ('%s%s (%d%%)'):format(count_text, unit, pct)
         tip[#tip + 1] = 'Time left: ' .. time_text
         tip[#tip + 1] = mine_text
         if s.reward ~= '' then tip[#tip + 1] = 'Reward: ' .. s.reward end
+        if s.odds ~= '' or s.odds_next ~= '' then
+            tip[#tip + 1] = 'Item odds:'
+            if s.odds ~= '' then tip[#tip + 1] = ('  from %s%%: %s'):format(M.number(s.odds_at), s.odds) end
+            if s.odds_next ~= '' then tip[#tip + 1] = ('  from %s%%: %s'):format(M.number(s.odds_next_at), s.odds_next) end
+            tip[#tip + 1] = 'Rolled when the event ends, with the highest row reached.'
+        end
         return {
-            kind = 'active', title = s.title, text = s.text, count = s.count, target = s.target, unit = s.unit,
+            kind = 'active', title = s.title, text = s.text, count = s.count, target = s.target, unit = s.unit, area = s.area,
             percent = pct, frac = M.clamp(s.count / s.target, 0, 1), left = left, time_frac = M.clamp(left / s.dur, 0, 1),
             time_text = time_text, count_text = count_text, line2 = count_text .. unit, alpha = 1,
             late = left <= 60 and s.count < s.target, mine = s.mine, need = s.need, qualifies = qualifies,
@@ -166,10 +189,13 @@ function Model:view(now, opts)
     if remaining <= 0 then return nil end
     if opts.area ~= 'everywhere' and not s.here then return nil end
     local won = s.st == 'won'
-    local tip = {s.title, won and 'Completed!' or 'Failed', ('%s%s (%d%%)'):format(count_text, unit, pct)}
+    local tip = {s.title}
+    if s.area ~= '' then tip[#tip + 1] = 'Around ' .. s.area end
+    tip[#tip + 1] = won and 'Completed!' or 'Failed'
+    tip[#tip + 1] = ('%s%s (%d%%)'):format(count_text, unit, pct)
     if won and s.people > 0 then tip[#tip + 1] = ('%d heroes took part'):format(s.people) end
     return {
-        kind = s.st, title = s.title, text = won and 'Completed!' or 'Failed', count = s.count, target = s.target, unit = s.unit,
+        kind = s.st, title = s.title, text = won and 'Completed!' or 'Failed', count = s.count, target = s.target, unit = s.unit, area = s.area,
         percent = pct, frac = M.clamp(s.count / s.target, 0, 1), left = 0, time_frac = 0, time_text = '',
         count_text = count_text, line2 = won and 'Completed!' or 'Failed', people = s.people, qualifies = won, tip = tip,
         alpha = M.clamp(remaining / M.FADE, 0, 1), mine_text = '',

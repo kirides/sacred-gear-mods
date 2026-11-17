@@ -26,7 +26,7 @@ percentage is in the middle. To the right: the event's name, then `370 / 1,000 o
 
 * **Details:** hover the pill with the cursor, or hold **Alt** (the game's "show text"), and a small tooltip lists the goal,
   the progress (`370 / 1,000 orcs (37%)`), the time left, **your share** (`Your share: 12 (10 needed for the reward)` until you
-  reached the minimum) and the reward. The controller's mod menu (LT + LB by default) has **World events: pin / unpin the
+  reached the minimum), the reward, the **item odds** (see below) and, for an event tied to an area, Around Silver Creek; the area name also follows the title in the pill. The controller's mod menu (LT + LB by default) has **World events: pin / unpin the
   details**.
 * **Pulse:** the pill glows for a moment when the realm passes 25, 50 or 75 % (a setting).
 * **Result:** when an event ends, the pill shows one short line, **Completed!** or **Failed**, in a green or red ring, and fades
@@ -47,14 +47,19 @@ percentage is in the middle. To the right: the event's name, then `370 / 1,000 o
 The pill is a **bare panel** (`gear.ui.panel` with `bare = true`, added to Sacred Gear for it: no window chrome, but still a layout
 panel). It needs a SacredGear.dll that has the option; an older one draws a plain panel with its title bar instead.
 
+## Reward odds
+
+The server can make the item reward better the further the realm gets (rows like *from 10 %: Magic 25 %, Common 75 %*). The tooltip lists the odds of the row the realm has reached and of the next one, as the server sends them, with the rule: the item is rolled once when the event ends, with the highest row reached. The server's dashboard, !event rewards and the milestone announcements show the same odds; nothing is hidden or added by this mod.
+
 ## How it talks to the server
 
 Channel `worldevents:state` of `gear.net` (custom opcodes). The mod says `{hello = 1}` to the server when the messages become
 available, when a game starts and every 30 seconds; the server answers with the state for this player:
 
 ```lua
-{ v = 1, st = 'active', n = <event number>, title, text, unit = 'orcs', count, target, left = <seconds>, dur, here = <counts where you are>,
-  mine = <your share>, need = <minimum for the reward>, people, reward }
+{ v = 1, st = 'active', n = <event number>, title, text, unit = 'orcs', area = 'Silver Creek', count, target, left = <seconds>, dur, here = <counts where you are>,
+  mine = <your share>, need = <minimum for the reward>, people, reward,
+  odds = <current odds text>, odds_at = <percent>, odds_next = <next odds text>, odds_next_at = <percent> }
 { v = 1, st = 'won' | 'failed', n, title, text, count, target, hold = <seconds to keep showing>, here, people }
 { v = 1, st = 'idle', next_in = <seconds> }
 ```

@@ -38,7 +38,8 @@ local function bar()
 end
 
 local active = {st = 'active', title = 'Orc hunt', text = 'Slay 1000 orcs', unit = 'orcs', count = 370, target = 1000, left = 4325, dur = 7200,
-    here = true, mine = 12, need = 10, people = 5, reward = 'gold, an item', n = 1}
+    here = true, mine = 12, need = 10, people = 5, reward = 'gold, an item', n = 1, area = 'Silver Creek',
+    odds = 'Rare 20%, Magic 30%, Common 50%', odds_at = 30, odds_next = 'Epic 8%, Rare 25%, Magic 30%, Common 37%', odds_next_at = 80}
 
 local function feed(t)
     local copy = {}

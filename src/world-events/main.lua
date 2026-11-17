@@ -190,6 +190,14 @@ local function draw_view(view, state)
     local tw = math.max(20, w - (tx - x) - 10)
     ui.text(view.title, tx, y + h / 2 - 15 * k, {size = 12.5 * k, bold = true, color = with_alpha(COLOR.title, fade), shadow = true,
         width = tw, height = 15 * k})
+    if view.area and view.area ~= '' then
+        -- "Orc hunt · Silver Creek": the area name after the title, dimmer, as far as there is room
+        local title_w = text_width(view.title .. '  ', {size = 12.5 * k, bold = true})
+        if title_w < tw - 30 * k then
+            ui.text('\194\183 ' .. view.area, tx + title_w, y + h / 2 - 14 * k, {size = 11 * k, color = with_alpha(COLOR.count, fade),
+                shadow = true, width = tw - title_w, height = 14 * k})
+        end
+    end
     local f2 = {size = 11.5 * k}
     ui.text(view.line2, tx, y + h / 2 + 1 * k, {size = f2.size, color = with_alpha(COLOR.count, fade), shadow = true, height = 14 * k})
     if view.time_text ~= '' then

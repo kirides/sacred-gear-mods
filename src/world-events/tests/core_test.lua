@@ -134,5 +134,36 @@ local _, c6 = push(2, 90); check(c6 == nil, 'another event: no pulse')
 local _, c7 = push(2, 50); check(c7 == nil, 'going down: no pulse')
 local okb, cb = pm:receive({st = 'nope'}, 0); check(okb == false and cb == nil, 'a bad push pulses nothing')
 
+-- the area name and the reward odds in the details
+local am = core.new()
+am:receive({st = 'active', title = 'Thief hunt', text = 'Defeat 500 thieves', unit = 'thieves', area = 'Silver Creek', count = 100, target = 500,
+    left = 600, dur = 7200, here = true, mine = 4, need = 5, reward = 'gold', odds = 'Magic 25%, Common 75%', odds_at = 10,
+    odds_next = 'Rare 20%, Magic 30%, Common 50%', odds_next_at = 30, n = 1}, 0)
+local av = am:view(0, {area = 'sector'})
+eq(av.area, 'Silver Creek', 'the view carries the area name')
+eq(av.tip[2], 'Around Silver Creek', 'tooltip: the area')
+local tip = table.concat(av.tip, '\n')
+check(tip:find('Item odds:', 1, true) ~= nil, 'tooltip: odds heading')
+check(tip:find('  from 10%: Magic 25%, Common 75%', 1, true) ~= nil, 'tooltip: the current odds')
+check(tip:find('  from 30%: Rare 20%, Magic 30%, Common 50%', 1, true) ~= nil, 'tooltip: the next odds')
+check(tip:find('Rolled when the event ends, with the highest row reached.', 1, true) ~= nil, 'tooltip: when it is rolled')
+local nodds = core.new()
+nodds:receive({st = 'active', title = 'T', text = 'x', count = 1, target = 2, left = 5, here = true, n = 1}, 0)
+check(not table.concat(nodds:view(0, {area = 'sector'}).tip, '\n'):find('odds', 1, true), 'no odds from the server: no odds lines')
+-- hostile text is cut and cleaned like the other strings
+local hostile = core.new()
+hostile:receive({st = 'active', title = 'T', text = 'x', count = 1, target = 2, left = 5, here = true, n = 1, odds = ('x'):rep(500) .. '\\c', area = 5,
+    odds_at = 'abc'}, 0)
+local hv = hostile:view(0, {area = 'sector'})
+check(#hv.tip[#hv.tip - 2] < 160, 'a long odds text is cut')
+eq(hv.area, '', 'a non-text area is nothing')
+eq(core.number(12.5), '12.5', 'number: a half')
+eq(core.number(30), '30', 'number: whole')
+eq(core.number(nil), '?', 'number: none')
+-- a result keeps the area in its details
+local rm = core.new()
+rm:receive({st = 'won', title = 'T', text = 'x', area = 'Silver Creek', count = 5, target = 5, hold = 30, here = true, people = 3}, 0)
+eq(rm:view(0, {area = 'sector', results = true}).tip[2], 'Around Silver Creek', 'result: the area')
+
 print(('world-events core: %d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
