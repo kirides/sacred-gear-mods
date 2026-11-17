@@ -29,6 +29,45 @@ return function(M, stash, transfer)
             note(('backpack before %d, after %d (the client sees its own copy; the server must not keep it)'):format(before, #bp:items()))
             return finish()
         end
+        if cfg.selftest == 'e2esock' then
+            -- A withdrawal of an item with sockets from the server stash (the entries were put there from a single player game): the client makes
+            -- the item in two steps; the server's token must cover both (the finished item must match its records).
+            local A, remote = gear.auto, require('remote')
+            local said = {}
+            remote.notify = function(text, ok) said[#said + 1] = (ok and 'ok: ' or 'no: ') .. text note('notice ' .. said[#said]) end
+            local function until_(fn, seconds)
+                local t0 = gear.time()
+                while not fn() and gear.time() - t0 < seconds do gear.wait(0.5) end
+                return fn()
+            end
+            check(A.wait_for_game(400), 'the Closed Net world loaded')
+            gear.wait(8)
+            remote.refresh(true)
+            check(until_(function() return #remote.entries > 0 end, 15), 'the server lists entries')
+            local bp = inv.container('backpack')
+            local before = #bp:items()
+            local pick
+            for _, e in ipairs(remote.entries) do
+                local bytes = inv.unhex(e.data)
+                local n = bytes and (bytes:byte(5) + bytes:byte(6) * 256) or 0
+                if n >= 1 then pick = e break end
+            end
+            check(pick ~= nil, 'an entry with sockets')
+            if pick then
+                local ok, err = remote.withdraw(pick)
+                check(ok, 'withdraw sent: ' .. tostring(err))
+                check(until_(function() return not remote.busy() end, 60), 'the withdrawal was confirmed')
+                check(#bp:items() == before + 1, 'the item is in the backpack (' .. before .. ' before)')
+                local found
+                for _, it in ipairs(bp:items()) do
+                    local bytes = inv.export(it.id)
+                    if bytes and (bytes:byte(5) + bytes:byte(6) * 256) >= 1 then found = it end
+                end
+                check(found ~= nil, 'an item with socket entries is in the backpack: ' .. tostring(found and found.type_name))
+            end
+            note(table.concat(said, ' | '))
+            return finish()
+        end
         if cfg.selftest == 'e2e' then
             -- A real Closed Net game (gear/examples/closedtest drives the menus into a loopback game server with shared_stash.lua).
             local A, remote, kind = gear.auto, require('remote'), require('kind')
