@@ -64,6 +64,17 @@ local function str(v, max)
     return v
 end
 
+-- The game's tooltip text without its codes: `\c` and `\w` (a colour, 8 hex digits) and `\g` (an image: a colour and
+-- an image id, 16 characters, the id padded with spaces).
+function M.plain(s)
+    if type(s) ~= 'string' then return s end
+    s = s:gsub('\\g%x%x%x%x%x%x%x%x[%x ][%x ][%x ][%x ][%x ][%x ][%x ][%x ]', '')
+    s = s:gsub('\\[cw]%x%x%x%x%x%x%x%x', '')
+    return s
+end
+
+local function trim(s) return type(s) == 'string' and (s:gsub('^%s+', ''):gsub('%s+$', '')) or s end
+
 -- The item's type id: the first four bytes of its data, little endian (as gear.inv.export writes it).
 function M.type_of(hex)
     if type(hex) ~= 'string' or #hex < 8 then return nil end
@@ -567,15 +578,16 @@ local function clean_meta(meta, data_type)
         end
     end
     local q = QUALITY_RANK[meta.quality] and meta.quality or 'normal'
+    local name = trim(M.plain(meta.name))
     return {
-        name = str(meta.name, 80) or ('item ' .. tostring(data_type)),
+        name = str(name ~= '' and name or nil, 80) or ('item ' .. tostring(data_type)),
         quality = q,
         category = str(meta.category, 20) or 'other',
         w = math.max(1, math.min(4, int(meta.w) or 1)),
         h = math.max(1, math.min(6, int(meta.h) or 1)),
         level = math.max(0, math.min(999, int(meta.level) or 0)),
         classes = classes,
-        text = str(meta.text, MAX_TEXT) or '',
+        text = str(M.plain(meta.text), MAX_TEXT) or '',
     }
 end
 

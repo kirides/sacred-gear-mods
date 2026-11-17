@@ -2,6 +2,7 @@
 -- while the game's chest window is open; closes with it. Everything is a widget (buttons, dropdowns, regions), so
 -- the controller's D-pad reaches all of it; text fields have a "Kbd" button for an on-screen keyboard.
 local ui, inv, world = gear.ui, gear.inv, gear.world
+local plain = require('core').plain
 
 local M = {}
 
@@ -301,6 +302,7 @@ function M.meta_of(it, bytes)
     local ok, t = pcall(ui.item_tooltip_text, bytes or it.id)
     if ok and type(t) == 'string' then text = t
     elseif ok and type(t) == 'table' then text = table.concat(t, '\n') end
+    text = plain(text)      -- without the game's colour and image codes
     local name
     for line in text:gmatch('[^\n]+') do
         line = line:gsub('^%s+', ''):gsub('%s+$', '')

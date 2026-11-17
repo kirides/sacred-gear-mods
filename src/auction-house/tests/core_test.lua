@@ -282,5 +282,23 @@ do
     eq(w.saves, 0, 'nothing written')
 end
 
+-- the game's tooltip codes do not reach names and search text
+do
+    local first = '\\gffffffff     19e\\cffefefef Sparkling Wings of the Menial (0/1)'
+    eq(core.plain(first), ' Sparkling Wings of the Menial (0/1)', 'plain: an image and a colour code')
+    eq(core.plain('\\wff007700Protection: \\gffffffff000000d1\\wffffffa06'), 'Protection: 6', 'plain: \\w and \\g with an id')
+    local w = world()
+    local m = core.new(w.deps)
+    req(m, A, {op = 'deposit', rid = 'pd', gold = 100})
+    req(m, A, {op = 'sell', rid = 'ps', data = HEX, price = 10, days = 1,
+        meta = {name = first, text = first .. '\n\\cff87cefaSeraphim\nLevel: 9'}})
+    local l = m.state.listings[#m.state.listings]
+    eq(l and l.meta.name, 'Sparkling Wings of the Menial (0/1)', 'listing name without codes')
+    check(l and not l.meta.text:find('\\', 1, true), 'listing text without codes')
+    req(m, A, {op = 'sell', rid = 'ps2', data = HEX, price = 10, days = 1, meta = {name = '\\cffefefef  '}})
+    l = m.state.listings[#m.state.listings]
+    eq(l and l.meta.name, 'item 298', 'a name of codes only falls back to the type')
+end
+
 print(('%d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
