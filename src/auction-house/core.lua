@@ -5,6 +5,10 @@
 --   deps.now()               -> seconds (os.time on the machine that runs the market)
 --   deps.load()              -> the saved state table, or nil (no market yet), or nil, error (unreadable: read-only)
 --   deps.save(state)         -> true | nil, error (must be atomic: temp file + rename)
+--   deps.save_async(state, done)  (instead of save, optional) starts the write; done(ok, err) once it is on disk. While a
+--                            write is out, requests and sweeps wait in a queue (`waiting`) and run after it, so a failed
+--                            write can be undone without touching later changes
+--   deps.rolled_back(state)  (optional) the state after a failed write was undone (to put it back where it is kept)
 --   deps.send(slot, msg)     -> sends a message table to a player
 --   deps.log(text)           (optional)
 --   deps.random_id()         -> a random hex string (optional; the market id)
@@ -13,6 +17,12 @@
 -- that write fails, the whole batch is undone and every changing request of it is refused. Requests that change
 -- something carry a request id (rid); the answer to a rid is kept for RID_DAYS days, so a repeated request gets the
 -- same answer and changes nothing (DESIGN.md, section 4).
+--
+-- Identity: `from.key` and `from.name` as the receiving side sees the player. A market inside a server that identifies
+-- its players itself (the C# GameServer: a per-server hero id) passes `from.verified = true`: no secret is needed then.
+--
+-- Plain Lua 5.1 / 5.2 (LuaJIT, and the GameServer's LuaCSharp 5.2 sandbox): no require of other modules, no os, io,
+-- goto, bit operations or integer division.
 local M = {}
 M.VERSION = 1           -- the file format
 M.PROTOCOL = 1          -- the messages
@@ -150,7 +160,7 @@ Market.__index = Market
 
 function M.new(deps, rules)
     local self = setmetatable({deps = deps, rules = {}, out = {}, batch = nil, problem = nil, note = nil,
-        online = {}, last_sweep = -1e18}, Market)
+        online = {}, last_sweep = -1e18, writing = false, waiting = {}}, Market)
     for k, v in pairs(M.DEFAULT_RULES) do self.rules[k] = v end
     for k, v in pairs(rules or {}) do self.rules[k] = v end
     self:load()
@@ -215,29 +225,64 @@ function Market:add_log(kind, text)
 end
 
 -- Writes the batch (if anything changed) and sends the answers. On a failed write the state goes back to where the
--- batch began and every changing answer becomes a refusal.
+-- batch began and every changing answer becomes a refusal. With deps.save_async the answers go out once the write is
+-- done; until then new requests wait (handle queues them) and run, as the next batch, after it.
 function Market:flush()
-    local out = self.out
-    self.out = {}
-    if self.batch then
-        local ok, err = self.deps.save(self.state)
-        if not ok then
-            self.state = self.batch
-            self:log('market write failed: ' .. tostring(err))
-            for _, o in ipairs(out) do
-                if o.changing then
-                    o.msg = {op = 'result', rid = o.msg.rid, ok = false, err = 'the market could not save; nothing changed'}
-                end
-            end
-            -- notifications of the failed batch must not go out
-            local kept = {}
-            for _, o in ipairs(out) do if o.msg.op ~= 'notify' then kept[#kept + 1] = o end end
-            out = kept
-        end
-        self.batch = nil
+    if self.writing then return end
+    local out, batch = self.out, self.batch
+    self.out, self.batch = {}, nil
+    if not batch then return self:send_out(out) end
+    if self.deps.save_async then
+        self.writing = true
+        local done = false
+        self.deps.save_async(self.state, function(ok, err)
+            if done then return end
+            done = true
+            self.writing = false
+            self:finish(out, batch, ok, err)
+            self:drain()
+        end)
+        return
     end
+    local ok, err = self.deps.save(self.state)
+    self:finish(out, batch, ok, err)
+end
+
+function Market:finish(out, batch, ok, err)
+    if not ok then
+        self.state = batch
+        self:log('market write failed: ' .. tostring(err))
+        for _, o in ipairs(out) do
+            if o.changing then
+                o.msg = {op = 'result', rid = o.msg.rid, ok = false, err = 'the market could not save; nothing changed'}
+            end
+        end
+        -- notifications of the failed batch must not go out
+        local kept = {}
+        for _, o in ipairs(out) do if o.msg.op ~= 'notify' then kept[#kept + 1] = o end end
+        out = kept
+        if self.deps.rolled_back then self.deps.rolled_back(self.state) end
+    end
+    self:send_out(out)
+end
+
+function Market:send_out(out)
     for _, o in ipairs(out) do self.deps.send(o.slot, o.msg) end
 end
+
+-- After an asynchronous write: the requests that came in meanwhile, as one batch.
+function Market:drain()
+    if #self.waiting == 0 then return end
+    local list = self.waiting
+    self.waiting = {}
+    for _, w in ipairs(list) do
+        if w.sweep then self:sweep(w.force) else self:handle(w.from, w.msg) end
+    end
+    self:flush()
+end
+
+-- Is a write out (deps.save_async)? Then changes must wait.
+function Market:busy() return self.writing end
 
 ---------------------------------------------------------------------------------------------------------------
 -- request ids
@@ -308,6 +353,11 @@ end
 -- (every minute is plenty); it starts a batch only if something changes.
 function Market:sweep(force)
     if self.problem then return end
+    if self.writing then
+        for _, w in ipairs(self.waiting) do if w.sweep then return end end
+        self.waiting[#self.waiting + 1] = {sweep = true, force = force}
+        return
+    end
     local now = self.deps.now()
     if not force and now - self.last_sweep < 60 then return end
     self.last_sweep = now
@@ -455,6 +505,20 @@ end
 
 -- Checks the player's key and secret: the first request with a key binds the secret to it.
 function Market:identify(from, msg)
+    if from.verified then
+        -- the server identified the player itself (no secret): its key and name are the truth
+        local key, name = str(from.key, 80), str(from.name, 40) or from.key
+        if not key or key == '' then return nil, 'no player identity' end
+        local p = self.state.players[key]
+        if not p then
+            self:begin()
+            self.state.players[key] = {name = name, first = self.deps.now(), seen = self.deps.now(), verified = true}
+        elseif p.name ~= name then
+            self:begin()
+            p.name = name
+        end
+        return key, name
+    end
     local key = from.key or str(msg.key, 80)
     if not key or key == '' then return nil, 'no player identity' end
     local secret = str(msg.secret, 80)
@@ -478,6 +542,10 @@ end
 -- player's hero; for a message from the local game the same). Answers are queued; call flush() after the tick.
 function Market:handle(from, msg)
     if type(msg) ~= 'table' or type(msg.op) ~= 'string' then return end
+    if self.writing then
+        self.waiting[#self.waiting + 1] = {from = from, msg = msg}
+        return
+    end
     local slot = from.slot
     if self.problem then
         if msg.rid then
@@ -806,6 +874,34 @@ function Market:op_revoke(slot, key, _, msg)
     end
     self:add_log('revoke', ('%s %s: %s'):format(key, rid, what))
     self:reply(slot, {op = 'revoked', rid = rid, what = what, wallet = self:wallet(key)}, true)
+end
+
+-- A delivery the player's hero never got (a server that keeps the heroes found it missing after a reconnect, and no save
+-- of the hero can hold it): the mailbox entry is free again, the next `collect` delivers it anew. The rid's answer is
+-- forgotten, so the old rid gets a fresh answer. True when an entry was released. Starts a batch: flush() afterwards.
+function Market:release(key, rid)
+    local released = false
+    for _, m in ipairs(self.state.mail) do
+        if m.owner == key and m.delivering == rid then
+            self:begin()
+            m.delivering = nil
+            released = true
+        end
+    end
+    local rec = self:rid_record(key, rid)
+    if rec then
+        self:begin()
+        self.state.rids[key][rid] = nil
+    end
+    if released then self:add_log('release', ('%s %s: delivery released'):format(key, rid)) end
+    return released
+end
+
+-- The mailbox entry a delivery under `rid` is reserved for, or nil.
+function Market:delivery(key, rid)
+    for _, m in ipairs(self.state.mail) do
+        if m.owner == key and m.delivering == rid then return m end
+    end
 end
 
 -- For the host's own view (and tests).
