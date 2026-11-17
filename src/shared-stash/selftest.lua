@@ -14,6 +14,56 @@ return function(M, stash, transfer)
     end
 
     gear.task(function()
+        if cfg.selftest == 'e2e' then
+            -- A real Closed Net game (gear/examples/closedtest drives the menus into a loopback game server with shared_stash.lua).
+            local A, remote, kind = gear.auto, require('remote'), require('kind')
+            local touched = {}
+            local read0, save0 = gear.read, gear.save
+            gear.read = function(name, ...) touched[#touched + 1] = 'read ' .. tostring(name) return read0(name, ...) end
+            gear.save = function(name, ...) touched[#touched + 1] = 'save ' .. tostring(name) return save0(name, ...) end
+            local said = {}
+            remote.notify = function(text, ok) said[#said + 1] = (ok and 'ok: ' or 'no: ') .. text note('notice ' .. said[#said]) end
+            local function until_(fn, seconds)
+                local t0 = gear.time()
+                while not fn() and gear.time() - t0 < seconds do gear.wait(0.5) end
+                return fn()
+            end
+            check(A.wait_for_game(400), 'the Closed Net world loaded')
+            gear.wait(8)
+            check(gear.mp.mode() == 'closed', "gear.mp.mode() reads closed (" .. tostring(gear.mp.mode()) .. ')')
+            remote.refresh(true)
+            check(until_(function() return remote.available() == true end, 15), 'the server says it keeps the stash')
+            check(kind.closed(), 'kind.closed()')
+            local bp = inv.container('backpack')
+            check(bp ~= nil, 'backpack')
+            local before = #bp:items()
+            local it
+            for _, cand in ipairs(bp:items()) do if transfer.transferable(cand) then it = cand break end end
+            check(it ~= nil, 'a transferable item (' .. before .. ' in the backpack)')
+            if it then
+                local ok, err = remote.deposit(bp, it, transfer.entry_fields(it))
+                check(ok, 'deposit sent: ' .. tostring(err))
+                check(until_(function() return not remote.busy() end, 60), 'the deposit was answered')
+                check(#bp:items() == before - 1, 'the item is out of the backpack')
+                remote.refresh(true)
+                check(until_(function() return #remote.entries == 1 end, 15), 'the server lists one entry')
+                local e = remote.entries[1]
+                if e then
+                    local ok2, err2 = remote.withdraw(e)
+                    check(ok2, 'withdraw sent: ' .. tostring(err2))
+                    check(until_(function() return not remote.busy() end, 60), 'the withdrawal was confirmed')
+                    check(#bp:items() == before, 'the item is back in the backpack')
+                    remote.refresh(true)
+                    check(until_(function() return #remote.entries == 0 end, 15), 'the server stash is empty again')
+                end
+            end
+            local n = 0
+            for _, s in ipairs(touched) do if s:find('stash', 1, true) then n = n + 1 end end
+            check(n == 0, 'no access to stash files during the whole run (' .. table.concat(touched, ', ') .. ')')
+            gear.read, gear.save = read0, save0
+            note(table.concat(said, ' | '))
+            return finish()
+        end
         gear.auto.wait_for_menu(120)
         if cfg.selftest == 'lan' or cfg.selftest == 'lanui' then
             -- Hosts a LAN game through the menus (as gear/examples/lanhosttest does): the game starts GameServer.exe and
