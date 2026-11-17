@@ -49,6 +49,11 @@ gear.on('session.start', function() model:reset(); hello(true) end)
 gear.on('session.stop', function() model:reset(); last_hello = -1e9 end)
 gear.on('frame', function() hello(false) end)
 
+-- Other mods (and the self test) can steer it: gear.emit('world-events.configure', {visibility = 'alt', area = 'everywhere'}) sets those settings.
+gear.on('world-events.configure', function(values)
+    for id, value in pairs(values or {}) do S.set(id, value) end
+end)
+
 -- Other mods (and tests) can feed a state: gear.emit('world-events.state', {st = 'active', ...}).
 gear.on('world-events.state', function(payload) model:receive(payload, gear.time()) end)
 

@@ -4,6 +4,8 @@ A [Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md) m
 server as a movable progress bar: a realm-wide goal such as *"slay 1000 orcs in 2 hours"*. Everybody who takes part shares the
 reward when the realm makes it; the server announces the start, 25 / 50 / 75 % and the result in chat.
 
+![The bar](../../docs/images/world-events.jpg)
+
 ## What you need
 
 * The mod: copy this folder to `mods\world-events` in the game folder and switch it on in the mod manager (**F11**).
@@ -58,5 +60,8 @@ No game needed (LuaJIT, from this folder):
 luajit tests/core_test.lua     the state, percent / time / count formats, area, results, stale states
 luajit tests/main_test.lua     main.lua against a fake gear: who may push, hello, what is drawn when, the controller entry
 ```
+
+`src/world-events_selftest` runs in the real game (`-gear-auto`, a copy of the game folder, see its header): the bar as a layout panel,
+hidden with "only while Alt" and outside the event's sector, a sample in the layout editor, the result banner, a move.
 
 The server half has its own tests in the remake repository (`WorldEventsScriptTests`).

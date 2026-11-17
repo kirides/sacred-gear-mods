@@ -146,6 +146,7 @@ function Model:view(now, opts)
         percent = M.percent(s.count, s.target), frac = M.clamp(s.count / s.target, 0, 1), left = 0, time_text = '',
         count_text = M.group(s.count) .. ' / ' .. M.group(s.target), people = s.people,
         mine_text = won and (s.people > 0 and ('%d heroes took part'):format(s.people) or '') or 'The time ran out',
+        qualifies = won,
     }
 end
 

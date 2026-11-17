@@ -138,6 +138,11 @@ g.now = g.now + 31
 draw(g)
 check(#g.panels == 0, 'and goes after the hold')
 
+-- the configure hook sets settings
+g.fire('world-events.configure', {visibility = 'alt', area = 'everywhere'})
+check(g.settings.visibility == 'alt' and g.settings.area == 'everywhere', 'world-events.configure sets settings')
+g.settings.visibility, g.settings.area = 'always', 'sector'
+
 -- a bar from the emit hook (other mods, tests)
 g.fire('world-events.state', pushed)
 draw(g)
