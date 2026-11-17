@@ -582,7 +582,8 @@ end
 local TABS = {{'browse', 'Browse'}, {'sell', 'Sell'}, {'mine', 'My auctions'}, {'mail', 'Mailbox'}}
 
 function M.panel(client, cfg)
-    local p = ui.panel('market', 'Auction house', 250, 16, 580, 590, {closable = true})
+    -- left of the "Auction house" button (x 812), so the button's title is not under the panel's corner
+    local p = ui.panel('market', 'Auction house', 228, 16, 580, 590, {closable = true})
     if not p.open then
         edit.id = nil
         return
