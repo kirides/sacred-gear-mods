@@ -99,3 +99,19 @@ Mods screen (F11) lists them with their settings and keys; choices are saved in 
   reset": damage dealt and taken with hit counts, biggest hit dealt / taken, average hit, fighting time, average DPS while fighting, kills
   (and per minute after 10 s of fighting); a 30-second bar graph (dealt green up, taken red down); "Biggest targets" (3) and "Biggest damage
   sources" (2); a **Reset** button. It says "no hero" until a hero is known.
+
+## Per savegame data
+
+What belongs to one character or game (the session tracker's lifetime totals, the loot log, the region kill counters, the bounty
+board, the world events' run, the companions' party records) is kept per savegame, not once for all games. Gear keeps a working copy
+in `saves/_current/` of each mod's folder and moves it with the game: a save into a slot keeps it in `saves/GAME05/` (for
+`Save\GAME05.PAK`), loading a savegame brings back what was kept for it (or starts fresh), a new game starts fresh, and deleting a
+savegame in the game's list deletes its data. Progress since the last save is gone after a load, like the game's own. In a network
+game the data follows the hero file (`HERO03`). With ReBorn's own save folder the folders are named after it
+(`mods_reborn_save-GAME05`).
+
+Settings, window places, the shared stash, the bounty editor's `custom.json`, world events' `events.json` and the mercenary
+behaviour of the companions stay global. Data from before this existed (`session_totals.json`, `lootlog.json`, `region_kills.json`, a
+bounty board file, `companions.json`, `local_events_state.json`) goes once to the first savegame that is loaded afterwards, so a
+character keeps what it had; the other savegames start empty. Needs a Sacred Gear with `gear.store.game` (older ones keep one
+file for all games as before).

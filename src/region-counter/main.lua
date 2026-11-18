@@ -13,13 +13,19 @@ local function setting(id, fallback) return gear.settings.get(id, fallback) end
 local FILE = 'region_kills.json'
 local POLL = 0.5
 
-local file = store.file(FILE, {heroes = {}}, {every = 30, check = function(d)
-    if type(d) ~= 'table' or type(d.heroes) ~= 'table' then return {heroes = {}} end
-    return d
-end})
-
 local hero_name = nil
 local track = {}          -- region index -> {id, vanilla, target, done, expect}
+
+-- The kills belong to the savegame: kept per savegame (gear.store.game; an older Gear keeps one file for all of them). The file
+-- from before is taken by the first savegame that is loaded.
+local file = (store.game or store.file)(FILE, {heroes = {}}, {every = 30, migrate = true, check = function(d)
+    if type(d) ~= 'table' or type(d.heroes) ~= 'table' then return {heroes = {}} end
+    return d
+end, on_change = function()
+    -- another game: the regions are counted again from what that game kept
+    hero_name = nil
+    track = {}
+end})
 local poll_t = 0
 
 local function regions() return gear.data and gear.data.regions end

@@ -31,7 +31,7 @@ Open the Mods screen with **F11** and pick the mod.
 
 ## Development
 
-- **Files:** `src/sessiontracker/mod.lua`, `main.lua` (about 290 lines). Totals are saved in `session_totals.json`.
+- **Files:** `src/sessiontracker/mod.lua`, `main.lua` (about 290 lines). The totals belong to the savegame (character) being played: `session_totals.json` in that savegame's data, see [Per savegame data](../SessionMods.md#per-savegame-data). The session you leave by loading another game counts for the game it was played in.
 - **Depends on:** Gear events (`session.start`, `frame`, kills), the hero's gold and experience from `gear.world`, `gear.ui`, `gear.save` / `gear.read`.
 - **Test it without the game:** `tests/session_mods_test.lua` (LuaJIT, from the repository root).
 - More about the session mods: [Session mods](../SessionMods.md).

@@ -113,9 +113,36 @@ local function refresh()
     if mine then set_board(mine:payload(), 'local') end
 end
 
+-- The board belongs to the savegame (gear.savegame): board.json of the running game's data, so another savegame or character of
+-- the same name has its own bounties. Without it (an older Gear, or a game whose load Gear did not see) the board is kept in a file
+-- of the hero's name as before. The file from before is taken once per hero by the first savegame that is loaded.
+local BOARD = 'board.json'
+local function per_game() return gear.savegame ~= nil and gear.savegame.kind() ~= nil end
+
+local function read_board(name)
+    if not per_game() then return gear.read(file_for(name)) end
+    local text = gear.savegame.read(BOARD)
+    if text then return text end
+    local kind, legacy = gear.savegame.kind(), file_for(name)
+    if kind == 'load' or kind == 'hero' then
+        local marker = legacy:gsub('%.json$', '') .. '.migrated.txt'
+        local old = gear.read(legacy)
+        if old and not gear.read(marker) then
+            gear.save(marker, tostring(gear.savegame.scope()))
+            return old
+        end
+    end
+    return nil
+end
+
+local function write_board(text)
+    if per_game() then return gear.savegame.write(BOARD, text) end
+    return gear.save(mine_file, text)
+end
+
 local function save_mine()
     if not mine or not mine_file then return end
-    local ok, err = gear.save(mine_file, gear.json.encode(mine:save_table()))
+    local ok, err = write_board(gear.json.encode(mine:save_table()))
     if ok then dirty, last_save = false, gear.time() else print('bounty: cannot save ' .. mine_file .. ': ' .. tostring(err)) end
 end
 
@@ -124,7 +151,7 @@ local function open_mine()
     local name = hero and hero:name()
     if not name then return end
     mine_hero, mine_file = name, file_for(name)
-    local text = gear.read(mine_file)
+    local text = read_board(name)
     local data = text and gear.json.decode(text)
     mine = localboard.load(data, rng)
     local level = hero:level() or 1
@@ -223,6 +250,14 @@ gear.every(1, function()
 end)
 
 gear.on('unload', function() if mine then save_mine() end end)
+
+-- A savegame is written: its board is kept for it. Another game loads: its board is read (the next tick), what this one had not
+-- saved is gone with it.
+gear.on('savegame.saving', function() if mine and dirty then save_mine() end end)
+gear.on('savegame.changed', function()
+    mine, mine_file, mine_hero, board, dirty = nil, nil, nil, nil, false
+    localgame.reset()
+end)
 
 local time_text = gear.fmt.span
 

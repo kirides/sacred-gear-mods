@@ -61,8 +61,12 @@ local function trim()
     while #entries > max do table.remove(entries, 1) end
 end
 
+-- The log belongs to the savegame (gear.store.game; an older Gear keeps one file for all of them). The file from before is taken
+-- by the first savegame that is loaded.
+local handle
 local function load_file()
-    local data = store.load(FILE, {})
+    local data = handle.data
+    entries = {}
     session_no = tonumber(data.session) or 0
     if type(data.entries) == 'table' then
         for _, e in ipairs(data.entries) do
@@ -82,8 +86,16 @@ end
 local function save_file()
     dirty = false
     trim()
-    store.save(FILE, {session = session_no, entries = entries})
+    handle:save()
 end
+
+handle = (store.game or store.file)(FILE, {}, {every = 0, migrate = true,
+    value = function() return {session = session_no, entries = entries} end,
+    on_change = function()
+        -- another game: its log is read, what this one had not saved is gone with it
+        dirty = false
+        load_file()
+    end})
 
 ---------------------------------------------------------------------------------------------------------------
 -- Entries
@@ -216,6 +228,7 @@ gear.on('load', guard('load', load_file))
 gear.on('session.start', guard('session.start', new_session))
 gear.on('session.stop', guard('session.stop', function() if dirty then save_file() end end))
 gear.on('unload', guard('unload', function() if dirty then save_file() end end))
+gear.on('savegame.saving', guard('savegame.saving', function() if dirty then save_file() end end))
 
 -- Runs inside the engine's loot function: only numbers are stored, nothing is looked up here.
 gear.on('drops.roll', function(ev)

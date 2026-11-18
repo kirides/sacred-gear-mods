@@ -57,8 +57,14 @@ end
 ---------------------------------------------------------------------------------------------------------------
 -- Persistence
 ---------------------------------------------------------------------------------------------------------------
+-- The totals belong to the character: kept per savegame (gear.store.game; an older Gear keeps one file for all of them). The file
+-- from before is taken by the first savegame that is loaded.
+local handle
+local keep_current = false     -- the periodic save also writes the running session (see the frame handler)
+
 local function load_file()
-    local data = store.load(FILE, {})
+    local data = handle.data
+    lifetime, history = new_stats(), {}
     if type(data.lifetime) == 'table' then
         for _, f in ipairs(FIELDS) do
             local v = tonumber(data.lifetime[f])
@@ -74,8 +80,17 @@ local function load_file()
 end
 
 local function save_file()
-    store.save(FILE, {lifetime = lifetime, history = history})
+    handle:save()
 end
+
+handle = (store.game or store.file)(FILE, {}, {every = 0, migrate = true,
+    value = function() return {lifetime = lifetime, history = history, current = keep_current and session or nil} end,
+    on_change = function()
+        -- another game: its totals are read; the running session is dropped (the game that ends already got it, see below)
+        session, hero_name = nil, nil
+        base.gold, base.xp, base.level = nil, nil, nil
+        load_file()
+    end})
 
 -- Moves the session into the lifetime totals and the history (once), then drops it.
 local function close_session()
@@ -157,6 +172,16 @@ end))
 
 gear.on('unload', guard('unload', close_session))
 
+-- Another savegame is loading: the session that ends belongs to the game that ends, also when it was not saved since (the time
+-- played is not progress the game takes back): it goes into that game's kept totals, then the new game's are read.
+gear.on('savegame.leaving', guard('savegame.leaving', function(scope)
+    if not session then return end
+    close_session()
+    if scope and gear.savegame and gear.savegame.write_saved then
+        gear.savegame.write_saved(scope, FILE, gear.json.encode({lifetime = lifetime, history = history}))
+    end
+end))
+
 gear.on('kill', guard('kill', function(kill)
     if type(kill) ~= 'table' then return end
     local mine = kill.by_local
@@ -181,7 +206,9 @@ gear.on('frame', guard('frame', function(dt)
         if session.played >= 1 then
             -- A crash must not lose the whole session: the file holds the finished sessions plus this one as it
             -- stands (the lifetime is only added once at the end, so the file's lifetime stays the finished ones').
-            store.save(FILE, {lifetime = lifetime, history = history, current = session})
+            keep_current = true
+            handle:save()
+            keep_current = false
         end
     end
 end))
