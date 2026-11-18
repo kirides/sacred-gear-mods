@@ -103,7 +103,7 @@ function M.clean(raw, limits)
                 if type(creature) == 'string' and creature:match('%S') then creature = trim(text_of(creature, 48))
                 elseif type(creature) == 'number' then creature = int_in(creature, 1, 4294967295) else creature = nil end
                 local count = int_in(h.kills.count, 1, 100000)
-                if creature and count then hook.kills = {creature = creature, count = count, per_player = h.kills.per_player == true}
+                if creature and count then hook.kills = {creature = creature, count = count, per_player = h.kills.per_player == true, region = int_in(h.kills.region, 1, 255)}
                 else why = 'kills needs a creature and a count' end
             elseif tonumber(h.at_time) then
                 hook.at_time = int_in(h.at_time, 1, 30 * 86400)
@@ -149,7 +149,8 @@ function M.trigger_text(h)
     elseif h.on == 'success' then return 'When the goal is reached'
     elseif h.on == 'fail' then return 'When the time runs out'
     elseif h.kills then
-        return ('When %s has defeated %d x %s'):format(h.kills.per_player and 'a hero' or 'the realm', h.kills.count, tostring(h.kills.creature))
+        return ('When %s has defeated %d x %s%s'):format(h.kills.per_player and 'a hero' or 'the realm', h.kills.count, tostring(h.kills.creature),
+            h.kills.region and (' in region ' .. h.kills.region) or '')
     elseif h.at_time then return 'After ' .. duration_text(h.at_time) end
     return 'At ' .. percent_text(h.at) .. ' of the goal'
 end
@@ -239,11 +240,11 @@ function M.matches(creature, name, type_id)
 end
 
 -- A kill of `name` / `type_id` by `who` (a string id for per_player counting).
-function Runner:kill(name, type_id, who, ctx)
+function Runner:kill(name, type_id, who, ctx, region)
     local fired = 0
     for number, hook in ipairs(self.hooks) do
         local k, key = hook.kills, 'h' .. number
-        if k and not self.state.fired[key] and M.matches(k.creature, name, type_id) then
+        if k and not self.state.fired[key] and (not k.region or k.region == region) and M.matches(k.creature, name, type_id) then
             local counters = self.state.hk[key] or {}
             self.state.hk[key] = counters
             local slot = k.per_player and tostring(who) or 'all'

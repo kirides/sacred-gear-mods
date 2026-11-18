@@ -47,6 +47,23 @@ percentage is in the middle. To the right: the event's name, then `370 / 1,000 o
 The pill is a **bare panel** (`gear.ui.panel` with `bare = true`, added to Sacred Gear for it: no window chrome, but still a layout
 panel). It needs a SacredGear.dll that has the option; an older one draws a plain panel with its title bar instead.
 
+## Several pills in one group, and the region boss pill
+
+All pills live in **one** movable panel (`world-events:bar`), one below the other, the first staying where the panel is. The panel's **width** sets
+their size (resize it in the layout editor: the pills scale with it); its height is made from that and the number of pills, so it grows and
+shrinks by itself. Order: the world events first (least time left first, results after the running ones), then the region boss pill. At most four
+pills; more are a line **+N more**.
+
+* **Several events at once:** the server may push `{v = 1, list = {state, state, ...}}` (at most 8 states, each in the format above, each checked) instead
+  of one state; one state still works. The remake server runs one event at a time and pushes one state today; the client is ready for more.
+* **The region boss pill (setting *Show the region boss progress*, on by default; the controller's mod menu has **World events: region boss pill on / off**):**
+  while the hero stands in a region that counts kills towards its Region Boss (`gear.data.regions:of_creature(hero)`), a slim **teal** pill (not the events' gold)
+  shows the region's name (the game's own text), `kills / needed kills` and the percent; the tooltip adds the kills left until the boss, and the other regions that
+  have progress this session. It reads the game's own count (`kills_needed` / `kills_left`), so it works in single player and online, needs no server, and
+  shows a custom "kills needed" of the **Region counter** mod (which writes its numbers into the same records) without any link to it. A Gear without
+  `gear.data.regions` shows no region pill. In the layout editor a sample region pill is shown so the group can be placed.
+* **Region counter:** that mod only **configures** the regions now (kills needed in percent, progress kept per hero); it draws no pill of its own.
+
 ## Reward odds
 
 The server can make the item reward better the further the realm gets (rows like *from 10 %: Magic 25 %, Common 75 %*). The tooltip lists the odds of the row the realm has reached and of the next one, as the server sends them, with the rule: the item is rolled once when the event ends, with the highest row reached. The server's dashboard, !event rewards and the milestone announcements show the same odds; nothing is hidden or added by this mod.
@@ -108,6 +125,7 @@ No game needed (LuaJIT, from this folder):
 ```
 luajit tests/core_test.lua     the state, percent / time / count formats, area, results, stale states
 luajit tests/main_test.lua     main.lua against a fake gear: who may push, hello, what is drawn when, details, pulse, the controller entries
+luajit tests/regions_test.lua  the region pill's view, the stack order and cap, lists of events in the core
 luajit tests/hooks_test.lua    hook checking, the engine (thresholds, catch-up, once, kills, time), spawn message parsing, weighted kinds, dedupe, the local mode
 luajit tests/local_test.lua    main.lua + localgame.lua with a fake world: the server's wave, a network game, kills in, hooks out, the server taking over
 ```
@@ -119,5 +137,5 @@ The server half has its own tests in the remake repository (`WorldEventsScriptTe
 
 ## Development
 
-- **Files:** `mod.lua`; `core.lua` (progress and reward odds, pure Lua); `hooks.lua` (hook checking, the engine, waves; pure); `localevents.lua` (the single player events; pure); `localgame.lua` (kills, spawning, items, gold); `main.lua` (the bar, the server messages). `tests/` needs no game. Self test: `src/world-events_selftest`.
+- **Files:** `mod.lua`; `core.lua` (progress and reward odds, pure Lua); `hooks.lua` (hook checking, the engine, waves; pure); `localevents.lua` (the single player events; pure); `localgame.lua` (kills, spawning, items, gold); `regions.lua` (the region boss pill and the stack order; pure); `main.lua` (the bar, the server messages). `tests/` needs no game. Self test: `src/world-events_selftest`.
 - **Depends on:** `gear.net` (the channel of the server's `world_events.lua`, see the section above), `gear.ui` (a bar that the layout editor can move), `gear.settings`, `gear.emit`.

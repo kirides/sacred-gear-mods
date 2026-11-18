@@ -7,6 +7,7 @@
 local core = require('core')
 local hooks = require('hooks')
 local localevents = require('localevents')
+local regions = require('regions')
 local ui, S = gear.ui, gear.settings
 
 local CHANNEL = 'worldevents:state'
@@ -173,7 +174,7 @@ local function start_local()
         defs = defs, store = local_file.data, log = function(t) gear.log('world-events: ' .. t) end,
         act = function(action, ctx, key, index, def) G.run_action(action, def and def.title or 'World event') end,
     })
-    G.on_kill(function(name, type_id, sector) localmode:kill(name, type_id, sector) end)
+    G.on_kill(function(name, type_id, sector, region) localmode:kill(name, type_id, sector, region) end)
 end
 
 function local_frame()
@@ -198,7 +199,7 @@ end
 -- A kill reported by the game's `kill` event (network games): counts in the local mode too.
 gear.on('kill', function(kill)
     if localmode and local_on() and type(kill) == 'table' then
-        pcall(localmode.kill, localmode, kill.name or kill.victim_name, kill.type or kill.victim_type, kill.sector)
+        pcall(localmode.kill, localmode, kill.name or kill.victim_name, kill.type or kill.victim_type, kill.sector, kill.region)
     end
 end)
 
@@ -207,7 +208,6 @@ end)
 ---------------------------------------------------------------------------------------------------------------
 local W, H = 220, 46                -- the panel's default size (layout units); the layout editor can change both
 local X, Y = 402, 40                -- top centre, clear of the minimap and the action bar
-local MAX_W, MAX_H = 420, 64        -- an older version's bigger kept size (300 x 86) is brought back to the default
 
 local COLOR = {
     pill = 0x59101014,              -- about 35 % opaque
@@ -216,6 +216,7 @@ local COLOR = {
     time = 0xFF86C3F2, time_off = 0x2886C3F2, time_late = 0xFFE88A68,
     won = 0xFF63C269, failed = 0xFFB86060,
     title = 0xFFF2D58A, count = 0xFFD2CCBE, timer = 0xFF9CCBF5, percent = 0xFFFFF2D0,
+    region = 0xFF6FC2B8, region_off = 0x306FC2B8, region_title = 0xFFA9E3DC, region_glow = 0x556FC2B8,     -- the region boss pill: teal, not the events' gold
     tip_back = 0xE60E0E14, tip_edge = 0xFF5A4A36, tip_text = 0xFFE6DFD0, tip_title = 0xFFF2D58A,
 }
 
@@ -290,21 +291,16 @@ local function draw_tooltip(view, x, y, h, hover, state)
     end
 end
 
-local function draw_view(view, state)
-    local p = ui.panel('bar', 'World event', X, Y, W, H, {bare = true, resizable = true, min_width = 150, min_height = 30})
-    if not p or not p.open then return end
-    local x, y, w, h = p.content_x or X, p.content_y or Y, p.content_w or W, p.content_h or H
-    -- a bigger kept size of an older version: back to the default (once)
-    if (w > MAX_W or h > MAX_H) and ui.set_panel_rect then
-        ui.set_panel_rect(p.key or 'world-events:bar', x, y, math.min(w, W), math.min(h, H))
-    end
-    local k = math.max(0.65, math.min(h / H, 1.8))          -- the contents follow the panel's height
+-- One pill in the rectangle (x, y, w, h). A region pill is teal, has a single ring and no time.
+local function draw_one(view, state, x, y, w, h, first)
+    local k = math.max(0.65, math.min(h / H, 1.8))          -- the contents follow the pill's height
     local fade = view.alpha or 1
     local now = gear.time()
+    local region = view.kind == 'region'
 
-    -- the pill; a pulse warms it for a moment
+    -- the pill; a pulse warms it for a moment (events only)
     draw_pill(x, y, w, h, with_alpha(COLOR.pill, fade))
-    if now < pulse_until then
+    if not region and now < pulse_until then
         local t = (pulse_until - now) / PULSE
         draw_pill(x, y, w, h, with_alpha(COLOR.glow, math.sin(t * math.pi) * fade))
     end
@@ -312,8 +308,8 @@ local function draw_view(view, state)
     -- the double ring: gold = progress, blue = the time left; the percent in the middle
     local d = math.min(42 * k, h - 2)
     local cx, cy = x + 2 + d / 2, y + h / 2
-    local outer_on = view.kind == 'won' and COLOR.won or view.kind == 'failed' and COLOR.failed or COLOR.ring
-    draw_ring(cx, cy, d / 2 - 2.5 * k, math.floor(86 * k), 3 * k, view.frac, with_alpha(outer_on, fade), with_alpha(COLOR.ring_off, fade))
+    local outer_on = region and COLOR.region or view.kind == 'won' and COLOR.won or view.kind == 'failed' and COLOR.failed or COLOR.ring
+    draw_ring(cx, cy, d / 2 - 2.5 * k, math.floor(86 * k), 3 * k, view.frac, with_alpha(outer_on, fade), with_alpha(region and COLOR.region_off or COLOR.ring_off, fade))
     if view.kind == 'active' then
         draw_ring(cx, cy, d / 2 - 7 * k, math.floor(58 * k), 2 * k, view.time_frac,
             with_alpha(view.late and COLOR.time_late or COLOR.time, fade), with_alpha(COLOR.time_off, fade))
@@ -325,8 +321,8 @@ local function draw_view(view, state)
     -- two lines: the title, then the count and the time left (blue)
     local tx = x + d + 10
     local tw = math.max(20, w - (tx - x) - 10)
-    ui.text(view.title, tx, y + h / 2 - 15 * k, {size = 12.5 * k, bold = true, color = with_alpha(COLOR.title, fade), shadow = true,
-        width = tw, height = 15 * k})
+    ui.text(view.title, tx, y + h / 2 - 15 * k, {size = 12.5 * k, bold = true, color = with_alpha(region and COLOR.region_title or COLOR.title, fade),
+        shadow = true, width = tw, height = 15 * k})
     if view.area and view.area ~= '' then
         -- "Orc hunt · Silver Creek": the area name after the title, dimmer, as far as there is room
         local title_w = text_width(view.title .. '  ', {size = 12.5 * k, bold = true})
@@ -343,21 +339,64 @@ local function draw_view(view, state)
             shadow = true, height = 14 * k})
     end
 
-    -- the details: on hover, with Alt (the game's "show text") or pinned from the controller's mod menu
+    -- the details: on hover, with Alt (the game's "show text", for the first pill) or pinned from the controller's mod menu
     local mx, my = ui.mouse()
     local hover = mx >= x and mx < x + w and my >= y and my < y + h
-    if hover or state.show_text or pinned then draw_tooltip(view, x, y, h, hover, state) end
+    if hover or ((state.show_text or pinned) and first and not state.tip_drawn) then
+        state.tip_drawn = true
+        draw_tooltip(view, x, y, h, hover, state)
+    end
+end
+
+-- All the pills in ONE movable panel, one below the other (the first stays where the panel is): the events first (least time left first), then
+-- the region boss pill, at most MAX_PILLS and a line "+N more". The panel's WIDTH sets the size of the pills (resize it in the layout editor),
+-- its height is made from that and the number of pills, so it grows and shrinks by itself and keeps its place.
+local GAP, MORE_H, MAX_PILLS = 4, 14, 4
+
+local function draw_stack(views, more, state)
+    local n = #views
+    local extra = more > 0 and MORE_H or 0
+    local p = ui.panel('bar', 'World events', X, Y, W, n * H + (n - 1) * GAP + extra, {bare = true, resizable = true, min_width = 150, min_height = 30})
+    if not p or not p.open then return end
+    local x, y, w, h = p.content_x or X, p.content_y or Y, p.content_w or W, p.content_h or H
+    local unit = H * math.max(0.68, math.min(w / W, 1.8))
+    local want_h = n * unit + (n - 1) * GAP + extra
+    if math.abs(h - want_h) > 1 and ui.set_panel_rect then
+        ui.set_panel_rect(p.key or 'world-events:bar', x, y, w, want_h)
+    end
+    state.tip_drawn = false
+    for i, v in ipairs(views) do
+        draw_one(v, state, x, y + (i - 1) * (unit + GAP), w, unit, i == 1)
+    end
+    if more > 0 then
+        ui.text('+' .. more .. ' more', x + 12, y + n * (unit + GAP) - GAP + 1, {size = 11, color = COLOR.count, shadow = true, height = 13})
+    end
 end
 
 ui.show_panel('bar', true)
 
+-- The pills of the game's region boss counter (the region the hero stands in), read from gear.data.regions every half second.
+local region_views, region_poll = {}, -1e9
+local function region_frame()
+    local now = gear.time()
+    if now - region_poll < 0.5 then return end
+    region_poll = now
+    if S.get('region_pill') == false then region_views = {}; return end
+    local hero = gear.world and gear.world.hero and gear.world.hero()
+    region_views = regions.collect(gear.data and gear.data.regions, hero)
+end
+
 gear.on('draw', function(state)
     if state.mode ~= 'game' or state.exclusive then return end
     local editing = ui.edit_mode()
-    local view = model:view(gear.time(), {area = S.get('area'), results = S.get('results'), preview = editing})
-    if not view then return end
+    pcall(region_frame)
+    local views = model:views(gear.time(), {area = S.get('area'), results = S.get('results'), preview = editing})
+    local rviews = region_views
+    if editing and #rviews == 0 and S.get('region_pill') ~= false then rviews = {regions.view(regions.SAMPLE)} end
+    local stacked, more = regions.stack(views, rviews, MAX_PILLS)
+    if #stacked == 0 then return end
     if not editing and S.get('visibility') == 'alt' and not state.show_text then return end
-    draw_view(view, state)
+    draw_stack(stacked, more, state)
 end)
 
 -- The controller's mod menu: the same switches for players without a keyboard.
@@ -366,7 +405,8 @@ if ui.menu_item then
         S.set('visibility', S.get('visibility') == 'alt' and 'always' or 'alt')
     end)
     ui.menu_item('details', 'World events: pin / unpin the details', function() pinned = not pinned end)
+    ui.menu_item('region_pill', 'World events: region boss pill on / off', function() S.set('region_pill', S.get('region_pill') == false) end)
 end
 
-local M = {model = model, waves = waves, hooks = hooks, local_events = function() return localmode end, seen = seen}
+local M = {region_views = function() return region_views end, model = model, waves = waves, hooks = hooks, local_events = function() return localmode end, seen = seen}
 return M

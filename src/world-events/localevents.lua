@@ -4,7 +4,7 @@
 -- (tested in tests/localevents_test.lua); localgame.lua does what touches the game.
 --
 -- events.json: {"v": 1, "config": {"first_delay": 60, "cooldown": 900, "result_hold": 120, "order": "sequence" | "random"},
---   "events": [{"id", "title", "goal": "kill", "target", "duration" (seconds), "names": ["orc"], "types": [38], "sectors": [2909, [2950, 2960]],
+--   "events": [{"id", "title", "goal": "kill", "target", "duration" (seconds), "names": ["orc"], "types": [38], "sectors": [2909, [2950, 2960]], "regions": [4],
 --               "unit", "text", "area" (a label), "hooks": [...]}]}
 -- Time counts while the game runs (it stops with the game), so an event never ends while you are away.
 local hooks = require('hooks')
@@ -58,6 +58,7 @@ function M.clean_event(raw, limits)
         names = list_of(raw.names, function(x) return type(x) == 'string' and x ~= '' and x:lower():sub(1, 48) or nil end),
         types = list_of(raw.types, function(x) return hooks.int_in(x, 1, 4294967295) end),
         sectors = list_of(raw.sectors, range_of),
+        regions = list_of(raw.regions, function(x) return hooks.int_in(x, 1, 255) end),
         unit = tostring(raw.unit or ''):gsub('%c', ' '):sub(1, 24),
         area = tostring(raw.area or ''):gsub('%c', ' '):sub(1, 40),
         text = tostring(raw.text or ''):gsub('%c', ' '):sub(1, 90),
@@ -70,7 +71,7 @@ end
 
 -- Does a kill count for the event? `names` match a part of the creature's name, `types` its type number, no filter counts any creature;
 -- `sectors` need the creature's sector when it is known (an unknown place counts).
-function M.counts(def, name, type_id, sector)
+function M.counts(def, name, type_id, sector, region)
     if #def.names > 0 or #def.types > 0 then
         local ok = false
         for _, n in ipairs(def.names) do
@@ -78,6 +79,11 @@ function M.counts(def, name, type_id, sector)
         end
         for _, t in ipairs(def.types) do if t == type_id then ok = true end end
         if not ok then return false end
+    end
+    if #def.regions > 0 then               -- bound to game regions: the creature's region must be one of them
+        local inside = false
+        for _, r in ipairs(def.regions) do if r == region then inside = true end end
+        if not inside then return false end
     end
     if #def.sectors > 0 and sector and sector > 0 then
         local inside = false
@@ -206,12 +212,12 @@ function Local:tick(dt)
 end
 
 -- A kill of the hero. Returns true when it counted for the running event.
-function Local:kill(name, type_id, sector)
+function Local:kill(name, type_id, sector, region)
     local cur, def = self:current()
     if not cur then return false end
     local ctx = {killer = true}
-    if self.runner then self.runner:kill(name, type_id, 'me', ctx) end
-    local counted = M.counts(def, name, type_id, sector)
+    if self.runner then self.runner:kill(name, type_id, 'me', ctx, region) end
+    local counted = M.counts(def, name, type_id, sector, region)
     if counted then
         cur.count = cur.count + 1
         self:progress(ctx)

@@ -207,5 +207,25 @@ draw(g4)
 check(#g4.panels == 1 and has(g4, 'text:No hero yet.'), 'the panel says so without a hero')
 check(not command(g4, 'copy_id').ok and not command(g4, 'circle').ok, 'no hero: nothing to copy')
 
+-- the game region of the hero (gear.data.regions): shown in the panel, copied as a config line
+local g5 = new_gear()
+g5.gear.data = {regions = {of_sector = function(_, sector) if sector == 2909 then return {id = 4, name = 'Desert'}, 9 end end}}
+load_mod(g5)
+frame(g5)
+g5.menu.show.fn()
+draw(g5)
+check(has(g5, 'text:Region: Desert (id 4, code 9)'), 'the panel shows the region')
+check(query(g5).region.id == 4 and query(g5).region_code == 9, 'the query has the region')
+local c5 = command(g5, 'copy_region')
+check(c5.ok and c5.text == 'regions = { 4 },  -- Desert' and g5.clip == c5.text, 'copy region puts the config line on the clipboard')
+g5.hero.sector = 5000
+frame(g5)
+draw(g5)
+check(has(g5, 'text:Region: no region'), 'outside a region the panel says so')
+check(not command(g5, 'copy_region').ok, 'and there is nothing to copy')
+-- an older Gear without gear.data.regions: no region, no error
+frame(g); draw(g)
+check(has(g, 'text:Region: no region'), 'without the region API: no region')
+
 print(('sector-tools main: %d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

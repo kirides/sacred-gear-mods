@@ -7,6 +7,12 @@ LAN games and on the remake server; it does not need the server and does not tal
 
 ![The boundary between two sectors, with the tools' panel](../../docs/images/sector-tools.jpg)
 
+## Game regions
+
+The panel shows the **game region** the hero stands in (`gear.data.regions:of_sector`, newer Gear versions): `Region: Desert (id 4, code 9)`. **Copy region line** puts
+`regions = { 4 },  -- Desert` on the clipboard, to paste into an area or an event of `world_events.lua` (the server reads the same regions from the game files, so a world
+event can be bound to a region). The query event `sector-tools.query` has `region` and `region_code`.
+
 ## What it shows
 
 **Sector ids are not coordinates.** The game numbers its sectors by the slot in a table (`3451`, `3452`, ...), and neighbours in

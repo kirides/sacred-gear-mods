@@ -120,13 +120,13 @@ g.menu.details.fn()
 draw(g)
 check(not has(g, 'Your share'), 'and unpins them')
 
--- a bigger kept size of an older version is brought back
+-- the pill's size follows the panel's width; its height is made from that
 g.kept = {w = 300, h = 86}
 draw(g)
-check(#g.rects == 1 and g.rects[1].key == 'world-events:bar' and g.rects[1].w <= 220 and g.rects[1].h <= 46, 'an old kept size 300 x 86 is reset')
-g.kept = {w = 200, h = 40}
+check(#g.rects == 1 and g.rects[1].key == 'world-events:bar' and math.abs(g.rects[1].h - 46 * 300 / 220) < 0.5, 'the height follows the width (300 wide: 62.7 high)')
+g.kept = {w = 220, h = 46}
 draw(g)
-check(#g.rects == 1, 'a small kept size stays')
+check(#g.rects == 1, 'the default size is already right: nothing more is set')
 
 -- visibility: only while Alt is held
 g.settings.visibility = 'alt'

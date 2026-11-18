@@ -53,12 +53,21 @@ local function new_gear(opts)
             return ch
         end,
     }
+    g.texts, g.panel_asks, g.rects = {}, {}, {}
+    g.panel_h = nil
     g.ui = {
-        panel = function() return {open = true, content_x = 0, content_y = 0, content_w = 220, content_h = 46} end,
+        panel = function(id, title, x, y, w, h)
+            g.panel_asks[#g.panel_asks + 1] = h
+            g.panel_kept = g.panel_kept or h          -- the first size asked for is kept (the layout file), later asks are ignored
+            return {open = true, key = 'world-events:' .. id, content_x = x, content_y = y, content_w = w, content_h = g.panel_h or g.panel_kept}
+        end,
+        set_panel_rect = function(key, x, y, w, h) g.rects[#g.rects + 1] = {key = key, h = h}; g.panel_h = h; return true end,
         mouse = function() return 0, 0 end, text_size = function(t) return #t * 6, 12 end, tooltip_rect = function() return 0, 0 end,
-        show_panel = function() end, text = function() end, rect = function() end, frame = function() end, edit_mode = function() return false end,
-        menu_item = function() end,
+        show_panel = function() end, text = function(t, x, y) g.texts[#g.texts + 1] = {t = t, y = y} end, rect = function() end, frame = function() end,
+        edit_mode = function() return g.edit end, menu_item = function() end,
     }
+    g.regions_api = nil
+    g.data.regions = opts.regions
     g.gear = {on = g.on, time = g.time, log = g.log, net = g.net, ui = g.ui, world = g.world, data = g.data, store = g.store, toast = g.toast,
         settings = {get = function(id) return g.settings[id] end, set = function(id, v) g.settings[id] = v end}, task = function(fn) fn() end}
     return g
@@ -184,6 +193,64 @@ local gfirst = new_gear()
 local mfirst = load_mod(gfirst)
 gfirst.now = gfirst.now + 20; gfirst.fire('frame', 0.016)
 check(type(gfirst.files.events) == 'table' and #gfirst.files.events.events >= 1, 'a first run writes a default events.json to edit')
+
+-- ---- the stack of pills: several events and the region boss pill in one movable group ---------------------------------------------------
+local function title_order(g)
+    local out = {}
+    for _, t in ipairs(g.texts) do
+        if t.t == 'Wolf hunt' or t.t == 'Orc hunt' or t.t == 'Thieves' or t.t == 'Desert' or t.t == 'Other' then out[#out + 1] = t.t end
+    end
+    return table.concat(out, ',')
+end
+local desert = {id = 4, index = 4, name = 'Desert', kills_needed = 8500, kills_left = 5200}
+local gp = new_gear({regions = {count = function() return 5 end, get = function() return nil end, of_creature = function() return desert end}})
+gp.settings.local_mode = 'off'
+local mp = load_mod(gp)
+local function ev_state(n, title, left) return {st = 'active', n = n, title = title, text = 'x', count = 10, target = 100, left = left, dur = 3600, here = true, unit = 'orcs'} end
+local function draw(g) g.texts = {}; g.fire('draw', {mode = 'game', show_text = false}) end
+for _, fn in ipairs(gp.channels['worldevents:state'].listeners) do fn({slot = 0}, {v = 1, list = {ev_state(1, 'Orc hunt', 3000), ev_state(2, 'Wolf hunt', 600)}}) end
+draw(gp)
+eq(title_order(gp), 'Wolf hunt,Orc hunt,Desert', 'two events (least time left first) and the region pill, in one group')
+eq(gp.panel_asks[#gp.panel_asks], 3 * 46 + 2 * 4, 'one panel, as high as its three pills')
+eq(#gp.rects, 0, 'the panel had the right height: nothing to resize')
+-- the region pill goes away outside a region and the panel shrinks to its pills, keeping its place
+gp.data.regions.of_creature = function() return nil end
+gp.now = gp.now + 1
+draw(gp)
+eq(title_order(gp), 'Wolf hunt,Orc hunt', 'outside a region no region pill')
+eq(gp.rects[#gp.rects].h, 2 * 46 + 4, 'the panel shrinks to two pills')
+-- more than the cap: a "+N more" line
+local five = {}
+for i = 1, 5 do five[i] = ev_state(i, i == 1 and 'Orc hunt' or i == 2 and 'Wolf hunt' or 'Thieves', i * 100) end
+for _, fn in ipairs(gp.channels['worldevents:state'].listeners) do fn({slot = 0}, {v = 1, list = five}) end
+gp.now = gp.now + 1
+draw(gp)
+local plus
+for _, t in ipairs(gp.texts) do if t.t:find('more', 1, true) then plus = t.t end end
+eq(plus, '+1 more', 'a fifth event is a "+1 more" line')
+eq(gp.rects[#gp.rects].h, 4 * 46 + 3 * 4 + 14, 'the panel grows by the line')
+-- the setting switches the region pill off
+gp.data.regions.of_creature = function() return desert end
+gp.settings.region_pill = false
+gp.now = gp.now + 1
+for _, fn in ipairs(gp.channels['worldevents:state'].listeners) do fn({slot = 0}, {v = 1, list = {ev_state(1, 'Orc hunt', 3000)}}) end
+draw(gp)
+eq(title_order(gp), 'Orc hunt', 'the setting switches the region pill off')
+gp.settings.region_pill = nil
+gp.now = gp.now + 1
+draw(gp)
+eq(title_order(gp), 'Orc hunt,Desert', 'and on again (the default)')
+-- a Gear without gear.data.regions: the events alone, no error
+local gold = new_gear(); gold.settings.local_mode = 'off'
+load_mod(gold)
+for _, fn in ipairs(gold.channels['worldevents:state'].listeners) do fn({slot = 0}, ev_state(1, 'Orc hunt', 100)) end
+draw(gold)
+eq(title_order(gold), 'Orc hunt', 'no region API: only the event')
+-- region pill only (no event): it shows alone
+local alone = new_gear({regions = {count = function() return 5 end, get = function() return nil end, of_creature = function() return desert end}}); alone.settings.local_mode = 'off'
+load_mod(alone)
+draw(alone)
+eq(title_order(alone), 'Desert', 'a region pill without any event')
 
 print(('world-events local: %d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

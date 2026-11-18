@@ -106,24 +106,53 @@ M.MARKS = {25, 50, 75}
 
 -- A state arrived at time `now` (seconds, any steady clock). Returns true when it was understood, and the mark (25, 50 or
 -- 75) that this push of the same event just crossed, if any.
-function Model:receive(payload, now)
-    local s, err = M.parse(payload)
-    if not s then self.error = err; return false end
-    self.error = nil
-    s.at = now
-    local old, crossed = self.state, nil
+-- Several events can run at once: a push is one state, or {v = 1, list = {state, state, ...}} (at most M.MAX_STATES, each checked like a single one).
+M.MAX_STATES = 8
+
+local function crossed_mark(old, s)
     if old and old.st == 'active' and s.st == 'active' and old.n == s.n then
         local before, after = M.percent(old.count, old.target), M.percent(s.count, s.target)
+        local crossed
         for _, mark in ipairs(M.MARKS) do
             if before < mark and after >= mark then crossed = mark end
         end
+        return crossed
     end
-    self.state = s
+end
+
+function Model:receive(payload, now)
+    local incoming = {}
+    if type(payload) == 'table' and type(payload.list) == 'table' then
+        for _, entry in ipairs(payload.list) do
+            if #incoming >= M.MAX_STATES then break end
+            local s = M.parse(entry)
+            if s and s.st ~= 'idle' then incoming[#incoming + 1] = s end
+        end
+        if #incoming == 0 then
+            self.error = 'no valid state in the list'
+            if #payload.list == 0 then self.states, self.state, self.error = {}, nil, nil; return true end
+            return false
+        end
+    else
+        local s, err = M.parse(payload)
+        if not s then self.error = err; return false end
+        incoming[1] = s
+    end
+    self.error = nil
+    local crossed
+    local olds = self.states or (self.state and {self.state}) or {}
+    for _, s in ipairs(incoming) do
+        s.at = now
+        for _, old in ipairs(olds) do crossed = crossed_mark(old, s) or crossed end
+    end
+    self.states = incoming
+    self.state = incoming[1]
     return true, crossed
 end
 
 function Model:reset()
     self.state = nil
+    self.states = nil
     self.error = nil
 end
 
@@ -145,13 +174,35 @@ M.FADE = 6
 -- The time left is counted down here between pushes, from the push's own clock reading, so the computers' clocks
 -- do not matter. The view has the pill's two lines (title; count and time) and `tip`, the lines of the details tooltip.
 function Model:view(now, opts)
+    return (self:views(now, opts))[1]
+end
+
+-- All the pills to show: the active events first (the least time left first), then results; the sample in the layout editor when there is none.
+function Model:views(now, opts)
     opts = opts or {}
-    local s = self.state
-    if s and (now - s.at) > M.STALE then s = nil end
-    if (not s or s.st == 'idle') and opts.preview then
-        s = M.parse(M.SAMPLE) or {st = 'idle', at = now}
-        s.at = now
+    local out = {}
+    local states = self.states or (self.state and {self.state}) or {}
+    for _, s in ipairs(states) do
+        if (now - s.at) <= M.STALE and s.st ~= 'idle' then
+            local v = self:view_of(s, now, opts)
+            if v then out[#out + 1] = v end
+        end
     end
+    if #out == 0 and opts.preview then
+        local s = M.parse(M.SAMPLE)
+        s.at = now
+        out[1] = self:view_of(s, now, opts)
+    end
+    table.sort(out, function(a, b)
+        local ra, rb = a.kind == 'active' and 0 or 1, b.kind == 'active' and 0 or 1
+        if ra ~= rb then return ra < rb end
+        return (a.left or 0) < (b.left or 0)
+    end)
+    return out
+end
+
+function Model:view_of(s, now, opts)
+    opts = opts or {}
     if not s or s.st == 'idle' then return nil end
     local unit = s.unit ~= '' and (' ' .. s.unit) or ''
     local pct = M.percent(s.count, s.target)

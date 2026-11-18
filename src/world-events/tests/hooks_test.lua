@@ -184,5 +184,21 @@ local L4 = localevents.new({defs = {events = {}}, store = {}}); L4:tick(1); eq(L
 local L5 = localevents.new({defs = events, store = {current = {id = 'gone', n = 1, elapsed = 0, count = 0}, seq = 1}}); L5:tick(1); eq(L5:payload(), nil, 'an event whose definition is gone is dropped')
 local L6 = localevents.new({defs = 'garbage', store = {}}); L6:tick(1); check(#L6.defs == 1, 'garbage falls back to the built-in rotation')
 
+-- ---- regions: a kills trigger and an event bound to game regions ----------------------------------------------------------
+local RH = hooks.clean({{kills = {creature = 'orc', count = 2, region = 4}, actions = {{action = 'message', text = 'in the desert'}}}})
+eq(RH[1].kills.region, 4, 'a kills trigger keeps its region')
+eq(hooks.trigger_text(RH[1]), 'When the realm has defeated 2 x orc in region 4', 'and says so')
+local rfired = {}
+local rr = hooks.runner(RH, {}, function(a) rfired[#rfired + 1] = a.text end)
+rr:kill('Orc', 38, 'me', {}, 3); rr:kill('Orc', 38, 'me', {}, nil); rr:kill('Orc', 38, 'me', {}, 3)
+eq(#rfired, 0, 'kills in another region (or none) do not count')
+rr:kill('Orc', 38, 'me', {}, 4); rr:kill('Orc', 38, 'me', {}, 4)
+eq(#rfired, 1, 'two kills in the region fire it')
+local rdef = localevents.clean_event({id = 'e', target = 5, duration = 60, names = {'orc'}, regions = {4, 'x', 999, 7}})
+eq(#rdef.regions, 2, 'bad region ids are dropped (x, 999)')
+check(localevents.counts(rdef, 'Orc', 38, nil, 4), 'a kill in the events region counts')
+check(not localevents.counts(rdef, 'Orc', 38, nil, 3), 'a kill in another region does not')
+check(not localevents.counts(rdef, 'Orc', 38, nil, nil), 'a kill outside any region does not')
+check(localevents.counts(localevents.clean_event({id = 'e', target = 5, duration = 60}), 'Orc', 38, nil, nil), 'an event without regions counts everywhere')
 print(('hooks tests: %d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

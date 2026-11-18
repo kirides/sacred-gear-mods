@@ -58,6 +58,13 @@ eq(core.snippet({id = 'silver_creek', name = 'Silver "Creek"', ids = set({2910, 
     'silver_creek = { name = "Silver \\"Creek\\"", sectors = {{2910, 2912}, 2915, 2920}, circle = { x = 5000, y = 6000, r = 800 } },', 'full snippet')
 eq(core.snippet({id = 'town', name = 'Town', ids = set({1, 2})}), 'town = { name = "Town", sectors = {1, 2} },', 'sectors only')
 eq(core.snippet({id = 'spot', name = 'Spot', ids = {}, circle = {x = 10.4, y = 20.6, r = 1500}}), 'spot = { name = "Spot", circle = { x = 10, y = 21, r = 1500 } },', 'circle only, rounded')
+eq(core.snippet({id = 'r', name = 'R', ids = {}, regions = {4, 2, 4}}), 'r = { name = "R", regions = {2, 4} },', 'regions of an area, sorted, no repeats')
+eq(core.region_text({id = 4, name = 'Desert'}, 9), 'Desert (id 4, code 9)', 'region text')
+eq(core.region_text({id = 4, name = ''}), 'region 4 (id 4)', 'a nameless region')
+eq(core.region_text(nil), 'no region', 'no region')
+eq(core.region_line({id = 4, name = 'Desert'}), 'regions = { 4 },  -- Desert', 'the region line for a config')
+eq(core.region_line({id = 3, name = 'A' .. string.char(10) .. 'B -- C'}), 'regions = { 3 },  -- A B - - C', 'comment text is cleaned')
+eq(core.region_line(nil), nil, 'no region, no line')
 eq(core.snippet({id = 'a', name = 'A', ids = set({7}), near = 2}), 'a = { name = "A", sectors = {7}, near = 2 },', 'near')
 eq(core.snippet({name = 'No Id', ids = set({7})}), 'no_id = { name = "No Id", sectors = {7} },', 'the id from the name')
 

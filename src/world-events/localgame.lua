@@ -20,8 +20,16 @@ local on_kill
 local rolling                    -- {level, bonus} while a reward item is rolled
 local waves_alive = 0            -- creatures of this mod's waves that were created (for the selftest)
 
--- Called as fn(name, type_id, sector) for every kill that counts.
+-- Called as fn(name, type_id, sector, region id or nil) for every kill that counts.
 function G.on_kill(fn) on_kill = fn end
+
+-- The id of the game region a creature is in (gear.data.regions, newer Gear versions), nil outside or without the table.
+function G.region_of(c)
+    local api = gear.data and gear.data.regions
+    if not (api and api.of_creature) then return nil end
+    local ok, r = pcall(api.of_creature, api, c)
+    return ok and type(r) == 'table' and tonumber(r.id) or nil
+end
 
 function G.reset() tracked, hit_at, roll_at = {}, {}, {} end
 
@@ -58,7 +66,7 @@ function G.poll()
         if id > 16 and not tracked[id] and n < MAX_TRACKED and not c:is_dead() then
             local t = c:type()
             if t and gear.data.object_types:kind(t) == KIND_MONSTER then
-                tracked[id] = {c = c, type = t, name = c:type_name() or '', sector = c.sector and c:sector() or nil}
+                tracked[id] = {c = c, type = t, name = c:type_name() or '', sector = c.sector and c:sector() or nil, region = G.region_of(c)}
                 n = n + 1
             end
         end
@@ -67,7 +75,7 @@ function G.poll()
         local c = e.c
         if not c:exists() or c:is_dead() then
             tracked[id] = nil
-            if on_kill and counts(e, now) then on_kill(e.name, e.type, e.sector) end
+            if on_kill and counts(e, now) then on_kill(e.name, e.type, e.sector, e.region) end
         else
             local x, y = c:position()
             if not x or (x - hx) ^ 2 + (y - hy) ^ 2 > FORGET ^ 2 then tracked[id] = nil end

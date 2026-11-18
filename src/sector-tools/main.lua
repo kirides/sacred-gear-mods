@@ -107,6 +107,12 @@ function actions.copy_id()
     return copy(tostring(hero_now.sector), 'the sector id')
 end
 
+function actions.copy_region()
+    local line = core.region_line(hero_now.region)
+    if not line then say('No game region here.'); return false end
+    return copy(line, 'the region line')
+end
+
 function actions.pin() pinned = not pinned end
 function actions.labels() S.set('labels', not S.get('labels')) end
 
@@ -120,6 +126,7 @@ end)
 gear.on('sector-tools.query', function(out)
     out.sector, out.cx, out.cy, out.x, out.y = hero_now.sector, hero_now.cx, hero_now.cy, hero_now.x, hero_now.y
     out.recording, out.ids, out.circle, out.pinned = rec.on, core.sorted(rec.ids), rec.circle, pinned
+    out.region, out.region_code = hero_now.region, hero_now.region_code
     out.snippet = core.snippet(current_area())
     out.known = known
     out.shown = alt_until
@@ -148,6 +155,12 @@ gear.on('frame', function()
     local sector = hero:sector() or 0
     local cx, cy = core.cell_of(x, y)
     hero_now = {x = x, y = y, layer = layer or 0, sector = sector, cx = cx, cy = cy}
+    -- the game region the hero stands in (gear.data.regions, newer Gear versions); nil outside or without the table
+    local regions = gear.data and gear.data.regions
+    if regions and regions.of_sector and sector ~= 0 then
+        local okr, r, code = pcall(regions.of_sector, regions, sector)
+        if okr then hero_now.region, hero_now.region_code = r, code end
+    end
     if sector ~= 0 then
         local k = key_of(layer, cx, cy)
         if known[k] ~= sector then known[k] = sector; cells_dirty = true end
@@ -253,7 +266,7 @@ local function draw_ground(state)
 end
 
 local function draw_panel()
-    local p = ui.panel('panel', 'Sector tools', 16, 110, 312, 244, {closable = false, draggable = true, passive = true})
+    local p = ui.panel('panel', 'Sector tools', 16, 110, 312, 296, {closable = false, draggable = true, passive = true})
     if not p or not p.open then return end
     panel_rect = {x = p.x, y = p.y, w = p.w, h = p.h}
     local x, y, w = p.content_x, p.content_y, p.content_w or 296
@@ -263,7 +276,8 @@ local function draw_panel()
     if h.x then
         text(('Sector %s   cell %d,%d   layer %d'):format(h.sector ~= 0 and h.sector or '?', h.cx, h.cy, h.layer),
             {size = 13, bold = true, color = COLOR.id, shadow = true}, 18)
-        text(('x %d    y %d'):format(h.x, h.y), {size = 12, color = COLOR.cell}, 20)
+        text(('x %d    y %d'):format(h.x, h.y), {size = 12, color = COLOR.cell}, 18)
+        text('Region: ' .. core.region_text(h.region, h.region_code), {size = 12, color = h.region and COLOR.id or COLOR.cell, shadow = true}, 20)
     else
         text('No hero yet.', {size = 12}, 20)
     end
@@ -297,6 +311,8 @@ local function draw_panel()
     if ui.button('labels', x + 2 * cw + 12, y + line, cw, 24, S.get('labels') and 'Lines: on' or 'Lines: off', {tooltip = 'Sector boundaries on the ground'}) then
         actions.labels()
     end
+    line = line + 30
+    if ui.button('copyregion', x, y + line, w, 24, 'Copy region line', {tooltip = 'regions = { id },  -- name: for an event or an area of world_events.lua, the region you stand in'}) then actions.copy_region() end
     line = line + 30
     if gear.time() < status_until then ui.text(status, x, y + line, {size = 11, color = COLOR.ok, width = w, height = 28}) end
 end

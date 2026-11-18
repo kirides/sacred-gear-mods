@@ -78,6 +78,35 @@ end
 
 local function whole(v) return math.floor(v + 0.5) end
 
+-- The numbers of a list, ascending and without repeats (a set of ids is turned into a list with M.sorted first).
+function M.sorted_numbers(v)
+    local out = {}
+    if type(v) ~= 'table' then return out end
+    for _, x in ipairs(v) do
+        local n = tonumber(x)
+        if n then out[#out + 1] = math.floor(n) end
+    end
+    table.sort(out)
+    local unique = {}
+    for _, n in ipairs(out) do if unique[#unique] ~= n then unique[#unique + 1] = n end end
+    return unique
+end
+
+-- What a hero's region looks like in the panel and in a config: `r` is a gear.data.regions record ({id, name}) or nil.
+function M.region_text(r, code)
+    if type(r) ~= 'table' or not r.id then return 'no region' end
+    local name = tostring(r.name or ''):gsub('%c', ' ')
+    if name == '' then name = 'region ' .. tostring(r.id) end
+    return ('%s (id %d%s)'):format(name, r.id, code and (', code ' .. tostring(code)) or '')
+end
+
+-- The line to put into an area or an event: `regions = { 4 },  -- Desert` (nil without a region).
+function M.region_line(r)
+    if type(r) ~= 'table' or not r.id then return nil end
+    local name = tostring(r.name or ''):gsub('%c', ' '):gsub('%-%-', '- -')
+    return ('regions = { %d },%s'):format(r.id, name ~= '' and ('  -- ' .. name) or '')
+end
+
 -- The line for world_events.lua's `areas` table (the same text the server's "!area show" prints):
 --   silver_creek = { name = "Silver Creek", sectors = {2909, {2911, 2913}}, circle = { x = 1, y = 2, r = 3 } },
 -- area = { id, name, ids = { [sector] = true }, circle = { x, y, r } | nil, near = n | nil }
@@ -86,6 +115,8 @@ function M.snippet(area)
     local ids = M.sorted(area.ids or {})
     if #ids > 0 then parts[#parts + 1] = 'sectors = {' .. M.compact_text(M.compact(ids)) .. '}' end
     if area.near and area.near > 0 then parts[#parts + 1] = 'near = ' .. whole(area.near) end
+    local regions = M.sorted_numbers(area.regions)
+    if #regions > 0 then parts[#parts + 1] = 'regions = {' .. table.concat(regions, ', ') .. '}' end
     if area.circle then
         parts[#parts + 1] = ('circle = { x = %d, y = %d, r = %d }'):format(whole(area.circle.x), whole(area.circle.y), whole(area.circle.r))
     end

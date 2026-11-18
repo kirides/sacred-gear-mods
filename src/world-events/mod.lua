@@ -14,6 +14,8 @@ return {
          tooltip = 'Events of one sector only count there; the bar shows while you stand in that sector. Events without a sector show everywhere.'},
         {id = 'pulse', type = 'bool', label = 'Pulse at 25, 50 and 75 %', default = true,
          tooltip = 'The pill glows briefly when the realm passes a quarter of the goal'},
+        {id = 'region_pill', type = 'bool', label = 'Show the region boss progress', default = true, section = 'Progress bar',
+         tooltip = 'A second slim pill (teal) under the event pill while you stand in a region that counts kills towards its Region Boss: kills / needed and the percent, the game\'s own count (the Region counter mod, if you use it, sets the number the game counts to). Several pills share one movable group.'},
         {id = 'local_mode', type = 'choice', label = 'Without a server', default = 'auto', section = 'Single player',
          choices = {{value = 'auto', label = 'Run the events here (events.json)'}, {value = 'off', label = 'Do nothing'}},
          tooltip = 'In single player or a LAN game without a world_events server the mod runs the events itself from its events.json (a first run writes a small one to edit; a server export writes the same format): it counts your kills, shows the bar and fires the hooks (waves, items, gold, messages) for you.'},
