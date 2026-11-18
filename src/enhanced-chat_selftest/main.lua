@@ -134,13 +134,124 @@ local function network_checks()
     end
 end
 
+-- Mode 'server': two instances join a LAN game of a dedicated server (the remake's SacredGameServer on test ports; the
+-- instances' own GameServer.exe is ended whenever one of them opens the Multiplayer menu). The instance whose
+-- -gear-instance name contains 'send' writes on every channel, the other checks what gear.chat and the window make of it.
+-- Setup (a copy of the game folder): settings.cfg NETWORK_PORT_LISTEN : 26005, then
+--     SacredGameServer.exe --game-dir=<copy> --network-port-tcp=26006 --network-port-listen=26005 --udp-port=0
+--         --lan-announce=1 --public-address=127.0.0.1 --server-name=ChatTest --network-lobby=
+-- and start the receiver (e.g. -gear-instance=chatrecv) about 15 s before the sender (-gear-instance=chatsend).
+local function join_lan()
+    if tostring(A.instance or ''):find('send') then cfg.hero_x, cfg.hero_y = cfg.sender_hero_x, cfg.sender_hero_y end
+    gear.wait(8)
+    A.ui_click(512, 352)                    -- Multiplayer
+    gear.wait(2)
+    A.ui_click(512, 352 - 38 / 1.1719)      -- LAN
+    gear.wait(3)
+    local function px(x, y) return (x - 200) / 1.1719, y / 1.1719 end
+    A.ui_click(px(cfg.hero_x, cfg.hero_y))
+    gear.wait(2)
+    A.ui_click(px(910, 838))                -- Weiter
+    gear.wait(8)
+    A.screenshot('join-list')
+    A.ui_click(px(555, 75))                 -- the first game of the list
+    gear.wait(2)
+    A.ui_click(px(747, 448))                -- Beitreten
+    gear.wait(3)
+    -- The first player in is the game's host: it starts only once the other one waits in the join dialog too
+    -- (a player who comes after the host started waits there with Starten greyed out).
+    if not tostring(A.instance or ''):find('send') then gear.wait(cfg.host_wait) end
+    A.screenshot('join-dialog')
+    for _ = 1, 20 do
+        A.ui_click(px(747, 448))            -- Starten
+        if A.wait_for_game(8) then return end
+    end
+end
+
+local LINES = {global = 'Selftest hello from the other player', team = 'Selftest team from the other player',
+               private = 'Selftest whisper from the other player'}
+
+local function other_player()
+    local mp = gear.mp
+    if not gear.wait_until(function() return mp.active() end, 180) then return nil end
+    for _, p in ipairs(mp.players()) do if not p.is_local then return p end end
+end
+
+local function sender()
+    local other = other_player()
+    check('the other player is in the game', other ~= nil)
+    if not other then return end
+    gear.wait(5)
+    for round = 1, 8 do                     -- the other one may still be loading: say it a few times
+        check('global sent ' .. round, A.chat_send('global', 0, LINES.global))
+        A.chat_send('team', 0, LINES.team)
+        A.chat_send('private', other.slot, LINES.private)
+        gear.wait(5)
+        if round == 1 then A.screenshot('sender-chat') end
+    end
+end
+
+local function receiver()
+    local other = other_player()
+    check('the other player is in the game', other ~= nil, other and other.name)
+    if not other then return end
+    local seen = {}
+    gear.wait_until(function()
+        for _, l in ipairs(chat.history()) do
+            for kind, text in pairs(LINES) do
+                if l.message == text then seen[kind] = l end
+            end
+        end
+        return seen.global and seen.private
+    end, 90)
+    -- team chat reaches only the sender's party: two players who did not team up never see it
+    if seen.team then
+        check('team chat from the other player', seen.team.kind == 'team', seen.team.kind .. ': ' .. seen.team.plain)
+    else
+        print('team chat did not arrive (the players are not in a party): not checked')
+    end
+    for _, kind in ipairs({'global', 'private'}) do
+        local l = seen[kind]
+        check(kind .. ' chat from the other player', l ~= nil and l.kind == kind, l and (l.kind .. ': ' .. l.plain))
+        check(kind .. ': its sender', l and l.slot == other.slot and type(l.sender) == 'string' and l.sender ~= '',
+            l and (tostring(l.slot) .. ' ' .. tostring(l.sender)))
+        check(kind .. ': the game did not show it itself', l and l.hidden == true)
+    end
+    gear.wait(1)
+    A.screenshot('two-all')
+    local name = seen.global and seen.global.sender
+    if not name then return end
+    local q = query({set_player = name, tab = 1})
+    local listed = false
+    for _, n in ipairs(q.players or {}) do if n == name then listed = true end end
+    check('the other player is in the player filter', listed, table.concat(q.players or {}, ', '))
+    gear.wait(0.3)
+    local from = 0
+    for _, l in ipairs(chat.history()) do if l.sender == name then from = from + 1 end end
+    check('filtered to that player: only their lines', query().shown == from and from >= 2, ('%s of %s'):format(query().shown, from))
+    A.screenshot('two-filtered')
+    query({set_player = '', tab = 2})
+    gear.wait(0.3)
+    check('Global tab: the global chat', query().shown == count({global = true, team = true, own = true}) and query().shown >= 1, query().shown)
+    A.screenshot('two-global')
+    query({tab = 3})
+    gear.wait(0.3)
+    check('Private tab: the whispers', query().shown == count({private = true}) and query().shown >= 1, query().shown)
+    A.screenshot('two-private')
+    query({tab = 1})
+end
+
 gear.task(function()
     check('chat API present', chat ~= nil and type(chat.history) == 'function')
     if not chat then return finish() end
     check('main menu', A.wait_for_menu(cfg.timeout_menu))
-    if cfg.mode == 'lan' then host_lan() else A.load_save(cfg.slot) end
+    if cfg.mode == 'lan' then host_lan() elseif cfg.mode == 'server' then join_lan() else A.load_save(cfg.slot) end
     check('in game', A.wait_for_game(cfg.timeout_game))
     gear.wait(3)
+    if cfg.mode == 'server' then
+        if tostring(A.instance or ''):find('send') then sender() else receiver() end
+        return finish()
+    end
     if cfg.mode == 'lan' then network_checks() end
     check('chat lines available (the hook is in)', chat.available() == true)
     check('the window shows', query().visible == true)
