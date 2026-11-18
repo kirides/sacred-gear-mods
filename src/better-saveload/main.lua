@@ -13,6 +13,7 @@ local C = ui.COLORS
 local WND_GAME, WND_MENUS = 'UI_WND_SAVEGAME', 'UI_MENU_LOADGAME'
 local LAYER = 'top'
 local ROW_H, THUMB_W, THUMB_H = 54, 64, 48
+local DOUBLE_CLICK = 0.4    -- seconds between the two clicks of a double click
 local NAME_MAX = 60     -- the engine keeps 60 characters of a savegame's name (Windows-1252: umlauts and the like)
 
 local CLASS_LABEL = {
@@ -584,10 +585,16 @@ local function screen(preview)
     end
     local area = ui.scroll_begin('list', x, y, lw, lh, L({step = ROW_H}))
     local cy = area.content_y
+    local activate = false      -- a double click: the tab's action on the row (after drawing)
     for i, s in ipairs(rows) do
         local key = s and s.slot or 'new'
         if cy + ROW_H >= area.y and cy <= area.y + area.h then
             if row('row' .. tostring(key), area.content_x, cy, area.w - 2, s or nil, key == view.sel) then
+                -- A second click on the same row soon after the first: Load / Save, as its button.
+                local now = gear.time()
+                local last = view.last_click
+                activate = last ~= nil and last.key == key and now - last.at <= DOUBLE_CLICK
+                view.last_click = not activate and {key = key, at = now} or nil
                 view.sel = key
                 view.confirm = nil
             end
@@ -599,6 +606,7 @@ local function screen(preview)
             area.content_y + 8, L({size = 13, color = C.text_dim}))
     end
     ui.scroll_end(#rows * ROW_H)
+    if activate then primary() end
     -- The selected savegame.
     details(x + lw + 14, y, pw, view.sel ~= 'new' and find(view.sel) or nil)
     if view.mode == 'save' then
