@@ -17,6 +17,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Shared stash**](docs/SharedStash.md) | <img src="docs/images/shared-stash.jpg" width="220" alt="Shared stash"> | One stash for all your heroes, next to the chest window. Works in LAN games too. |
 | [**Better SaveLoad**](src/better-saveload/README.md) | <img src="docs/images/better-saveload.jpg" width="220" alt="Better SaveLoad"> | A clearer savegame screen with the Save tab first. |
 | [**Enhanced Chat**](docs/mods/enhanced-chat.md) | <img src="docs/images/enhanced-chat.jpg" width="220" alt="Enhanced Chat"> | A chat window with scrollback, tabs for global, private and system messages, a player filter and item names in their rarity colour. |
+| [**Key bindings**](docs/mods/key-bindings.md) | <img src="docs/images/key-bindings.jpg" width="220" alt="Key bindings"> | Choose the keys and mouse buttons of the game's actions (two per action), and quick cast combat arts with one press. |
 | [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.jpg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, optional fair random numbers. |
 | [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.jpg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
