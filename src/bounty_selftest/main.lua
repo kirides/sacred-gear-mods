@@ -114,7 +114,7 @@ gear.task(function()
         for _, c in ipairs(W.creatures_near(px, py, 700, {limit = 64})) do
             if c:type_name() == 'HORSE.GRN' and c:label() == 'bounty' then chickens = chickens + 1 end
         end
-        say('INFO the reward horse stays near the hero: ' .. chickens .. ' (no Gear call removes a creature, teleport is refused)')
+        check('the loot carrier is removed', chickens == 0, chickens)
         -- the trigger: 3 orc kills start the finished bounty again, 3 more do nothing, after Stop the cooldown holds
         for _ = 1, 3 do gear.emit('bounty.test', {op = 'trigger_kill', name = 'ORC_WARRIOR.GRN'}) end
         ctx = query()

@@ -30,8 +30,8 @@ once your hero has the level for them.
 - **Time:** a bounty runs for about three hours of play. The time only runs while you play (not in the menu, not while the
   game is closed). When it ends, a new one is posted; a finished one stays on the board, marked done, until its time is up.
 - **Reward:** gold goes straight into your purse; some bounties add an item that drops at your feet. The game's own loot
-  roll makes it, from a horse that appears next to you as the "creature" it drops from. **The horse stays**: nothing in Gear
-  can remove a creature yet. Gold grows with your hero's level.
+  roll makes it, from a horse that appears next to you for a moment as the "creature" it drops from and is removed again
+  (`creature:remove()`, needs a Sacred Gear with it). Gold grows with your hero's level.
 - **Saved per hero:** the board is saved in the mod's folder (`board_<hero>.json`), so it is still there after loading.
   It is not tamper-proof: single player, your game.
 - **Network games** use the server's board. The own board is for single player only.
@@ -94,8 +94,8 @@ Open the Mods screen with **F11** and pick the mod.
   chicken only drops gold and potions) and `gear.drops.simulate` on it, one roll at a time, up to 120, with the `drops.roll`
   bonus and the `drops.select` level set to the hero's. Only equipment counts (gold, potions and the like are destroyed again
   with `gear.inv.destroy`); *class loot* also needs `gear.world.usable_by`; *chosen items* roll the type as an authored drop
-  (the `forced` argument). The client cannot drop a gold pile of a given size. The horse cannot be removed or moved
-  (`creature:teleport` refuses): a `creature:remove()` in Gear would fix that.
+  (the `forced` argument). The client cannot drop a gold pile of a given size. The horse is removed with `creature:remove()`
+  as soon as the roll is over.
 - **Custom bounties and triggers:** `localboard.clean_def` checks a definition; `Board:start/stop/active` put it on the board
   (marked `custom`, `endless` without a time limit); `Board:trigger_kill` counts kills per definition and starts it at the
   count unless active or cooling down (`Board:tick` runs the cooldown). Trigger counters and cooldowns are saved with the

@@ -101,7 +101,7 @@ end
 
 -- Rolls the item of `spec` (see localboard.item_spec) at the hero's feet. mode 'tier': any item, the tier sets the rarity bonus;
 -- 'class': an item the hero's class can use (others are destroyed again); 'specific': one of the chosen item types.
--- `done(ok)` is called when it is over. The creature the loot "drops" from is a horse that stays afterwards.
+-- `done(ok)` is called when it is over. The creature the loot "drops" from is a horse that is removed afterwards.
 function G.drop_item(spec, done)
     if type(spec) == 'number' then spec = {mode = 'tier', tier = spec} end
     if rolling or type(spec) ~= 'table' then if done then done(false) end return end
@@ -138,6 +138,8 @@ function G.drop_item(spec, done)
                 if ok then break end
             end
             rolling = nil
+            local gone, why = carrier:remove()     -- the carrier must not stay behind
+            if not gone then print('bounty: cannot remove the loot carrier: ' .. tostring(why)) end
         end
         if done then done(ok) end
     end)
