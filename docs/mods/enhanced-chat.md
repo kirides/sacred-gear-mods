@@ -70,3 +70,9 @@ scrolling and the *new* button, that the game's own lines are hidden and come ba
 item colours (31 checks). With `config.lua` `return {mode = 'lan'}` it hosts a LAN game instead (the game's own
 gameserver on its usual ports: not next to a real game) and also sends itself a private message through the server,
 which must come back with its sender, and checks the player filter.
+
+`mode = 'server'` tests two players: two instances of the copy join a LAN game of the remake's `SacredGameServer` on
+test ports (the instances end the game's own `GameServer.exe` whenever one opens the Multiplayer menu, so it cannot be
+used). The instance named `...send...` sends global, team and private chat; the other checks that the lines arrive with
+the right kind and sender, that the game did not show them itself, the player filter and the tabs. The setup is at the
+top of the mode in `main.lua`. Team chat only reaches the sender's party, so it is noted, not checked.
