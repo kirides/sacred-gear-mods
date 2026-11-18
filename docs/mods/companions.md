@@ -22,10 +22,19 @@ hero slots belong to the players).
 2. Play another hero: click its portrait, press **F8** / **Shift+F8**, use *Play* in the party window, or the mod menu.
    The camera, the HUD, the inventory, skills and combat arts windows, the mouse, the keys and the controller then serve
    that hero. The gold goes with you (the party shares one purse) and mercenaries follow the hero you play.
-3. In the party window each hero has a **behaviour** for the time you play someone else (*Aggressive*: fights what
+3. **Heroes from other savegames:** in the party window, *Keep <name> for other savegames* writes the hero you play
+   to a hero file (in `mods\companions\heroes`). In another savegame, pick it under *Bring* and press *Bring*: a copy
+   of that hero joins with its level, attributes, skills, combat arts, combos, equipment and backpack. Your network
+   characters (`Save\HeroNN.pax`) are listed there too. The hero in the other savegame stays as it is.
+4. In the party window each hero has a **behaviour** for the time you play someone else (*Aggressive*: fights what
    comes near; *Defensive*: protects the hero you play; *Passive*: only follows), a **name**, and **tactics**: the combat
    arts, spells and combos it may use on its own. *Dismiss* sends a companion away for good (empty its backpack first:
    what it wears is lost).
+
+**The game's own mercenaries** follow the hero you play. Under *Mercenaries* in the party window you choose what they
+do: *As the game does* (default, nothing changes), *Assist* (they attack the enemy the party fights when they stand
+idle) or *Passive* (they stay with you). Their own combat AI, their quests and escort scripts stay the game's; the mod
+never teleports them or changes what they are.
 
 What the companions do on their own: they keep up with you (a companion left far behind or on another level joins
 you), pick the enemy nearest to you, attack it with their weapon, and use their abilities like a player would: combos
@@ -73,6 +82,9 @@ Open the Mods screen with **F11** and pick the mod.
 - Loading a savegame gives control back to your main hero.
 - Companions start without items (as a new hero would) and with the class's first combat art.
 - A fallen companion stays down until the game raises it as it raises your own hero; the mod then brings it back to you.
+- A hero brought from a file is a copy: items it brings exist twice (in its own savegame and in this one).
+- Mercenaries keep the game's limited combat AI (its packages use only a few combat arts); *Assist* only chooses their
+  target. Making them heroes would break the quests that track them, so the mod does not.
 - Combos: a companion uses the combo slots it has (the combo master's); the party window lists them under tactics.
 
 ## Development

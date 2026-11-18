@@ -172,6 +172,49 @@ local function recruit(class)
     return c
 end
 
+-- Heroes from elsewhere: the network game's characters (Save\HeroNN.pax) and heroes kept from other savegames.
+local files = {list = {}, labels = {}, index = 1, loaded = false}
+
+local function refresh_files()
+    files.list = party.hero_files() or {}
+    files.labels = {}
+    for i, f in ipairs(files.list) do
+        files.labels[i] = ('%s (%s, level %d)%s'):format(f.name ~= '' and f.name or '?', CLASS_LABEL[f.class or ''] or '?', f.level,
+            f.file:sub(1, 5) == 'save:' and ', network' or '')
+    end
+    if files.index > #files.list then files.index = 1 end
+    files.loaded = true
+end
+
+local function bring(f)
+    local ok, why = party.available()
+    if not ok then return toast(why or 'Not now') end
+    if #party.companions() >= setting('max_companions', 3) then
+        return toast('The party is full (setting: companions at most)')
+    end
+    local c, err = party.recruit_hero(f.file)
+    if not c then return toast('Cannot bring ' .. f.name .. ': ' .. tostring(err)) end
+    local r = record(c.id)
+    r.behaviour = nil
+    r.abilities = {}
+    r.name = (f.name ~= '' and f.name ~= 'Anonymous') and f.name:sub(1, 30) or default_name(c)
+    store:changed()
+    c:set_name(r.name)
+    toast(r.name .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level()) .. ') joins the party')
+    return c
+end
+
+-- Keeps the hero you play for other savegames: a hero file in the mod's heroes folder.
+local function keep()
+    local c = party.leader()
+    if not c then return end
+    local name = name_of(c)
+    local file, err = party.export_hero((name .. '_' .. (c:class() or 'hero')):gsub('[^%w_%-]', '_'))
+    if not file then return toast('Cannot keep ' .. name .. ': ' .. tostring(err)) end
+    toast(name .. ' is kept: another savegame can bring this hero into its party (party window, Bring)')
+    refresh_files()
+end
+
 local confirm = {id = nil, at = 0}   -- a dismiss waits for a second click
 local function dismiss(c)
     local now = os.clock()
@@ -217,7 +260,7 @@ gear.on('frame', guard('frame', function(dt)
     clock = clock + (dt or 0)
     if not party.available() then return end
     local heroes = party.heroes()
-    if #heroes < 2 then return end
+    if #heroes < 2 and #party.mercenaries() == 0 then return end
     if clock >= next_names then
         next_names = clock + 2
         apply_names()
@@ -236,6 +279,11 @@ gear.on('frame', guard('frame', function(dt)
     end
     if not setting('ai', true) then return end
     local opts = ai_opts()
+    local merc_behaviour = store.data.merc_behaviour or 'vanilla'
+    if merc_behaviour ~= 'vanilla' and clock >= (next_think.mercs or 0) then
+        next_think.mercs = clock + 0.5
+        for _, m in ipairs(party.mercenaries()) do ai.think_merc(m, leader, clock, opts, merc_behaviour) end
+    end
     local step = cfg.think or 0.25
     for i = 2, #heroes do
         local c = heroes[i]
@@ -249,6 +297,7 @@ end))
 
 gear.on('session.start', guard('session', function()
     next_think, next_names = {}, 0
+    files.loaded = false
     ai.reset()
     apply_share()
 end))
@@ -396,7 +445,7 @@ local function draw_window()
     local tactics_hero
     for _, h in ipairs(heroes) do if h.id == win.tactics then tactics_hero = h end end
     local tactics_h = tactics_hero and math.min(360, 44 + (#(tactics_hero:abilities() or {}) + #(tactics_hero:combos() or {})) * 22) or 0
-    local h = 40 + #heroes * 52 + 70 + tactics_h
+    local h = 40 + #heroes * 52 + 160 + tactics_h
     local p = ui.panel('party', 'Party' .. key_hint('window'), 212, 90, WIN_W, h, {})
     if not p.open then return end
     local x, y, w = p.content_x or 0, p.content_y or 0, p.content_w or WIN_W - 20
@@ -419,8 +468,40 @@ local function draw_window()
         recruit(CLASS_ORDER[win.class])
     end
     ui.text(('%d of %d companions'):format(#party.companions(), setting('max_companions', 3)), x + 320, yy + 4, {color = DIM, size = 12})
+    -- Bring a hero from a hero file; keep the hero you play for other savegames.
+    if not files.loaded then refresh_files() end
+    ui.text('Bring', x, yy + 34, {color = ACCENT})
+    if #files.list > 0 then
+        local fchanged, findex = ui.dropdown('heroes', x + 70, yy + 30, 300, files.labels, files.index,
+            {tooltip = 'Heroes kept from other savegames, and your network characters'})
+        if fchanged then files.index = findex end
+        if ui.button('bring', x + 380, yy + 30, 90, 22, 'Bring', {enabled = not full,
+            tooltip = 'A copy of this hero joins where you stand, with its level, skills, equipment and backpack'}) then
+            bring(files.list[files.index])
+        end
+    else
+        ui.text('No kept heroes yet: play a savegame, then "Keep" its hero here.', x + 70, yy + 34, {color = DIM, size = 12})
+    end
+    if ui.button('keep', x + 70, yy + 60, 300, 22, 'Keep ' .. name_of(leader) .. ' for other savegames',
+        {tooltip = 'Writes the hero you play to a hero file another savegame can bring into its party'}) then
+        keep()
+    end
+    -- The game's own mercenaries.
+    local mercs = party.mercenaries()
+    ui.text('Mercenaries', x, yy + 94, {color = ACCENT})
+    local MB = {'vanilla', 'assist', 'passive'}
+    local ML = {'As the game does', 'Assist (fight the party\'s target)', 'Passive (stay with you)'}
+    local mi = 1
+    for i, b in ipairs(MB) do if store.data.merc_behaviour == b then mi = i end end
+    local mchanged, mnew = ui.dropdown('mercs', x + 100, yy + 90, 230, ML, mi,
+        {tooltip = 'What the game\'s own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts'})
+    if mchanged then
+        store.data.merc_behaviour = MB[mnew]
+        store:changed()
+    end
+    ui.text(('%d with the party'):format(#mercs), x + 340, yy + 94, {color = DIM, size = 12})
     if tactics_hero then
-        tactics_area(tactics_hero, x, yy + 40, w)
+        tactics_area(tactics_hero, x, yy + 126, w)
     end
 end
 

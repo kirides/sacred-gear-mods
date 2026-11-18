@@ -207,4 +207,32 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     end
 end
 
+-- One think of a mercenary (the game's own, following the party). Its own AI keeps running; 'assist' only points it
+-- at the enemy the party fights (the nearest to the hero you play) when it stands idle or fights something else far
+-- away, 'passive' calls it back to you when it strays into a fight. Nothing is teleported or scripted: escorts and
+-- quest followers stay the game's.
+function M.think_merc(m, leader, now, opts, behaviour)
+    if behaviour == 'vanilla' or m:is_dead() or leader:is_dead() then return end
+    local s = st(m.id)
+    local mx, my, ml = m:position()
+    local lx, ly, ll = leader:position()
+    if not mx or not lx or ml ~= ll then return end
+    local d = dist(mx, my, lx, ly)
+    local action = m:action() or 'idle'
+    if behaviour == 'passive' then
+        if d > opts.follow * 2 and now - s.ordered > 1.5 then
+            local fx, fy = formation(lx, ly, 1, 1, opts.follow * 0.6)
+            if m:order_move(fx, fy) then s.ordered = now end
+        end
+        return
+    end
+    if d > opts.leash then return end
+    local target = pick_target(m, mx, my, ml, lx, ly, {engage = opts.engage, leash = opts.leash})
+    if target and action ~= 'ability' and (action == 'idle' or (s.target ~= target.id and now - s.ordered > 3)) then
+        if m:order_attack(target) then s.target, s.ordered = target.id, now end
+    elseif not target then
+        s.target = nil
+    end
+end
+
 return M

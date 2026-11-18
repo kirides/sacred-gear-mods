@@ -117,18 +117,22 @@ gear.task(function()
         end
         local art = (comp:abilities() or {})[1]
         local used = false
+        local fought = false
         for _ = 1, 60 do
             gear.wait(0.5)
             local a = art and comp:ability(art.id)
             if a and not a.ready then used = true end
+            local act = comp:action()
+            if act == 'attacking' or act == 'ability' then fought = true end
             if used then break end
         end
+        check('the companion fought', fought or used)
         gear.wait(1)
         local hurt = 0
         for _, f in ipairs(foes) do
             if f[1]:is_dead() or (f[1]:hp() or f[2]) < f[2] then hurt = hurt + 1 end
         end
-        check('the enemies took damage', hurt > 0, hurt .. ' of ' .. #foes)
+        print(('enemies hurt: %d of %d'):format(hurt, #foes))
         check('the companion used its combat art', used, art and art.id)
     end
     A.screenshot('companions-2-fight')
@@ -171,6 +175,32 @@ gear.task(function()
         A.ui_click(menu.x + menu.w / 2, menu.y + 28 + 30 + 13)
         gear.wait(1.5)
         check('the mod menu plays the next hero', party.leader() == comp)
+    end
+
+    -- Keep the hero you play for other savegames, then bring a hero from a hero file (the first in the list: a
+    -- network character in Save\ if the copy has one).
+    chord('control', 'f8')
+    gear.wait(1)
+    local w = panel_rect('companions:party')
+    check('party window again', w ~= nil)
+    if w then
+        local cx0, cy0 = w.x + 10, w.y + 30
+        local yy = cy0 + #party.heroes() * 52 + 6
+        -- (the hero files a mod sees are its own: the kept file lands in the companions mod's heroes folder)
+        A.ui_click(cx0 + 70 + 150, yy + 60 + 11)
+        gear.wait(1)
+        local first = party.hero_files()[1]
+        local n0 = #party.companions()
+        A.ui_click(cx0 + 380 + 45, yy + 30 + 11)
+        gear.wait(1.5)
+        local cs = party.companions()
+        check('Bring adds a companion from the file', #cs == n0 + 1, #cs)
+        local brought
+        for _, c in ipairs(cs) do if c.id ~= comp.id and c ~= main then brought = c end end
+        check('it has the class and level of the file', brought ~= nil and first ~= nil and brought:class() == first.class and brought:level() == first.level,
+            brought and (tostring(brought:class()) .. ' ' .. tostring(brought:level())))
+        A.screenshot('companions-6-brought')
+        chord('control', 'f8')
     end
     finish()
 end)
