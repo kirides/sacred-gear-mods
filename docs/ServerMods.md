@@ -16,7 +16,8 @@ available). Nothing here is mocked up.
 
 ## bounty - Bounty board
 
-Shows the bounties of `bounty_board.lua`: what to hunt, your progress, the time left and the reward.
+Shows the bounties of `bounty_board.lua`: what to hunt, your progress, the time left and the reward. In single player the mod
+posts and pays its own bounties instead (see [its page](mods/bounty.md)); this section is about the server's board.
 
 - **Install:** `src/bounty` into `mods\bounty`. Server: `bounty_board.lua`.
 - **Hotkey:** `panel`, default **Ctrl+J**.
@@ -32,7 +33,7 @@ Shows the bounties of `bounty_board.lua`: what to hunt, your progress, the time 
   it (gold, green when done) and the reward line. Texts instead of the list: "Waiting for the server...", "The board is empty.", or
   the explanation when the server has no bounty board. The tracker is "Bounties" in gold at the top right, one line per open bounty
   as `title  n/target`, shown in the game (not while a game window is up) while a board is known.
-- **Limits:** needs the Sacred Gear game server with `bounty_board.lua`. Progress shown is what the server counted.
+- **Limits:** a network game needs the Sacred Gear game server with `bounty_board.lua`. Progress shown is what the server counted.
 
 ## achievements - Achievements and login streak
 

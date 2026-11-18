@@ -28,7 +28,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**World events**](src/world-events/README.md) | <img src="docs/images/world-events.jpg" width="220" alt="World events"> | A progress bar for the server's world event. |
 | [**Sector tools**](src/sector-tools/README.md) | <img src="docs/images/sector-tools.jpg" width="220" alt="Sector tools"> | For server admins: sector and grid cell, recording areas. Not in the release zip. |
 | [**Achievements**](docs/mods/achievements.md) | <img src="docs/images/achievements.jpg" width="220" alt="Achievements"> | Messages for achievements and the daily login reward. Needs a server script. |
-| [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.jpg" width="220" alt="Bounty board"> | The server's bounties and your progress. Ctrl+J. Needs a server script. |
+| [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.jpg" width="220" alt="Bounty board"> | Bounties to hunt, with progress and rewards. Works alone in single player, shows the server's board in network games. Ctrl+J. |
 | [**Build sharer**](docs/mods/buildsharer.md) | <img src="docs/images/buildsharer.jpg" width="220" alt="Build sharer"> | Publish your build and browse the builds of others. Ctrl+K. Needs a server script. |
 | [**Quest helper**](docs/mods/questhelper.md) | <img src="docs/images/questhelper.svg" width="220" alt="Quest helper"> | Quest items and the server's quest records with hints. Ctrl+U. Needs a server script. |
 | [**Server feed**](docs/mods/serverfeed.md) | <img src="docs/images/serverfeed.jpg" width="220" alt="Server feed"> | Rare finds and hero deaths on screen. Needs a server script. |
@@ -77,7 +77,8 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/world-events_selftest` | Automation self test of the world-events mod |
 | `src/sector-tools` | For server admins: the sector id and grid cell you stand in, boundaries on the ground, recording areas by walking, copy-to-clipboard of the config line for the server's `world_events.lua`. [README](src/sector-tools/README.md) |
 | `src/sector-tools_selftest` | Automation self test of the sector-tools mod |
-| `src/achievements`, `bounty`, `buildsharer`, `questhelper`, `serverfeed` | Clients of the SacredEngineRemake server mods. [Doc](docs/ServerMods.md) |
+| `src/achievements`, `buildsharer`, `questhelper`, `serverfeed` | Clients of the SacredEngineRemake server mods. [Doc](docs/ServerMods.md) |
+| `src/bounty`, `src/bounty_selftest` | Bounty board: own bounties in single player, the server's board in network games, and its self test. [Doc](docs/mods/bounty.md) |
 | `src/lootfilter` | Loot filter: pick up by class, quality and category, dim the rest |
 | `src/layout` | Layout editor: move the game's windows and mod panels |
 | `src/realms` | Realm picker for the online play server |
