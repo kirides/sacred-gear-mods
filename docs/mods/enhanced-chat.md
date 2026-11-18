@@ -24,8 +24,9 @@ game's own notes and your own lines. Chat is still typed with the game's own cha
 - **Move and resize** it with the layout editor (hold **Alt**, *Edit layout*): drag it, pull its corner. It scales with
   the game's UI like every window.
 
-When the window is hidden (setting *Show the chat window* off, or the *Show / hide* key) or the mod is switched off, the
-game shows its own lines at the top again. Lines that came before the mod was switched on are in the window too (the
+By default the window shows in network games only: in single player (*Hide in Singleplayer*, on by default) the game
+keeps its own lines at the top. When the window is hidden (in single player, setting *Show the chat window* off, or the
+*Show / hide* key) or the mod is switched off, the game shows its own lines at the top again. Lines that came before the mod was switched on are in the window too (the
 session's last 200).
 
 ## Settings (F11, Enhanced Chat, *Settings*)
@@ -33,6 +34,7 @@ session's last 200).
 | Setting | Default | |
 |---|---|---|
 | Show the chat window | on | off: the game's own lines at the top of the screen |
+| Hide in Singleplayer | on | no window in a single player game; network games are unaffected |
 | Hide the game's own chat lines | on | off: both the window and the game's lines |
 | Lines kept | 200 | 50 to 500 |
 | Text size | 13 | 10 to 20 |
@@ -67,7 +69,7 @@ Sacred Gear with `gear.chat`; an older one leaves the mod idle.
 
 It loads savegame 1, adds lines as the game does and checks their kinds and colours, the history, the tabs (clicked),
 scrolling and the *new* button, that the game's own lines are hidden and come back when the window is hidden, and the
-item colours (31 checks). With `config.lua` `return {mode = 'lan'}` it hosts a LAN game instead (the game's own
+item colours, and that the window stays hidden in single player by default (33 checks). With `config.lua` `return {mode = 'lan'}` it hosts a LAN game instead (the game's own
 gameserver on its usual ports: not next to a real game) and also sends itself a private message through the server,
 which must come back with its sender, and checks the player filter.
 

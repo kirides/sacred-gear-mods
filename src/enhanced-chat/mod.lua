@@ -11,6 +11,8 @@ return {
     settings = {
         {id = 'visible', type = 'bool', label = 'Show the chat window', default = true,
          tooltip = 'Off: the game shows its own chat lines again'},
+        {id = 'hide_in_singleplayer', type = 'bool', label = 'Hide in Singleplayer', default = true,
+         tooltip = 'No chat window in a single player game (the game shows its own lines there); network games are unaffected'},
         {id = 'replace_overlay', type = 'bool', label = 'Hide the game\'s own chat lines', default = true,
          tooltip = 'While the chat window shows, the game adds no lines at the top of the screen'},
         {id = 'lines', type = 'number', label = 'Lines kept', min = 50, max = 500, step = 50, default = 200},
