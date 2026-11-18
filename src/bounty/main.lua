@@ -27,6 +27,7 @@ local localgame = require('localgame')
 local customs = require('customs')
 local hooks = require('hooks')
 local editor = require('editor')
+local quests = require('questsmain')     -- daily and weekly quests (own panel, own state per savegame)
 
 local channel = net and net.channel('bounty:state')
 local board = nil          -- the last payload (the server's, or the local board's)
@@ -217,7 +218,7 @@ local editor_hooks = {
 customs.load()
 
 gear.every(0.25, function()
-    if is_local() and mine then localgame.poll() end
+    if (is_local() and mine) or quests.wants_poll() then localgame.poll() end
 end)
 
 gear.every(1, function()
