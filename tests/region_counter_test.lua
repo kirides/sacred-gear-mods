@@ -66,5 +66,15 @@ do   -- changing the percent keeps the share
     ok(G.rec[1].kills_needed == 500 and G.rec[1].kills_left == 250, 'share kept when the percent changes')
 end
 
+do   -- 1 percent: never less than one kill
+    local G = make({kill_percent = 1})
+    frames(G, 1)
+    ok(G.rec[1].kills_needed == 10 and G.rec[1].kills_left == 10, '1 percent of 1000 is 10')
+    G.rec[1].kills_needed, G.rec[1].kills_left = 100, 100       -- a second region with the smallest vanilla number
+    G.rec[2].kills_needed, G.rec[2].kills_left, G.rec[2].id = 100, 100, 6
+    frames(G, 1)
+    ok(G.rec[2].kills_needed == 1 and G.rec[2].kills_left == 1, 'at least one kill is needed')
+end
+
 print(failures == 0 and 'all passed' or (failures .. ' failed'))
 os.exit(failures == 0 and 0 or 1)
