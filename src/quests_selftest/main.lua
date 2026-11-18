@@ -26,8 +26,8 @@ local function count(prefix)
 end
 for _, e in ipairs({'started', 'progress', 'completed', 'claimed', 'failed', 'set_completed', 'streak', 'streak_lost'}) do
     gear.on('quest.' .. e, function(ev)
-        log[#log + 1] = ('quest.%s:%s:%s'):format(e, tostring(ev.period), tostring(ev.bonus and 'bonus' or ev.id or ev.count))
-        if e == 'streak' then log[#log + 1] = ('quest.streak:%s:%d'):format(tostring(ev.period), ev.count) end
+        local tag = e == 'claimed' and ev.bonus and 'bonus' or (e == 'streak' or e == 'streak_lost') and (ev.count or ev.previous) or ev.id or ev.count
+        log[#log + 1] = ('quest.%s:%s:%s'):format(e, tostring(ev.period), tostring(tag))
     end)
 end
 
@@ -63,6 +63,28 @@ gear.task(function()
     say('scope ' .. tostring(gear.savegame.scope()) .. ' level ' .. tostring(hero:level()) .. ' daily ' .. snapshot('daily') .. ' weekly ' .. snapshot('weekly'))
     check('initial quest.started events', count('quest.started') >= 3, count('quest.started'))
     check('panel payload', ctx.q_view and #ctx.q_view.daily.quests == #ctx.q_data.daily.quests and ctx.q_view.daily.left > 0)
+
+    if gear.config.phase == 'shots' then
+        -- the documentation's picture: the real panel with a day in progress (the numbers are examples)
+        op('q_reset') op('q_tick')
+        local st = op('q_tick').q_data
+        local q1, q2 = st.daily.quests[1], st.daily.quests[2]
+        op('q_auto', {value = false})
+        op('q_kill', {name = (q1.names[1] and q1.names[1]:upper() or 'ANY') .. '_X.GRN', count = q1.target})
+        op('q_kill', {name = (q2.names[1] and q2.names[1]:upper() or 'ANY') .. '_X.GRN', count = math.floor(q2.target / 2)})
+        local w1 = st.weekly.quests[1]
+        op('q_kill', {name = (w1.names[1] and w1.names[1]:upper() or 'ANY') .. '_X.GRN', count = math.floor(w1.target * 0.4)})
+        st = op('q_tick').q_data
+        st.streak.daily.count, st.streak.daily.best, st.streak.daily.last = 2, 5, st.daily.key - 1
+        st.streak.weekly.count, st.streak.weekly.best, st.streak.weekly.last = 1, 3, st.weekly.key - 1
+        op('q_tick')
+        op('q_open')
+        gear.wait(9)       -- the toasts of the new quests are gone
+        A.screenshot('quests-panel')
+        op('q_open', {value = false})      -- the panel's open state is kept in the layout
+        gear.wait(1)
+        return A.quit(0)
+    end
 
     -- A clean start at the real date, and the draw is stable: the same date gives the same quests
     op('q_reset') op('q_tick')
@@ -126,7 +148,7 @@ gear.task(function()
     check('weeks missed: weekly streak lost', d.streak.weekly.count == 0)
 
     -- A pay that waits: auto claim off -> pending until q_pay
-    gear.settings.set('auto_claim', false)
+    op('q_auto', {value = false})
     op('q_reset') op('q_offset', {seconds = 0}) op('q_tick')
     local q = op('q_tick').q_data.daily.quests[1]
     op('q_kill', {name = (q.names[1] and q.names[1]:upper() or 'ANY') .. '_X.GRN', count = q.target - q.n})
@@ -135,7 +157,7 @@ gear.task(function()
     local g2 = hero:gold()
     op('q_pay') settle()
     check('claim rewards pays', hero:gold() > g2 and #op('q_tick').q_data.pending == 0)
-    gear.settings.set('auto_claim', true)
+    op('q_auto', {value = true})
 
     -- Per savegame: progress saved with a slot, another savegame has its own
     op('q_reset') op('q_offset', {seconds = 0}) op('q_tick')
@@ -151,7 +173,6 @@ gear.task(function()
     gear.wait_until(function() return saved ~= nil end, 60)
     gear.wait(1)
     check('saved', saved == gear.config.slot_a, saved)
-    local scope_a = gear.savegame.scope()
     op('q_kill', {name = 'ANYTHING.GRN', count = 3})       -- progress after the save: lost with the load
     local changed = 0
     gear.on('savegame.changed', function() changed = changed + 1 end)
@@ -160,13 +181,14 @@ gear.task(function()
     gear.wait(5)
     gear.wait_until(function() ctx = op('q_tick') return ctx.q_data and ctx.q_data.daily.key ~= nil end, 30)
     say('other savegame ' .. tostring(gear.savegame.scope()) .. ' streak ' .. tostring(ctx.q_data.streak.daily.count) .. ' daily ' .. snapshot('daily'))
-    check('other savegame loaded', gear.savegame.scope() ~= scope_a, gear.savegame.scope())
+    check('other savegame loaded', gear.savegame.scope() == 'GAME' .. gear.config.slot_b, gear.savegame.scope())
     check('other savegame: not the first one\'s streak', ctx.q_data.streak.daily.count ~= 5)
     local c = changed
     gear.game.load(gear.config.slot_a)
     gear.wait_until(function() return changed > c end, 120)
     gear.wait(5)
     gear.wait_until(function() ctx = op('q_tick') return ctx.q_data and ctx.q_data.daily.key ~= nil end, 30)
+    check('first savegame loaded again', gear.savegame.scope() == 'GAME' .. gear.config.slot_a, gear.savegame.scope())
     check('back to the first savegame: its streak', ctx.q_data.streak.daily.count == 5 and ctx.q_data.streak.daily.best == 7, ctx.q_data.streak.daily.count)
     check('its progress as saved (not the later kills)', snapshot('daily') == before, snapshot('daily') .. ' vs ' .. before)
     gear.game.delete_save(gear.config.slot_a)

@@ -82,7 +82,10 @@ function G.poll()
         if not c:exists() or c:is_dead() then
             tracked[id] = nil
             if counts(e, now) then
-                for _, fn in ipairs(kill_listeners) do fn(e.name) end
+                for _, fn in ipairs(kill_listeners) do
+                    local ok, err = pcall(fn, e.name)        -- one listener's error must not stop the others
+                    if not ok then print('bounty: kill listener: ' .. tostring(err)) end
+                end
             end
         else
             local x, y = c:position()

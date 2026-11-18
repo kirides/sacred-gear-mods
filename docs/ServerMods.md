@@ -35,6 +35,14 @@ posts and pays its own bounties instead (see [its page](mods/bounty.md)); this s
   as `title  n/target`, shown in the game (not while a game window is up) while a board is known.
 - **Limits:** a network game needs the Sacred Gear game server with `bounty_board.lua`. Progress shown is what the server counted.
 
+### Daily and weekly quests (`daily_quests.lua`)
+
+The same mod (`src/bounty`) also shows the quests of `daily_quests.lua` (`server-scripts/daily_quests.lua` of this repository;
+details on [the bounty page](mods/bounty.md#daily-and-weekly-quests)). Channel `bounty:quests`: the server sends `{ v = 1, daily =
+{ key, left, done, complete, quests = {{ id, title, text, target, n, done, claimed, reward, level }} }, weekly = {...}, streak =
+{ daily = { count, best, today, every, next_in, bonus }, weekly = {...} }, pending, totals }` after the handshake and on every change;
+the mod asks with `{ req = 1 }`. Panel "Daily and weekly quests", 430 x 460 at (320, 70), **Ctrl+Shift+D**.
+
 ## achievements - Achievements and login streak
 
 Toasts for every unlock and for the daily login reward of `achievements.lua`, and a panel listing all achievements with progress.

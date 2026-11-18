@@ -72,6 +72,12 @@ local function mode()
 end
 function R.wants_poll() return mode() == 'local' and gear.settings.get('quests') ~= false end
 
+local test_auto = nil             -- the test hook can override the setting
+local function auto_claim()
+    if test_auto ~= nil then return test_auto end
+    return gear.settings.get('auto_claim') ~= false
+end
+
 local function toast(title, ...) gear.toast.show(title, ...) end
 
 local function level_of()
@@ -209,7 +215,7 @@ local function tick_local()
     end
     if #events > 0 then H:changed() end
     publish(events)
-    if gear.settings.get('auto_claim') ~= false then pay_pending() end
+    if auto_claim() then pay_pending() end
     rebuild()
 end
 
@@ -221,7 +227,7 @@ localgame.on_kill(function(type_name)
     if #events > 0 then H:changed() end
     publish(events)
     rebuild()
-    if gear.settings.get('auto_claim') ~= false then pay_pending() end
+    if auto_claim() then pay_pending() end
 end)
 
 gear.every(1, function()
@@ -425,7 +431,7 @@ gear.on('bounty.test', function(ctx)
             publish(events)
         end
         rebuild()
-        if gear.settings.get('auto_claim') ~= false then pay_pending() end
+        if auto_claim() then pay_pending() end
     elseif op == 'q_tick' then
         tick_local()
     elseif op == 'q_reset' then
@@ -435,6 +441,10 @@ gear.on('bounty.test', function(ctx)
         view = nil
     elseif op == 'q_save' then
         H:save()
+    elseif op == 'q_open' then
+        ui.show_panel('quests', ctx.value ~= false)
+    elseif op == 'q_auto' then
+        test_auto = ctx.value
     elseif op == 'q_pay' then
         pay_pending()
     elseif op == 'q_conf' then

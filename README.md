@@ -31,7 +31,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**World events**](src/world-events/README.md) | <img src="docs/images/world-events.jpg" width="220" alt="World events"> | A progress bar for the server's world event. |
 | [**Sector tools**](src/sector-tools/README.md) | <img src="docs/images/sector-tools.jpg" width="220" alt="Sector tools"> | For server admins: sector and grid cell, recording areas. Not in the release zip. |
 | [**Achievements**](docs/mods/achievements.md) | <img src="docs/images/achievements.jpg" width="220" alt="Achievements"> | Messages for achievements and the daily login reward. Needs a server script. |
-| [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.jpg" width="220" alt="Bounty board"> | Bounties to hunt, with progress and rewards. Works alone in single player (make your own bounties and automatic triggers, e.g. for streams), shows the server's board in network games. Ctrl+J. |
+| [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.jpg" width="220" alt="Bounty board"> | Bounties to hunt, with progress and rewards. Works alone in single player (make your own bounties and automatic triggers, e.g. for streams), shows the server's board in network games. Ctrl+J. Also [daily and weekly quests](docs/mods/bounty.md#daily-and-weekly-quests) with a streak bonus (Ctrl+Shift+D). |
 | [**Build sharer**](docs/mods/buildsharer.md) | <img src="docs/images/buildsharer.jpg" width="220" alt="Build sharer"> | Publish your build and browse the builds of others. Ctrl+K. Needs a server script. |
 | [**Quest helper**](docs/mods/questhelper.md) | <img src="docs/images/questhelper.svg" width="220" alt="Quest helper"> | Quest items and the server's quest records with hints. Ctrl+U. Needs a server script. |
 | [**Server feed**](docs/mods/serverfeed.md) | <img src="docs/images/serverfeed.jpg" width="220" alt="Server feed"> | Rare finds and hero deaths on screen. Needs a server script. |
@@ -81,7 +81,8 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/sector-tools` | For server admins: the sector id and grid cell you stand in, boundaries on the ground, recording areas by walking, copy-to-clipboard of the config line for the server's `world_events.lua`. [README](src/sector-tools/README.md) |
 | `src/sector-tools_selftest` | Automation self test of the sector-tools mod |
 | `src/achievements`, `buildsharer`, `questhelper`, `serverfeed` | Clients of the SacredEngineRemake server mods. [Doc](docs/ServerMods.md) |
-| `src/bounty`, `src/bounty_selftest` | Bounty board: own bounties in single player, the server's board in network games, and its self test. [Doc](docs/mods/bounty.md) |
+| `src/bounty`, `src/bounty_selftest`, `src/quests_selftest` | Bounty board and daily / weekly quests: own board and quests in single player, the server's in network games, and the self tests. [Doc](docs/mods/bounty.md); logic tests `tests/bounty_hooks_test.lua`, `tests/quests_test.lua` |
+| `server-scripts/daily_quests.lua` | The game server's half of the daily and weekly quests (copy it into the server's `scripts` folder) |
 | `src/lootfilter` | Loot filter: pick up by class, quality and category, dim the rest |
 | `src/layout` | Layout editor: move the game's windows and mod panels |
 | `src/realms` | Realm picker for the online play server |
@@ -105,7 +106,7 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 | [Drop tuning](docs/DropTuning.md) | Drop chance, rarity weights, the generator; the self test |
 | [Shared stash](docs/SharedStash.md) | Using the stash, LAN, limits, the file, savegame caveats |
 | [Server mods](docs/ServerMods.md) | The five clients of the remake server's scripts: install, hotkeys, settings |
-| [Mod events](docs/ModEvents.md) | Events mods publish for other mods (bounty, world events) and how to subscribe |
+| [Mod events](docs/ModEvents.md) | Events mods publish for other mods (bounty, quests, world events) and how to subscribe |
 | [Session mods](docs/SessionMods.md) | Session tracker, loot log, damage meter |
 | [Hotkeys](docs/Hotkeys.md) | Install, default keys and the clashes between mods |
 | [Controller](docs/Controller.md) | Using the mods with a gamepad |
