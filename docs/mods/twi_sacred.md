@@ -1,8 +1,6 @@
 # Twitch Integration: actions
 
-![Twitch Integration: actions](../images/twi_sacred.svg)
-
-*Illustration with example values.*
+![Twitch Integration: actions](../images/twi_sacred.jpg)
 
 Lets your Twitch viewers play with your game: they can spawn monsters near your hero, give or take gold, heal or hurt the hero (also for a few seconds only) or teleport it.
 

@@ -17,13 +17,19 @@ local function clamp(v, lo, hi) return math.max(lo, math.min(hi, v)) end
 local function choice(list) return list[math.random(#list)] end
 
 -- The monster pool: type ids of the configured names, found once the game's types are loaded.
+-- 'ORC_WARRIOR.GRN' -> 'Orc warrior'
+local function pretty(name)
+    local t = name:gsub('%.%w+$', ''):gsub('_', ' '):lower()
+    return t:sub(1, 1):upper() .. t:sub(2)
+end
+
 local pool
 local function monsters()
     if pool then return pool end
     pool = {}
     for _, name in ipairs(cfg.monsters or {}) do
         local id = gear.data.object_types:find(name)
-        if id then pool[#pool + 1] = {id = id, name = name} else print('no object type ' .. name) end
+        if id then pool[#pool + 1] = {id = id, name = pretty(name)} else print('no object type ' .. name) end
     end
     return pool
 end

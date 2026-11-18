@@ -1,5 +1,7 @@
 # Drop tuning
 
+![The Drop tuning page of the Mods screen](images/drop-tuning.jpg)
+
 Makes creature drops more or less frequent, tilts the rarity of what they drop and, if you like, swaps the game's random numbers for a fair
 generator. Switched on, with every setting at its default, it changes nothing. It is built on `gear.drops` of Sacred Gear (what the engine does and what
 each setting touches: [Gear drops](https://github.com/kirides/sacred-bild/blob/main/docs/GearDrops.md)).

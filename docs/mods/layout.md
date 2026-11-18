@@ -1,8 +1,6 @@
 # Layout editor
 
-![Layout editor](../images/layout.svg)
-
-*Illustration with example values.*
+![Layout editor](../images/layout.jpg)
 
 Move the game's windows and the panels of your mods wherever you want them, like the edit mode of an online game. Everything you move stays where you put it.
 
