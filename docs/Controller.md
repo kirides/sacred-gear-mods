@@ -13,5 +13,7 @@ what matters for the mods here:
   moves the cursor, **A** clicks, **B** closes the top window. The *Shared stash* button next to the chest is a mod
   panel as well.
 - **Companions**: the companions' portraits (top right) are D-pad stops, **A** plays that hero; the mod menu has
-  *Party window*, *Play the next hero* and *Play the previous hero*.
+  *Party window*, *Play the next hero* and *Play the previous hero*. For one-press switching, bind SacredBild's
+  controller actions *Next party hero* / *Previous party hero* in the Options' Controller page (they press PageDown /
+  PageUp, the mod's keys).
 - **Autosave** needs nothing; start *Autosave now* from the mod menu for a save on demand.

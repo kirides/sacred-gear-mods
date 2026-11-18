@@ -3,8 +3,8 @@
 --     Sacred.exe -gear-auto -gear-instance=companions -gear-load=N -gear-mods=companions,companions_selftest
 --
 -- needs a single player savegame with hostile creatures within ~30 tiles of the hero. It recruits through the party
--- window (Ctrl+F8, the Recruit button), checks the name the mod gives, that the companion follows the hero and fights
--- an enemy with its combat art, that a click on its portrait plays it and F8 plays the next hero, and that the
+-- window (Home, the Recruit button), checks the name the mod gives, that the companion follows the hero and fights
+-- an enemy with its combat art, that a click on its portrait plays it and PageDown plays the next hero, and that the
 -- former hero now follows and fights on its own. Results: GearAutomation\<instance>\companions.json, screenshots.
 
 if not gear.auto then return end
@@ -62,8 +62,8 @@ gear.task(function()
     local main = party.leader()
     check('a hero, no companions yet', main ~= nil and #party.companions() == 0, #party.companions())
 
-    -- Recruit through the party window: Ctrl+F8, then its Recruit button (the second widget row from the bottom).
-    chord('control', 'f8')
+    -- Recruit through the party window: Home, then its Recruit button (the second widget row from the bottom).
+    A.press(0x24)   -- Home
     gear.wait(1)
     local p = panel_rect('companions:party')
     check('party window opens', p ~= nil)
@@ -86,7 +86,7 @@ gear.task(function()
     if not comp then check('companion', false) return finish() end
     gear.wait(2.5)
     check('the mod names it', comp:name() ~= nil and not comp:name():find('playername'), comp:name())
-    chord('control', 'f8')    -- close the window
+    A.press(0x24)   -- Home    -- close the window
     gear.wait(0.5)
 
     -- It follows: walk the hero away, the companion comes along.
@@ -156,10 +156,10 @@ gear.task(function()
     end, 12)
     check('the former hero follows or fights', acted, math.floor(dist(main, comp)) .. ' ' .. tostring(main:action()))
 
-    -- F8 plays the next hero (back to the main one).
-    A.press('f8')
+    -- PageDown plays the next hero (back to the main one).
+    A.press(0x22)   -- PageDown
     gear.wait(1.5)
-    check('F8 plays the next hero', party.leader() == main)
+    check('PageDown plays the next hero', party.leader() == main)
     A.screenshot('companions-4-back')
 
     -- The controller: the portrait is a D-pad stop, and the mod menu (LT + LB) plays the next hero. Its entries:
@@ -179,7 +179,7 @@ gear.task(function()
 
     -- Keep the hero you play for other savegames, then bring a hero from a hero file (the first in the list: a
     -- network character in Save\ if the copy has one).
-    chord('control', 'f8')
+    A.press(0x24)   -- Home
     gear.wait(1)
     local w = panel_rect('companions:party')
     check('party window again', w ~= nil)
@@ -200,7 +200,14 @@ gear.task(function()
         check('it has the class and level of the file', brought ~= nil and first ~= nil and brought:class() == first.class and brought:level() == first.level,
             brought and (tostring(brought:class()) .. ' ' .. tostring(brought:level())))
         A.screenshot('companions-6-brought')
-        chord('control', 'f8')
+        -- A companion low on health drinks a healing potion from its backpack (the brought hero carries some).
+        if brought then
+            local max = brought:max_hp() or 100
+            brought:set_hp(math.max(1, math.floor(max * 0.15)))
+            local healed = gear.wait_until(function() return (brought:hp() or 0) > max * 0.5 end, 8)
+            check('a low companion drinks a potion', healed, tostring(brought:hp()) .. ' / ' .. max)
+        end
+        A.press(0x24)   -- Home
     end
     finish()
 end)

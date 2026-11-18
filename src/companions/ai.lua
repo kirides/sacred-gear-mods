@@ -98,6 +98,16 @@ local function pick_target(c, cx, cy, layer, lx, ly, opts)
     return best
 end
 
+-- Whether a living enemy of `c` is within `radius` of it.
+function M.enemy_near(c, radius)
+    local x, y, l = c:position()
+    if not x then return false end
+    for _, e in ipairs(W.creatures_near(x, y, radius, {layer = l, limit = 24})) do
+        if not e:is_hero() and not e:is_dead() and c:is_enemy(e) then return true end
+    end
+    return false
+end
+
 -- The ability to use now, and on whom ('target' or 'self'), or nil.
 local function pick_ability(c, s, now, target, heroes, tactics)
     local hurt = false
@@ -159,6 +169,10 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
             s.teleported, s.target = now, nil
         end
         return
+    end
+    -- Low on health: a healing potion from its own backpack, like the player's Space.
+    if opts.potion_below > 0 and hp_frac(c) < opts.potion_below and now - (s.potion_at or -100) > 5 then
+        s.potion_at = c:drink_potion() and now or now + 10   -- none: ask again in 15 s
     end
     local behaviour = tactics.behaviour or opts.behaviour
     local action = c:action() or 'idle'
