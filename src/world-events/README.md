@@ -81,3 +81,8 @@ luajit tests/main_test.lua     main.lua against a fake gear: who may push, hello
 hidden with "only while Alt" and outside the event's sector, a sample in the layout editor, an old kept size brought back, the result line, a move; screenshots `pill-*.bmp`.
 
 The server half has its own tests in the remake repository (`WorldEventsScriptTests`).
+
+## Development
+
+- **Files:** `mod.lua`; `core.lua` (progress and reward odds, pure Lua); `main.lua` (the bar, the server messages). `tests/` needs no game. Self test: `src/world-events_selftest`.
+- **Depends on:** `gear.net` (the channel of the server's `world_events.lua`, see the section above), `gear.ui` (a bar that the layout editor can move), `gear.settings`, `gear.emit`.

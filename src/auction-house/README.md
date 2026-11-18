@@ -60,3 +60,9 @@ the market again. Details: [DESIGN.md](DESIGN.md), section 4.
 `luajit tests/core_test.lua` (the market's rules) and `luajit tests/sim_test.lua` (the whole mod against a fake game,
 including a restart with an unsaved sale and a market on the game server, LAN and Closed Net), from this folder. After a
 change of `core.lua`: `luajit tools/inline_core.lua core.lua <SacredEngineRemake>/Sacred.GameServer/scripts-examples/auction_house.lua`.
+
+## Development
+
+- **Files:** `mod.lua`; `core.lua` (rules and bookkeeping, pure Lua); `client.lua` (the player's side, journal in `journal.json`); `kind.lua` (kind of game); `ui.lua` (the window); `main.lua` (wiring, `market.json`, messages through `gear.mp.send`); `selftest.lua` (needs the real game: Closed Net modes). Design notes: `DESIGN.md`. About 3 000 lines.
+- **Depends on:** `gear.mp` (kind of game, sending messages, `force_network` for tests), `gear.inv`, `gear.save` / `gear.read`, `gear.settings`, `gear.ui`, `gear.wait` / `wait_until`.
+- **Tests:** `tests/core_test.lua` and `tests/sim_test.lua` need no game (LuaJIT, see Tests above); `tools/` holds a helper that inlines the core for the self test.

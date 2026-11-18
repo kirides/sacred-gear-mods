@@ -55,3 +55,10 @@ then save**, and do not load an older savegame afterwards to get an item back.
 
 There is no "undo" list on purpose: it could be used to duplicate items. The exact order of steps is in the
 [mod's README](../src/shared-stash/README.md).
+
+## Development
+
+- **Files:** `src/shared-stash/mod.lua`; `main.lua` (the button and window beside the chest); `stash.lua` (the stash file and item data); `transfer.lua` (moving items between backpack and stash); `kind.lua` (single player, LAN or network game: where the stash lives); `remote.lua` (the stash on a server); `selftest.lua` (self tests, run only with `-gear-auto`). About 1 600 lines together.
+- **Depends on:** `gear.inv` (reading and building items, with their random properties and runes), `gear.mp` (kind of game), `gear.save` / `gear.read` (`stash.json`), `gear.ui` (item icons and the game's tooltips), `gear.auto` for the self tests and screenshots.
+- **Test it:** [README](../src/shared-stash/README.md#self-test) (runs in a copy of the game folder).
+- **API reference:** [GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md).

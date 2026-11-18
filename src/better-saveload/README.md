@@ -47,3 +47,8 @@ Sacred.exe -gear-auto -gear-instance=saveload -gear-mods=better-saveload,better-
 It opens the start menu's Load game screen (the 5th entry), checks the list, filters, order, keyboard and controller,
 that the game's screen comes back when the mod stops drawing, loads a savegame, then in game types a name (and the on-screen keyboard), saves a new savegame with an umlaut name, deletes
 it and closes the screen with Back, Esc and B. Results: `GearAutomation\saveload\saveload.json`.
+
+## Development
+
+- **Files:** `mod.lua` (settings) and `main.lua` (about 770 lines: the savegame list, the Save and Load tabs, delete). Self test: `src/better-saveload_selftest` (see above).
+- **Depends on:** `gear.ui.replace_window` (replaces the game's own savegame window), `gear.game.saves`, `gear.game.save`, `gear.game.load` (savegame list, metadata, save, load, delete), `gear.world.hero`, `gear.settings`. These came with the "replaced windows" feature of Sacred Gear ([Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md)).

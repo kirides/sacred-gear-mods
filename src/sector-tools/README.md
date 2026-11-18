@@ -63,3 +63,8 @@ luajit tests/main_test.lua     main.lua against a fake gear: when it shows, reco
 `src/sector-tools_selftest` runs in the real game (`-gear-auto`, a copy of the game folder): the hero's sector and cell, the panel with Alt and
 pinned, walking over a sector boundary and recording both sectors, the circle, **Copy config / Copy id read back from the Windows
 clipboard**, and the layout editor; screenshots `st-*.bmp`.
+
+## Development
+
+- **Files:** `mod.lua`; `core.lua` (the grid, the projection, range compaction, the config line; pure Lua, no `gear`); `main.lua` (the panel, recording, the clipboard); `tests/` (see Tests above). Self test: `src/sector-tools_selftest`.
+- **Depends on:** `creature:sector()` and `gear.clipboard` of Sacred Gear, `gear.world.hero` / `creatures_near`, `gear.save` / `gear.read` (`state.json`, `cells.json`), `gear.ui`. The text it copies is the config line of the server's `world_events.lua`.

@@ -46,3 +46,9 @@ stops). Autosave needs no input of its own. See [Controller](Controller.md).
 
 `gear.emit('autosave.configure', {...})` and `gear.emit('autosave.query', out)`; see the
 [mod's README](../src/autosave/README.md), which also describes the self test.
+
+## Development
+
+- **Files:** `src/autosave/mod.lua` (settings, key) and `main.lua` (about 320 lines: the timer, the slot rotation 97 to 99, the note, the mod page). Self test: `src/autosave_selftest` (run it only in a copy of the game folder, it overwrites the autosave slots).
+- **Depends on:** `gear.game.save` (the actual save), `gear.time`, `gear.settings`, `gear.mods.page`, `gear.ui`, `gear.keys`. Other mods can talk to it with the `autosave.configure` and `autosave.query` events ([README](../src/autosave/README.md)).
+- **API reference:** [GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md).

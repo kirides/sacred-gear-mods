@@ -8,46 +8,33 @@ build). A mod is a folder you copy into the game's `mods` folder; you switch it 
 
 ### What you get
 
-**Shared stash**: one stash for all your heroes. Open the game's chest window, press the **Shared stash** button
-beside it, and put an item in with one hero and take it out with another, with its random properties and runes intact.
-The stash shows the items' real icons and the game's own tooltips, and it works in LAN games too.
+Click a name for the mod's page: how to use it, its settings and keys, and notes for anyone who wants to tinker with it.
+Pictures marked as illustrations (`.svg`) show example values; they will be replaced with screenshots from the game.
 
-![The shared stash beside the chest window](docs/images/shared-stash.jpg)
+| Mod | Preview | What it does |
+|---|---|---|
+| [**Autosave**](docs/Autosave.md) | <img src="docs/images/autosave.jpg" width="220" alt="Autosave"> | Saves the game every few minutes into its own slots. F6 saves right now. |
+| [**Shared stash**](docs/SharedStash.md) | <img src="docs/images/shared-stash.jpg" width="220" alt="Shared stash"> | One stash for all your heroes, next to the chest window. Works in LAN games too. |
+| [**Better SaveLoad**](src/better-saveload/README.md) | <img src="docs/images/better-saveload.jpg" width="220" alt="Better SaveLoad"> | A clearer savegame screen with the Save tab first. |
+| [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.svg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, optional fair random numbers. |
+| [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.svg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
+| [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
+| [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.svg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. F7. |
+| [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.svg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
+| [**Layout editor**](docs/mods/layout.md) | <img src="docs/images/layout.svg" width="220" alt="Layout editor"> | Move the game's windows and mod panels where you want them. Hold Alt. |
+| [**Realm picker**](docs/mods/realms.md) | <img src="docs/images/realms.svg" width="220" alt="Realm picker"> | Choose the online play server for Closed and Open Internet. |
+| [**Auction house**](src/auction-house/README.md) | <img src="docs/images/auction-house.svg" width="220" alt="Auction house"> | Buy and sell items between players. |
+| [**World events**](src/world-events/README.md) | <img src="docs/images/world-events.jpg" width="220" alt="World events"> | A progress bar for the server's world event. |
+| [**Sector tools**](src/sector-tools/README.md) | <img src="docs/images/sector-tools.jpg" width="220" alt="Sector tools"> | For server admins: sector and grid cell, recording areas. |
+| [**Achievements**](docs/mods/achievements.md) | <img src="docs/images/achievements.svg" width="220" alt="Achievements"> | Messages for achievements and the daily login reward. Needs a server script. |
+| [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.svg" width="220" alt="Bounty board"> | The server's bounties and your progress. F8. Needs a server script. |
+| [**Build sharer**](docs/mods/buildsharer.md) | <img src="docs/images/buildsharer.svg" width="220" alt="Build sharer"> | Publish your build and browse the builds of others. F7. Needs a server script. |
+| [**Quest helper**](docs/mods/questhelper.md) | <img src="docs/images/questhelper.svg" width="220" alt="Quest helper"> | Quest items and the server's quest records with hints. F8. Needs a server script. |
+| [**Server feed**](docs/mods/serverfeed.md) | <img src="docs/images/serverfeed.svg" width="220" alt="Server feed"> | Rare finds and hero deaths on screen. Needs a server script. |
+| [**Twitch Integration**](docs/mods/twitch_integration.md) | <img src="docs/images/twitch_integration.svg" width="220" alt="Twitch Integration"> | Turns rewards, bits and chat into actions in your game. Base mod. |
+| [**Twitch Integration: actions**](docs/mods/twi_sacred.md) | <img src="docs/images/twi_sacred.svg" width="220" alt="Twitch Integration: actions"> | Viewers spawn monsters, give gold, heal or teleport your hero. |
 
-![An item's tooltip in the stash](docs/images/shared-stash-tooltip.jpg)
-
-**Autosave**: saves the game every few minutes of play (5 by default, set it in the Mods screen) into its own slots
-97 to 99, oldest first, so a crash or a bad fight costs minutes, not an hour. **F6** saves right now, and a short note
-confirms each save. Your own saves and the quicksave are never touched.
-
-![An autosave note at the top of the screen](docs/images/autosave.jpg)
-
-**Better SaveLoad**: a new savegame screen in place of the game's (in game and the start menu's *Load game*): each
-savegame's picture, hero, class and level, filters by character and class, newest first or by file name.
-
-![The savegame screen](docs/images/better-saveload.jpg)
-
-**Drop tuning**: more or fewer drops, a tilt of the rarity odds (the best items, set and unique items) and an optional fair random generator for drops,
-all from sliders on its page of the Mods screen. Off by default in effect: every setting starts at "as the game has it".
-
-Each of them is set in the **Mod manager** (**F11**, or the *Mods* button under the escape menu): switch each mod on or off,
-change its settings and re-bind its keys.
-
-**Loot filter**: picks up only the items you want (class, quality and category rules, potion choices) and dims the rest on
-the ground. **F5** opens its settings.
-
-**Layout editor**: move every window of the game and every mod panel where you want it (hold **Alt**, press *Edit layout*).
-
-**Realm picker**: choose the online play server (realm) for Closed / Open Internet, a page in the Mods screen.
-
-**Server mods** (they need a SacredEngineRemake game server with the matching script): bounty board, achievements and
-login streak, server feed (rare drops, hero deaths), build sharer and quest helper. See [Server mods](docs/ServerMods.md);
-the default hotkeys and their clashes are in [Hotkeys](docs/Hotkeys.md).
-
-**Twitch Integration** (`twitch_integration` and `twi_sacred`): Twitch viewers spawn monsters, give gold, heal or teleport the hero.
-
-The mod manager itself is part of Sacred Gear in [sacred-bild](https://github.com/kirides/sacred-bild#what-you-get-from-sacred-gear-sacredgeardll).
-**Session mods** (no server needed): **sessiontracker** (F2, time played, kills, gold, experience and their rates), **lootlog** (F3, what dropped and what reached the backpack) and **damagemeter** (F7, damage dealt and taken, DPS, party view). See [Session mods](docs/SessionMods.md).
+Each mod is switched on or off in the **Mod manager** (**F11**, or the *Mods* button under the escape menu), where you also change its settings and keys.
 
 ### Sacred ReBorn
 

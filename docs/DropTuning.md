@@ -27,3 +27,9 @@ Sacred.exe -gear-auto -gear-load=1 -gear-instance=droptuning -gear-mods=drop-tun
 
 It checks that the defaults leave the rarity table and the generator alone, that the settings change the table, the drop rate (twice the chance: 160 against 85
 equipment drops in 400 rolls in the last run) and the generator, and that the defaults bring everything back (9 checks).
+
+## Development
+
+- **Files:** `src/drop-tuning/mod.lua` (settings) and `main.lua` (about 100 lines). Self test: `src/drop-tuning_selftest`.
+- **Depends on:** `gear.drops` (hooks into the game's loot functions: drop chance, rarity weights, the random numbers), `gear.mods.page`, `gear.settings`, `gear.ui`. Settings that are at "as the game has it" leave the game untouched.
+- **API reference:** [GearDrops](https://github.com/kirides/sacred-bild/blob/main/docs/GearDrops.md), [GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md).
