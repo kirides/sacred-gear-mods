@@ -8,10 +8,17 @@
 local actions = require('actions')
 local DEBUG = gear.config.debug
 
+-- Keys the game reads by polling (Alt, Ctrl, the numpad's + and -) instead of through key messages.
+local POLLED = {alt = true, ctrl = true, add = true, subtract = true}
+
 -- Rules for the current bindings: one per bound slot, plus a block for the game key of every action that is not on it.
 local function build()
     local rules, claimed = {}, {}
     local function add(from, to, id)
+        if POLLED[to] and from == to then
+            claimed[to] = true      -- the game's own key: nothing to do
+            return
+        end
         rules[#rules + 1] = {from = from, to = to, id = id}
         if not from:find('+', 1, true) then claimed[from] = true end
     end
@@ -31,7 +38,11 @@ local function build()
     -- The game key of an action whose key is taken elsewhere does nothing (unless another action uses that key).
     for _, a in ipairs(actions.list) do
         if not claimed[a[3]] then
-            rules[#rules + 1] = {from = a[3], block = true}
+            if POLLED[a[3]] then
+                rules[#rules + 1] = {release = a[3]}
+            else
+                rules[#rules + 1] = {from = a[3], block = true}
+            end
             claimed[a[3]] = true
         end
     end

@@ -12,6 +12,8 @@ local actions = {
     {'logbook', 'Log book', 'l'}, {'worldmap', 'World map', 'm'}, {'collect', 'Collect all loot', 'a'},
     {'savemenu', 'Save / Load menu', 's'}, {'help', 'Help', 'h'}, {'options', 'Options', 'o'}, {'pause', 'Pause', 'p'},
     {'netinfo', 'Multiplayer info', 'n'},
+    {'show_names', 'Show item names (hold)', 'alt'}, {'stand_still', 'Attack in place (hold)', 'ctrl'},
+    {'zoom_in', 'Zoom in (hold)', 'add'}, {'zoom_out', 'Zoom out (hold)', 'subtract'},
     {'qc1', 'Combat art 1, quick cast', ''}, {'qc2', 'Combat art 2, quick cast', ''},
     {'qc3', 'Combat art 3, quick cast', ''}, {'qc4', 'Combat art 4, quick cast', ''},
     {'qc5', 'Combat art 5, quick cast', ''},

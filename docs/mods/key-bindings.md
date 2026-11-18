@@ -18,7 +18,7 @@ What you can bind:
 - Weapon slots 1 to 5 and combat art slots 1 to 5, each on its own.
 - The potions: healing (red), undead death (dark), mentor (blue), antidote (green), concentration (yellow); heal companions.
 - The windows: inventory, combat arts, combos, log book, world map, save / load menu, help, options, multiplayer info.
-- Pause and *collect all loot*.
+- Pause and *collect all loot*; the keys you hold: *show item names* (Alt), *attack in place* (Ctrl), zoom in / out (numpad + and -). A modifier alone (Alt, Ctrl) is a binding for these.
 - **Quick cast** rows for combat art 1 to 5 (below).
 
 **The defaults are the game's own keys** (1 to 5, 6 to 0, Space Q W E R, B, I F C L M A S H O P N); the second keys and
