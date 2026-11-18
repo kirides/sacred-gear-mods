@@ -103,6 +103,8 @@ end
 
 local function load_mod(dir, opts)
     local G = make_gear(dir, opts)
+    for k, v in pairs((opts or {}).files or {}) do G.files[k] = v end     -- files the mod finds when it starts
+    if (opts or {}).json then G.gear.json = opts.json end
     local env = setmetatable({gear = G.gear, print = function(...) G.logs[#G.logs + 1] = table.concat({...}, ' ') end}, {__index = _G})
     local chunk, err = loadfile('src/' .. dir .. '/main.lua')
     assert(chunk, err)
@@ -261,9 +263,7 @@ do
     ok(kinds['Moved'] == nil, 'loot: chest to backpack ignored')
     ok(kinds['Bought'] == 'acquired', 'loot: acquired')
     -- the panel draws the entries, newest first; the log survives a restart
-    local G2 = load_mod('lootlog')
-    G2.files['lootlog.json'] = G.files['lootlog.json']
-    G2.gear.json.decode = G.gear.json.decode
+    local G2 = load_mod('lootlog', {files = {['lootlog.json'] = G.files['lootlog.json']}, json = G.gear.json})
     fire(G2, 'load')
     fire(G2, 'draw', {mode = 'game'})
     ok(joined(G2):find('Blade', 1, true), 'loot: reloaded entries are drawn')
