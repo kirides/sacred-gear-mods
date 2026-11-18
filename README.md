@@ -22,6 +22,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.jpg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
 | [**Companions**](docs/mods/companions.md) | <img src="docs/images/companions.jpg" width="220" alt="Companions"> | A party of heroes in single player: recruit companions of any class with their own gear, skills and experience, play any of them (click a portrait, PageDown), the others follow and fight with their combat arts, spells and combos. Home. |
+| [**Item comparison**](docs/mods/item-compare.md) | | Hover an item and see, in green and red, what it changes compared with what your hero (or a companion) wears in that slot. Works with the controller's cursor too. |
 | [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.jpg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. Ctrl+D. |
 | [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.jpg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
 | [**Region counter**](docs/mods/region-counter.md) | | The kills a region needs before its Region Boss quest: set your own number, and keep the count when you leave the region or quit. |
@@ -88,6 +89,7 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/realms` | Realm picker for the online play server |
 | `src/twitch_integration`, `src/twi_sacred` | Twitch Integration: the connector's pipe and the actions (monsters, gold, heal, teleport) |
 | `src/sessiontracker`, `src/lootlog`, `src/damagemeter` | Session mods. [Doc](docs/SessionMods.md); logic test `tests/session_mods_test.lua` |
+| `src/item-compare`, `src/item-compare_selftest` | Item comparison tooltips and its self test. [Doc](docs/mods/item-compare.md) |
 | `src/region-counter` | Region Boss kill counters on `gear.data.regions`. [Doc](docs/mods/region-counter.md); logic test `tests/region_counter_test.lua` |
 | `tests/modmock` | Smoke tests of buildsharer and questhelper without the game ([how](tests/modmock/README.md)) |
 | `src/shared-stash` | The shared stash, built on `gear.inv`; includes its self tests. [README](src/shared-stash/README.md) |
