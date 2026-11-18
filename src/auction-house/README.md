@@ -37,6 +37,12 @@ Single player: in your own game (`market.json` in this folder). A network game: 
 computer keeps `journal.json`: the transfers on their way and a secret that ties your hero's name to you on each
 market (so another player cannot use a hero of the same name to empty your wallet). Do not delete either file.
 
+## Your own setting (Mods screen, F11)
+
+| Setting | Default | |
+|---|---|---|
+| Hide in Singleplayer | off | Hides the "Auction house" button and the panel in a single player game (the layout editor still shows the button); network games are unaffected |
+
 ## Rules (the host's Mods screen, F11)
 
 | Setting | Default | |

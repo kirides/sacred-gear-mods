@@ -22,6 +22,8 @@ return {
         {id = 'sale_cut', type = 'number', label = 'Cut of a sale, %', min = 0, max = 30, step = 1, default = 5,
          tooltip = 'Taken from the price when an item sells (a gold sink). 0: none'},
         {id = 'max_per_seller', type = 'number', label = 'Listings per player', min = 5, max = 100, step = 5, default = 20},
+        {id = 'hide_in_singleplayer', type = 'bool', label = 'Hide in Singleplayer', default = false,
+         tooltip = 'Client side: no market button and no panel in a single player game (network games are unaffected)'},
         {id = 'allow_special', type = 'bool', label = 'Also sell special items', default = false,
          tooltip = 'Horse gear and the like; gold and quest items never sell'},
     },

@@ -96,6 +96,7 @@ end
 function hero:is_dead() return false end
 
 local clicks = {}
+local setting_override = {}
 gear = {
     config = {enabled = true},
     time = function() return clock end,
@@ -106,6 +107,7 @@ gear = {
     emit = function() end,
     on = function(ev, fn) handlers[ev] = handlers[ev] or {} table.insert(handlers[ev], fn) end,
     settings = {get = function(id)
+        if setting_override[id] ~= nil then return setting_override[id] end
         return ({durations = '1,3,7', fee_per_day = 0.5, sale_cut = 5, max_per_seller = 20, allow_special = false})[id]
     end},
     world = {hero = function() return hero end},
@@ -493,6 +495,41 @@ do
     -- default-deny: an engine that cannot tell the kind of a network game reads closed
     g = game('lan', {no_mode = true})
     check(g.kind.mode() == 'closed' and client.where == 'closed', 'a network game without gear.mp.mode reads closed (' .. tostring(client.where) .. ')')
+
+    -- 'Hide in Singleplayer': hides button and panel in single player only
+    local buttons, panels, closes = 0, 0, 0
+    local function watch()
+        buttons, panels = 0, 0
+        local p = package.loaded.ui
+        p.open_button = function() buttons = buttons + 1 end
+        p.panel = function() panels = panels + 1 end
+        local c0 = p.close
+        p.close = function(...) closes = closes + 1 return c0(...) end
+    end
+    local function shown() return buttons > 0 and panels > 0 end
+    setting_override.hide_in_singleplayer = false
+    g = game('single'); watch(); frames(2)
+    check(shown(), 'hide off: single player shows button and panel')
+    setting_override.hide_in_singleplayer = true
+    frames(2); buttons, panels = 0, 0; frames(2)
+    check(buttons == 0 and panels == 0, 'hide on: single player shows neither button nor panel')
+    local edit0 = gear.ui.edit_mode
+    gear.ui.edit_mode = function() return true end
+    frames(2)
+    check(buttons > 0 and panels == 0, 'hide on: the layout editor still shows the button')
+    gear.ui.edit_mode = edit0
+    gear.ui.panel_open = function() return true end
+    closes = 0
+    fire('settings.changed', 'hide_in_singleplayer', true)
+    check(closes == 1, 'hide on: an open panel is closed at once')
+    setting_override.hide_in_singleplayer = false
+    buttons, panels = 0, 0; frames(2)
+    check(shown(), 'hide off again: shown again')
+    setting_override.hide_in_singleplayer = true
+    g = game('lan'); watch(); buttons, panels = 0, 0; frames(2)
+    check(shown(), 'hide on: network games ignore it')
+    setting_override.hide_in_singleplayer = nil
+
     gear.read = read0
     gear.net = nil
     gear.mp = nil

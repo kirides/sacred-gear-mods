@@ -193,6 +193,44 @@ return function(M)
         local hero = gear.world.hero()
         local bp = inv.container('backpack')
         if not check(hero ~= nil and bp ~= nil, 'hero and backpack') then return finish() end
+        if mode == 'mkitem' then
+            -- single player prep: dumps the gear pieces of the backpack (name, category, socket entries n, capacity) into
+            -- unique-item.json; with cfg.fill the free sockets of the best piece are filled with the backpack's runes first
+            local function info(b)
+                local n = b:byte(5) + 256 * b:byte(6)
+                local rec = 6 + n * 130
+                local caps = 0
+                for i = 0, 7 do if b:byte(rec + 0x0C + i + 1) ~= 0 then caps = caps + 1 end end
+                return caps, n
+            end
+            local list, runes = {}, {}
+            for _, it in ipairs(bp:items()) do
+                local b = inv.export(it.id)
+                local caps, n = info(b)
+                note(('backpack: %s [%s] n=%d caps=%d %d bytes'):format(tostring(it.type_name), tostring(it.category), n, caps, #b))
+                if it.category == 'rune' then runes[#runes + 1] = it
+                elseif it.category == 'weapon' or it.category == 'armor' or it.category == 'shield' then list[#list + 1] = {it = it, n = n, caps = caps} end
+            end
+            table.sort(list, function(a, b) if a.n ~= b.n then return a.n > b.n end return a.caps > b.caps end)
+            local best = list[1]
+            if not check(best ~= nil, 'a gear piece in the backpack') then return finish() end
+            if cfg.fill and best.n < best.caps then
+                for _ = best.n + 1, best.caps do
+                    local rune = table.remove(runes)
+                    if not rune then break end
+                    bp:take(rune.id)
+                    local ok, err = inv.socket(best.it.id, rune.id)
+                    note('socket ' .. tostring(rune.type_name) .. ': ' .. tostring(ok) .. ' ' .. tostring(err))
+                end
+            end
+            local b = inv.export(best.it.id)
+            local _, n = info(b)
+            local meta = panel.meta_of(best.it)
+            gear.save('unique-item.json', gear.json.encode({name = meta.name, category = best.it.category, n = n, hex = inv.hex(b)}))
+            note(('unique-item.json: %s [%s] with %d socket entries, %d bytes'):format(meta.name, best.it.category, n, #b))
+            out.made = {name = meta.name, n = n}
+            return finish()
+        end
         if mode == 'closed_sell' or mode == 'closed_check' or mode == 'closed_buy' or mode == 'closed_proceeds' or mode == 'closed_relogin' then
             -- the multi-run flow of a real Closed Net game (state between the runs in closed-state.json of the mod's folder):
             --   closed_sell      seller: deposit gold, sell an item, remember it, then wait to be killed (no save, no quit)
@@ -214,9 +252,35 @@ return function(M)
                 local got, ok, err = await('deposit', 30, function(cb) client:deposit(DEP, cb) end)
                 check(got and ok, 'deposit: ' .. tostring(err))
                 local pick
-                for _, it in ipairs(bp:items()) do if panel.sellable(it, false) then pick = it break end end
+                if cfg.unique then
+                    -- a unique, non-stackable gear piece (the most sockets first): one the hero carries, else the one made from
+                    -- unique-item.json (test only: its export hex, made by the 'mkitem' run in single player, put into the
+                    -- backpack with inv.add, which announces it like any item the client makes; the server accepts it with
+                    -- --auth-strict-items=off, and with =log it shows up as one unexplained item in the log)
+                    local function sockets(it) local b = inv.export(it.id) return b and (b:byte(5) + 256 * b:byte(6)) or 0 end
+                    local function gear_piece(it) return it.category == 'weapon' or it.category == 'armor' or it.category == 'shield' end
+                    local best, bn = nil, -1
+                    for _, it in ipairs(bp:items()) do
+                        if gear_piece(it) and panel.sellable(it, false) and sockets(it) > bn then best, bn = it, sockets(it) end
+                    end
+                    local made = gear.read('unique-item.json')
+                    made = made and gear.json.decode(made)
+                                        if made and made.hex and (best == nil or bn < (made.n or 0)) then
+                        local id, col, row = inv.add(bp, inv.unhex(made.hex))
+                        note(('made %s (%d sockets) into the backpack: %s %s %s'):format(tostring(made.name), made.n or 0, tostring(id), tostring(col), tostring(row)))
+                        out.made_item = {name = made.name, hex = made.hex, id = id}
+                        gear.wait(3)
+                        for _, it in ipairs(bp:items()) do if it.id == id then best = it end end
+                    end
+                    pick = best
+                    out.unique = true
+                else
+                    for _, it in ipairs(bp:items()) do if panel.sellable(it, false) then pick = it break end end
+                end
                 if not check(pick ~= nil, 'a sellable item') then return finish() end
                 local hex = inv.hex(inv.export(pick.id))
+                out.hex_sold = hex
+                note('item hex before the sale: ' .. hex)
                 local meta = panel.meta_of(pick)
                 local count0 = #bp:items()
                 got, ok, err = await('sell', 60, function(cb) client:sell(bp, pick, meta, 500, 1, cb) end)
@@ -224,7 +288,7 @@ return function(M)
                 check(not bp_has(hex) and #bp:items() == count0 - 1, 'the item left the backpack')
                 local listing
                 for _, e in ipairs(client.journal.entries) do if e.op == 'sell' and e.data == hex then listing = e.id end end
-                save_state({hex = hex, listing = listing, name = meta.name, count_before = count0, price = 500, sold_at = os.time()})
+                save_state({hex = hex, listing = listing, name = meta.name, sockets = (hex:sub(9, 10) ~= '' and tonumber(hex:sub(9, 10), 16)) or 0, count_before = count0, price = 500, sold_at = os.time()})
                 A.write('auction.json', gear.json.encode(out))
                 note('state saved; waiting to be killed')
                 gear.wait(600)
@@ -267,7 +331,9 @@ return function(M)
                 if not check(entry ~= nil, 'the bought item is in the mailbox of the buyer') then return finish() end
                 got, ok, err = await('collect', 60, function(cb) client:collect(entry.mid, cb) end)
                 check(got and ok, 'collect: ' .. tostring(err))
-                check(bp_has(st.hex) ~= nil, 'the item arrived in the backpack, byte-identical')
+                local arrived = bp_has(st.hex)
+                check(arrived ~= nil, 'the item arrived in the backpack, byte-identical')
+                if arrived then out.hex_collected = inv.hex(inv.export(arrived.id)) note('item hex collected: ' .. out.hex_collected) end
                 check(#bp:items() == count0 + 1, ('backpack %d (was %d)'):format(#bp:items(), count0))
                 st.buyer_count = #bp:items()
                 st.bought_at = os.time()
@@ -276,7 +342,11 @@ return function(M)
                 return finish()
             end
             if mode == 'closed_relogin' then
-                check(bp_has(st.hex or 'x') ~= nil, 'the item the buyer collected is in the backpack after the relogin')
+                local back = bp_has(st.hex or 'x')
+                check(back ~= nil, 'the item the buyer collected is in the backpack after the relogin')
+                out.hex_sold = st.hex
+                if back then out.hex_after_relogin = inv.hex(inv.export(back.id)) note('item hex after the relogin: ' .. out.hex_after_relogin) end
+                check(out.hex_after_relogin == st.hex, 'export hex after the relogin == the hex that was sold (sockets included)')
                 check(#bp:items() == st.buyer_count, ('backpack %d (was %d before the relogin)'):format(#bp:items(), st.buyer_count or -1))
                 return finish()
             end

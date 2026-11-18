@@ -169,8 +169,14 @@ if server_ch then
     end)
 end
 
+-- 'Hide in Singleplayer' (this player's own setting): no button and no panel in a single player game.
+local function hidden_here()
+    return gear.settings.get('hide_in_singleplayer') and not network_game() and kind.mode() == 'single' or false
+end
+
 gear.on('settings.changed', function(id, value)
     if id == 'allow_special' then cfg.allow_special = value end
+    if id == 'hide_in_singleplayer' and value and not network_game() and ui.panel_open('market') then panel.close() end
     if market then market:set_rules(settings()) end
 end)
 
@@ -240,6 +246,12 @@ ui.show_panel('market', false)
 ui.show_panel('open', true)
 
 gear.on('draw', function(state)
+    if hidden_here() then
+        if ui.panel_open('market') then panel.close() end
+        -- the layout editor still shows the button so it can be placed
+        if state.mode == 'game' and not state.exclusive and ui.edit_mode() then panel.open_button(false, client) end
+        return
+    end
     local open = state.mode == 'game' and not state.exclusive and (chest_window_open() or (gear.auto and cfg.selftest))
     if not open then
         if ui.panel_open('market') then panel.close() end
