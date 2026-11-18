@@ -26,14 +26,18 @@ return {
         {id = 'behaviour', type = 'choice', label = 'Default behaviour', default = 'aggressive', section = 'Behaviour',
             choices = {{value = 'aggressive', label = 'Aggressive (fight what comes near)'}, {value = 'defensive', label = 'Defensive (protect the hero you play)'}, {value = 'passive', label = 'Passive (only follow)'}},
             tooltip = 'Each companion can have its own in the party window'},
+        {id = 'potions', type = 'number', label = 'Drink a healing potion below (% health, 0: never)', min = 0, max = 90, step = 5, default = 30, section = 'Behaviour',
+            tooltip = "From the companion's own backpack, as Space does for you"},
         {id = 'use_abilities', type = 'bool', label = 'Use combat arts and spells', default = true, section = 'Behaviour'},
         {id = 'follow', type = 'number', label = 'Follow distance (tiles)', min = 2, max = 12, step = 1, default = 5, section = 'Behaviour'},
         {id = 'engage', type = 'number', label = 'Fight enemies within (tiles)', min = 4, max = 25, step = 1, default = 12, section = 'Behaviour'},
     },
     keys = {
-        {id = 'next', label = 'Play the next hero of the party', default = 'f8'},
-        {id = 'previous', label = 'Play the previous hero of the party', default = 'shift+f8'},
-        {id = 'window', label = 'Party window (recruit, tactics)', default = 'ctrl+f8'},
+        -- Not F8: the game's quick load. PageDown / PageUp are also what SacredBild's controller actions "Next / Previous
+        -- party hero" press.
+        {id = 'next', label = 'Play the next hero of the party', default = 'pagedown'},
+        {id = 'previous', label = 'Play the previous hero of the party', default = 'pageup'},
+        {id = 'window', label = 'Party window (recruit, tactics)', default = 'home'},
     },
     config = {
         portraits_x = 948,  -- the portrait column's place in the 1024x768 layout (the layout editor moves it)

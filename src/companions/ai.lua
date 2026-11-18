@@ -170,6 +170,10 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
         end
         return
     end
+    -- Low on health: a healing potion from its own backpack, like the player's Space.
+    if opts.potion_below > 0 and hp_frac(c) < opts.potion_below and now - (s.potion_at or -100) > 5 then
+        s.potion_at = c:drink_potion() and now or now + 10   -- none: ask again in 15 s
+    end
     local behaviour = tactics.behaviour or opts.behaviour
     local action = c:action() or 'idle'
     local target

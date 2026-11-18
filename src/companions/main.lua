@@ -3,12 +3,12 @@
 -- A companion is a real hero of the player (gear.party: the hero ids 3..16, as the heroes of a network game): its own
 -- backpack, equipment, attributes, skills, combat arts, spells and experience, saved with the savegame. The player
 -- plays one hero at a time: a click on a companion's portrait (top right, under the game's own), the 'next' and
--- 'previous' keys, or the controller's mod menu (LT + LB) switch. Camera, HUD, windows, mouse, keys and pad then serve
+-- 'previous' keys (PageDown / PageUp), or the controller's mod menu (LT + LB) switch. Camera, HUD, windows, mouse, keys and pad then serve
 -- that hero; the gold goes with control, the mercenaries follow it.
 --
 -- The others follow and fight on their own (ai.lua): weapon attacks, combat arts and spells on the target as soon as
 -- they have regenerated, auras and buffs once a fight starts, healing when someone is hurt. Each companion has a
--- behaviour (aggressive, defensive, passive) and a list of abilities it may use (party window, Ctrl+F8: tactics).
+-- behaviour (aggressive, defensive, passive) and a list of abilities it may use (party window, Home: tactics).
 --
 -- Names: the game names companions "playername3"; the mod gives them names (one per class, the party window cycles
 -- through more) and sets them again after every load, kept per main hero in companions.json.
@@ -254,6 +254,7 @@ local function ai_opts()
         teleport = 60 * TILE,
         behaviour = setting('behaviour', 'aggressive'),
         use_abilities = setting('use_abilities', true),
+        potion_below = setting('potions', 30) / 100,
     }
 end
 

@@ -4,7 +4,7 @@
 
 A party of heroes in single player, the way Dragon Age does it. Recruit companions of any class: each is a real hero
 with its own backpack, equipment, attributes, skills, combat arts, spells and experience, and it is saved with your
-savegame. Play any of them: click its portrait under the game's own (top right), press **F8**, or use the controller's
+savegame. Play any of them: click its portrait under the game's own (top right), press **PageDown**, or use the controller's
 mod menu. The heroes you do not play follow you and fight on their own, with their weapons, combat arts, spells and
 combos.
 
@@ -15,11 +15,11 @@ hero slots belong to the players).
 
 ## How to use it
 
-1. Press **Ctrl+F8** (or *Party window* in the controller's mod menu, **LT + LB**) and pick a class next to *Recruit*.
+1. Press **Home** (or *Party window* in the controller's mod menu, **LT + LB**) and pick a class next to *Recruit*.
    The new hero joins where you stand, with the experience of the hero you play (setting), so it has skill points to
    spend: switch to it and spend them like for your own hero. It comes without items: give it equipment from your
    stash or what you find.
-2. Play another hero: click its portrait, press **F8** / **Shift+F8**, use *Play* in the party window, or the mod menu.
+2. Play another hero: click its portrait, press **PageDown** / **PageUp**, use *Play* in the party window, or the mod menu.
    The camera, the HUD, the inventory, skills and combat arts windows, the mouse, the keys and the controller then serve
    that hero. The gold goes with you (the party shares one purse) and mercenaries follow the hero you play.
 3. **Heroes from other savegames:** in the party window, *Keep <name> for other savegames* writes the hero you play
@@ -49,13 +49,14 @@ play falls, you play a living companion (setting).
 
 | Key | What it does |
 |---|---|
-| **F8** | Play the next hero of the party. |
-| **Shift+F8** | Play the previous hero. |
-| **Ctrl+F8** | The party window: recruit, names, behaviour, tactics, dismiss. |
+| **PageDown** | Play the next hero of the party. |
+| **PageUp** | Play the previous hero. |
+| **Home** | The party window: recruit, names, behaviour, tactics, dismiss. |
 
 You can change every key in the Mods screen (**F11**, then the mod's *Keys* page). With a controller: **LT + LB**
 opens the mod menu with *Party window*, *Play the next hero* and *Play the previous hero*; the companions' portraits
-are D-pad stops like the game's buttons (**A** plays that hero).
+are D-pad stops like the game's buttons (**A** plays that hero). For one-press switching, SacredBild's Options
+(Controller page) have the actions *Next party hero* and *Previous party hero*: give them a button.
 
 ## Settings
 
@@ -95,5 +96,5 @@ Open the Mods screen with **F11** and pick the mod.
   `gear.world`, `gear.data.abilities` (how the game aims an ability), `gear.ui`, `gear.store`.
 - **Self test:** `src/companions_selftest` (`Sacred.exe -gear-auto -gear-load=N -gear-mods=companions,companions_selftest
   -gear-instance=companions`, a single player savegame with enemies nearby, in a copy of the game folder): recruits
-  through the party window, checks the name, following, fighting with a combat art, the portrait click, F8, the D-pad
+  through the party window, checks the name, following, fighting with a combat art, the portrait click, PageDown, the D-pad
   stops and the mod menu.
