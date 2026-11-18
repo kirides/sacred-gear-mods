@@ -47,8 +47,7 @@ the default hotkeys and their clashes are in [Hotkeys](docs/Hotkeys.md).
 **Twitch Integration** (`twitch_integration` and `twi_sacred`): Twitch viewers spawn monsters, give gold, heal or teleport the hero.
 
 The mod manager itself is part of Sacred Gear in [sacred-bild](https://github.com/kirides/sacred-bild#what-you-get-from-sacred-gear-sacredgeardll).
-The session mods **sessiontracker**, **lootlog** and **damagemeter** still live in sacred-bild
-(`gear/examples`), see [Session mods](https://github.com/kirides/sacred-bild/blob/main/docs/GearSessionMods.md).
+**Session mods** (no server needed): **sessiontracker** (F2, time played, kills, gold, experience and their rates), **lootlog** (F3, what dropped and what reached the backpack) and **damagemeter** (F7, damage dealt and taken, DPS, party view). See [Session mods](docs/SessionMods.md).
 
 ### Sacred ReBorn
 
@@ -93,6 +92,7 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/layout` | Layout editor: move the game's windows and mod panels |
 | `src/realms` | Realm picker for the online play server |
 | `src/twitch_integration`, `src/twi_sacred` | Twitch Integration: the connector's pipe and the actions (monsters, gold, heal, teleport) |
+| `src/sessiontracker`, `src/lootlog`, `src/damagemeter` | Session mods. [Doc](docs/SessionMods.md); logic test `tests/session_mods_test.lua` |
 | `tests/modmock` | Smoke tests of buildsharer and questhelper without the game ([how](tests/modmock/README.md)) |
 | `src/shared-stash` | The shared stash, built on `gear.inv`; includes its self tests. [README](src/shared-stash/README.md) |
 | `tools/readme-shots` | Takes this README's screenshots in a copy of the game folder ([how](docs/Screenshots.md)) |
@@ -110,6 +110,7 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 | [Drop tuning](docs/DropTuning.md) | Drop chance, rarity weights, the generator; the self test |
 | [Shared stash](docs/SharedStash.md) | Using the stash, LAN, limits, the file, savegame caveats |
 | [Server mods](docs/ServerMods.md) | The five clients of the remake server's scripts: install, hotkeys, settings |
+| [Session mods](docs/SessionMods.md) | Session tracker, loot log, damage meter |
 | [Hotkeys](docs/Hotkeys.md) | Install, default keys and the clashes between mods |
 | [Controller](docs/Controller.md) | Using the mods with a gamepad |
 | [Screenshots](docs/Screenshots.md) | Re-taking the README's screenshots |
