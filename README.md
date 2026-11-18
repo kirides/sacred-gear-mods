@@ -16,6 +16,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Autosave**](docs/Autosave.md) | <img src="docs/images/autosave.jpg" width="220" alt="Autosave"> | Saves the game every few minutes into its own slots. F6 saves right now. |
 | [**Shared stash**](docs/SharedStash.md) | <img src="docs/images/shared-stash.jpg" width="220" alt="Shared stash"> | One stash for all your heroes, next to the chest window. Works in LAN games too. |
 | [**Better SaveLoad**](src/better-saveload/README.md) | <img src="docs/images/better-saveload.jpg" width="220" alt="Better SaveLoad"> | A clearer savegame screen with the Save tab first. |
+| [**Enhanced Chat**](docs/mods/enhanced-chat.md) | <img src="docs/images/enhanced-chat.jpg" width="220" alt="Enhanced Chat"> | A chat window with scrollback, tabs for global, private and system messages, a player filter and item names in their rarity colour. |
 | [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.svg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, optional fair random numbers. |
 | [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.svg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
@@ -68,6 +69,8 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/autosave_selftest` | Automation self test of the autosave mod |
 | `src/better-saveload` | The savegame screen on Gear's replaced windows. [README](src/better-saveload/README.md) |
 | `src/better-saveload_selftest` | Automation self test of Better SaveLoad |
+| `src/enhanced-chat` | A chat window with scrollback, tabs and rarity colours, on `gear.chat`. [Doc](docs/mods/enhanced-chat.md) |
+| `src/enhanced-chat_selftest` | Automation self test of Enhanced Chat |
 | `src/drop-tuning` | Drop chance, rarity weights and drop random numbers on `gear.drops`. [Doc](docs/DropTuning.md) |
 | `src/drop-tuning_selftest` | Automation self test of the drop-tuning mod |
 | `src/world-events` | A movable progress bar for the game server's world event (needs the remake server's `world_events.lua`). [README](src/world-events/README.md) |
