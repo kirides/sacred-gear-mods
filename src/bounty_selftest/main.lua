@@ -47,6 +47,99 @@ gear.task(function()
         A.screenshot('bounty-panel')
         return A.quit(0)
     end
+    if gear.config.phase == 'toasts' then
+        gear.emit('bounty.test', {op = 'toast', title = 'Bounty complete: Orc slayer', lines = {'Reward: 1500 gold and an item'}})
+        gear.emit('bounty.test', {op = 'toast', title = 'New bounty', lines = {'Web cleaner', 'Defeat 18 spider creatures, or as many as the long text needs to wrap onto a second line'}})
+        gear.emit('bounty.test', {op = 'toast', title = 'Bounty ended', lines = {}})
+        gear.wait(1)
+        A.screenshot('toasts')
+        return A.quit(0)
+    end
+    if gear.config.phase == 'editor' then
+        gear.emit('bounty.test', {op = 'start_custom', def = {id = 'orc-challenge', title = 'Orc challenge', names = {'orc'}, target = 25,
+            minutes = 0, min_level = 1, gold = 2500, item = {mode = 'specific', tier = 1, types = {{id = 1, name = 'Sword of the stream'}}},
+            trigger = {on = true, names = {'orc'}, count = 10, cooldown = 30}}})
+        gear.emit('bounty.test', {op = 'open_editor'})
+        gear.wait(7)        -- the toast of the start is gone
+        A.screenshot('editor-list')
+        gear.emit('bounty.test', {op = 'open_form', def = 'orc-challenge'})
+        gear.wait(1)
+        if gear.config.type_test then
+            A.click(780, 321)
+            gear.wait(0.5)
+            A.screenshot('editor-click')
+            A.type('sword')
+            gear.wait(1)
+            A.screenshot('editor-search')
+        end
+        A.screenshot('editor-form')
+        return A.quit(0)
+    end
+    if gear.config.phase == 'custom' then
+        local def = {id = 'ta', title = 'Zombie test', names = {'zombie'}, target = 1, minutes = 0, min_level = 1, gold = 300,
+            item = {mode = 'class', tier = 2, types = {}}, trigger = {on = true, names = {'orc'}, count = 3, cooldown = 30}}
+        local gold0 = hero:gold()
+        gear.emit('bounty.test', {op = 'start_custom', def = def})
+        ctx = query()
+        local b = ctx.payload.bounties[1]
+        check('custom bounty started', b and b.custom and b.def == 'ta' and b.endless and not b.done)
+        local hx, hy = hero:position()
+        for i = 1, 4 do W.spawn('ZOMBIE.GRN', hx + 60 * i, hy + 40, {label = 'bounty'}) end
+        gear.wait(2)
+        for i = 1, 200 do
+            local h = W.hero()
+            if h then h:set_hp(99999) end
+            A.click(830, 475)
+            gear.wait(0.6)
+            if i % 20 == 0 then
+                local px, py = h:position()
+                for k = 1, 2 do W.spawn('ZOMBIE.GRN', px + 50 * k, py + 40, {label = 'bounty'}) end
+            end
+            ctx = query()
+            if ctx.payload.bounties[1].done then break end
+        end
+        A.screenshot('after-fight')
+        ctx = query()
+        check('custom bounty done', ctx.payload.bounties[1].done, ctx.payload.bounties[1].n)
+        gear.wait(8)
+        check('gold paid', W.hero():gold() >= gold0 + 300, W.hero():gold() - gold0)
+        local px, py = W.hero():position()
+        local usable, total = 0, 0
+        for _, it in ipairs(W.items_near(px, py, 500, {limit = 64})) do
+            total = total + 1
+            if W.usable_by(it, W.hero():class()) then usable = usable + 1 end
+        end
+        check('class item dropped', usable > 0, usable .. ' of ' .. total)
+        local chickens = 0
+        for _, c in ipairs(W.creatures_near(px, py, 700, {limit = 64})) do
+            if c:type_name() == 'HORSE.GRN' and c:label() == 'bounty' then chickens = chickens + 1 end
+        end
+        say('INFO the reward horse stays near the hero: ' .. chickens .. ' (no Gear call removes a creature, teleport is refused)')
+        -- the trigger: 3 orc kills start the finished bounty again, 3 more do nothing, after Stop the cooldown holds
+        for _ = 1, 3 do gear.emit('bounty.test', {op = 'trigger_kill', name = 'ORC_WARRIOR.GRN'}) end
+        ctx = query()
+        b = ctx.payload.bounties[1]
+        check('trigger started it', b.def == 'ta' and not b.done and b.n == 0)
+        gear.emit('bounty.test', {op = 'stop_custom', id = 'ta'})
+        for _ = 1, 3 do gear.emit('bounty.test', {op = 'trigger_kill', name = 'ORC_WARRIOR.GRN'}) end
+        ctx = query()
+        local running = false
+        for _, x in ipairs(ctx.payload.bounties) do if x.def == 'ta' then running = true end end
+        check('cooldown blocks the trigger', not running)
+        -- a chosen item type: the drop must be that type
+        local sword = gear.data.object_types:find('SWORD_BASTARD.GRN')
+        local drop = {op = 'drop', spec = {mode = 'specific', tier = 1, types = {{id = sword, name = 'SWORD_BASTARD.GRN'}}}}
+        gear.emit('bounty.test', drop)
+        gear.wait_until(function() return not drop.running end, 30)
+        gear.wait(1)
+        local px2, py2 = W.hero():position()
+        local found = false
+        for _, it in ipairs(W.items_near(px2, py2, 500, {limit = 64})) do if it.type == sword then found = true end end
+        local seen = {} for _, it in ipairs(W.items_near(px2, py2, 500, {limit = 64})) do seen[#seen + 1] = tostring(it.type) .. ':' .. tostring(it.type_name) end
+        check('chosen item type dropped', drop.ok and found, tostring(sword) .. ' -> ' .. table.concat(seen, ' '))
+        say(failed and 'FAILED' or 'PASSED')
+        return A.quit(failed and 1 or 0)
+    end
     local gold0 = hero:gold()
     local hx, hy = hero:position()
     for i = 1, 4 do W.spawn('ZOMBIE.GRN', hx + 60 * i, hy + 40, {label = 'bounty'}) end

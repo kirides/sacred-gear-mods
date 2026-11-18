@@ -43,6 +43,7 @@ not overlap with each other or with the game's own keys:
 | Ctrl+D | `damagemeter` |
 | Ctrl+G | `achievements` |
 | Ctrl+J | `bounty` |
+| Ctrl+Shift+J | `bounty` (editor) |
 | Ctrl+K | `buildsharer` |
 | Ctrl+U | `questhelper` |
 | Ctrl+Y | `serverfeed` |

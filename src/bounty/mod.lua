@@ -1,17 +1,20 @@
 return {
     id = 'bounty',
     name = 'Bounty board',
-    version = '0.2.0',
+    version = '0.3.0',
     author = 'Sacred Gear',
     description = 'Bounties to hunt: in single player the mod posts, counts and pays them itself, in a network game it shows the '
         .. 'board of a Sacred.GameServer with scripts-examples/bounty_board.lua. Panel (Ctrl+J) and a small tracker.',
     settings = {
         {id = 'own_board', type = 'bool', label = 'Own board in single player', default = true,
             tooltip = 'Single player: the mod posts bounties for your hero, counts the kills and pays the rewards. Off: no board without a server'},
+        {id = 'pool_board', type = 'bool', label = 'Pool bounties', default = true,
+            tooltip = 'Single player: post bounties from the built-in list. Off: only your own bounties from the editor'},
         {id = 'tracker', type = 'bool', label = 'Tracker', default = true,
             tooltip = 'A few lines with the progress of your open bounties, at the top right'},
     },
     keys = {
+        {id = 'editor', label = 'Open the bounty editor', default = 'ctrl+shift+j'},
         {id = 'panel', label = 'Open the bounty board', default = 'ctrl+j'},
     },
     config = {

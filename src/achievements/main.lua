@@ -66,28 +66,37 @@ end)
 
 -- ---- drawing ----
 
-local TW, TH = 340, 58
 local function draw_toasts()
-    local life = tonumber(gear.settings.get('seconds')) or 6
+    local life = 6
     local y = 14
     local keep = {}
+    local TW, PAD, LINE = 360, 12, 15          -- width, padding all around, line height of the text
     for _, t in ipairs(toasts) do
         local age = now - t.born
         if age < life then
             keep[#keep + 1] = t
-            -- fades in over 0.2 s and out over the last 0.6 s
-            local alpha = math.max(0, math.min(1, (life - age) / 0.6, age / 0.2 + 0.2))
+            local a = math.max(0, math.min(1, (life - age) / 0.6, age / 0.2 + 0.2))
             local x = 512 - TW / 2
-            local th = 24 + 14 * #t.lines
-            ui.rect(x, y, TW, th, ui.rgba(0, 0, 0, math.floor(190 * alpha)), {layer = 'top'})
-            ui.frame(x, y, TW, th, ui.rgba(200, 170, 90, math.floor(230 * alpha)), 1, {layer = 'top'})
-            ui.text(t.title, x + 10, y + 5, {color = ui.rgba(240, 200, 110, math.floor(255 * alpha)), bold = true, layer = 'top'})
-            local ly = y + 24
+            local lines = {}
             for _, line in ipairs(t.lines) do
-                ui.text(line, x + 10, ly, {color = ui.rgba(255, 255, 255, math.floor(230 * alpha)), size = 12, layer = 'top'})
-                ly = ly + 14
+                for _, part in ipairs((ui.text_wrap(line, TW - 2 * PAD - 4, {size = 12}))) do lines[#lines + 1] = part end
             end
-            y = y + th + 6
+            -- title row 18, a gap of 6 and a hairline when there is text, then the lines; PAD above and below
+            local th = PAD + 18 + (#lines > 0 and (8 + #lines * LINE) or 0) + PAD
+            local function alpha(v) return math.floor(v * a) end
+            ui.rect(x, y, TW, th, ui.rgba(12, 10, 8, alpha(215)), {layer = 'top'})
+            ui.rect(x, y, 3, th, ui.rgba(224, 169, 68, alpha(255)), {layer = 'top'})
+            ui.frame(x, y, TW, th, ui.rgba(200, 170, 90, alpha(200)), 1, {layer = 'top'})
+            ui.text(t.title, x + PAD + 4, y + PAD, {color = ui.rgba(240, 200, 110, alpha(255)), bold = true, size = 14, layer = 'top'})
+            if #lines > 0 then
+                ui.rect(x + PAD + 4, y + PAD + 21, TW - 2 * PAD - 8, 1, ui.rgba(200, 170, 90, alpha(90)), {layer = 'top'})
+                local ly = y + PAD + 28
+                for _, line in ipairs(lines) do
+                    ui.text(line, x + PAD + 4, ly, {color = ui.rgba(255, 255, 255, alpha(230)), size = 12, layer = 'top'})
+                    ly = ly + LINE
+                end
+            end
+            y = y + th + 8
         end
     end
     toasts = keep
