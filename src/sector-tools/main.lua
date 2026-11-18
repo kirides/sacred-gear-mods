@@ -14,6 +14,7 @@ local known = {}                                      -- "layer:cx,cy" -> the se
 local pinned, alt_until, panel_rect = false, 0, nil
 local status, status_until = '', 0
 local dirty_since, cells_dirty, last_sample, last_cells_save = nil, false, 0, 0
+local function text_get() return gear.text and gear.text.get or nil end
 local hero_now = {}                                   -- x, y, layer, sector, cx, cy of the hero this frame
 
 local function say(text) status, status_until = text, gear.time() + 6 end
@@ -108,7 +109,7 @@ function actions.copy_id()
 end
 
 function actions.copy_region()
-    local line = core.region_line(hero_now.region)
+    local line = core.region_line(hero_now.region, text_get())
     if not line then say('No game region here.'); return false end
     return copy(line, 'the region line')
 end
@@ -277,7 +278,7 @@ local function draw_panel()
         text(('Sector %s   cell %d,%d   layer %d'):format(h.sector ~= 0 and h.sector or '?', h.cx, h.cy, h.layer),
             {size = 13, bold = true, color = COLOR.id, shadow = true}, 18)
         text(('x %d    y %d'):format(h.x, h.y), {size = 12, color = COLOR.cell}, 18)
-        text('Region: ' .. core.region_text(h.region, h.region_code), {size = 12, color = h.region and COLOR.id or COLOR.cell, shadow = true}, 20)
+        text('Region: ' .. core.region_text(h.region, h.region_code, text_get()), {size = 12, color = h.region and COLOR.id or COLOR.cell, shadow = true}, 20)
     else
         text('No hero yet.', {size = 12}, 20)
     end

@@ -92,18 +92,53 @@ function M.sorted_numbers(v)
     return unique
 end
 
+-- ---- region names: the game's record holds a text KEY ("UI_REGION_SOUTHKERN"); the name is in the texts of the install's language ----------
+-- The game hashes the key to a text id (bit 31 set: the id gear.text.get wants is hash + 2^31) (h = (h * 113 + toupper(c)) wrapped to 32 bits, % 999999991, sign bit cleared) and reads that id from
+-- global.res; gear.text.get(id) is that lookup. Without a text the key is made readable ("Southkern"), never shown raw, never empty.
+function M.text_hash(key)
+    local h = 0
+    for i = 1, #key do
+        local c = key:byte(i)
+        if c >= 97 and c <= 122 then c = c - 32 end
+        local v = (h * 113 + c + 2147483648) % 4294967296 - 2147483648
+        h = math.fmod(v, 999999991)
+    end
+    return h % 2147483648
+end
+
+local function plain(text) return (tostring(text or ''):gsub('%c', ' '):gsub('^%s+', ''):gsub('%s+$', '')) end
+
+-- The display name of a region record ({id, name}); `text_of(id)` is gear.text.get (optional).
+function M.region_name(r, text_of)
+    if type(r) ~= 'table' then return nil end
+    local raw = type(r.name) == 'string' and r.name:gsub('%z.*$', '') or ''
+    local name
+    if raw:match('^[%u%d_]+$') and raw:find('_', 1, true) then
+        if text_of then
+            local ok, t = pcall(text_of, M.text_hash(raw) + 2147483648)
+            if ok and type(t) == 'string' and plain(t) ~= '' then name = plain(t) end
+        end
+        if not name then
+            local word = raw:gsub('^UI_REGION_', ''):gsub('_', ' '):lower()
+            word = plain(word)
+            if word ~= '' then name = word:gsub('^%l', string.upper) end
+        end
+    elseif plain(raw) ~= '' then
+        name = plain(raw)
+    end
+    return name or ('Region ' .. tostring(r.id or '?'))
+end
+
 -- What a hero's region looks like in the panel and in a config: `r` is a gear.data.regions record ({id, name}) or nil.
-function M.region_text(r, code)
+function M.region_text(r, code, text_of)
     if type(r) ~= 'table' or not r.id then return 'no region' end
-    local name = tostring(r.name or ''):gsub('%c', ' ')
-    if name == '' then name = 'region ' .. tostring(r.id) end
-    return ('%s (id %d%s)'):format(name, r.id, code and (', code ' .. tostring(code)) or '')
+    return ('%s (id %d%s)'):format(M.region_name(r, text_of), r.id, code and (', code ' .. tostring(code)) or '')
 end
 
 -- The line to put into an area or an event: `regions = { 4 },  -- Desert` (nil without a region).
-function M.region_line(r)
+function M.region_line(r, text_of)
     if type(r) ~= 'table' or not r.id then return nil end
-    local name = tostring(r.name or ''):gsub('%c', ' '):gsub('%-%-', '- -')
+    local name = M.region_name(r, text_of):gsub('%-%-', '- -')
     return ('regions = { %d },%s'):format(r.id, name ~= '' and ('  -- ' .. name) or '')
 end
 

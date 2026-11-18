@@ -394,6 +394,8 @@ end
 
 ui.show_panel('bar', true)
 
+if gear.text and gear.text.get then regions.set_text(gear.text.get) end      -- region names: the texts of the install's language
+
 -- The pills of the game's region boss counter (the region the hero stands in), read from gear.data.regions every half second.
 local region_views, region_poll = {}, -1e9
 local function region_frame()
@@ -405,13 +407,23 @@ local function region_frame()
     region_views = regions.collect(gear.data and gear.data.regions, hero)
 end
 
+-- For tests and other mods: gear.emit('world-events.regions', out) fills out with {id, raw, name} for every region record of the game.
+gear.on('world-events.regions', function(out)
+    local api = gear.data and gear.data.regions
+    if type(out) ~= 'table' or not (api and api.count and api.get) then return end
+    for i = 1, math.min((api:count() or 1) - 1, 40) do
+        local rec = api:get(i)
+        if regions.valid(rec) then out[#out + 1] = {id = rec.id, raw = rec.name, name = regions.name_of(rec), needed = rec.kills_needed, left = rec.kills_left} end
+    end
+end)
+
 gear.on('draw', function(state)
     if state.mode ~= 'game' or state.exclusive then return end
     local editing = ui.edit_mode()
     pcall(region_frame)
     local views = model:views(gear.time(), {area = S.get('area'), results = S.get('results'), preview = editing})
     local rviews = region_views
-    if editing and #rviews == 0 and S.get('region_pill') ~= false then rviews = {regions.view(regions.SAMPLE)} end
+    if editing and #rviews == 0 and S.get('region_pill') ~= false then rviews = {regions.view(regions.sample(gear.data and gear.data.regions))} end
     local stacked, more = regions.stack(views, rviews, MAX_PILLS)
     if #stacked == 0 then return end
     if not editing and S.get('visibility') == 'alt' and not state.show_text then return end

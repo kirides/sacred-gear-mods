@@ -46,6 +46,48 @@ check(text:find('Southern Core: 500 / 7,500', 1, true), 'another region with pro
 check(not text:find('Quiet', 1, true), 'a region without progress is not')
 check(not text:find('  Desert', 1, true), 'the current region is not listed twice')
 
+-- ---- region names: text keys resolved through the game's texts --------------------------------------------------------------------
+-- the hash of a key (the game's own: the same numbers the server's C# SacredResourceHash gives)
+eq(regions.hash('UI_REGION_SOUTHKERN'), 280942659, 'hash of a key')
+eq(regions.text_id('UI_REGION_SOUTHKERN'), 280942659 + 2147483648, 'the id the game wants has bit 31 set')
+eq(regions.hash('ui_region_southkern'), 280942659, 'the key is case-insensitive')
+eq(regions.hash('UI_REGION_NORTHKERN'), 411024114, 'hash 2'); eq(regions.hash('UI_REGION_WUSTE'), 1628257094, 'hash 3'); eq(regions.hash('UI_REGION_UW_LOWER'), 889598971, 'hash 4')
+eq(regions.hash(''), 0, 'empty key')
+-- a text table per install language: the same key, another text
+local UE = string.char(195, 188)      -- the u umlaut in UTF-8
+local BIT31 = 2147483648
+local english = {[280942659 + BIT31] = 'Southern Core Region', [1628257094 + BIT31] = 'Desert'}
+local german = {[280942659 + BIT31] = 'S' .. UE .. 'dliche Kernregion', [1628257094 + BIT31] = 'W' .. UE .. 'ste'}
+regions.set_text(function(id) return english[id] end)
+local south = {id = 1, name = 'UI_REGION_SOUTHKERN', kills_needed = 7500, kills_left = 7000}
+eq(regions.name_of(south), 'Southern Core Region', 'the key gives the localized name (en)')
+eq(regions.view(south).title, 'Southern Core Region', 'the pill shows it'); check(not regions.view(south).title:find('UI_', 1, true), 'never the raw key')
+regions.set_text(function(id) return german[id] end)
+eq(regions.name_of(south), 'S' .. UE .. 'dliche Kernregion', 'another install language gives its own text (de)')
+eq(regions.name_of({id = 4, name = 'UI_REGION_WUSTE'}), 'W' .. UE .. 'ste', 'a second region')
+-- no text for the key: the readable key, never UI_REGION_
+regions.set_text(function() return nil end)
+eq(regions.name_of({id = 1, name = 'UI_REGION_SOUTHKERN'}), 'Southkern', 'no text: the key made readable')
+eq(regions.name_of({id = 8, name = 'UI_REGION_UW_UPPER'}), 'Uw upper', 'underscores become spaces')
+regions.set_text(function() return '' end)
+eq(regions.name_of({id = 1, name = 'UI_REGION_NORTHKERN'}), 'Northkern', 'an empty text counts as none')
+regions.set_text(function() error('boom') end)
+eq(regions.name_of({id = 1, name = 'UI_REGION_LAVA'}), 'Lava', 'a failing text lookup never throws')
+regions.set_text(function() return 'A' .. string.char(10) .. 'B' end)
+eq(regions.name_of({id = 3, name = 'UI_REGION_X_Y'}), 'A B', 'text from the game is cleaned')
+regions.set_text(nil)
+eq(regions.name_of({id = 1, name = 'UI_REGION_SOUTHKERN'}), 'Southkern', 'an older Gear without gear.text: the readable key')
+-- plain names stay, nothing is ever empty
+eq(regions.name_of({id = 4, name = 'Desert'}), 'Desert', 'a plain name stays')
+eq(regions.name_of({id = 5, name = ''}), 'Region 5', 'empty: Region <id>'); eq(regions.name_of({id = 5}), 'Region 5', 'no name: Region <id>')
+eq(regions.name_of({id = 6, name = 'UI_REGION_'}), 'Region 6', 'a key without a word'); eq(regions.name_of({id = 7, name = 'UI_REGION_ABC' .. string.char(0) .. 'garbage'}), 'Abc', 'only up to the end of the string')
+-- the text is asked once per key
+local asked = 0
+regions.set_text(function(id) asked = asked + 1; return english[id] end)
+regions.name_of(south); regions.name_of(south); regions.name_of(south)
+eq(asked, 1, 'the lookup is kept')
+regions.set_text(nil)
+
 -- ---- collecting from the game ------------------------------------------------------------------------------------------
 local api = {
     count = function() return 4 end,

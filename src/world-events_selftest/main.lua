@@ -54,7 +54,7 @@ gear.task(function()
     local game = A.wait_for_game(cfg.timeout_game)
     check('game with a hero', game)
     if not game then return finish() end
-    gear.emit('world-events.configure', {local_mode = 'off'})      -- the single player mode would start its own events here
+    gear.emit('world-events.configure', {local_mode = 'off', region_pill = false})      -- the single player mode would start its own events here
     gear.wait(3)
 
     check('no pill before a state', bar() == nil)
@@ -156,6 +156,7 @@ gear.task(function()
 
     -- several events at once: one panel with a pill for each, the least time left first (and the region boss pill below them when the game
     -- has gear.data.regions and the hero stands in a region)
+    gear.emit('world-events.configure', {region_pill = true})
     local function ev(n, title, left) local t = {}; for k, v in pairs(active) do t[k] = v end; t.n, t.title, t.left = n, title, left; return t end
     gear.emit('world-events.state', {v = 1, list = {ev(1, 'Orc hunt', 3000), ev(2, 'Wolf hunt', 600), ev(3, 'Thieves', 1800)}})
     gear.wait(1)
@@ -177,6 +178,32 @@ gear.task(function()
     print('region API: ' .. tostring(regions_api ~= nil) .. ', hero in a region: ' .. tostring(in_region and true or false))
     feed()
     gear.wait(0.8)
+
+    -- region names: the game's records hold text keys, the pill shows the game's text of the install's language
+    local list = {}
+    gear.emit('world-events.regions', list)
+    if gear.data and gear.data.regions then
+        check('the game has regions with kill counts', #list > 0, tostring(#list))
+        local raw_left = false
+        for _, r in ipairs(list) do
+            print(('region %s: key %s -> %s'):format(tostring(r.id), tostring(r.raw), tostring(r.name)))
+            if tostring(r.name):find('UI_', 1, true) or tostring(r.name) == '' then raw_left = true end
+        end
+        check('no region shows its raw text key or an empty name', not raw_left)
+        local localized = 0
+        for _, r in ipairs(list) do
+            local pretty = tostring(r.raw):gsub('^UI_REGION_', ''):gsub('_', ' '):lower()
+            if r.name:lower() ~= pretty then localized = localized + 1 end
+        end
+        check('the names come from the game texts of the install language, not only the readable key', localized >= #list - 1, ('%d of %d'):format(localized, #list))
+        ui.set_edit_mode(true)
+        gear.wait(0.8)
+        A.screenshot('pill-region-name')
+        ui.set_edit_mode(false)
+        gear.wait(0.4)
+    else
+        print('no gear.data.regions in this SacredGear.dll: the region names are not checked')
+    end
 
     -- a spawn wave of a hook, in this single player game: the creatures appear around the hero (what the server's
     -- 'worldevents:spawn' message makes the mod do), once per wave id; they are removed again afterwards
