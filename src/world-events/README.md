@@ -68,6 +68,39 @@ Only messages from the server (slot 0) are accepted; everything is type-checked 
 draw call, and a state not refreshed for 2 minutes is dropped. Other mods can show something in the bar with
 `gear.emit('world-events.state', {st = 'active', ...})`.
 
+## Hooks: waves, items, gold and messages
+
+An event can have **hooks**: a trigger (at a percent of the goal, after some minutes, when the event starts / succeeds / fails, or when
+N creatures of one kind were defeated) and a list of actions (a *wave of creatures*, an *item*, *gold*, a *message*) for a target hero
+(the killer, the host, a random hero, the area's owner, everybody in the area, everybody). The server's `world_events.lua` documents
+the format and runs them; this mod's part:
+
+* **A spawn wave (online):** the server only chooses the target heroes and sends each one the message `worldevents:spawn`
+  (`{v = 1, id = '<event>:<hook>:<action>:<hero>', event, n, radius, kinds = {{type = 'Orc Warrior', weight = 3}, ...}, text}`). **The target's own
+  game spawns the creatures around its own hero** (so exactly one client spawns a wave; the wave id drops a resend; only messages
+  from the server are accepted; the count, radius and kinds are checked and capped). Creatures are chosen by weight; `type` is a type
+  number or the game's name (`ORC_WARRIOR.GRN`, or words: `Orc Warrior`); an unknown name is logged and skipped. **Gear can only create creatures in a game of
+  its own (single player): in a network game `gear.world.spawn` refuses, so a joining player's client cannot spawn a wave yet
+  (logged, nothing breaks).** Items and gold by rarity are dropped by the server itself.
+* **The tooltip** shows the next hook that has not fired ("Next: At 30% of the goal: 12 of Orc Warrior appear around you").
+* **Single player / LAN without a server:** when no server pushed a state for 15 seconds the mod runs the events itself
+  (`Without a server` in its settings, on by default). It reads **`events.json`** in the mod folder (a first run writes a small one to edit;
+  a server's export, `/mods/world_events/export`, is the same format), counts your kills (a monster near you that was hit by you and died; the game's
+  `kill` event in network games), fires the hooks for you (every target is you), shows the same bar and keeps the event across sessions
+  (`local_events_state.json`). Time counts while the game runs. The world-event rewards by contribution are server business and are not paid locally; the hooks are the rewards.
+  An item hook with a type name puts that item at your feet, one with a rarity / category rolls the game's own loot with a raised bonus (the
+  same way the Bounty mod does it); a wave needs a SacredGear.dll with `gear.world.spawn`. Without `gear.store` (older DLLs) the files are read and written with `gear.read` / `gear.save`.
+
+```json
+{"v": 1, "config": {"first_delay": 60, "cooldown": 900, "result_hold": 120, "order": "sequence"},
+ "events": [{"id": "orc-hunt", "title": "Orc hunt", "goal": "kill", "target": 100, "duration": 1800, "names": ["orc"], "unit": "orcs",
+   "hooks": [{"at": 50, "actions": [{"action": "spawn", "n": 6, "radius": 500, "kinds": [{"type": "Orc Warrior", "weight": 3}, {"type": "Orc Shaman"}]}]},
+             {"on": "success", "actions": [{"action": "gold", "amount": 5000}]}]}]}
+```
+
+*Region boss / kill counters:* a hook's `kills` trigger counts creatures by name or type; a goal kind for the region boss kills can feed the
+same `Runner:kill` (`hooks.lua`) with the boss as the creature. Nothing in this mod depends on that mod.
+
 ## Tests
 
 No game needed (LuaJIT, from this folder):
@@ -75,14 +108,16 @@ No game needed (LuaJIT, from this folder):
 ```
 luajit tests/core_test.lua     the state, percent / time / count formats, area, results, stale states
 luajit tests/main_test.lua     main.lua against a fake gear: who may push, hello, what is drawn when, details, pulse, the controller entries
+luajit tests/hooks_test.lua    hook checking, the engine (thresholds, catch-up, once, kills, time), spawn message parsing, weighted kinds, dedupe, the local mode
+luajit tests/local_test.lua    main.lua + localgame.lua with a fake world: the server's wave, a network game, kills in, hooks out, the server taking over
 ```
 
 `src/world-events_selftest` runs in the real game (`-gear-auto`, a copy of the game folder, see its header): the pill as a bare layout panel,
-hidden with "only while Alt" and outside the event's sector, a sample in the layout editor, an old kept size brought back, the result line, a move; screenshots `pill-*.bmp`.
+hidden with "only while Alt" and outside the event's sector, a sample in the layout editor, an old kept size brought back, the result line, a move; a **spawn wave** (three orcs around the hero, once per wave id); screenshots `pill-*.bmp`, `wave.bmp`.
 
 The server half has its own tests in the remake repository (`WorldEventsScriptTests`).
 
 ## Development
 
-- **Files:** `mod.lua`; `core.lua` (progress and reward odds, pure Lua); `main.lua` (the bar, the server messages). `tests/` needs no game. Self test: `src/world-events_selftest`.
+- **Files:** `mod.lua`; `core.lua` (progress and reward odds, pure Lua); `hooks.lua` (hook checking, the engine, waves; pure); `localevents.lua` (the single player events; pure); `localgame.lua` (kills, spawning, items, gold); `main.lua` (the bar, the server messages). `tests/` needs no game. Self test: `src/world-events_selftest`.
 - **Depends on:** `gear.net` (the channel of the server's `world_events.lua`, see the section above), `gear.ui` (a bar that the layout editor can move), `gear.settings`, `gear.emit`.

@@ -87,6 +87,7 @@ function M.parse(payload)
         s.odds_at = tonumber(payload.odds_at)
         s.odds_next = M.clean(payload.odds_next, 120)
         s.odds_next_at = tonumber(payload.odds_next_at)
+        s.hook = M.clean(payload.hook, 150)     -- the next hook ("At 30% of the goal: 12 of Orc Warrior appear ..."), if the event has some
     else
         s.hold = math.max(0, tonumber(payload.hold) or 0)
     end
@@ -131,7 +132,7 @@ M.SAMPLE = {
     st = 'active', title = 'Orc hunt', text = 'Slay 1000 orcs', unit = 'orcs', count = 370, target = 1000, left = 4325, dur = 7200,
     here = true, mine = 12, need = 10, people = 5, reward = 'gold, an item', n = 1,
     odds = 'Rare 20%, Magic 30%, Common 50%', odds_at = 30, odds_next = 'Legendary 2%, Epic 8%, Rare 25%, Magic 30%, Common 35%',
-    odds_next_at = 80,
+    odds_next_at = 80, hook = 'At 50% of the goal: 6 of Orc Warrior x3 / Orc Shaman appear around you',
 }
 
 -- The seconds over which a result fades out at the end of its hold.
@@ -169,6 +170,7 @@ function Model:view(now, opts)
         tip[#tip + 1] = 'Time left: ' .. time_text
         tip[#tip + 1] = mine_text
         if s.reward ~= '' then tip[#tip + 1] = 'Reward: ' .. s.reward end
+        if s.hook ~= '' then tip[#tip + 1] = 'Next: ' .. s.hook end
         if s.odds ~= '' or s.odds_next ~= '' then
             tip[#tip + 1] = 'Item odds:'
             if s.odds ~= '' then tip[#tip + 1] = ('  from %s%%: %s'):format(M.number(s.odds_at), s.odds) end

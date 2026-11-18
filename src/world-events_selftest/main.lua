@@ -54,6 +54,7 @@ gear.task(function()
     local game = A.wait_for_game(cfg.timeout_game)
     check('game with a hero', game)
     if not game then return finish() end
+    gear.emit('world-events.configure', {local_mode = 'off'})      -- the single player mode would start its own events here
     gear.wait(3)
 
     check('no pill before a state', bar() == nil)
@@ -152,6 +153,46 @@ gear.task(function()
     A.screenshot('pill-fading')
     gear.wait(2.5)
     check('the result is gone after its hold', bar() == nil)
+
+    -- a spawn wave of a hook, in this single player game: the creatures appear around the hero (what the server's
+    -- 'worldevents:spawn' message makes the mod do), once per wave id; they are removed again afterwards
+    local W = gear.world
+    local hero = W.hero()
+    check('single player: the world can be changed', W.can_change() == true)
+    local hx, hy, layer = hero:position()
+    local function mine()
+        local out = {}
+        for _, c in ipairs(W.creatures_near(hx, hy, 1200, {limit = 64, layer = layer}) or {}) do
+            if c:label() == 'world-events' then out[#out + 1] = c end
+        end
+        return out
+    end
+    check('no wave creatures before', #mine() == 0)
+    local found = gear.data.object_types:search('ORC_WARRIOR', 5)
+    check('the game knows an orc warrior type', #found > 0)
+    local wave = {id = 'selftest:1', event = 'Self test', n = 3, radius = 400, kinds = {{type = 'Orc Warrior', weight = 3}}, text = 'A wave of three!'}
+    gear.emit('world-events.spawn', wave)
+    gear.wait(1)
+    local made = mine()
+    check('the wave: three creatures around the hero', #made == 3, tostring(#made))
+    local near = true
+    for _, c in ipairs(made) do
+        local x, y = c:position()
+        local d = math.sqrt((x - hx) ^ 2 + (y - hy) ^ 2)
+        if d > 460 then near = false end      -- they spawn 40-100% of the radius out and may already walk towards the hero
+    end
+    check('within the radius around the hero', near)
+    A.screenshot('wave')
+    gear.emit('world-events.spawn', wave)
+    gear.wait(0.6)
+    check('the same wave id does not spawn twice', #mine() == 3)
+    if made[1] and made[1].remove then
+        for _, c in ipairs(made) do c:remove() end
+        gear.wait(0.5)
+        check('the wave creatures are removed again', #mine() == 0, tostring(#mine()))
+    else
+        print('this SacredGear.dll has no Creature:remove: the wave creatures stay (a throw-away game copy)')
+    end
 
     finish()
 end)

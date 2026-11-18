@@ -5,9 +5,13 @@
 -- while Alt is held, its settings are on its page of the Mods screen, and the controller's mod menu has entries that switch
 -- "always / only with Alt" and pin the details.
 local core = require('core')
+local hooks = require('hooks')
+local localevents = require('localevents')
 local ui, S = gear.ui, gear.settings
 
 local CHANNEL = 'worldevents:state'
+local SPAWN_CHANNEL = 'worldevents:spawn'     -- the server asks THIS game to spawn a wave around its own hero (only the target's client does)
+local LOCAL_AFTER = 15      -- seconds without a state from a server until the mod runs the events itself (single player / LAN)
 local HELLO_EVERY = 30      -- seconds: asks the server for the state again (a lost push, a server that restarted)
 
 local model = core.new()
@@ -17,6 +21,8 @@ local pulse_until = 0       -- gear.time() until which the pill pulses (a 25 / 5
 local pinned = false        -- the details stay up (the controller's mod menu)
 
 local PULSE = 1.6
+
+local last_server = -1e9    -- gear.time() of the last state a server pushed
 
 local function feed(payload)
     local ok, crossed = model:receive(payload, gear.time())
@@ -34,9 +40,80 @@ local function ensure_channel()
     end
     ch:on(function(from, payload)
         -- only the server pushes states (slot 0); a message from another player is ignored
-        if from and from.slot == 0 and type(payload) == 'table' then feed(payload) end
+        if from and from.slot == 0 and type(payload) == 'table' then last_server = gear.time(); feed(payload) end
     end)
     channel = ch
+    return ch
+end
+
+---------------------------------------------------------------------------------------------------------------
+-- spawn waves (a hook's `spawn` action of the server)
+---------------------------------------------------------------------------------------------------------------
+-- The mod's JSON files: gear.store where this Gear has it, else a small stand-in on gear.read / gear.save (an older SacredGear.dll).
+local function files()
+    if gear.store then return gear.store end
+    if not (gear.read and gear.save and gear.json) then return nil end
+    local api = {}
+    function api.load(name, default)
+        local text = gear.read(name .. '.json')
+        if not text then return default, 'missing' end
+        local ok, value = pcall(gear.json.decode, text)
+        if ok and type(value) == 'table' then return value end
+        return default, 'invalid'
+    end
+    function api.save(name, value)
+        local ok, text = pcall(gear.json.encode, value)
+        if not ok then return false, text end
+        return gear.save(name .. '.json', text)
+    end
+    function api.file(name, default)
+        local h = {name = name, data = (api.load(name, default)), saved = 0, dirty = false}
+        function h:changed()
+            self.dirty = true
+            local now = gear.time()
+            if now - self.saved >= 10 then self.saved = now; self.dirty = false; api.save(self.name, self.data) end
+        end
+        return h
+    end
+    return api
+end
+local FILES = files()
+
+local G                      -- localgame.lua, when this Gear has the world API
+if gear.world and FILES then
+    local ok, mod = pcall(require, 'localgame')
+    if ok then G = mod else gear.log('world-events: no game binding (' .. tostring(mod) .. ')') end
+end
+local seen = hooks.seen(200)
+local spawn_channel
+local waves = {}             -- the outcome of the last waves: {id, made, why}
+
+-- One wave the server asked for. Gear can only create creatures in a game of its own (single player); in a network game the
+-- request is logged and dropped. The wave id drops a message that arrives twice.
+local function on_spawn(wave)
+    if not seen:add(wave.id) then return end
+    if not G then waves[#waves + 1] = {id = wave.id, made = 0, why = 'no world API'}; return end
+    local made, why = G.spawn_wave(wave)
+    waves[#waves + 1] = {id = wave.id, made = made, why = why}
+    if #waves > 20 then table.remove(waves, 1) end
+    gear.log(('world-events: wave %s: %d creatures made%s'):format(wave.id, made, why and (' (' .. why .. ')') or ''))
+    if made == 0 then gear.log('world-events: the wave ' .. wave.id .. ' was not spawned: ' .. tostring(why)) end
+    if wave.text and wave.text ~= '' then G.message(wave.event ~= '' and wave.event or 'World event', wave.text) end
+end
+
+local function ensure_spawn_channel()
+    if spawn_channel then return spawn_channel end
+    local net = gear.net
+    if not (net and net.channel) then return nil end
+    local ch = net.channel(SPAWN_CHANNEL)
+    if not ch then return nil end
+    ch:on(function(from, payload)
+        if not (from and from.slot == 0) then return end         -- only the server asks for waves
+        local wave, why = hooks.parse_spawn(payload)
+        if not wave then gear.log('world-events: bad spawn message (' .. tostring(why) .. ')'); return end
+        on_spawn(wave)
+    end)
+    spawn_channel = ch
     return ch
 end
 
@@ -52,11 +129,13 @@ local function hello(force)
 end
 
 ensure_channel()
+ensure_spawn_channel()
 
 gear.on('net_caps', function() hello(true) end)
 gear.on('session.start', function() model:reset(); hello(true) end)
 gear.on('session.stop', function() model:reset(); last_hello = -1e9 end)
-gear.on('frame', function() hello(false) end)
+local local_frame     -- the single player mode, below
+gear.on('frame', function() hello(false); if local_frame then local_frame() end end)
 
 -- Other mods (and the self test) can steer it: gear.emit('world-events.configure', {visibility = 'alt', area = 'everywhere'}) sets those settings.
 gear.on('world-events.configure', function(values)
@@ -64,6 +143,64 @@ gear.on('world-events.configure', function(values)
 end)
 -- ... and feed a state: gear.emit('world-events.state', {st = 'active', ...}).
 gear.on('world-events.state', feed)
+-- ... and a wave: gear.emit('world-events.spawn', {id = 'x1', n = 3, radius = 400, kinds = {{type = 'Orc Warrior', weight = 1}}}) spawns it for the hero
+-- (what the server's 'worldevents:spawn' message does; the self test uses it).
+gear.on('world-events.spawn', function(payload)
+    local wave = hooks.parse_spawn(payload)
+    if wave then on_spawn(wave) end
+end)
+
+-- The single player mode: no server pushed a state for LOCAL_AFTER seconds, so this mod runs the events of its own events.json
+-- (a server's `/mods/world_events/export` writes one; a first run writes a small default to edit): it counts the hero's kills, fires
+-- the hooks for the hero and feeds the bar the same table a server would push. A server that speaks up again takes over.
+local localmode, local_file
+local last_frame, last_feed, last_poll = nil, -1e9, -1e9
+local fed_local = false      -- the bar currently shows a state of the local mode
+
+local function local_on()
+    return G ~= nil and S.get('local_mode') ~= 'off' and gear.time() - last_server > LOCAL_AFTER
+end
+
+local function start_local()
+    if localmode or not G then return end
+    local_file = FILES.file('local_events_state', {}, {every = 10})
+    local defs = FILES.load('events', nil)
+    if defs == nil then
+        defs = localevents.DEFAULT
+        FILES.save('events', defs)                        -- a first run: a file to edit
+    end
+    localmode = localevents.new({
+        defs = defs, store = local_file.data, log = function(t) gear.log('world-events: ' .. t) end,
+        act = function(action, ctx, key, index, def) G.run_action(action, def and def.title or 'World event') end,
+    })
+    G.on_kill(function(name, type_id, sector) localmode:kill(name, type_id, sector) end)
+end
+
+function local_frame()
+    if not local_on() then last_frame = nil; return end
+    start_local()
+    if not localmode then return end
+    local now = gear.time()
+    local dt = last_frame and (now - last_frame) or 0
+    last_frame = now
+    if now - last_poll >= 0.25 then last_poll = now; pcall(G.poll) end
+    local ok, err = pcall(localmode.tick, localmode, dt)
+    if not ok then gear.log('world-events: local tick failed: ' .. tostring(err)) end
+    if localmode.changed then localmode.changed = false; local_file:changed() end
+    if now - last_feed >= 1 then
+        last_feed = now
+        local payload = localmode:payload()
+        if payload then feed(payload); fed_local = true
+        elseif fed_local then model:reset(); fed_local = false end
+    end
+end
+
+-- A kill reported by the game's `kill` event (network games): counts in the local mode too.
+gear.on('kill', function(kill)
+    if localmode and local_on() and type(kill) == 'table' then
+        pcall(localmode.kill, localmode, kill.name or kill.victim_name, kill.type or kill.victim_type, kill.sector)
+    end
+end)
 
 ---------------------------------------------------------------------------------------------------------------
 -- the pill
@@ -231,5 +368,5 @@ if ui.menu_item then
     ui.menu_item('details', 'World events: pin / unpin the details', function() pinned = not pinned end)
 end
 
-local M = {model = model}
+local M = {model = model, waves = waves, hooks = hooks, local_events = function() return localmode end, seen = seen}
 return M
