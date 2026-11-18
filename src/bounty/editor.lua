@@ -6,6 +6,7 @@
 local ui = gear.ui
 local customs = require('customs')
 local creatures = require('creatures')
+local fuzzy = require('fuzzy')
 
 local E = {}
 
@@ -138,30 +139,20 @@ local function items()
             local internal = types:name(id)
             local shown = types:display_name(id)
             if internal and shown then
-                item_catalog[#item_catalog + 1] = {id = id, name = shown, internal = internal, key = (shown .. ' ' .. internal):lower()}
+                item_catalog[#item_catalog + 1] = {id = id, name = shown, internal = internal, words = fuzzy.words(shown .. ' ' .. internal)}
             end
         end
     end
     return item_catalog
 end
 
--- Types whose shown or internal name contains the text (any case), best first: names that start with it.
+-- Types whose shown or internal name matches the text (fuzzy: several words, accents and typos forgiven), best first.
 local function search_items(text)
     if text == search_for then return end
     search_for = text
     search_results = {}
-    local needle = text:lower()
-    if #needle < 2 then return end
-    local starts, others = {}, {}
-    for _, e in ipairs(items()) do
-        local at = e.key:find(needle, 1, true)
-        if at == 1 then starts[#starts + 1] = e elseif at then others[#others + 1] = e end
-    end
-    for _, list in ipairs({starts, others}) do
-        for _, e in ipairs(list) do
-            if #search_results < 40 then search_results[#search_results + 1] = e end
-        end
-    end
+    if #fuzzy.words(text) == 0 or #text < 2 then return end
+    search_results = fuzzy.rank(items(), text, 40)
 end
 
 local function slider(id, x, y, w, lo, hi, value, step, fmt)
@@ -192,7 +183,7 @@ local function draw_form(x, y, w, h)
     cy = cy + 26
     if f.mode == 4 then
         row_label('Find an item', lx, cy)
-        f.search = field('search', fx, cy, 200, f.search, 'Part of an item name in your game language, e.g. sword, ring, helmet')
+        f.search = field('search', fx, cy, 200, f.search, 'Part of an item name in your game language, any order, typos are fine: e.g. sword, ring, helm')
         search_items(f.search)
         cy = cy + 24
         if #search_results > 0 then
@@ -286,6 +277,15 @@ function E.draw(hooks)
     ui.capture_keys(focus ~= nil)
     local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
     if form then draw_form(x, y, w, h) else draw_list(x, y, w, h, hooks) end
+end
+
+-- The shown names of the items a search text finds (the self test uses it).
+function E.item_search(text)
+    search_for = nil
+    search_items(text)
+    local names = {}
+    for i, m in ipairs(search_results) do names[i] = m.name end
+    return names
 end
 
 function E.open() form, focus = nil, nil; ui.show_panel('editor', true) end
