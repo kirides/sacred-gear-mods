@@ -17,15 +17,15 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Shared stash**](docs/SharedStash.md) | <img src="docs/images/shared-stash.jpg" width="220" alt="Shared stash"> | One stash for all your heroes, next to the chest window. Works in LAN games too. |
 | [**Better SaveLoad**](src/better-saveload/README.md) | <img src="docs/images/better-saveload.jpg" width="220" alt="Better SaveLoad"> | A clearer savegame screen with the Save tab first. |
 | [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.svg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, optional fair random numbers. |
-| [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.svg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
+| [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.jpg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
 | [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.svg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. F7. |
 | [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.svg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
 | [**Layout editor**](docs/mods/layout.md) | <img src="docs/images/layout.svg" width="220" alt="Layout editor"> | Move the game's windows and mod panels where you want them. Hold Alt. |
 | [**Realm picker**](docs/mods/realms.md) | <img src="docs/images/realms.svg" width="220" alt="Realm picker"> | Choose the online play server for Closed and Open Internet. |
-| [**Auction house**](src/auction-house/README.md) | <img src="docs/images/auction-house.svg" width="220" alt="Auction house"> | Buy and sell items between players. |
+| [**Auction house**](src/auction-house/README.md) | <img src="docs/images/auction-house.svg" width="220" alt="Auction house"> | Buy and sell items between players. Needs a multiplayer game (useless in single player). |
 | [**World events**](src/world-events/README.md) | <img src="docs/images/world-events.jpg" width="220" alt="World events"> | A progress bar for the server's world event. |
-| [**Sector tools**](src/sector-tools/README.md) | <img src="docs/images/sector-tools.jpg" width="220" alt="Sector tools"> | For server admins: sector and grid cell, recording areas. |
+| [**Sector tools**](src/sector-tools/README.md) | <img src="docs/images/sector-tools.jpg" width="220" alt="Sector tools"> | For server admins: sector and grid cell, recording areas. Not in the release zip. |
 | [**Achievements**](docs/mods/achievements.md) | <img src="docs/images/achievements.svg" width="220" alt="Achievements"> | Messages for achievements and the daily login reward. Needs a server script. |
 | [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.svg" width="220" alt="Bounty board"> | The server's bounties and your progress. F8. Needs a server script. |
 | [**Build sharer**](docs/mods/buildsharer.md) | <img src="docs/images/buildsharer.svg" width="220" alt="Build sharer"> | Publish your build and browse the builds of others. F7. Needs a server script. |
