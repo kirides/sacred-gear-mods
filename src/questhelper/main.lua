@@ -9,6 +9,11 @@
 -- interpreter that no message carries. So there is no list of active or available quests here, and the keys of the pairs have names only
 -- where the server owner has filled in a catalog. The panel says so instead of showing guesses.
 
+local function key_hint(id)
+    local k = gear.keys.label(id)
+    return k ~= '' and (' (' .. k .. ')') or ''
+end
+
 local ui, net = gear.ui, gear.net
 local ch = net.channel('questhelper')
 local TABS = {'Quest items', 'Records', 'About'}
@@ -173,7 +178,7 @@ local function about_tab(x, y, w, h)
 end
 
 local function panel()
-    local p = ui.panel('main', 'Quest helper (Ctrl+U)', 80, 60, 520, 400, {})
+    local p = ui.panel('main', 'Quest helper' .. key_hint('toggle'), 80, 60, 520, 400, {})
     if not p.open then
         if S.opened then S.opened = false; if net.supported() then ch:send({op = 'unwatch'}, 'server') end end
         return

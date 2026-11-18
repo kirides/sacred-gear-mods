@@ -12,6 +12,11 @@
 -- to a client that said HELLO (the library does that after joining); this mod also asks with { req = 1 } now and then.
 -- `left` is relative (seconds), so this computer's clock does not matter. Nothing in the payload is trusted for anything but display.
 
+local function key_hint(id)
+    local k = gear.keys.label(id)
+    return k ~= '' and (' (' .. k .. ')') or ''
+end
+
 local cfg = gear.config
 local ui, net = gear.ui, gear.net
 
@@ -272,7 +277,7 @@ local function row(b, x, y, w)
 end
 
 local function panel()
-    local p = ui.panel('board', 'Bounty board (Ctrl+J)', 300, 70, 400, 320, {resizable = true, min_width = 300, min_height = 160})
+    local p = ui.panel('board', 'Bounty board' .. key_hint('panel'), 300, 70, 400, 320, {resizable = true, min_width = 300, min_height = 160})
     if not p.open then return end
     local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
     local own = is_local()

@@ -5,6 +5,11 @@
 -- Mods screen) with the streak, tomorrow's reward and every achievement with its progress. It asks for the state with
 -- {op = 'get'} once the server's handshake is done and while the panel is open. Servers without the script, and the
 -- original GameServer.exe, never answer: the panel then says so and nothing else happens.
+local function key_hint(id)
+    local k = gear.keys.label(id)
+    return k ~= '' and (' (' .. k .. ')') or ''
+end
+
 local ui, net = gear.ui, gear.net
 
 local GOLD = ui.rgba(240, 200, 110)
@@ -110,7 +115,7 @@ end
 local ROW = 40
 local function draw_panel()
     local px, py = gear.config.panel_x or 590, gear.config.panel_y or 40
-    local p = ui.panel('panel', 'Achievements (Ctrl+G)', px, py, 410, 480, {resizable = true, min_width = 330, min_height = 240})
+    local p = ui.panel('panel', 'Achievements' .. key_hint('panel'), px, py, 410, 480, {resizable = true, min_width = 330, min_height = 240})
     if not p.open then return end
     local x, y = p.content_x, p.content_y
     local w = p.x + p.w - 8 - x

@@ -4,7 +4,7 @@ return {
     version = '0.3.0',
     author = 'Sacred Gear',
     description = 'Bounties to hunt: in single player the mod posts, counts and pays them itself, in a network game it shows the '
-        .. 'board of a Sacred.GameServer with scripts-examples/bounty_board.lua. Panel (Ctrl+J) and a small tracker.',
+        .. 'board of a Sacred.GameServer with scripts-examples/bounty_board.lua. Panel and a small tracker.',
     settings = {
         {id = 'own_board', type = 'bool', label = 'Own board in single player', default = true,
             tooltip = 'Single player: the mod posts bounties for your hero, counts the kills and pays the rewards. Off: no board without a server'},
