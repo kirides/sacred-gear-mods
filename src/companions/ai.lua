@@ -15,6 +15,9 @@ local M = {}
 
 local W = gear.world
 
+-- Combos are the combo master's slots: ids 0x200 + slot (creature:combos()).
+function M.is_combo(id) return id >= 0x200 and id < 0x204 end
+
 -- Abilities the AI never uses: shape changes, teleports, burrowing, acrobatics, corpses, time stops.
 local NEVER = {
     [1] = true,     -- Phasenverschiebung (teleport)
@@ -117,6 +120,16 @@ local function pick_ability(c, s, now, target, heroes, tactics)
             if ok then
                 local score = (a.level + a.bonus) + (use == 'heal' and 1000 or use == 'self' and 500 or 0)
                 if not best_score or score > best_score then best, best_use, best_score = a, use, score end
+            end
+        end
+    end
+    -- A combo (the combo master's arts in a row) beats a single art on the target.
+    if target then
+        for _, k in ipairs(c:combos() or {}) do
+            if k.ready and tactics.abilities[k.id] ~= false then
+                local score = 800
+                for _, l in ipairs(k.levels) do score = score + l end
+                if not best_score or score > best_score then best, best_use, best_score = k, 'target', score end
             end
         end
     end

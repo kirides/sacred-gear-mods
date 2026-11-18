@@ -136,15 +136,31 @@ gear.task(function()
     -- The former hero follows and fights now.
     local cx, cy = comp:position()
     comp:order_move(cx - 400, cy + 60)
-    gear.wait(5)
-    local act = main:action()
-    check('the former hero follows or fights', dist(main, comp) < 6 * gear.world.TILE or act == 'attacking' or act == 'ability',
-        math.floor(dist(main, comp)) .. ' ' .. tostring(act))
+    local acted = gear.wait_until(function()
+        local act = main:action()
+        return dist(main, comp) < 6 * gear.world.TILE or act == 'attacking' or act == 'ability'
+    end, 12)
+    check('the former hero follows or fights', acted, math.floor(dist(main, comp)) .. ' ' .. tostring(main:action()))
 
     -- F8 plays the next hero (back to the main one).
     A.press('f8')
     gear.wait(1.5)
     check('F8 plays the next hero', party.leader() == main)
     A.screenshot('companions-4-back')
+
+    -- The controller: the portrait is a D-pad stop, and the mod menu (LT + LB) plays the next hero. Its entries:
+    -- the Mods screen, then the companions' keys (next, previous, window), rows of 30 from the content.
+    local n = A.nav()
+    check('portraits are D-pad stops (SacredBild holds stops)', n and n >= 1, n)
+    A.pad(0, 0, 1)
+    gear.wait(0.5)
+    local menu = panel_rect('gear-mods:padmenu')
+    check('the mod menu opens', menu ~= nil)
+    A.screenshot('companions-5-padmenu')
+    if menu then
+        A.ui_click(menu.x + menu.w / 2, menu.y + 28 + 30 + 13)
+        gear.wait(1.5)
+        check('the mod menu plays the next hero', party.leader() == comp)
+    end
     finish()
 end)

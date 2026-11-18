@@ -356,6 +356,11 @@ local USE_LABEL = {target = 'on the target', self = 'in a fight, on itself', hea
 local function tactics_area(c, x, y, w)
     ui.text('Tactics of ' .. name_of(c) .. ': the abilities it uses on its own', x, y, {color = ACCENT})
     local list = c:abilities() or {}
+    for _, k in ipairs(c:combos() or {}) do
+        local names = {}
+        for _, a in ipairs(k.arts) do names[#names + 1] = ai.ability_info(a).name end
+        list[#list + 1] = {id = k.id, level = 0, bonus = 0, combo = 'Combo ' .. (k.slot + 1) .. ': ' .. table.concat(names, ', ')}
+    end
     if #list == 0 then
         ui.text('It knows no combat arts or spells yet.', x, y + 22, {color = DIM})
         return 44
@@ -363,14 +368,15 @@ local function tactics_area(c, x, y, w)
     local r = record(c.id)
     local row = 0
     for _, a in ipairs(list) do
-        local info = ai.ability_info(a.id)
-        local use = ai.use_of(a.id)
+        local info = a.combo and {name = a.combo} or ai.ability_info(a.id)
+        local use = a.combo and 'target' or ai.use_of(a.id)
         local yy = y + 22 + row * 22
         local col = (row % 2 == 0) and 0 or 0
         if use then
             local on = r.abilities[tostring(a.id)] ~= false
-            local changed, checked = ui.checkbox('use' .. c.id .. '_' .. a.id, x + col, yy,
-                ('%s (level %d)'):format(info.name, a.level + a.bonus), on, {tooltip = 'Used ' .. USE_LABEL[use]})
+            local label = a.combo and info.name or ('%s (level %d)'):format(info.name, a.level + a.bonus)
+            local changed, checked = ui.checkbox('use' .. c.id .. '_' .. a.id, x + col, yy, label, on,
+                {tooltip = 'Used ' .. USE_LABEL[use]})
             if changed then
                 r.abilities[tostring(a.id)] = checked and nil or false
                 store:changed()
@@ -389,7 +395,7 @@ local function draw_window()
     local leader = heroes[1]
     local tactics_hero
     for _, h in ipairs(heroes) do if h.id == win.tactics then tactics_hero = h end end
-    local tactics_h = tactics_hero and math.min(320, 44 + #(tactics_hero:abilities() or {}) * 22) or 0
+    local tactics_h = tactics_hero and math.min(360, 44 + (#(tactics_hero:abilities() or {}) + #(tactics_hero:combos() or {})) * 22) or 0
     local h = 40 + #heroes * 52 + 70 + tactics_h
     local p = ui.panel('party', 'Party' .. key_hint('window'), 212, 90, WIN_W, h, {})
     if not p.open then return end

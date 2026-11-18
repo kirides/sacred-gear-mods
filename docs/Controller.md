@@ -12,4 +12,6 @@ what matters for the mods here:
 - **Shared stash**: a mod window with an X; the pad switches to the cursor as it does for a game window. The left stick
   moves the cursor, **A** clicks, **B** closes the top window. The *Shared stash* button next to the chest is a mod
   panel as well.
+- **Companions**: the companions' portraits (top right) are D-pad stops, **A** plays that hero; the mod menu has
+  *Party window*, *Play the next hero* and *Play the previous hero*.
 - **Autosave** needs nothing; start *Autosave now* from the mod menu for a save on demand.
