@@ -15,10 +15,6 @@ local POLLED = {alt = true, ctrl = true, add = true, subtract = true}
 local function build()
     local rules, claimed = {}, {}
     local function add(from, to, id)
-        if POLLED[to] and from == to then
-            claimed[to] = true      -- the game's own key: nothing to do
-            return
-        end
         rules[#rules + 1] = {from = from, to = to, id = id}
         if not from:find('+', 1, true) then claimed[from] = true end
     end

@@ -8,7 +8,7 @@ Sacred Gold; no other mod is needed.
 ## Use
 
 After [installing](../Install.md) (`src\key-bindings` to `mods\key-bindings`) press **F11**, pick *Key bindings* and open
-its *Keys* page. Every action of the game has a row with **two keys**; a row may also be left unbound. Click a key, then press
+its *Keys* page. Every action of the game has a row with **two keys** (sections: weapons, combat arts with each *quick cast* row right under its art, potions, windows, game); a row may also be left unbound. Click a key, then press
 the new one (a key, `Ctrl+`/`Shift+`/`Alt+` with a key, or a mouse button); **Esc** cancels, **Backspace** unbinds, *Default*
 brings the game's own key back. With a controller, *Pick* lists the keys. A key that two rows (or another mod) use is
 marked.
