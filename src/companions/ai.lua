@@ -98,6 +98,16 @@ local function pick_target(c, cx, cy, layer, lx, ly, opts)
     return best
 end
 
+-- Whether a living enemy of `c` is within `radius` of it.
+function M.enemy_near(c, radius)
+    local x, y, l = c:position()
+    if not x then return false end
+    for _, e in ipairs(W.creatures_near(x, y, radius, {layer = l, limit = 24})) do
+        if not e:is_hero() and not e:is_dead() and c:is_enemy(e) then return true end
+    end
+    return false
+end
+
 -- The ability to use now, and on whom ('target' or 'self'), or nil.
 local function pick_ability(c, s, now, target, heroes, tactics)
     local hurt = false

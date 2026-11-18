@@ -244,6 +244,7 @@ local function apply_share()
 end
 
 local clock, next_think, next_names = 0, {}, 0
+local fallen = {}   -- companion id -> when it fell
 
 local function ai_opts()
     return {
@@ -276,6 +277,27 @@ gear.on('frame', guard('frame', function(dt)
             end
         end
         return
+    end
+    -- Fallen companions: the game removes a fallen companion (with what it carries) about 25 s after it fell, so the
+    -- mod helps it up at the leader's side once the fight is over, or after 12 s at the latest.
+    if setting('revive', true) then
+        for i = 2, #heroes do
+            local c = heroes[i]
+            if c:is_dead() then
+                fallen[c.id] = fallen[c.id] or clock
+                local x, y, l = leader:position()
+                local quiet = not ai.enemy_near(leader, setting('engage', 12) * TILE)
+                if x and (quiet and clock - fallen[c.id] > 3 or clock - fallen[c.id] > 12) then
+                    if c:revive() then
+                        c:teleport(x + 60, y + 60, l)
+                        fallen[c.id] = nil
+                        toast(name_of(c) .. ' is back on their feet')
+                    end
+                end
+            else
+                fallen[c.id] = nil
+            end
+        end
     end
     if not setting('ai', true) then return end
     local opts = ai_opts()

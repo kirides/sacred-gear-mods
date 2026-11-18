@@ -16,6 +16,8 @@ return {
         {id = 'share_xp', type = 'number', label = 'Shared experience (%)', min = 0, max = 100, step = 5, default = 100, section = 'Party',
             tooltip = 'Experience a party hero gains from kills and quests also goes to the others nearby, times this'},
         {id = 'share_radius', type = 'number', label = 'Shared within (tiles, 0: anywhere)', min = 0, max = 100, step = 5, default = 40, section = 'Party'},
+        {id = 'revive', type = 'bool', label = 'Fallen companions get up after the fight', default = true, section = 'Party',
+            tooltip = 'At your side with a quarter of their health, once no enemy is near (12 s at the latest). Off: the game removes a fallen companion, with what it carries'},
         {id = 'switch_on_death', type = 'bool', label = 'Play a living companion when your hero falls', default = true, section = 'Party'},
         {id = 'portraits', type = 'bool', label = 'Companion portraits', default = true, section = 'Party',
             tooltip = 'Portraits of the companions under the game\'s own, at the top right; a click plays that hero'},
