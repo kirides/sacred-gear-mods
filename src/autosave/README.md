@@ -45,6 +45,16 @@ them on its **Settings** page; they are saved at once in `mods\gear_mods.json`. 
 The **More** tab of the mod's page shows the time to the next autosave, why one waits and the last slot written, and has
 a **Save now** button.
 
+## Together with the game's own Auto-Save
+
+Sacred Gold has an **Auto-Save** option (`AUTOSAVE : 1` in `Settings.cfg`, the options window). It is a different thing:
+it saves only when a quest or map script reaches an autosave point, into the *first free* `GAMEnn` slot (a new file each
+time, never overwritten), and it does not look whether a window is open. The two do not collide: this mod's slots are
+97 to 99, and the engine handles one save at a time (a request that comes while a save runs is dropped; this mod
+waits and tries again). A save of the game's (or the quicksave, or a manual one) counts: the timer starts over. The
+More tab of the mod shows a note while the game's Auto-Save is on. Both can run together; turn the game's off if you do
+not want its extra savegames to pile up.
+
 ## Recovery: loading an autosave
 
 The autosaves appear in the game's savegame list under their slot (`GAME97` ... `GAME99`) with the name

@@ -173,6 +173,14 @@ gear.on('game.save_failed', function(slot, message)
     if cfg.show_confirmation then show_note('Autosave failed', false) end
 end)
 
+-- A save nobody here asked for (the quicksave, a manual save, the game's own Auto-Save at a script point) also saved
+-- the progress: the timer starts over, and a save that was waiting for a valid moment is not needed any more.
+gear.on('game.saved_other', function(slot)
+    if requested then return end
+    active, due, fails = 0, false, 0
+    print(('slot %d was saved by the game or the player: timer restarted'):format(slot))
+end)
+
 gear.on('session.start', function()
     active, due, fails, requested, next_try, waiting_reason = 0, false, 0, false, 0, nil
 end)
@@ -256,15 +264,19 @@ gear.mods.page(function(x, y, w, h)
     local names = {}
     for i, n in ipairs(cfg.slots) do names[i] = ('GAME%02d'):format(n) end
     ui.text('Slots: ' .. table.concat(names, ', '), x, y + 20, {height = 18, valign = 'middle'})
+    if gear.game.config('AUTOSAVE') == 1 then
+        ui.text("The game's own Auto-Save is on: it also saves into a new slot", x, y + 56,
+            {height = 16, size = 11, color = 0xFFE0C060})
+    end
     if last then
         ui.text(('Last: slot %d, %s ago'):format(last.slot, mmss(gear.time() - last.time)), x, y + 40,
             {height = 18, valign = 'middle'})
     end
-    if ui.button('now', x, y + 68, 120, 22, 'Save now', {enabled = not requested,
+    if ui.button('now', x, y + 78, 120, 22, 'Save now', {enabled = not requested,
         tooltip = 'Autosave right away (into the next slot)'}) then
         due, next_try = true, 0
     end
-    return 96
+    return 106
 end)
 
 gear.on('draw', function(s)

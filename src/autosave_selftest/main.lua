@@ -127,6 +127,16 @@ gear.task(function()
     check('loaded savegame untouched', same_file(before[1], game_api.save_info(1)))
     check('game keeps running', query().total_active_seconds > frames_before and gear.world.hero() ~= nil
         and not gear.world.hero():is_dead())
+    -- A save by the player (the quicksave key) restarts the timer.
+    gear.emit('autosave.configure', {interval_minutes = 30})
+    gear.wait(3)
+    local other = nil
+    gear.on('game.saved_other', function(slot) other = slot end)
+    local before_q = query().active_seconds
+    A.press('f9')
+    check('quicksave reported as game.saved_other', gear.wait_until(function() return other ~= nil end, 30), other)
+    gear.wait(1)
+    check('timer restarted by it', query().active_seconds < before_q - 1, ('%.1f -> %.1f'):format(before_q, query().active_seconds))
     gear.emit('autosave.configure', {enabled = false})
     check('save_pending false at the end', not game_api.save_pending())
     A.screenshot('autosave')
