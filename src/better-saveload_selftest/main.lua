@@ -187,12 +187,40 @@ gear.task(function()
 
     -- In game: S opens the savegame window, the mod's screen shows in save mode.
     A.press('s')
-    check('savegame window opens', wait_open(WND_GAME, true))
+    local s_ok = wait_open(WND_GAME, true)
+    if not s_ok then
+        -- Right after loading the game may not take the key yet: once more.
+        A.screenshot('s_failed')
+        A.press('s')
+        s_ok = wait_open(WND_GAME, true)
+    end
+    check('savegame window opens', s_ok)
     check('game: the mod\'s screen replaces it', wait_screen(WND_GAME))
     q = query()
     check('game: save mode, the new savegame row', q.mode == 'save' and q.sel == 'new',
         tostring(q.mode) .. ' ' .. tostring(q.sel))
     gear.wait(1)
+    check('a default name', (q.name or '') ~= '', q.name)
+    -- Typing: the keys go into the name (the player's keyboard layout, through gear.ui.typed).
+    gear.emit('better-saveload.set', {name = ''})
+    A.type('mein test 42')
+    gear.wait(0.5)
+    check('typed into the name', query().name == 'mein test 42', query().name)
+    A.press('backspace')
+    gear.wait(0.3)
+    check('Backspace', query().name == 'mein test 4', query().name)
+    -- The on-screen keyboard (for the controller).
+    A.ui_click(BACK_BUTTON[1] - 30, BACK_BUTTON[2] - 32)
+    gear.wait(0.3)
+    check('the on-screen keyboard opens', query().osk == true)
+    A.screenshot('game_osk')
+    A.pad(0, 1, 0)
+    gear.wait(0.3)
+    check('B closes the keyboard, not the screen', query().osk == false and gear.ui.window_open(WND_GAME))
+    -- A name beyond ASCII comes back as it was saved.
+    local NAME = 'Größe über alles 42'
+    gear.emit('better-saveload.set', {name = NAME})
+    gear.wait(0.3)
     A.screenshot('game_save')
     local had = slots()
     A.press('enter')
@@ -213,6 +241,7 @@ gear.task(function()
     local ns = new_slot and slots()[new_slot]
     check('the new savegame has the hero', ns and h and ns.hero == h:name(), ns and ns.hero)
     check('the new savegame has a picture', ns and ns.picture)
+    check('the typed name was saved (umlauts too)', ns and ns.name == NAME, ns and ns.name)
     A.screenshot('game_load')
     A.press('delete')
     gear.wait(0.3)

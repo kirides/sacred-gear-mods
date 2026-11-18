@@ -2,7 +2,7 @@
 return {
     id = 'better-saveload',
     name = 'Better SaveLoad',
-    version = '1.0.0',
+    version = '1.1.0',
     author = 'kirides',
     description = 'The savegame screen made new: hero, class, level and picture of every savegame, filters by '
         .. 'character and class, newest first or by file name. Works with the mouse, the keyboard and the controller.',
@@ -17,7 +17,7 @@ return {
          tooltip = 'The character filter starts on the hero you play'},
         {id = 'confirm_load', type = 'bool', label = 'Ask before loading in game', default = true,
          tooltip = 'What was not saved is lost when another savegame loads'},
-        {id = 'save_name', type = 'text', label = 'Name of new savegames', default = '%hero% %Y-%m-%d %H:%M',
+        {id = 'save_name', type = 'text', label = 'Default name of new savegames', default = '%hero% %Y-%m-%d %H:%M',
          max_length = 60, tooltip = '%hero% is the hero\'s name, %level% the level; %Y %m %d %H %M the date and time'},
     },
 }
