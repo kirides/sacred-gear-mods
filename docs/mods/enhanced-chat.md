@@ -55,9 +55,13 @@ shows, Gear keeps the lines off the game's own list; it gives them back by itsel
 asking. Drops are found as the loot log finds them: twice a second it looks at the items around the hero. Needs a
 Sacred Gear with `gear.chat`; an older one leaves the mod idle.
 
-## Self test
+## Development
 
-`src/enhanced-chat_selftest` (with `-gear-auto`, in a copy of the game folder):
+- **Files:** `src/enhanced-chat/mod.lua` (manifest) and `main.lua` (about 370 lines). Nothing is written to disk.
+- **Depends on:** `gear.chat` (the lines, `replace_overlay`, `segments`), `gear.world.items_near` and `item_color`
+  (drops), `gear.mp` (the player filter), `gear.ui` (a bare, resizable panel, a scroll area, `item_tooltip`).
+- **Other mods:** `gear.emit('enhanced-chat.query', out)` fills `out` with the window's state (for the self test).
+- **Self test:** `src/enhanced-chat_selftest` (with `-gear-auto`, in a copy of the game folder):
 
     Sacred.exe -gear-auto -gear-instance=chat -gear-mods=enhanced-chat,enhanced-chat_selftest
 
