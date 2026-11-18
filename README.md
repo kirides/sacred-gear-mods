@@ -23,7 +23,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
 | [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.jpg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. Ctrl+D. |
 | [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.jpg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
-| [**Region counter**](docs/mods/region-counter.md) | | The kills a region needs before its Region Boss quest: set your own number, and keep the count when you leave the region or quit. F4. |
+| [**Region counter**](docs/mods/region-counter.md) | | The kills a region needs before its Region Boss quest: set your own number, and keep the count when you leave the region or quit. |
 | [**Layout editor**](docs/mods/layout.md) | <img src="docs/images/layout.jpg" width="220" alt="Layout editor"> | Move the game's windows and mod panels where you want them. Hold Alt. |
 | [**Realm picker**](docs/mods/realms.md) | <img src="docs/images/realms.svg" width="220" alt="Realm picker"> | Choose the online play server for Closed and Open Internet. |
 | [**Auction house**](src/auction-house/README.md) | <img src="docs/images/auction-house.svg" width="220" alt="Auction house"> | Buy and sell items between players. Needs a multiplayer game (useless in single player). |

@@ -7,7 +7,7 @@ memory only: it starts over when you leave the region and is never saved. This m
   of the progress.
 - **Keep progress:** the kills done in every region are kept per hero (`region_kills.json` in the mod's folder) and put
   back when the game starts a region over. Switched off, the game's own reset applies.
-- **F4** shows the regions you have been in with `done / needed`.
+- The progress pill on the screen comes from the World events mod, so it stacks with its other pills; this mod only configures the regions.
 
 ## How it works
 

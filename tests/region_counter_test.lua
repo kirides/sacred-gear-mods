@@ -18,8 +18,6 @@ local function make(settings, disk)
         keys = {on = function() end},
         settings = {get = function(id, fb) local v = G.settings[id]; if v == nil then return fb end return v end},
         guard = function(_, fn) return function(...) local g, e = pcall(fn, ...); if not g then error(e) end return e end end,
-        ui = {panel = function() return {open = false} end, show_panel = function() end, toggle_panel = function() end,
-              text = function() end},
         log = function() end, every = function() end,
     }
     libs.install(gear, {'store'})

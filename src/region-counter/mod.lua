@@ -11,7 +11,4 @@ return {
         {id = 'keep_progress', type = 'bool', label = 'Keep progress between regions and sessions', default = true,
             section = 'General', tooltip = 'The game forgets the count when you leave a region and never saves it. Switched on, the count of every region is kept per hero'},
     },
-    keys = {
-        {id = 'panel', label = 'Show / hide the region counters', default = 'f4'},
-    },
 }
