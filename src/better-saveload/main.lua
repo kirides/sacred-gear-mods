@@ -70,31 +70,8 @@ local function say(text, ok)
     view.message, view.message_ok, view.message_until = text, ok and true or false, gear.time() + 4
 end
 
--- `text` cut with an ellipsis to fit `width` at `size` (cached: measuring is not free).
-local fit_cache, fit_count = {}, 0
-local function fit(text, width, size)
-    text = tostring(text or '')
-    local key = text .. '\0' .. math.floor(width) .. '\0' .. size
-    local hit = fit_cache[key]
-    if hit then return hit end
-    local w = ui.text_size(text, {size = size})
-    local out = text
-    if w and w > width then
-        local n = #text
-        while n > 0 do
-            n = n - 1
-            -- whole UTF-8 characters only
-            while n > 0 and text:byte(n + 1) and text:byte(n + 1) >= 0x80 and text:byte(n + 1) < 0xC0 do n = n - 1 end
-            out = text:sub(1, n) .. '...'
-            local tw = ui.text_size(out, {size = size})
-            if not tw or tw <= width then break end
-        end
-    end
-    fit_count = fit_count + 1
-    if fit_count > 2000 then fit_cache, fit_count = {}, 0 end
-    fit_cache[key] = out
-    return out
-end
+-- `text` cut with an ellipsis to fit `width` at `size`.
+local fit = gear.fmt.fit_width
 
 local function when(s)
     local t = (s.time and s.time > 0) and s.time or s.mtime

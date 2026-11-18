@@ -22,11 +22,8 @@ local FILE = 'session_totals.json'
 local POLL = 0.5
 local HISTORY_MAX = 10
 
-local function setting(id, fallback)
-    local ok, v = pcall(gear.settings.get, id)
-    if ok and type(v) == 'number' then return v end
-    return fallback
-end
+local fmt, guard, store = gear.fmt, gear.guard, gear.store
+local function setting(id, fallback) return gear.settings.get(id, fallback) end
 
 local function new_stats()
     return {played = 0, kills = 0, gold_gained = 0, gold_spent = 0, xp_gained = 0, levels = 0}
@@ -40,37 +37,11 @@ local hero_name = nil
 local base = {gold = nil, xp = nil, level = nil}
 local poll_t, save_t = 0, 0
 local ready_mode = true        -- the game screen is up (set by the draw handler)
-local warned = {}
-
-local function warn(where, err)
-    if not warned[where] then
-        warned[where] = true
-        print(('sessiontracker: %s failed: %s'):format(where, tostring(err)))
-    end
-end
-
-local function guard(where, fn)
-    return function(...)
-        local ok, err = pcall(fn, ...)
-        if not ok then warn(where, err) end
-    end
-end
 
 ---------------------------------------------------------------------------------------------------------------
 -- Formatting
 ---------------------------------------------------------------------------------------------------------------
-local function fmt_time(s)
-    s = math.max(0, math.floor(tonumber(s) or 0))
-    return ('%d:%02d:%02d'):format(math.floor(s / 3600), math.floor(s / 60) % 60, s % 60)
-end
-
-local function fmt_num(n)
-    n = math.floor((tonumber(n) or 0) + 0.5)
-    local sign = n < 0 and '-' or ''
-    local out = tostring(math.abs(n)):reverse():gsub('(%d%d%d)', '%1,'):reverse()
-    if out:sub(1, 1) == ',' then out = out:sub(2) end
-    return sign .. out
-end
+local fmt_time, fmt_num = fmt.duration, fmt.number
 
 -- value per hour of play, or nil while the session is too short to say
 local function per_hour(value, played)
@@ -87,10 +58,7 @@ end
 -- Persistence
 ---------------------------------------------------------------------------------------------------------------
 local function load_file()
-    local text = gear.read(FILE)
-    if not text then return end
-    local data = gear.json.decode(text)
-    if type(data) ~= 'table' then return end
+    local data = store.load(FILE, {})
     if type(data.lifetime) == 'table' then
         for _, f in ipairs(FIELDS) do
             local v = tonumber(data.lifetime[f])
@@ -106,8 +74,7 @@ local function load_file()
 end
 
 local function save_file()
-    local ok, err = gear.save(FILE, gear.json.encode({lifetime = lifetime, history = history}))
-    if not ok then warn('save', err) end
+    store.save(FILE, {lifetime = lifetime, history = history})
 end
 
 -- Moves the session into the lifetime totals and the history (once), then drops it.
@@ -214,8 +181,7 @@ gear.on('frame', guard('frame', function(dt)
         if session.played >= 1 then
             -- A crash must not lose the whole session: the file holds the finished sessions plus this one as it
             -- stands (the lifetime is only added once at the end, so the file's lifetime stays the finished ones').
-            local ok, err = gear.save(FILE, gear.json.encode({lifetime = lifetime, history = history, current = session}))
-            if not ok then warn('save', err) end
+            store.save(FILE, {lifetime = lifetime, history = history, current = session})
         end
     end
 end))
@@ -270,6 +236,4 @@ gear.on('draw', guard('draw', function(state)
 end))
 
 ui.show_panel('tracker', true)
-gear.keys.on('panel', guard('key', function()
-    ui.show_panel('tracker', not ui.panel_open('tracker'))
-end))
+gear.keys.on('panel', guard('key', function() ui.toggle_panel('tracker') end))

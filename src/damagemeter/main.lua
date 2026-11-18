@@ -38,14 +38,13 @@ local W = gear.world
 local BUCKETS = 60                  -- seconds of history for the rolling DPS and the graph
 
 local function setting(id, fallback)
-    local ok, v = pcall(gear.settings.get, id)
-    if ok and type(v) == 'number' then return v end
+    local v = gear.settings.get(id, fallback)
+    if type(v) == 'number' then return v end
     return fallback
 end
 
 local clock = 0                     -- seconds the mod has run (sum of frame dts; the hook never calls the API for time)
 local hero_type = nil               -- creature type of the local hero, refreshed every frame
-local warned = {}
 
 local T                           -- the totals, see reset()
 local function reset()
@@ -71,19 +70,7 @@ local ally_types = {}               -- type id -> name (survives reset(): the kn
 local hostile_types = {}            -- types that hit the hero
 local seen = {}                     -- creature id -> {type, since, moved}
 
-local function warn(where, err)
-    if not warned[where] then
-        warned[where] = true
-        print(('damagemeter: %s failed: %s'):format(where, tostring(err)))
-    end
-end
-
-local function guard(where, fn)
-    return function(...)
-        local ok, err = pcall(fn, ...)
-        if not ok then warn(where, err) end
-    end
-end
+local guard = gear.guard
 
 ---------------------------------------------------------------------------------------------------------------
 -- Counting
@@ -669,14 +656,12 @@ gear.on('draw', guard('draw', function(state)
 end))
 
 ui.show_panel('meter', false)
-gear.keys.on('panel', guard('key', function()
-    ui.show_panel('meter', not ui.panel_open('meter'))
-end))
+gear.keys.on('panel', guard('key', function() ui.toggle_panel('meter') end))
 gear.keys.on('reset', guard('key', reset))
 gear.keys.on('view', guard('key', next_view))
 
 -- The controller reaches the same things through its mod menu.
 if ui.menu_item then
-    pcall(ui.menu_item, 'meter', 'Damage meter: show / hide', function() ui.show_panel('meter', not ui.panel_open('meter')) end)
+    pcall(ui.menu_item, 'meter', 'Damage meter: show / hide', function() ui.toggle_panel('meter') end)
     pcall(ui.menu_item, 'meter_view', 'Damage meter: next view', next_view)
 end

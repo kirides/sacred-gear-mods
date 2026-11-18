@@ -29,9 +29,11 @@ Open the Mods screen with **F11** and pick the mod.
 | Show toasts | Turns the messages on or off. |
 | Toast time (seconds) | How long a message stays on screen (2 to 15). |
 
+The messages stack at the top of the screen; move them with the [layout editor](layout.md) (hold **Alt**).
+
 ## Development
 
-- **Files:** `src/achievements/mod.lua` (manifest: settings, key, panel position) and `main.lua` (about 170 lines: the panel, the toasts and the server messages).
-- **Depends on:** the Gear API ([GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md)): `gear.net` (a channel to the game server), `gear.ui` (panel and toasts), `gear.keys`, `gear.settings`.
+- **Files:** `src/achievements/mod.lua` (manifest: settings, key, panel position) and `main.lua` (the panel and the server messages; the toasts are Gear's `gear.toast`).
+- **Depends on:** the Gear API ([GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md)): `gear.net` (a channel to the game server), `gear.ui` (panel), `gear.toast` (the messages), `gear.keys`, `gear.settings`.
 - **Server side:** `scripts-examples/achievements.lua` of the SacredEngineRemake game server. The protocol is described in [GearServerMods](https://github.com/kirides/sacred-bild/blob/main/docs/GearServerMods.md).
 - **Test it:** there is no game-free test; start a local server with the script and the game with the mod. The panel's default place is in `config.panel_x` / `panel_y` of `mod.lua` (1024x768 layout; players move it with the layout editor).

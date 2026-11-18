@@ -31,15 +31,18 @@ ui.scroll_begin = function(id, x, y, w, h, opts) return { x = x, y = y, w = w, h
 ui.scroll_end = function() return 0, 0 end
 ui.text_wrap = function(text, width, opts) return { tostring(text) }, 16 end
 ui.panel = function(id, title, x, y, w, h, opts)
-  if not T.panel_open[id] then return { open = false } end
+  -- a bare panel (no window, e.g. gear.toast's) is open until it is hidden; a window only when shown
+  if not T.panel_open[id] and not (opts and opts.bare and T.panel_open[id] ~= false) then return { open = false } end
   return { open = true, x = x, y = y, w = w, h = h, content_x = x + 8, content_y = y + 24, content_w = w - 16, content_h = h - 32 }
 end
 ui.show_panel = function(id, open) T.panel_open[id] = open end
 ui.panel_open = function(id) return T.panel_open[id] == true end
+ui.toggle_panel = function(id) T.panel_open[id] = not T.panel_open[id]; return T.panel_open[id] end
+ui.edit_mode = function() return false end
 gear = strict('gear', {
   config = { page_size = 12 }, ui = ui,
   settings = strict('settings', { get = function(id) local v = T.settings[id]; return v end }),
-  keys = strict('keys', { on = function(id, fn) T.keys[id] = fn end }),
+  keys = strict('keys', { on = function(id, fn) T.keys[id] = fn end, label = function(id) return 'Ctrl+K' end }),
   time = function() return T.now end,
   after = function(s, fn) T.timers[#T.timers + 1] = { at = T.now + s, fn = fn } end,
   every = function(s, fn) T.timers[#T.timers + 1] = { at = T.now + s, every = s, fn = fn } end,
@@ -47,6 +50,9 @@ gear = strict('gear', {
   save = function(name, text) T.files[name] = text; return true end,
   json = strict('json', { encode = function(v) T.encoded = v; return 'JSON:' .. tostring(v) end, decode = function(t) return T.encoded end }),
   on = function(event, fn) T.handlers[event] = T.handlers[event] or {}; table.insert(T.handlers[event], fn) end,
+  guard = function(where, fn) return fn end,
+  log = function(...) end,
+  mod = { id = 'mock', name = 'Mock' },
 })
 local net = strict('net', {})
 net.supported = function() return T.supported end

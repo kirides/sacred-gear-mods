@@ -34,11 +34,7 @@ local layout_cache = setmetatable({}, {__mode = 'k'})   -- entry -> {w, fs, rows
 local view = {tab = 1, player = 1, unread = {}, minimized = false, stick = true, new_below = 0, last_count = 0}
 local loot = {seen = {}, baseline = true, t = 0, clock = 0}
 
-local function setting(id, default)
-    local ok, v = pcall(S.get, id)
-    if ok and v ~= nil then return v end
-    return default
-end
+local function setting(id, default) return S.get(id, default) end
 
 local function stamp()
     return os.date('%H:%M')
