@@ -5,7 +5,7 @@ their data in the game; three work alone.
 
 | Mod (`id`) | Needs | What | Hotkey (default) | Doc |
 |---|---|---|---|---|
-| `bounty` | server `bounty_board.lua` | Bounty board panel and a small tracker | **Ctrl+J** | [ServerMods.md](ServerMods.md#bounty--bounty-board) |
+| `bounty` | nothing in single player; server `bounty_board.lua` in network games | Bounty board panel and a small tracker | **Ctrl+J** | [ServerMods.md](ServerMods.md#bounty--bounty-board) |
 | `achievements` | server `achievements.lua` | Toasts and a panel for achievements and the login streak | **Ctrl+G** | [ServerMods.md](ServerMods.md#achievements--achievements-and-login-streak) |
 | `serverfeed` | server `rare_drops.lua`, `graveyard.lua` | Rare drops and hero deaths as lines on screen, a list of the latest | **Ctrl+Y** | [ServerMods.md](ServerMods.md#serverfeed--server-feed) |
 | `buildsharer` | server `build_sharer.lua` | Publish and browse hero builds | **Ctrl+K** | [ServerMods.md](ServerMods.md#buildsharer--build-sharer) |
@@ -64,8 +64,8 @@ mod.
 
 The five server mods need a server that talks custom net messages (`gear.net`): the SacredEngineRemake game server with the
 script. In single player, on the original `GameServer.exe` (it drops the handshake) or on a server without the script they stay
-idle; the panels of `bounty`, `achievements`, `buildsharer` and `questhelper` say so ("This server has no ..."). `serverfeed` shows
-nothing.
+idle; the panels of `achievements`, `buildsharer` and `questhelper` say so ("This server has no ..."). `serverfeed` shows
+nothing. `bounty` is the exception: in single player it keeps its own board and needs no server.
 
 ## Screenshots
 
