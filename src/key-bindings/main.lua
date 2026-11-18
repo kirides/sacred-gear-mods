@@ -69,24 +69,36 @@ gear.on('skillslot.select', function(index)
     if DEBUG then gear.log('slot selected ' .. tostring(index)) end
 end)
 
+-- Whether the cursor is over an open window of the game or a mod panel (both in layout coordinates, like the cursor).
+local HUD = {TASKBAR = true, MERC = true, TEXTLINES = true, CONSOLE = true, NETPORTRAIT = true}
 local function over_window()
-    if gear.ui.over_ui() then return true end
+    if gear.ui.over_ui() then return 'a mod panel' end
     local x, y = gear.ui.mouse()
     for _, w in ipairs(gear.ui.windows()) do
-        local n = w.name:upper()
-        if w.drawn and w.visible and not (n:find('TASKBAR', 1, true) or n:find('MERC', 1, true) or n:find('TEXTLINES', 1, true) or n:find('CONSOLE', 1, true)) then
-            local r = w.bounds or {x = w.x + w.frame_x, y = w.y + w.frame_y, w = w.width, h = w.height}
-            if x >= r.x and x < r.x + r.w and y >= r.y and y < r.y + r.h then return true end
+        local hud = false
+        for name in pairs(HUD) do
+            if w.name:upper():find(name, 1, true) then hud = true end
+        end
+        if w.drawn and w.visible and not hud and w.width > 0 and w.height > 0 then
+            if x >= w.x and x < w.x + w.width and y >= w.y and y < w.y + w.height then return w.name end
         end
     end
-    return false
+    return nil
 end
 
 local function cast()
     if not gear.settings.get('quickcast') then return end
-    if not gear.settings.get('quickcast_ui') and over_window() then return end
-    gear.game.cursor_click(true)
-    gear.after(0.04, function() gear.game.cursor_click(false) end)
+    if not gear.settings.get('quickcast_ui') then
+        local over = over_window()
+        if over then
+            gear.log('quick cast: not cast, the cursor is over ' .. over)
+            return
+        end
+    end
+    if DEBUG then gear.log('quick cast: click') end
+    local ok = gear.game.cursor_click(true)
+    gear.after(0.06, function() gear.game.cursor_click(false) end)
+    if not ok then gear.log('quick cast: the game did not take the click') end
 end
 
 gear.input.on(function(id, down, repeating)
@@ -96,9 +108,9 @@ gear.input.on(function(id, down, repeating)
         local t0 = gear.time()
         while selected == before and gear.time() - t0 < 0.25 do gear.wait(0.02) end
         if selected ~= before then
-            gear.wait(0.03)
+            gear.wait(0.08)
             cast()
-        elseif DEBUG then
+        else
             gear.log('quick cast ' .. id .. ': the slot was not selected, no cast')
         end
     end)
