@@ -13,7 +13,7 @@ local C = ui.COLORS
 local WND_GAME, WND_MENUS = 'UI_WND_SAVEGAME', 'UI_MENU_LOADGAME'
 local LAYER = 'top'
 local ROW_H, THUMB_W, THUMB_H = 54, 64, 48
-local NAME_MAX = 60     -- the engine keeps 60 ASCII characters of a savegame's name
+local NAME_MAX = 60     -- the engine keeps 60 characters of a savegame's name (Windows-1252: umlauts and the like)
 
 local CLASS_LABEL = {
     seraphim = 'Seraphim', gladiator = 'Gladiator', battlemage = 'Battle Mage', darkelf = 'Dark Elf',
@@ -22,6 +22,7 @@ local CLASS_LABEL = {
 local CLASS_ORDER = {'seraphim', 'gladiator', 'battlemage', 'darkelf', 'woodelf', 'vampiress', 'dwarf', 'daemon'}
 local SORTS = {{id = 'newest', label = 'Newest first'}, {id = 'file', label = 'By file name'}}
 
+local osk, name_row     -- the on-screen keyboard and the name row (below the list's helpers)
 local view = {
     open = nil,         -- the replaced window that is open (WND_GAME / WND_MENUS), nil: closed
     mode = 'save',      -- 'load' | 'save' (in the menus always 'load')
@@ -35,7 +36,25 @@ local view = {
     confirm = nil,      -- {text, yes = fn}: the question shown in place of the buttons
     message = nil, message_ok = false, message_until = 0,
     follow = false,     -- scroll the selection into view on the next draw
+    name = '',          -- the name the next save gets (save mode); the player may type it
+    name_edited = false, name_for = nil,  -- typed by the player / the selection the default name was made for
+    osk = nil,          -- the on-screen keyboard is open: {shift = bool}
 }
+
+-- UTF-8: the number of characters, and the text without its last one.
+local function utf8_len(text)
+    local _, n = text:gsub('[^\128-\191]', '')
+    return n
+end
+local function utf8_pop(text)
+    local n = #text
+    while n > 0 do
+        local b = text:byte(n)
+        n = n - 1
+        if b < 0x80 or b >= 0xC0 then break end
+    end
+    return text:sub(1, n)
+end
 
 ---------------------------------------------------------------------------------------------------------------
 -- Helpers
@@ -188,7 +207,7 @@ local function free_slot()
     end
 end
 
-local function save_name()
+local function default_name()
     local pattern = S.get('save_name')
     if type(pattern) ~= 'string' or pattern == '' then pattern = '%hero% %Y-%m-%d %H:%M' end
     local h = current_hero()
@@ -197,8 +216,29 @@ local function save_name()
     local name = pattern:gsub('%%hero%%', function() return hero end)
         :gsub('%%level%%', function() return tostring(h and h.level or '') end)
     name = os.date(name)
-    name = name:gsub('[^\32-\126]', '?')
-    return name:sub(1, NAME_MAX)
+    while utf8_len(name) > NAME_MAX do name = utf8_pop(name) end
+    return name
+end
+
+-- A savegame's name that is worth keeping when it is overwritten: not empty, not the game's "<empty>" text.
+local function real_name(s)
+    return s and s.name ~= '' and not s.name:match('^<.*>$') and s.name ~= 'QUICKSAVE' and s.name or nil
+end
+
+-- The name field follows the selection until the player types: the overwritten savegame's name, else a new one.
+local function sync_name()
+    if view.name_edited or view.name_for == view.sel then return end
+    view.name_for = view.sel
+    local s = view.sel ~= 'new' and find(view.sel) or nil
+    view.name = real_name(s) or default_name()
+end
+
+local function add_to_name(text)
+    for ch in text:gmatch('[%z\1-\127\194-\244][\128-\191]*') do
+        if utf8_len(view.name) >= NAME_MAX then break end
+        view.name = view.name .. ch
+        view.name_edited = true
+    end
 end
 
 ---------------------------------------------------------------------------------------------------------------
@@ -216,7 +256,9 @@ local function do_load(s)
 end
 
 local function do_save(slot)
-    local ok, err = game.save(slot, save_name(), {window = true})
+    local name = view.name:match('^%s*(.-)%s*$')
+    if name == '' then name = default_name() end
+    local ok, err = game.save(slot, name, {window = true})
     if ok then
         view.note = {text = ('Saved to %s'):format(('GAME%02d.PAK'):format(slot)), slot = slot}
     else
@@ -387,6 +429,7 @@ local function toolbar(x, y, w)
             view.mode = i == 1 and 'load' or 'save'
             view.game_mode = view.mode
             view.confirm = nil
+            view.osk = nil
             if view.mode == 'save' then view.sel = 'new' end
             apply_filters()
         end
@@ -436,6 +479,59 @@ local function buttons(x, y, w)
     end
 end
 
+-- The name of the savegame to write: typed straight in (the keys go to it while the screen is open in save mode),
+-- or with the on-screen keyboard (for a controller).
+function name_row(x, y, w)
+    sync_name()
+    ui.text('Name', x, y, L({size = 13, height = 24, valign = 'middle', color = C.text_dim}))
+    local fx, fw = x + 50, w - 50 - 130
+    ui.rect(fx, y, fw, 24, 0xF0202030, L())
+    ui.frame(fx, y, fw, 24, C.edge, 1, L())
+    local caret = (not view.confirm and math.floor(gear.time() * 2) % 2 == 0) and '|' or ''
+    ui.text(fit(view.name, fw - 16, 13) .. caret, fx + 6, y, L({size = 13, height = 24, valign = 'middle'}))
+    if ui.button('kbd', x + w - 120, y, 120, 24, view.osk and 'Close keyboard' or 'Keyboard',
+        L({tooltip = 'Type the name with an on-screen keyboard (for a controller)'})) then
+        view.osk = not view.osk and {shift = false} or nil
+    end
+end
+
+local OSK_ROWS = {
+    {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'ß'},
+    {'q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'ü'},
+    {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ö', 'ä'},
+    {'y', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '-', '!'},
+}
+local OSK_UPPER = {['ü'] = 'Ü', ['ö'] = 'Ö', ['ä'] = 'Ä', [','] = ';', ['.'] = ':', ['-'] = '_', ['!'] = '?'}
+
+-- The on-screen keyboard, in place of the list.
+function osk(x, y, w, h)
+    local o = view.osk
+    ui.rect(x, y, w, h, 0xC0101018, L())
+    ui.text('On-screen keyboard: the name of the savegame', x + 8, y + 6, L({size = 13, color = C.accent}))
+    local cols, gap = 11, 4
+    local kw = math.floor((w - 16 - (cols - 1) * gap) / cols)
+    local ky = y + 32
+    for r, keys in ipairs(OSK_ROWS) do
+        for i, k in ipairs(keys) do
+            local label = k
+            if o.shift then label = OSK_UPPER[k] or k:upper() end
+            if ui.button(('osk%d_%d'):format(r, i), x + 8 + (i - 1) * (kw + gap), ky, kw, 30, label, L()) then
+                add_to_name(label)
+                o.shift = false
+            end
+        end
+        ky = ky + 36
+    end
+    local bw = math.floor((w - 16 - 3 * gap) / 4)
+    if ui.button('osk_shift', x + 8, ky, bw, 30, o.shift and 'SHIFT' or 'Shift', L()) then o.shift = not o.shift end
+    if ui.button('osk_space', x + 8 + (bw + gap), ky, bw, 30, 'Space', L()) then add_to_name(' ') end
+    if ui.button('osk_back', x + 8 + 2 * (bw + gap), ky, bw, 30, 'Backspace', L()) then
+        view.name = utf8_pop(view.name)
+        view.name_edited = true
+    end
+    if ui.button('osk_done', x + 8 + 3 * (bw + gap), ky, bw, 30, 'Done', L()) then view.osk = nil end
+end
+
 local function screen(preview)
     local l, t, r, b = ui.screen()
     if not preview then
@@ -463,6 +559,7 @@ local function screen(preview)
     local bottom = 34
     local pw = math.floor(math.max(200, math.min(300, w * 0.36)))
     local lw = w - pw - 14
+    if view.mode == 'save' then bottom = bottom + 32 end     -- the name row
     local lh = h - 32 - bottom
     -- The list.
     local rows = {}
@@ -479,6 +576,13 @@ local function screen(preview)
                 break
             end
         end
+    end
+    if view.osk then
+        osk(x, y, lw, lh)
+        details(x + lw + 14, y, pw, view.sel ~= 'new' and find(view.sel) or nil)
+        name_row(x, y + lh + 8, w)
+        buttons(x, y + lh + 40, w)
+        return
     end
     local area = ui.scroll_begin('list', x, y, lw, lh, L({step = ROW_H}))
     local cy = area.content_y
@@ -499,7 +603,12 @@ local function screen(preview)
     ui.scroll_end(#rows * ROW_H)
     -- The selected savegame.
     details(x + lw + 14, y, pw, view.sel ~= 'new' and find(view.sel) or nil)
-    buttons(x, y + lh + 8, w)
+    if view.mode == 'save' then
+        name_row(x, y + lh + 8, w)
+        buttons(x, y + lh + 40, w)
+    else
+        buttons(x, y + lh + 8, w)
+    end
 end
 
 ---------------------------------------------------------------------------------------------------------------
@@ -515,6 +624,7 @@ local function opened(name)
         if s.id == S.get('sort') then view.sort_i = i end
     end
     view.sel = nil
+    view.name, view.name_edited, view.name_for, view.osk = '', false, nil, nil
     refresh()
     if name == WND_GAME and S.get('current_hero') then
         local h = current_hero()
@@ -539,8 +649,24 @@ end
 local function input()
     local back = ui.back_pressed() or ui.key_pressed('escape')
     if back then
-        if view.confirm then view.confirm = nil else close() end
+        if view.confirm then view.confirm = nil elseif view.osk then view.osk = nil else close() end
         return
+    end
+    -- Typing goes into the name (save mode).
+    local typed = ui.typed()
+    if view.mode == 'save' and not view.confirm then
+        sync_name()
+        if typed ~= '' then add_to_name(typed) end
+        if ui.key_down('backspace') then
+            local now = gear.time()
+            if not view.back_since or now - view.back_since > 0.45 then
+                view.back_since = view.back_since and now - 0.4 or now
+                view.name = utf8_pop(view.name)
+                view.name_edited = true
+            end
+        else
+            view.back_since = nil
+        end
     end
     if view.confirm then
         if ui.key_pressed('enter') then
@@ -582,6 +708,7 @@ gear.on('better-saveload.query', function(out)
     out.count, out.shown = #view.all, #view.shown
     out.heroes, out.classes, out.hero_i, out.class_i, out.sort = view.heroes, view.classes, view.hero_i, view.class_i, sort_id()
     out.message = view.message
+    out.name, out.osk = view.name, view.osk ~= nil
     out.order = {}
     for i, s in ipairs(view.shown) do out.order[i] = s.slot end
 end)
@@ -592,6 +719,7 @@ gear.on('better-saveload.set', function(t)
     if t.sort_i then view.sort_i = t.sort_i end
     if t.mode then view.mode = t.mode end
     if t.sel then view.sel = t.sel end
+    if t.name then view.name, view.name_edited = t.name, true end
     apply_filters()
 end)
 

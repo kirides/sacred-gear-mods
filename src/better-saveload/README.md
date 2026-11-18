@@ -8,11 +8,14 @@ start menu's *Load game* screen:
 - **filters** by character and by class;
 - **order**: newest first, or by file name as the game lists them;
 - **Load**, **Save** (a new savegame or overwriting one), **Delete**, each with a question first where something would
-  be lost.
+  be lost;
+- **your own savegame names**: type the name while the Save tab is open (umlauts work), or use the on-screen keyboard
+  (*Keyboard*, for the controller). It starts as the overwritten savegame's name, or the *Name of new savegames*
+  setting.
 
 ![The savegame screen](../../docs/images/better-saveload.jpg)
 
-Mouse, keyboard (Up / Down, Enter, Delete, Esc) and controller (D-pad, A, B) all work. The screen is a panel like the
+Mouse, keyboard (typing the name, Backspace, Up / Down, Enter, Delete, Esc) and controller (D-pad, A, B) all work. The screen is a panel like the
 other mods' panels: move and resize it with the layout editor (Alt + *Edit layout* in game), and it scales with the UI.
 
 ## Settings (Mods screen, F11)
@@ -42,5 +45,5 @@ Sacred.exe -gear-auto -gear-instance=saveload -gear-mods=better-saveload,better-
 ```
 
 It opens the start menu's Load game screen (the 5th entry), checks the list, filters, order, keyboard and controller,
-that the game's screen comes back when the mod stops drawing, loads a savegame, then in game saves a new one, deletes
+that the game's screen comes back when the mod stops drawing, loads a savegame, then in game types a name (and the on-screen keyboard), saves a new savegame with an umlaut name, deletes
 it and closes the screen with Back, Esc and B. Results: `GearAutomation\saveload\saveload.json`.
