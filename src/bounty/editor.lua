@@ -5,21 +5,11 @@
 
 local ui = gear.ui
 local customs = require('customs')
+local creatures = require('creatures')
 
 local E = {}
 
 local GOLD, GREY, GREEN, RED = 0xFFFFD780, 0xFFB0B0B0, 0xFF80FF80, 0xFFFF8080
-
--- Creature words that fill the field: whole words of creature type names (ORC_WARRIOR.GRN -> orc, warrior).
-local PRESETS = {
-    {'Pick a group...', nil},
-    {'Any monster', ''},
-    {'Orcs', 'orc'}, {'Undead', 'skeleton, zombie, mummy, ghost'}, {'Spiders', 'spider'}, {'Thieves and pirates', 'thief, pirate'},
-    {'Wolves, bears, boars', 'wolf, bear, boar'}, {'Trolls and ogres', 'troll, ogre, minotaur'},
-    {'Demons and golems', 'demon, gargoyle, golem'}, {'Dragons', 'dragon'}, {'Scorpions and snakes', 'scorpion, snake'},
-}
-local PRESET_NAMES = {}
-for i, p in ipairs(PRESETS) do PRESET_NAMES[i] = p[1] end
 
 local ITEM_MODES = {'No item', 'Random item', 'Random item for my class', 'Chosen items'}
 local MODE_OF = {nil, 'tier', 'class', 'specific'}
@@ -63,13 +53,60 @@ end
 
 local function row_label(text, x, y) ui.text(text, x, y + 3, {color = GREY, size = 12}) end
 
+-- The creature picker: the chosen creatures as buttons (click one to remove it), a dropdown to add one (a group or a single
+-- creature of the game) and a filter for the dropdown. `words` is the list being edited. Returns the height used.
+local picks = {}           -- per picker id: {filter, index}
+local function picker(id, x, y, w, words)
+    local st = picks[id]
+    if not st then st = {filter = '', index = 1} picks[id] = st end
+    local cy = y
+    local cx = x
+    if #words == 0 then
+        ui.text('Any monster', x, cy + 3, {size = 12, color = GREY})
+        cy = cy + 24
+    else
+        local remove
+        for i, word in ipairs(words) do
+            local label = creatures.label(word) .. '  x'
+            local tw = (ui.text_size(label) or (#label * 7)) + 14
+            if cx + tw > x + w and cx > x then cx = x cy = cy + 24 end
+            if ui.button(id .. ':w' .. i, cx, cy, tw, 20, label, {tooltip = 'Click to remove'}) then remove = i end
+            cx = cx + tw + 4
+        end
+        if remove then table.remove(words, remove) end
+        cy = cy + 26
+    end
+    local labels, entries = creatures.options(st.filter)
+    if st.index > #labels then st.index = 1 end
+    local ch, idx = ui.dropdown(id .. ':add', x, cy, w - 130, labels, st.index, {max_rows = 12})
+    if ch and entries[idx] then
+        for _, word in ipairs(entries[idx].words) do
+            local have = false
+            for _, v in ipairs(words) do if v == word then have = true end end
+            if not have and #words < 30 then words[#words + 1] = word end
+        end
+        st.index = 1
+    elseif ch then
+        st.index = 1
+    end
+    ui.text('Filter', x + w - 124, cy + 3, {size = 11, color = GREY})
+    st.filter = field(id .. ':filter', x + w - 84, cy, 84, st.filter, 'Type part of a creature name to shorten the list')
+    return cy + 24 - y
+end
+
+local function copy(list)
+    local out = {}
+    for i, v in ipairs(list) do out[i] = v end
+    return out
+end
+
 local function new_form(def)
     local d = def or {id = customs.new_id(), title = 'My bounty', names = {'orc'}, target = 10, minutes = 0, min_level = 1,
         gold = 500, trigger = {on = false, names = {}, count = 10, cooldown = 30}}
     local f = {
-        id = d.id, title = d.title, names = table.concat(d.names, ', '), target = d.target, minutes = d.minutes,
-        min_level = d.min_level, gold = d.gold, trigger_on = d.trigger.on, trigger_names = table.concat(d.trigger.names, ', '),
-        count = d.trigger.count, cooldown = d.trigger.cooldown, preset = 1, search = '', chosen = {}, tier = 1, mode = 1, pick = 1,
+        id = d.id, title = d.title, words = copy(d.names), target = d.target, minutes = d.minutes,
+        min_level = d.min_level, gold = d.gold, trigger_on = d.trigger.on, trigger_words = copy(d.trigger.names),
+        count = d.trigger.count, cooldown = d.trigger.cooldown, search = '', chosen = {}, tier = 1, mode = 1, pick = 1,
     }
     if d.item then
         f.mode = d.item.mode == 'tier' and 2 or d.item.mode == 'class' and 3 or 4
@@ -83,9 +120,9 @@ local function def_of(f)
     local item = nil
     if MODE_OF[f.mode] then item = {mode = MODE_OF[f.mode], tier = f.tier, types = f.chosen} end
     return {
-        id = f.id, title = f.title, names = words_of(f.names), target = f.target, minutes = f.minutes, min_level = f.min_level,
+        id = f.id, title = f.title, names = f.words, target = f.target, minutes = f.minutes, min_level = f.min_level,
         gold = f.gold, item = item,
-        trigger = {on = f.trigger_on, names = words_of(f.trigger_names ~= '' and f.trigger_names or f.names), count = f.count,
+        trigger = {on = f.trigger_on, names = #f.trigger_words > 0 and f.trigger_words or f.words, count = f.count,
             cooldown = f.cooldown},
     }
 end
@@ -113,15 +150,8 @@ local function draw_form(x, y, w, h)
     local cy = y
     row_label('Title', lx, cy)
     f.title = field('title', fx, cy, fw, f.title); cy = cy + 26
-    row_label('Creatures (words)', lx, cy)
-    f.names = field('names', fx, cy, fw - 160, f.names, 'Words of the creature names, e.g. orc, skeleton. Empty: every monster counts.')
-    local ch, pi = ui.dropdown('preset', fx + fw - 154, cy, 154, PRESET_NAMES, f.preset)
-    if ch then
-        f.preset = pi
-        if PRESETS[pi][2] then f.names = PRESETS[pi][2] end
-        f.preset = 1
-    end
-    cy = cy + 26
+    row_label('Creatures', lx, cy)
+    cy = cy + picker('names', fx, cy, fw, f.words) + 4
     row_label('How many', lx, cy); f.target = slider('target', fx, cy, fw, 1, 200, f.target, 1, '%d'); cy = cy + 24
     row_label('Time limit (0 = none)', lx, cy); f.minutes = slider('minutes', fx, cy, fw, 0, 240, f.minutes, 5, '%d'); cy = cy + 24
     row_label('Minimum level', lx, cy); f.min_level = slider('minlevel', fx, cy, fw, 1, 100, f.min_level, 1, '%d'); cy = cy + 24
@@ -165,8 +195,8 @@ local function draw_form(x, y, w, h)
     cy = cy + 24
     if f.trigger_on then
         row_label('Trigger creatures', lx, cy)
-        f.trigger_names = field('trignames', fx, cy, fw, f.trigger_names, 'Empty: the bounty\'s own creatures')
-        cy = cy + 26
+        ui.text('(empty: as the bounty)', lx, cy + 18, {size = 10, color = GREY})
+        cy = cy + picker('trig', fx, cy, fw, f.trigger_words) + 4
         row_label('Kills to start', lx, cy); f.count = slider('count', fx, cy, fw, 1, 100, f.count, 1, '%d'); cy = cy + 24
         row_label('Cooldown (min)', lx, cy); f.cooldown = slider('cool', fx, cy, fw, 0, 240, f.cooldown, 5, '%d'); cy = cy + 26
     end
@@ -222,7 +252,7 @@ end
 
 -- hooks: active(def_id) -> bounty or nil, start(def), stop(def_id), trigger_state(def_id) -> cooldown, count
 function E.draw(hooks)
-    local p = ui.panel('editor', 'Bounty editor', 240, 60, 560, 470, {resizable = true, min_width = 520, min_height = 300})
+    local p = ui.panel('editor', 'Bounty editor', 240, 40, 560, 600, {resizable = true, min_width = 520, min_height = 300})
     if not p.open then
         if focus then focus = nil ui.capture_keys(false) end
         return

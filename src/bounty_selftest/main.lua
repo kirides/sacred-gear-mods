@@ -65,7 +65,7 @@ gear.task(function()
         gear.emit('bounty.test', {op = 'open_form', def = 'orc-challenge'})
         gear.wait(1)
         if gear.config.type_test then
-            A.click(780, 321)
+            A.click(780, 321) -- (type test)
             gear.wait(0.5)
             A.screenshot('editor-click')
             A.type('sword')
@@ -73,6 +73,13 @@ gear.task(function()
             A.screenshot('editor-search')
         end
         A.screenshot('editor-form')
+        -- the creature picker: open the dropdown, pick the third entry, look at the chips
+        A.click(800, 152)
+        gear.wait(1)
+        A.screenshot('editor-dropdown')
+        A.click(800, 152 + 22 * 4)
+        gear.wait(1)
+        A.screenshot('editor-added')
         return A.quit(0)
     end
     if gear.config.phase == 'custom' then
