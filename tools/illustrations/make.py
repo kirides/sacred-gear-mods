@@ -51,20 +51,12 @@ def line(text, x, y, color, anchor='start', opacity=1):
 
 
 M = {}
-M['achievements'] = (toast('Achievement unlocked: Monster Hunter', 12, 320) + toast('Daily login: day 5, +250 gold', 48, 290)
-                     + panel(120, 96, 240, 154, 'Achievements', [('Monster Hunter: done', GREEN), 'Deep Delver: 3 / 5', 'Gold Hoarder: 4200 / 10000', ('Login streak: 5 days', YEL)]))
 M['auction-house'] = (panel(30, 24, 420, 222, 'Auction house', [('Item / seller / price', DIM), 'Ancient Sword of Fire - Ria - 12 400', 'Helm of the Warden - Kell - 3 150', 'Ring of Quickness - Tomm - 870'])
                       + button(44, 206, 90, 'Buy', True) + button(144, 206, 90, 'Sell'))
-M['bounty'] = (panel(60, 30, 360, 130, 'Bounty board', ['Hunt 20 wolves: 12 / 20, 1 h 20 min left', 'Slay the orc chief: 0 / 1, 3 h 05 min left', ('Reward: 500 gold', YEL)])
-               + panel(300, 180, 170, 70, None, ['Wolves 12 / 20', 'Orc chief 0 / 1']))
-M['buildsharer'] = (panel(40, 20, 400, 230, 'Build sharer', [('Title / class / level', DIM), 'Fire storm - Battle Mage - 41', 'Tank for two - Gladiator - 37', 'Bow and traps - Wood Elf - 44'])
-                    + button(54, 206, 110, 'Publish mine', True) + button(174, 206, 80, 'Open'))
 M['lootlog'] = panel(50, 20, 380, 230, 'Loot log', [('Quality v   Category v   Kind v', DIM), ('Dropped: Ring of Quickness', BLUE), ('Picked up: Helm of the Warden', YEL), ('Dropped: Sword of Dawn (set)', GREEN), ('Picked up: Amulet of Stone', BLUE), ], 13, 28)
 M['questhelper'] = panel(50, 20, 380, 230, 'Quest helper', [('In your backpack', DIM), 'Old Key (quest item)', ('Quest records', DIM), 'The Lost Caravan: step 2', ('Hint: look near the east bridge', DIM)], 13, 30)
 M['realms'] = (panel(60, 40, 360, 150, 'Mods > Realm', [('Online play server (Closed / Open Internet)', DIM)])
                + f'<rect x="74" y="96" width="250" height="26" rx="3" fill="#2a2018" stroke="{GOLD}"/>' + line('Private realm (realm.example.com)', 86, 114, TEXT) + line('v', 308, 114, GOLD) + line('Host: realm.example.com:7066', 74, 150, DIM))
-M['serverfeed'] = (line('Ria found Ancient Sword of Fire!', 468, 190, YEL, 'end') + line('Kell has fallen in the Ice Caves', 468, 212, RED, 'end')
-                   + line('Tomm found Ring of Quickness!', 468, 234, YEL, 'end'))
 M['twitch_integration'] = (box(20, 95, 120, 60, 'Twitch connector') + box(180, 95, 120, 60, 'Twitch base mod') + box(340, 95, 120, 60, 'Action mods')
                            + f'<path d="M140 125 h40 M300 125 h40" stroke="{GOLD}" stroke-width="2"/>'
                            + line('rewards, bits and chat commands become actions in the game', 240, 200, DIM, 'middle'))

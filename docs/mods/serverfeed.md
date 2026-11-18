@@ -1,8 +1,6 @@
 # Server feed
 
-![Server feed](../images/serverfeed.svg)
-
-*Illustration with example values.*
+![Server feed](../images/serverfeed.jpg)
 
 Shows announcements of the server on screen: when somebody finds a rare or unique item and when a hero dies. A list keeps the latest of both.
 

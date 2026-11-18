@@ -16,3 +16,15 @@ pictures and leaves BMP files in `GearAutomation\shot-<name>\`. Convert them to 
 |---|---|
 | `shot-autosave` | `autosave-note.bmp`: a 3-second interval, a shot when the note shows |
 | `shot-stash-deposit`, `shot-stash-ui` | `chest-stash.bmp`, `stash-tip-stash.bmp`: the stash self tests (`deposit`, `ui`); the README crops the right half (the chest window is only shown, not filled) |
+
+## More pictures (`tools/readme-shots`, phases of `main.lua`)
+
+Run a phase with `-gear-mods=<mod>,shots` after writing `mods\shots\config.lua` (`return {phase = '...'}`):
+`lootfilter`, `modscreen` (Mods screen, `clicks = {{x, y}, ...}` open a mod's page), `fight` (zombies/spiders spawned next to
+the hero: damage meter, session tracker), `twitch` (a `TWI_Raid` for the Twitch actions) and `server`
+(`which = 'achievements' | 'bounty' | 'buildsharer' | 'questhelper' | 'serverfeed'`).
+
+The `server` pictures were taken **without a game server**: the script hands what the server's Lua script would send to the
+mod's own net channel handlers, so the real mod draws it, but the numbers and names are examples. Pictures that are still
+drawn illustrations (`docs/images/*.svg`, made by `tools/illustrations/make.py`): loot log, quest helper, realm picker,
+auction house and the Twitch base mod.

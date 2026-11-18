@@ -1,8 +1,6 @@
 # Achievements and login streak
 
-![Achievements and login streak](../images/achievements.svg)
-
-*Illustration with example values.*
+![Achievements and login streak](../images/achievements.jpg)
 
 Pops up a short message at the top of the screen when you unlock an achievement or collect your daily login reward, and has a panel that lists all achievements with your progress.
 

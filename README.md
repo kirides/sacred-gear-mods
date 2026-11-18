@@ -26,11 +26,11 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Auction house**](src/auction-house/README.md) | <img src="docs/images/auction-house.svg" width="220" alt="Auction house"> | Buy and sell items between players. Needs a multiplayer game (useless in single player). |
 | [**World events**](src/world-events/README.md) | <img src="docs/images/world-events.jpg" width="220" alt="World events"> | A progress bar for the server's world event. |
 | [**Sector tools**](src/sector-tools/README.md) | <img src="docs/images/sector-tools.jpg" width="220" alt="Sector tools"> | For server admins: sector and grid cell, recording areas. Not in the release zip. |
-| [**Achievements**](docs/mods/achievements.md) | <img src="docs/images/achievements.svg" width="220" alt="Achievements"> | Messages for achievements and the daily login reward. Needs a server script. |
-| [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.svg" width="220" alt="Bounty board"> | The server's bounties and your progress. F8. Needs a server script. |
-| [**Build sharer**](docs/mods/buildsharer.md) | <img src="docs/images/buildsharer.svg" width="220" alt="Build sharer"> | Publish your build and browse the builds of others. F7. Needs a server script. |
+| [**Achievements**](docs/mods/achievements.md) | <img src="docs/images/achievements.jpg" width="220" alt="Achievements"> | Messages for achievements and the daily login reward. Needs a server script. |
+| [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.jpg" width="220" alt="Bounty board"> | The server's bounties and your progress. F8. Needs a server script. |
+| [**Build sharer**](docs/mods/buildsharer.md) | <img src="docs/images/buildsharer.jpg" width="220" alt="Build sharer"> | Publish your build and browse the builds of others. F7. Needs a server script. |
 | [**Quest helper**](docs/mods/questhelper.md) | <img src="docs/images/questhelper.svg" width="220" alt="Quest helper"> | Quest items and the server's quest records with hints. F8. Needs a server script. |
-| [**Server feed**](docs/mods/serverfeed.md) | <img src="docs/images/serverfeed.svg" width="220" alt="Server feed"> | Rare finds and hero deaths on screen. Needs a server script. |
+| [**Server feed**](docs/mods/serverfeed.md) | <img src="docs/images/serverfeed.jpg" width="220" alt="Server feed"> | Rare finds and hero deaths on screen. Needs a server script. |
 | [**Twitch Integration**](docs/mods/twitch_integration.md) | <img src="docs/images/twitch_integration.svg" width="220" alt="Twitch Integration"> | Turns rewards, bits and chat into actions in your game. Base mod. |
 | [**Twitch Integration: actions**](docs/mods/twi_sacred.md) | <img src="docs/images/twi_sacred.jpg" width="220" alt="Twitch Integration: actions"> | Viewers spawn monsters, give gold, heal or teleport your hero. |
 

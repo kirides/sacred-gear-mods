@@ -58,6 +58,53 @@ gear.task(function()
         gear.wait(1)
         A.screenshot('twitch')
         A.release()
+    elseif phase == 'server' then
+        -- The server mods without a server: what the game server's script would send is handed to the mod's own channel
+        -- handlers (the real mod draws it). config.which: achievements, bounty, buildsharer, questhelper, serverfeed.
+        local function say(name, payload)
+            local ch = gear.net.channel(name)
+            local list = {}
+            for i, fn in ipairs(ch.handlers) do list[i] = fn end
+            for _, fn in ipairs(list) do fn({slot = 0}, payload) end
+        end
+        local w = gear.config.which
+        if w == 'achievements' then
+            say('achievements:sync', {op = 'state', streak = 5, best = 9, days = 23, claimed = true, next = '250 gold', ach = {
+                {name = 'Monster Hunter', desc = 'Kill 100 monsters', done = true},
+                {name = 'Deep Delver', desc = 'Reach the second dungeon level', need = 5, have = 3},
+                {name = 'Gold Hoarder', desc = 'Carry 10000 gold', need = 10000, have = 4200},
+                {name = 'Collector', desc = 'Find 10 magic items', need = 10, have = 7},
+            }})
+            say('achievements:sync', {op = 'unlock', name = 'Monster Hunter', desc = 'Kill 100 monsters', reward = '500 gold'})
+            if gear.config.press then A.press('f7') end
+        elseif w == 'bounty' then
+            say('bounty:state', {v = 1, bounties = {
+                {title = 'Wolf hunt', text = 'Kill wolves near the village', n = 12, target = 20, left = 4800, reward = '500 gold'},
+                {title = 'The orc chief', text = 'Slay the orc chief', n = 0, target = 1, left = 11100, reward = 'A rare weapon', level = 10},
+                {title = 'Pest control', text = 'Kill giant spiders', n = 8, target = 8, done = true, left = 600, reward = '200 gold'},
+            }})
+            if gear.config.press then A.press('f8') end
+        elseif w == 'buildsharer' then
+            say('buildsharer', {op = 'list', total = 3, page = 1, pages = 1, builds = {
+                {id = 'b1', name = 'Ria', class_name = 'Seraphim', level = 42, title = 'Fire storm', verified = true},
+                {id = 'b2', name = 'Kell', class_name = 'Gladiator', level = 37, title = 'Tank for two', verified = true},
+                {id = 'b3', name = 'Tomm', class_name = 'Wood Elf', level = 44, title = 'Bow and traps', verified = false},
+            }})
+            if gear.config.press then A.press('f7') end
+        elseif w == 'questhelper' then
+            say('questhelper', {op = 'state', available = true, total = 2, known = 2, catalog = 2, records = {
+                {key = 100, value = 1, name = 'The lost sword', area = 'Ancaria', hint = 'Ask the smith.', label = 'started', known = true},
+                {key = 101, value = 2, name = 'The lost caravan', area = 'Ancaria', hint = 'Look near the east bridge.', label = 'step 2', known = true},
+            }})
+            if gear.config.press then A.press('f8') end
+        elseif w == 'serverfeed' then
+            say('rare_drops:feed', {kind = 'drop', drop = {item = 'Ancient Sword of Fire', tier = 'unique', rarity = 15, by = 'Ria', from = 'Orc chief'}})
+            say('graveyard:feed', {kind = 'death', name = 'Kell', level = 37, by = 'Zombie', killer_kind = 'monster'})
+            say('rare_drops:feed', {kind = 'drop', drop = {item = 'Ring of Quickness', tier = 'rare', rarity = 12, by = 'Tomm'}})
+        end
+        gear.wait(1.5)
+        for _, c in ipairs(gear.config.clicks or {}) do A.click(c[1], c[2]); gear.wait(1) end
+        shot('server-' .. tostring(w))
     elseif phase == 'fight' then
         -- a real fight: zombies spawned next to the hero, the hero attacks them (clicks) and is kept alive.
         -- The damage meter, the loot log and the session tracker record it; one picture of each follows.

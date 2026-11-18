@@ -1,8 +1,6 @@
 # Build sharer
 
-![Build sharer](../images/buildsharer.svg)
-
-*Illustration with example values.*
+![Build sharer](../images/buildsharer.jpg)
 
 Publish your hero's build and browse the builds other players have shared. The server reads your class, level, skills and equipment itself; you only add a title, a note and tags.
 

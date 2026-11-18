@@ -1,8 +1,6 @@
 # Bounty board
 
-![Bounty board](../images/bounty.svg)
-
-*Illustration with example values.*
+![Bounty board](../images/bounty.jpg)
 
 Shows the bounties of the server: what to hunt, how far you are, how much time is left and what you get. A small tracker at the top right keeps your open bounties in view while you play.
 
