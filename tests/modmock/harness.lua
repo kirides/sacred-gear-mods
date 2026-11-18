@@ -42,7 +42,7 @@ ui.edit_mode = function() return false end
 gear = strict('gear', {
   config = { page_size = 12 }, ui = ui,
   settings = strict('settings', { get = function(id) local v = T.settings[id]; return v end }),
-  keys = strict('keys', { on = function(id, fn) T.keys[id] = fn end }),
+  keys = strict('keys', { on = function(id, fn) T.keys[id] = fn end, label = function(id) return 'Ctrl+K' end }),
   time = function() return T.now end,
   after = function(s, fn) T.timers[#T.timers + 1] = { at = T.now + s, fn = fn } end,
   every = function(s, fn) T.timers[#T.timers + 1] = { at = T.now + s, every = s, fn = fn } end,

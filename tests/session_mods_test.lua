@@ -38,7 +38,7 @@ local function make_gear(mod_dir, opts)
 
     local gear = {version = 'test', mod = {id = mod_dir}}
     function gear.on(event, fn) G.handlers[event] = G.handlers[event] or {}; table.insert(G.handlers[event], fn) end
-    gear.keys = {on = function(id, fn) G.keys[id] = fn end}
+    gear.keys = {on = function(id, fn) G.keys[id] = fn end, label = function(id) return 'F' .. tostring(#id) end}
     -- get(id, fallback) as the kernel's: with a fallback, an undeclared id (here: every id when settings_throw) gives it
     gear.settings = {get = function(id, fallback)
         if opts.settings_throw then
