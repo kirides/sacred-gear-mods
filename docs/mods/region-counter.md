@@ -1,0 +1,19 @@
+# Region counter
+
+In Sacred Gold a region sends you its Region Boss quest after a number of kills. The game keeps that countdown in
+memory only: it starts over when you leave the region and is never saved. This mod fixes both.
+
+- **Kills needed (% of vanilla):** 100 is the game's number. 50 halves it, 200 doubles it. Changing it keeps your share
+  of the progress.
+- **Keep progress:** the kills done in every region are kept per hero (`region_kills.json` in the mod's folder) and put
+  back when the game starts a region over. Switched off, the game's own reset applies.
+- **Ctrl+B** shows the regions you have been in with `done / needed`.
+
+## How it works
+
+The mod reads and writes the game's region table through `gear.data.regions` (needs SacredBild with Gear that has it).
+Every half second it compares the game's "kills left" with what it wrote last: lower means kills, higher means the
+game started the region over (the saved progress is written back). After the boss quest comes, the next cycle starts
+from 0.
+
+Not tested in the game yet: the table layout is taken from the game's code and from the Persistent Region Counter mod.
