@@ -17,6 +17,8 @@ local ui, net = gear.ui, gear.net
 
 local localboard = require('localboard')
 local localgame = require('localgame')
+local customs = require('customs')
+local editor = require('editor')
 
 local channel = net and net.channel('bounty:state')
 local board = nil          -- the last payload (the server's, or the local board's)
@@ -55,6 +57,7 @@ gear.on('session.start', function()
     board = nil
     ask(true)
     ui.show_panel('board', false)       -- closed until Ctrl+J
+    ui.show_panel('editor', false)
 end)
 gear.on('session.stop', function()
     if mine then close_mine() end
@@ -113,7 +116,7 @@ local function open_mine()
     local data = text and gear.json.decode(text)
     mine = localboard.load(data, rng)
     local level = hero:level() or 1
-    local posted = mine:fill(level, #mine.list == 0)
+    local posted = gear.settings.get('pool_board') ~= false and mine:fill(level, mine:pool_count() == 0) or {}
     last_tick = gear.time()
     if #posted > 0 then dirty = true end
     refresh()
@@ -127,28 +130,46 @@ local function close_mine()
 end
 
 local function reward(b)
-    local hero = gear.world.hero()
     local parts = {}
     if (b.gold or 0) > 0 and localgame.gold(b.gold) then parts[#parts + 1] = b.gold .. ' gold' end
     if b.item then
         localgame.drop_item(b.item, function(ok)
-            if ok then toast('Bounty reward', 'An item dropped at your feet') end
+            toast(ok and 'Bounty reward' or 'Bounty reward failed', ok and 'An item dropped at your feet' or 'No item could be made')
         end)
         parts[#parts + 1] = 'an item'
     end
     toast('Bounty complete: ' .. b.title, #parts > 0 and ('Reward: ' .. table.concat(parts, ' and ')) or nil)
-    return hero
 end
 
 localgame.on_kill(function(type_name)
     if not mine then return end
     local hero = gear.world.hero()
     local level = hero and hero:level() or 1
-    for _, b in ipairs(mine:kill(localboard.words(type_name), level)) do reward(b) end
+    local words = localboard.words(type_name)
+    for _, b in ipairs(mine:kill(words, level)) do reward(b) end
+    for _, b in ipairs(mine:trigger_kill(customs.defs, words, level)) do toast('Bounty started: ' .. b.title, b.text) end
     dirty = true
     refresh()
     if gear.time() - last_save > 5 then save_mine() end
 end)
+
+local editor_hooks = {
+    active = function(id) return mine and mine:active(id) end,
+    start = function(def)
+        if not mine then return end
+        local b = mine:start(def)
+        toast('Bounty started: ' .. b.title, b.text)
+        dirty = true
+        refresh()
+        save_mine()
+    end,
+    stop = function(id)
+        if mine and mine:stop(id) then dirty = true refresh() save_mine() end
+    end,
+    trigger_state = function(id) if mine then return mine:trigger_state(id) end return 0, 0 end,
+}
+
+customs.load()
 
 gear.every(0.25, function()
     if is_local() and mine then localgame.poll() end
@@ -167,7 +188,13 @@ gear.every(1, function()
     local dt = math.min(3, math.max(0, t - (last_tick or t)))
     last_tick = t
     local gone = mine:tick(dt)
-    local posted = mine:fill(hero:level() or 1, false)
+    local posted = gear.settings.get('pool_board') ~= false and mine:fill(hero:level() or 1, false) or {}
+    if gear.settings.get('pool_board') == false then
+        -- the pool bounties are switched off: only the player's own stay
+        local kept = {}
+        for _, b in ipairs(mine.list) do if b.custom then kept[#kept + 1] = b end end
+        if #kept ~= #mine.list then mine.list, dirty = kept, true end
+    end
     for _, b in ipairs(gone) do
         if not b.done then toast('Bounty ended', b.title) end
     end
@@ -184,23 +211,33 @@ local function draw_toasts()
     local life = 6
     local y = 14
     local keep = {}
-    local TW = 340
+    local TW, PAD, LINE = 360, 12, 15          -- width, padding all around, line height of the text
     for _, t in ipairs(toasts) do
         local age = now - t.born
         if age < life then
             keep[#keep + 1] = t
-            local alpha = math.max(0, math.min(1, (life - age) / 0.6, age / 0.2 + 0.2))
+            local a = math.max(0, math.min(1, (life - age) / 0.6, age / 0.2 + 0.2))
             local x = 512 - TW / 2
-            local th = 24 + 14 * #t.lines
-            ui.rect(x, y, TW, th, ui.rgba(0, 0, 0, math.floor(190 * alpha)), {layer = 'top'})
-            ui.frame(x, y, TW, th, ui.rgba(200, 170, 90, math.floor(230 * alpha)), 1, {layer = 'top'})
-            ui.text(t.title, x + 10, y + 5, {color = ui.rgba(240, 200, 110, math.floor(255 * alpha)), bold = true, layer = 'top'})
-            local ly = y + 24
+            local lines = {}
             for _, line in ipairs(t.lines) do
-                ui.text(line, x + 10, ly, {color = ui.rgba(255, 255, 255, math.floor(230 * alpha)), size = 12, layer = 'top'})
-                ly = ly + 14
+                for _, part in ipairs((ui.text_wrap(line, TW - 2 * PAD - 4, {size = 12}))) do lines[#lines + 1] = part end
             end
-            y = y + th + 6
+            -- title row 18, a gap of 6 and a hairline when there is text, then the lines; PAD above and below
+            local th = PAD + 18 + (#lines > 0 and (8 + #lines * LINE) or 0) + PAD
+            local function alpha(v) return math.floor(v * a) end
+            ui.rect(x, y, TW, th, ui.rgba(12, 10, 8, alpha(215)), {layer = 'top'})
+            ui.rect(x, y, 3, th, ui.rgba(224, 169, 68, alpha(255)), {layer = 'top'})
+            ui.frame(x, y, TW, th, ui.rgba(200, 170, 90, alpha(200)), 1, {layer = 'top'})
+            ui.text(t.title, x + PAD + 4, y + PAD, {color = ui.rgba(240, 200, 110, alpha(255)), bold = true, size = 14, layer = 'top'})
+            if #lines > 0 then
+                ui.rect(x + PAD + 4, y + PAD + 21, TW - 2 * PAD - 8, 1, ui.rgba(200, 170, 90, alpha(90)), {layer = 'top'})
+                local ly = y + PAD + 28
+                for _, line in ipairs(lines) do
+                    ui.text(line, x + PAD + 4, ly, {color = ui.rgba(255, 255, 255, alpha(230)), size = 12, layer = 'top'})
+                    ly = ly + LINE
+                end
+            end
+            y = y + th + 8
         end
     end
     toasts = keep
@@ -221,7 +258,7 @@ local function row(b, x, y, w)
     local done = b.done == true
     local n = math.min(b.n or 0, b.target)
     ui.text(b.title, x, y, {color = done and GREEN or GOLD, size = 15, bold = true})
-    ui.text(done and 'done' or time_text(left_of(b)), x, y, {width = w, align = 'right', color = done and GREEN or GREY})
+    ui.text(done and 'done' or (b.endless and 'no limit' or time_text(left_of(b))), x, y, {width = w, align = 'right', color = done and GREEN or GREY})
     ui.text((b.text or '') .. (b.level and b.level > 1 and (' (level ' .. b.level .. '+)') or ''),
         x, y + 17, {color = 0xFFE0E0E0, size = 12})
     local by = y + 33
@@ -250,9 +287,10 @@ local function panel()
     end
     if #board.bounties == 0 then
         ui.text('The board is empty.', x, y, {color = GREY})
+        if own and ui.button('open-editor', x, y + 24, 110, 20, 'Editor...') then editor.open() end
         return
     end
-    local foot = own and 14 or 0
+    local foot = own and 20 or 0
     local area = ui.scroll_begin('bounty-list', x, y, w, h - 4 - foot)
     local cy = area.content_y
     for _, b in ipairs(board.bounties) do
@@ -263,6 +301,9 @@ local function panel()
     if own then
         ui.text(('Single player: your own board. Finished so far: %d'):format(board.done_count or 0), x, y + h - 14,
             {color = GREY, size = 11})
+        if ui.button('open-editor', x + w - 110, y + h - 18, 110, 18, 'Editor...', {tooltip = 'Make your own bounties, start and stop them'}) then
+            editor.open()
+        end
     end
 end
 
@@ -289,11 +330,18 @@ gear.on('draw', function(state)
     if not state or state.mode ~= 'game' or state.exclusive then return end
     tracker()
     panel()
+    if is_local() and mine then editor.draw(editor_hooks) end
     draw_toasts()
 end)
 
 gear.keys.on('panel', function()
     ui.show_panel('board', not ui.panel_open('board'))
+end)
+
+gear.keys.on('editor', function()
+    if is_local() then
+        if ui.panel_open('editor') then ui.show_panel('editor', false) else editor.open() end
+    end
 end)
 
 -- Test aid for bounty_selftest (it only answers the self test): ask for the state, or set the local bounties.
@@ -304,6 +352,23 @@ do
             refresh()
         elseif ctx.op == 'set_done' and mine then
             for _, b in ipairs(mine.list) do if b.id == ctx.id then b.done = true b.n = b.target mine.done_count = mine.done_count + 1 end end
+            refresh()
+        elseif ctx.op == 'start_custom' and mine then
+            local d = customs.put(ctx.def)
+            if d then editor_hooks.start(d) end
+        elseif ctx.op == 'stop_custom' and mine then
+            editor_hooks.stop(ctx.id)
+        elseif ctx.op == 'drop' then
+            ctx.running = true
+            localgame.drop_item(ctx.spec, function(ok) ctx.running, ctx.ok = false, ok end)
+        elseif ctx.op == 'toast' then
+            toast(ctx.title, unpack(ctx.lines or {}))
+        elseif ctx.op == 'open_form' then
+            editor.open_form(ctx.def and customs.find(ctx.def))
+        elseif ctx.op == 'open_editor' then
+            editor.open()
+        elseif ctx.op == 'trigger_kill' and mine then
+            for _, b in ipairs(mine:trigger_kill(customs.defs, localboard.words(ctx.name), 10)) do toast('Bounty started: ' .. b.title) end
             refresh()
         elseif ctx.op == 'save' then
             save_mine()
