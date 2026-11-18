@@ -6,7 +6,6 @@
 local ui = gear.ui
 local customs = require('customs')
 local creatures = require('creatures')
-local fuzzy = require('fuzzy')
 
 local E = {}
 
@@ -15,13 +14,8 @@ local GOLD, GREY, GREEN, RED = 0xFFFFD780, 0xFFB0B0B0, 0xFF80FF80, 0xFFFF8080
 local ITEM_MODES = {'No item', 'Random item', 'Random item for my class', 'Chosen items'}
 local MODE_OF = {nil, 'tier', 'class', 'specific'}
 local TIERS = {'Good', 'Rare', 'Best'}
-local ITEM_KINDS = {[5] = true, [6] = true, [8] = true, [13] = true, [17] = true, [18] = true, [19] = true, [20] = true, [21] = true,
-    [22] = true, [23] = true, [24] = true, [25] = true, [29] = true}
-
 local form = nil           -- the definition being edited (a working copy with text fields), or nil: the list is shown
 local focus = nil          -- id of the text field that takes the keys
-local search_results = {}
-local search_for = ''
 local flash = nil          -- {text, until}
 
 local function words_of(text)
@@ -128,33 +122,6 @@ local function def_of(f)
     }
 end
 
--- Every item type with its name as the game shows it (the player's language) and its internal name; built once.
-local item_catalog
-local function items()
-    if item_catalog then return item_catalog end
-    item_catalog = {}
-    local types = gear.data.object_types
-    for id = 1, 0x7E5F do
-        if ITEM_KINDS[types:kind(id)] then
-            local internal = types:name(id)
-            local shown = types:display_name(id)
-            if internal and shown then
-                item_catalog[#item_catalog + 1] = {id = id, name = shown, internal = internal, words = fuzzy.words(shown .. ' ' .. internal)}
-            end
-        end
-    end
-    return item_catalog
-end
-
--- Types whose shown or internal name matches the text (fuzzy: several words, accents and typos forgiven), best first.
-local function search_items(text)
-    if text == search_for then return end
-    search_for = text
-    search_results = {}
-    if #fuzzy.words(text) == 0 or #text < 2 then return end
-    search_results = fuzzy.rank(items(), text, 40)
-end
-
 local function slider(id, x, y, w, lo, hi, value, step, fmt)
     local _, v = ui.slider(id, x, y, w - 56, lo, hi, value, {step = step, format = fmt})
     return v
@@ -182,23 +149,14 @@ local function draw_form(x, y, w, h)
     end
     cy = cy + 26
     if f.mode == 4 then
-        row_label('Find an item', lx, cy)
-        f.search = field('search', fx, cy, 200, f.search, 'Part of an item name in your game language, any order, typos are fine: e.g. sword, ring, helm')
-        search_items(f.search)
-        cy = cy + 24
-        if #search_results > 0 then
-            local names = {}
-            for i, m in ipairs(search_results) do names[i] = m.name end
-            if f.pick > #names then f.pick = 1 end
-            row_label('Matches', lx, cy)
-            local _, pi2 = ui.dropdown('pick', fx, cy, fw - 52, names, f.pick)
-            f.pick = pi2
-            if ui.button('addpick', fx + fw - 46, cy, 46, 20, 'Add') then
-                local m = search_results[f.pick]
-                if m and #f.chosen < 12 then f.chosen[#f.chosen + 1] = {id = m.id, name = m.name} end
-            end
-            cy = cy + 24
+        row_label('Items', lx, cy)
+        if ui.button('finditem', fx, cy, 200, 20, 'Find an item...', {tooltip = 'Search by the name of the item in your language; typos are fine'}) then
+            gear.lookup.open('item', {title = 'Find an item', multi = true, select = function(t)
+                for _, c in ipairs(f.chosen) do if c.id == t.id then return false end end
+                if #f.chosen < 12 then f.chosen[#f.chosen + 1] = {id = t.id, name = t.name} end
+            end})
         end
+        cy = cy + 24
         local line = {}
         for _, t in ipairs(f.chosen) do line[#line + 1] = t.name end
         ui.text(#line > 0 and ('Drops one of: ' .. table.concat(line, ', ')) or 'No item chosen yet: search and press Add.',
@@ -274,18 +232,9 @@ function E.draw(hooks)
         if focus then focus = nil ui.capture_keys(false) end
         return
     end
-    ui.capture_keys(focus ~= nil)
+    ui.capture_keys(focus ~= nil or gear.lookup.is_open())
     local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
     if form then draw_form(x, y, w, h) else draw_list(x, y, w, h, hooks) end
-end
-
--- The shown names of the items a search text finds (the self test uses it).
-function E.item_search(text)
-    search_for = nil
-    search_items(text)
-    local names = {}
-    for i, m in ipairs(search_results) do names[i] = m.name end
-    return names
 end
 
 function E.open() form, focus = nil, nil; ui.show_panel('editor', true) end
