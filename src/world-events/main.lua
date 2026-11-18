@@ -70,7 +70,7 @@ local function files()
     if not (gear.read and gear.save and gear.json) then return nil end
     local api = {}
     function api.load(name, default)
-        local text = gear.read(name .. '.json')
+        local text = gear.read(name)
         if not text then return default, 'missing' end
         local ok, value = pcall(gear.json.decode, text)
         if ok and type(value) == 'table' then return value end
@@ -79,7 +79,7 @@ local function files()
     function api.save(name, value)
         local ok, text = pcall(gear.json.encode, value)
         if not ok then return false, text end
-        return gear.save(name .. '.json', text)
+        return gear.save(name, text)
     end
     function api.file(name, default)
         local h = {name = name, data = (api.load(name, default)), saved = 0, dirty = false}
@@ -170,6 +170,7 @@ end)
 -- (a server's `/mods/world_events/export` writes one; a first run writes a small default to edit): it counts the hero's kills, fires
 -- the hooks for the hero and feeds the bar the same table a server would push. A server that speaks up again takes over.
 local localmode, local_file
+local kill_hooked = false
 local last_frame, last_feed, last_poll = nil, -1e9, -1e9
 local fed_local = false      -- the bar currently shows a state of the local mode
 
@@ -179,11 +180,15 @@ end
 
 local function start_local()
     if localmode or not G then return end
-    local_file = FILES.file('local_events_state', {}, {every = 10})
-    local defs = FILES.load('events', nil)
+    -- The run of events (the count, the running one, the wait) belongs to the savegame: kept per savegame (an older Gear keeps one
+    -- file for all of them); another game starts its own run (see the handler of savegame.changed below).
+    if not local_file then
+        local_file = (FILES.game or FILES.file)('local_events_state.json', {}, {every = 10})
+    end
+    local defs = FILES.load('events.json', nil)
     if defs == nil then
         defs = localevents.DEFAULT
-        FILES.save('events', defs)                        -- a first run: a file to edit
+        FILES.save('events.json', defs)                        -- a first run: a file to edit
     end
     localmode = localevents.new({
         defs = defs, store = local_file.data, log = function(t) gear.log('world-events: ' .. t) end,
@@ -193,8 +198,18 @@ local function start_local()
                 action = action.action, text = action.text, source = 'local'})
         end,
     })
-    G.on_kill(function(name, type_id, sector, region) localmode:kill(name, type_id, sector, region) end)
+    if not kill_hooked then
+        kill_hooked = true
+        G.on_kill(function(name, type_id, sector, region) if localmode then localmode:kill(name, type_id, sector, region) end end)
+    end
 end
+
+-- Another savegame (or a new game) is going: the run of events of the old one is dropped, the next frame starts the new one's from
+-- what that game kept. Progress since the last save is gone with the game's own.
+gear.on('savegame.changed', function()
+    localmode, last_frame = nil, nil
+    if fed_local then model:reset(); fed_local = false end
+end)
 
 function local_frame()
     if not local_on() then last_frame = nil; return end

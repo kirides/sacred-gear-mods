@@ -55,7 +55,15 @@ local function toast(text) if gear.toast then gear.toast.show('Companions', text
 ---------------------------------------------------------------------------------------------------------------
 -- Stored per main hero: names, behaviour and the abilities switched off, by companion id.
 ---------------------------------------------------------------------------------------------------------------
-local store = gear.store.file('companions.json', {parties = {}}, {every = 10})
+-- The party belongs to the savegame: kept per savegame (gear.store.game; an older Gear keeps one file for all of them). The file
+-- from before is taken by the first savegame that is loaded. How the game's mercenaries behave is the player's own choice and stays
+-- in one file for all games.
+local store = (gear.store.game or gear.store.file)('companions.json', {parties = {}}, {every = 10, migrate = true})
+local prefs = gear.store.file('companions_prefs.json', {}, {every = 10})
+if prefs.data.merc_behaviour == nil then
+    local old = gear.store.load('companions.json', {})
+    if old.merc_behaviour then prefs.data.merc_behaviour = old.merc_behaviour; prefs:changed() end
+end
 
 local function party_key()
     local main = gear.world.object(1)
@@ -279,7 +287,7 @@ gear.on('frame', guard('frame', function(dt)
     end
     if not setting('ai', true) then return end
     local opts = ai_opts()
-    local merc_behaviour = store.data.merc_behaviour or 'vanilla'
+    local merc_behaviour = prefs.data.merc_behaviour or 'vanilla'
     if merc_behaviour ~= 'vanilla' and clock >= (next_think.mercs or 0) then
         next_think.mercs = clock + 0.5
         for _, m in ipairs(party.mercenaries()) do ai.think_merc(m, leader, clock, opts, merc_behaviour) end
@@ -492,12 +500,12 @@ local function draw_window()
     local MB = {'vanilla', 'assist', 'passive'}
     local ML = {'As the game does', 'Assist (fight the party\'s target)', 'Passive (stay with you)'}
     local mi = 1
-    for i, b in ipairs(MB) do if store.data.merc_behaviour == b then mi = i end end
+    for i, b in ipairs(MB) do if prefs.data.merc_behaviour == b then mi = i end end
     local mchanged, mnew = ui.dropdown('mercs', x + 100, yy + 90, 230, ML, mi,
         {tooltip = 'What the game\'s own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts'})
     if mchanged then
-        store.data.merc_behaviour = MB[mnew]
-        store:changed()
+        prefs.data.merc_behaviour = MB[mnew]
+        prefs:changed()
     end
     ui.text(('%d with the party'):format(#mercs), x + 340, yy + 94, {color = DIM, size = 12})
     if tactics_hero then

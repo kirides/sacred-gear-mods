@@ -32,7 +32,7 @@ once your hero has the level for them.
 - **Reward:** gold goes straight into your purse; some bounties add an item that drops at your feet. The game's own loot
   roll makes it, from a horse that appears next to you for a moment as the "creature" it drops from and is removed again
   (`creature:remove()`, needs a Sacred Gear with it). Gold grows with your hero's level.
-- **Saved per hero:** the board is saved in the mod's folder (`board_<hero>.json`), so it is still there after loading.
+- **Saved per savegame:** the board is kept with the savegame being played (`board.json` in `saves/GAME05/` of the mod's folder), so it is there after loading that savegame and another character has its own. A board from before (`board_<hero>.json`) goes to the first savegame loaded with that hero.
   It is not tamper-proof: single player, your game.
 - **Network games** use the server's board. The own board is for single player only.
 

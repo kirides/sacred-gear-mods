@@ -35,7 +35,7 @@ Open the Mods screen with **F11** and pick the mod.
 
 ## Development
 
-- **Files:** `src/lootlog/mod.lua` (manifest) and `main.lua` (about 350 lines). The log is kept in `lootlog.json`.
+- **Files:** `src/lootlog/mod.lua` (manifest) and `main.lua` (about 350 lines). The log belongs to the savegame being played: it is kept in `lootlog.json` of that savegame's data (`saves/GAME05/` in the mod's folder for `Save\GAME05.PAK`), so another character has its own log. See [Per savegame data](../SessionMods.md#per-savegame-data).
 - **Depends on:** `gear.world.items_near` (drops), `gear.inv.container` (what reaches the backpack), `gear.ui`, `gear.save` / `gear.read`.
 - **Test it without the game:** `tests/session_mods_test.lua` (LuaJIT, from the repository root).
 - More about the session mods: [Session mods](../SessionMods.md).

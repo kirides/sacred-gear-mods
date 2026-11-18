@@ -5,7 +5,7 @@ memory only: it starts over when you leave the region and is never saved. This m
 
 - **Kills needed (% of vanilla):** 100 is the game's number. 50 halves it, 200 doubles it. Changing it keeps your share
   of the progress.
-- **Keep progress:** the kills done in every region are kept per hero (`region_kills.json` in the mod's folder) and put
+- **Keep progress:** the kills done in every region are kept per savegame (`region_kills.json` in that savegame's data, see [Per savegame data](../SessionMods.md#per-savegame-data); per hero name inside) and put
   back when the game starts a region over. Switched off, the game's own reset applies.
 - The progress pill on the screen comes from the World events mod, so it stacks with its other pills; this mod only configures the regions.
 
