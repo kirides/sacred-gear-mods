@@ -58,7 +58,7 @@ pills; more are a line **+N more**.
   of one state; one state still works. The remake server runs one event at a time and pushes one state today; the client is ready for more.
 * **The region boss pill (setting *Show the region boss progress*, on by default; the controller's mod menu has **World events: region boss pill on / off**):**
   while the hero stands in a region that counts kills towards its Region Boss (`gear.data.regions:of_creature(hero)`), a slim **teal** pill (not the events' gold)
-  shows the region's name (the game's own text), `kills / needed kills` and the percent; the tooltip adds the kills left until the boss, and the other regions that
+  shows the region's name (the game's own text in the install's language: the record holds a text key such as `UI_REGION_SOUTHKERN`, which is looked up with `gear.text.get(hash(key) + 2^31)`, the game's own hash; without a text the key is shown readable, e.g. "Southkern", never the raw key), `kills / needed kills` and the percent; the tooltip adds the kills left until the boss, and the other regions that
   have progress this session. It reads the game's own count (`kills_needed` / `kills_left`), so it works in single player and online, needs no server, and
   shows a custom "kills needed" of the **Region counter** mod (which writes its numbers into the same records) without any link to it. A Gear without
   `gear.data.regions` shows no region pill. In the layout editor a sample region pill is shown so the group can be placed.
