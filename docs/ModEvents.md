@@ -29,6 +29,23 @@ for _, h in ipairs(gear.events.list()) do print(h.name, h.mod, h.listeners) end
 | `bounty.claimed` | the reward was paid (server boards: together with `completed`) | same |
 | `bounty.failed` | it left the board unfinished (time out, stopped) | same |
 
+## quests (daily and weekly)
+
+The daily and weekly quests of the `bounty` mod. `period` is `'daily'` or `'weekly'`. Ids look like `daily:20776:orcs` (the day or week number and the pool entry).
+
+| Event | When | Payload |
+| --- | --- | --- |
+| `quest.started` | a quest is up (a new day or week; `initial = true` for the running ones when a savegame is loaded or the first state of a session arrives) | `id, period, title, text, target, n, reward?, level?, source, initial?` |
+| `quest.progress` | its counter went up | same, plus `previous` |
+| `quest.completed` | its target is reached | same |
+| `quest.claimed` | its reward was paid; also a streak bonus (`bonus = true`, id `bonus:<period>:<n>`) | same, plus `bonus?` |
+| `quest.failed` | the day or week ended before it was done | same |
+| `quest.set_completed` | every quest of the day or week is done | `period, count, source` |
+| `quest.streak` | one more day or week in a row (`bonus = true` when this step pays a streak bonus) | `period, count, best, bonus?, source` |
+| `quest.streak_lost` | a day or week was missed | `period, previous, source` |
+
+On a server the same events come from the state the server pushes (`source = 'server'`).
+
 ## world events
 
 | Event | When | Payload |

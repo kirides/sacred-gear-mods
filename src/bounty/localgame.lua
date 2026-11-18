@@ -27,10 +27,10 @@ local tracked = {}          -- creature id -> {c, type, name}
 local hit_at = {}           -- victim type -> gear.time() of the hero's last hit
 local roll_at = {}          -- type -> gear.time() when the loot roll of its death named the hero
 local hero_type
-local on_kill
+local kill_listeners = {}
 
--- Called as fn(type_name) for every kill that counts.
-function G.on_kill(fn) on_kill = fn end
+-- Called as fn(type_name) for every kill that counts (the bounty board and the daily quests both listen).
+function G.on_kill(fn) kill_listeners[#kill_listeners + 1] = fn end
 
 function G.reset()
     tracked, hit_at, roll_at = {}, {}, {}
@@ -81,7 +81,12 @@ function G.poll()
         local c = e.c
         if not c:exists() or c:is_dead() then
             tracked[id] = nil
-            if on_kill and counts(e, now) then on_kill(e.name) end
+            if counts(e, now) then
+                for _, fn in ipairs(kill_listeners) do
+                    local ok, err = pcall(fn, e.name)        -- one listener's error must not stop the others
+                    if not ok then print('bounty: kill listener: ' .. tostring(err)) end
+                end
+            end
         else
             local x, y = c:position()
             if not x or (x - hx) ^ 2 + (y - hy) ^ 2 > FORGET ^ 2 then tracked[id] = nil end
