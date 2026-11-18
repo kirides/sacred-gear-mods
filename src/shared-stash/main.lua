@@ -273,6 +273,7 @@ end
 
 ui.show_panel('stash', false)
 ui.show_panel('open', true)
+if ui.persist_panel then ui.persist_panel('stash', false) end   -- it opens with a chest
 
 gear.on('draw', function(state)
     if closed() then remote.tick() end

@@ -16,6 +16,7 @@
 
 local cfg = gear.config
 local ui = gear.ui
+if ui.persist_panel then ui.persist_panel('toolbar', false); ui.persist_panel('sample', false) end
 local C = ui.COLORS
 
 local TOOLBAR = 'layout:toolbar'

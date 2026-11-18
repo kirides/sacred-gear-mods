@@ -244,6 +244,7 @@ end
 
 ui.show_panel('market', false)
 ui.show_panel('open', true)
+if ui.persist_panel then ui.persist_panel('market', false); ui.persist_panel('osk', false) end   -- they open with a chest
 
 gear.on('draw', function(state)
     if hidden_here() then

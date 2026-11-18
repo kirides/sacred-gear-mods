@@ -19,6 +19,8 @@ end
 
 local cfg = gear.config
 local ui, net = gear.ui, gear.net
+ui.show_panel('board', false)       -- closed until Ctrl+J (then the open / closed state is kept)
+if ui.persist_panel then ui.persist_panel('editor', false) end
 
 local localboard = require('localboard')
 local localgame = require('localgame')
@@ -71,7 +73,6 @@ gear.on('session.start', function()
     if mine then close_mine() end
     board = nil
     ask(true)
-    ui.show_panel('board', false)       -- closed until Ctrl+J
     ui.show_panel('editor', false)
 end)
 gear.on('session.stop', function()

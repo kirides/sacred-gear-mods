@@ -33,6 +33,9 @@ local entries = {}          -- {kind, sender, runs, plain, stamp, item}, oldest 
 local layout_cache = setmetatable({}, {__mode = 'k'})   -- entry -> {w, fs, rows}
 local view = {tab = 1, player = 1, unread = {}, minimized = false, stick = true, new_below = 0, last_count = 0}
 local loot = {seen = {}, baseline = true, t = 0, clock = 0}
+-- The collapsed state (tabs only) is kept across starts (state.json of the mod's folder).
+local state_file = gear.store.file('state.json', {minimized = false}, {every = 5})
+view.minimized = type(state_file.data) == 'table' and state_file.data.minimized == true
 
 local function setting(id, default) return S.get(id, default) end
 
@@ -195,6 +198,8 @@ local function draw_tabs(x, y, w)
     if ui.button('min', right - TAB_H, y, TAB_H, TAB_H, view.minimized and '+' or '-',
         {tooltip = view.minimized and 'Show the lines' or 'Only the tabs'}) then
         view.minimized = not view.minimized
+        state_file.data.minimized = view.minimized
+        state_file:changed()
     end
     right = right - TAB_H - 4
     if network_game() and not view.minimized then

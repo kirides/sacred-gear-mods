@@ -7,6 +7,7 @@
 -- gear.game.save with `window = true`, gear.game.delete_save). If this mod is off or fails, the game's window shows.
 
 local ui, game = gear.ui, gear.game
+if ui.persist_panel then ui.persist_panel('screen', false) end   -- it follows the game's save / load window
 local S = gear.settings
 local C = ui.COLORS
 
