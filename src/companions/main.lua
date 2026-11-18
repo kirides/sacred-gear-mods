@@ -283,7 +283,7 @@ local function draw_portrait(c, x, y)
 end
 
 local function draw_portraits()
-    if not setting('portraits', true) then return end
+    if not setting('portraits', true) or not party.available() then return end
     local list = party.companions()
     if #list == 0 then return end
     local p = ui.panel('portraits', 'Companions', cfg.portraits_x or 948, cfg.portraits_y or 300, PW + 4, #list * ROW + 4, {bare = true})

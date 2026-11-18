@@ -109,16 +109,24 @@ gear.task(function()
             end
         end
         check('the party is next to it', placed)
-        local hp0 = foe:hp()
+        -- every enemy around: the companion may pick another one than the nearest to the hero
+        local foes = {}
+        local fx2, fy2, fl2 = comp:position()
+        for _, e in ipairs(gear.world.creatures_near(fx2, fy2, 1500, {layer = fl2})) do
+            if not e:is_hero() and not e:is_dead() and comp:is_enemy(e) then foes[#foes + 1] = {e, e:hp()} end
+        end
         local art = (comp:abilities() or {})[1]
         local used = false
         for _ = 1, 30 do
             gear.wait(0.5)
             local a = art and comp:ability(art.id)
             if a and not a.ready then used = true end
-            if foe:is_dead() then break end
         end
-        check('the companion hurt the enemy', foe:is_dead() or (foe:hp() or hp0) < hp0, ('%s -> %s'):format(hp0, tostring(foe:hp())))
+        local hurt = 0
+        for _, f in ipairs(foes) do
+            if f[1]:is_dead() or (f[1]:hp() or f[2]) < f[2] then hurt = hurt + 1 end
+        end
+        check('the enemies took damage', hurt > 0, hurt .. ' of ' .. #foes)
         check('the companion used its combat art', used, art and art.id)
     end
     A.screenshot('companions-2-fight')
