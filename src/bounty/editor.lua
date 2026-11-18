@@ -152,7 +152,7 @@ local function draw_form(x, y, w, h)
     f.title = field('title', fx, cy, fw, f.title); cy = cy + 26
     row_label('Creatures', lx, cy)
     cy = cy + picker('names', fx, cy, fw, f.words) + 4
-    row_label('How many', lx, cy); f.target = slider('target', fx, cy, fw, 1, 200, f.target, 1, '%d'); cy = cy + 24
+    row_label('How many', lx, cy); f.target = slider('target', fx, cy, fw, 1, 1000, f.target, 1, '%d'); cy = cy + 24
     row_label('Time limit (0 = none)', lx, cy); f.minutes = slider('minutes', fx, cy, fw, 0, 240, f.minutes, 5, '%d'); cy = cy + 24
     row_label('Minimum level', lx, cy); f.min_level = slider('minlevel', fx, cy, fw, 1, 100, f.min_level, 1, '%d'); cy = cy + 24
     row_label('Gold', lx, cy); f.gold = slider('gold', fx, cy, fw, 0, 100000, f.gold, 100, '%d'); cy = cy + 26
@@ -197,7 +197,7 @@ local function draw_form(x, y, w, h)
         row_label('Trigger creatures', lx, cy)
         ui.text('(empty: as the bounty)', lx, cy + 18, {size = 10, color = GREY})
         cy = cy + picker('trig', fx, cy, fw, f.trigger_words) + 4
-        row_label('Kills to start', lx, cy); f.count = slider('count', fx, cy, fw, 1, 100, f.count, 1, '%d'); cy = cy + 24
+        row_label('Kills to start', lx, cy); f.count = slider('count', fx, cy, fw, 1, 1000, f.count, 1, '%d'); cy = cy + 24
         row_label('Cooldown (min)', lx, cy); f.cooldown = slider('cool', fx, cy, fw, 0, 240, f.cooldown, 5, '%d'); cy = cy + 26
     end
     local by = math.max(cy + 4, y + h - 26)
