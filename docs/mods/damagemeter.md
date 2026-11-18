@@ -1,8 +1,6 @@
 # Damage meter
 
-![Damage meter](../images/damagemeter.svg)
-
-*Illustration with example values.*
+![Damage meter](../images/damagemeter.jpg)
 
 Shows how much damage you deal and take, and your damage per second (DPS). The small default view lists each character with its DPS; in a network game it lists the whole party. Larger views add damage taken, biggest hit, damage by monster type and more.
 

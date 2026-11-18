@@ -1,8 +1,6 @@
 # Session tracker
 
-![Session tracker](../images/sessiontracker.svg)
-
-*Illustration with example values.*
+![Session tracker](../images/sessiontracker.jpg)
 
 How long you have played, how many monsters you killed and how much gold and experience you gained this session, with rates per hour. It also keeps your lifetime totals and your last sessions.
 

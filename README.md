@@ -17,12 +17,12 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Shared stash**](docs/SharedStash.md) | <img src="docs/images/shared-stash.jpg" width="220" alt="Shared stash"> | One stash for all your heroes, next to the chest window. Works in LAN games too. |
 | [**Better SaveLoad**](src/better-saveload/README.md) | <img src="docs/images/better-saveload.jpg" width="220" alt="Better SaveLoad"> | A clearer savegame screen with the Save tab first. |
 | [**Enhanced Chat**](docs/mods/enhanced-chat.md) | <img src="docs/images/enhanced-chat.jpg" width="220" alt="Enhanced Chat"> | A chat window with scrollback, tabs for global, private and system messages, a player filter and item names in their rarity colour. |
-| [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.svg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, optional fair random numbers. |
+| [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.jpg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, optional fair random numbers. |
 | [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.jpg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
-| [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.svg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. F7. |
-| [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.svg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
-| [**Layout editor**](docs/mods/layout.md) | <img src="docs/images/layout.svg" width="220" alt="Layout editor"> | Move the game's windows and mod panels where you want them. Hold Alt. |
+| [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.jpg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. F7. |
+| [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.jpg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
+| [**Layout editor**](docs/mods/layout.md) | <img src="docs/images/layout.jpg" width="220" alt="Layout editor"> | Move the game's windows and mod panels where you want them. Hold Alt. |
 | [**Realm picker**](docs/mods/realms.md) | <img src="docs/images/realms.svg" width="220" alt="Realm picker"> | Choose the online play server for Closed and Open Internet. |
 | [**Auction house**](src/auction-house/README.md) | <img src="docs/images/auction-house.svg" width="220" alt="Auction house"> | Buy and sell items between players. Needs a multiplayer game (useless in single player). |
 | [**World events**](src/world-events/README.md) | <img src="docs/images/world-events.jpg" width="220" alt="World events"> | A progress bar for the server's world event. |
@@ -33,7 +33,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Quest helper**](docs/mods/questhelper.md) | <img src="docs/images/questhelper.svg" width="220" alt="Quest helper"> | Quest items and the server's quest records with hints. F8. Needs a server script. |
 | [**Server feed**](docs/mods/serverfeed.md) | <img src="docs/images/serverfeed.svg" width="220" alt="Server feed"> | Rare finds and hero deaths on screen. Needs a server script. |
 | [**Twitch Integration**](docs/mods/twitch_integration.md) | <img src="docs/images/twitch_integration.svg" width="220" alt="Twitch Integration"> | Turns rewards, bits and chat into actions in your game. Base mod. |
-| [**Twitch Integration: actions**](docs/mods/twi_sacred.md) | <img src="docs/images/twi_sacred.svg" width="220" alt="Twitch Integration: actions"> | Viewers spawn monsters, give gold, heal or teleport your hero. |
+| [**Twitch Integration: actions**](docs/mods/twi_sacred.md) | <img src="docs/images/twi_sacred.jpg" width="220" alt="Twitch Integration: actions"> | Viewers spawn monsters, give gold, heal or teleport your hero. |
 
 Each mod is switched on or off in the **Mod manager** (**F11**, or the *Mods* button under the escape menu), where you also change its settings and keys.
 
