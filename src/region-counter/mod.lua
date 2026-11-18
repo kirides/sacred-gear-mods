@@ -12,6 +12,6 @@ return {
             section = 'General', tooltip = 'The game forgets the count when you leave a region and never saves it. Switched on, the count of every region is kept per hero'},
     },
     keys = {
-        {id = 'panel', label = 'Show / hide the region counters', default = 'ctrl+b'},
+        {id = 'panel', label = 'Show / hide the region counters', default = 'f4'},
     },
 }

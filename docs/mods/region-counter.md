@@ -7,7 +7,7 @@ memory only: it starts over when you leave the region and is never saved. This m
   of the progress.
 - **Keep progress:** the kills done in every region are kept per hero (`region_kills.json` in the mod's folder) and put
   back when the game starts a region over. Switched off, the game's own reset applies.
-- **Ctrl+B** shows the regions you have been in with `done / needed`.
+- **F4** shows the regions you have been in with `done / needed`.
 
 ## How it works
 
