@@ -254,7 +254,18 @@ gear.task(function()
     end
     if cfg.mode == 'lan' then network_checks() end
     check('chat lines available (the hook is in)', chat.available() == true)
-    check('the window shows', query().visible == true)
+    if cfg.mode ~= 'lan' then
+        -- 'Hide in Singleplayer' (on by default): no window, the game shows its own lines
+        query({set_hide_sp = true})
+        gear.wait(1)
+        check('single player: the window is hidden by default', query().active == false)
+        local sp = add('Selftest single player line', 1)
+        check('single player: the game shows its own lines', sp and sp.hidden == false, sp and tostring(sp.hidden))
+        A.screenshot('chat-sp-hidden')
+        query({set_hide_sp = false})
+        gear.wait(1)
+    end
+    check('the window shows', query().visible == true and query().active == true)
 
     -- the game's own kinds of lines, by channel
     local l = add('Selftest \\cFFF0E040golden\\r line', 1)

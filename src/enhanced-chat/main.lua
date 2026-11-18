@@ -297,6 +297,12 @@ end
 
 local function visible() return setting('visible', true) ~= false end
 
+-- 'Hide in Singleplayer' (on by default): no window in a single player game, the game shows its own lines there.
+local function hidden_here() return setting('hide_in_singleplayer', true) ~= false and not network_game() end
+
+-- Whether the window is shown in this game at all.
+local function active() return visible() and not hidden_here() end
+
 local function toggle() S.set('visible', not visible()) end
 
 local function next_tab()
@@ -338,7 +344,7 @@ gear.on('settings.changed', function(id)
 end)
 
 gear.on('draw', function(state)
-    if type(state) ~= 'table' or state.mode ~= 'game' or not visible() then return end
+    if type(state) ~= 'table' or state.mode ~= 'game' or not active() then return end
     if setting('replace_overlay', true) ~= false then chat.replace_overlay() end
     if not state.exclusive then draw_window() end
 end)
@@ -347,6 +353,7 @@ end)
 gear.on('enhanced-chat.query', function(out)
     if type(out) ~= 'table' then return end
     if out.set_visible ~= nil then S.set('visible', out.set_visible and true or false) end
+    if out.set_hide_sp ~= nil then S.set('hide_in_singleplayer', out.set_hide_sp and true or false) end
     if out.tab then view.tab = out.tab; view.unread[view.tab] = nil end
     if out.set_player ~= nil then
         view.player = 1
@@ -355,6 +362,7 @@ gear.on('enhanced-chat.query', function(out)
     end
     out.players = players()
     out.network = network_game()
+    out.active = active()
     out.visible, out.tab, out.entries, out.shown, out.minimized = visible(), view.tab, #entries, view.shown or 0, view.minimized
     out.last = entries[#entries]
     out.tabs = view.tab_rects
