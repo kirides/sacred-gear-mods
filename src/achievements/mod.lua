@@ -12,7 +12,7 @@ return {
         {id = 'seconds', type = 'number', label = 'Toast time (seconds)', default = 6, min = 2, max = 15, step = 1, tooltip = 'How long a toast stays'},
     },
     keys = {
-        {id = 'panel', label = 'Open the achievements panel', default = 'f7'},
+        {id = 'panel', label = 'Open the achievements panel', default = 'ctrl+g'},
     },
     config = {
         -- the panel's default place in the 1024x768 layout (the player can drag it)

@@ -2,7 +2,7 @@
 -- hero's own progress. The server pushes the board over the custom net channel 'bounty:state' (gear.net, so the server must be the
 -- Sacred Gear game server; the original GameServer.exe never answers and the panel says so).
 --
---   F8 (rebindable in the Mods screen)   the bounty panel: every bounty with a progress bar, time left and reward
+--   Ctrl+J (rebindable in the Mods screen)   the bounty panel: every bounty with a progress bar, time left and reward
 --   a small tracker with the open bounties (setting "Tracker")
 --
 -- Protocol: the server sends { v = 1, next_in, bounties = { { id, title, text, region, target, n, done, left, reward, claims, level } } }
@@ -45,7 +45,7 @@ gear.on('net_caps', function(caps) if caps and caps.supported then ask(true) end
 gear.on('session.start', function()
     board = nil
     ask(true)
-    ui.show_panel('board', false)       -- closed until F8
+    ui.show_panel('board', false)       -- closed until Ctrl+J
 end)
 gear.on('session.stop', function() board = nil end)
 gear.every(5, function() ask(false) end)
@@ -79,7 +79,7 @@ local function row(b, x, y, w)
 end
 
 local function panel()
-    local p = ui.panel('board', 'Bounty board (F8)', 300, 70, 400, 320, {resizable = true, min_width = 300, min_height = 160})
+    local p = ui.panel('board', 'Bounty board (Ctrl+J)', 300, 70, 400, 320, {resizable = true, min_width = 300, min_height = 160})
     if not p.open then return end
     local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
     if not channel or not net.supported() then

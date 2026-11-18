@@ -1,5 +1,5 @@
 -- Damage meter: damage dealt and taken by the hero, DPS, the biggest hit, damage by monster type, kills per minute.
--- The panel is on F7; the Reset button (or the 'reset' key, unbound by default) starts over.
+-- The panel is on Ctrl+D; the Reset button (or the 'reset' key, unbound by default) starts over.
 --
 -- Views (setting 'View', the View button, the 'view' key or the controller's mod menu cycle through them):
 --   compact   (default, a bare translucent panel without title bar) one row per character: name and DPS. Alone: a single line. In a network game every player's
@@ -623,7 +623,7 @@ local FILL = 0x90000000            -- translucent black behind the compact view
 
 -- The compact view: a bare panel (no title bar, no window: clicks pass through to the game) drawn on a translucent
 -- rectangle with a one-unit frame, rows of name and DPS, and the two small buttons in a thin row below. The layout editor
--- moves it; F7 shows and hides it.
+-- moves it; Ctrl+D shows and hides it.
 local function draw_compact_panel(list)
     local pad = 6
     local content_h = content_height(#list)
@@ -644,7 +644,7 @@ local function draw_panel()
     local list = characters()
     if view == 'compact' then return draw_compact_panel(list) end
     local content_h = content_height(#list)
-    local p = ui.panel('meter', 'Damage meter (F7)', 700, 200, WIDTH[view], content_h + CHROME, {})
+    local p = ui.panel('meter', 'Damage meter (Ctrl+D)', 700, 200, WIDTH[view], content_h + CHROME, {})
     if not p.open then return end
     local x, y = p.content_x or 0, p.content_y or 0
     local w = p.content_w or (WIDTH[view] - 20)

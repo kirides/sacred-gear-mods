@@ -12,13 +12,13 @@ Sacred Gear and the mod itself in your `mods` folder (see [Install](../Install.m
 
 ## How to use it
 
-Press **F8** to open the panel. While it is open it refreshes from the server every few seconds. A short line appears on screen when the server reports a new or changed quest record.
+Press **Ctrl+U** to open the panel. While it is open it refreshes from the server every few seconds. A short line appears on screen when the server reports a new or changed quest record.
 
 ## Keys
 
 | Key | What it does |
 |---|---|
-| **F8** | Open or close the quest helper. (F8 is also the game's own quick load.) |
+| **Ctrl+U** | Open or close the quest helper. |
 
 You can change every key in the Mods screen (**F11**, then the mod's *Keys* page).
 

@@ -1,4 +1,4 @@
--- Quest helper: a panel (F8).
+-- Quest helper: a panel (Ctrl+U).
 --   Quest items: read here. The quest items in your backpack and the quest items lying near your hero (distance in tiles, position).
 --   Records: from the game server (SacredEngineRemake Sacred.GameServer, scripts-examples/quest_helper.lua, channel 'questhelper'): the quest
 --   records of your hero with the names, areas and hints the server's owner wrote for them, which other heroes have the same record,
@@ -173,7 +173,7 @@ local function about_tab(x, y, w, h)
 end
 
 local function panel()
-    local p = ui.panel('main', 'Quest helper (F8)', 80, 60, 520, 400, {})
+    local p = ui.panel('main', 'Quest helper (Ctrl+U)', 80, 60, 520, 400, {})
     if not p.open then
         if S.opened then S.opened = false; if net.supported() then ch:send({op = 'unwatch'}, 'server') end end
         return

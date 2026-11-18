@@ -13,7 +13,7 @@ return {
         {id = 'window', type = 'number', label = 'Rolling DPS window (seconds)', min = 3, max = 30, step = 1, default = 10, section = 'General'},
     },
     keys = {
-        {id = 'panel', label = 'Show / hide the damage meter', default = 'f7'},
+        {id = 'panel', label = 'Show / hide the damage meter', default = 'ctrl+d'},
         {id = 'view', label = 'Next view (compact, extended, detailed)', default = ''},
         {id = 'reset', label = 'Reset the damage meter', default = ''},
     },

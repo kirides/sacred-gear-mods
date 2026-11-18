@@ -14,7 +14,7 @@ return {
         {id = 'y', type = 'number', label = 'Position: top', min = 0, max = 700, step = 8, default = 180},
     },
     keys = {
-        {id = 'history', label = 'Show the latest drops and deaths', default = 'f7'},
+        {id = 'history', label = 'Show the latest drops and deaths', default = 'ctrl+y'},
     },
     config = {},
 }

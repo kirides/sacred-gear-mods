@@ -3,7 +3,7 @@
 --   'rare_drops:feed'  {kind = 'drop', drop = {item, tier, rarity, by, from, time}}  /  {kind = 'recent', drops = {...}}
 --   'graveyard:feed'   {kind = 'death', name, level, by, killer_kind, time}           /  {kind = 'recent', deaths = {...}}
 -- On connecting, this mod sends an (empty) table on each channel: the server answers with the last five of each as 'recent', which
--- only fill the list (F7), without toasts. A server without those scripts (or without custom net messages) just never sends.
+-- only fill the list (Ctrl+Y), without toasts. A server without those scripts (or without custom net messages) just never sends.
 local ui, net, S = gear.ui, gear.net, gear.settings
 
 local HISTORY = 12
@@ -99,7 +99,7 @@ gear.on('draw', function(state)
     end
     if show_history then
         y = y + 8
-        ui.text('Latest from the server (F7 hides)', right - 420, y, {width = 420, align = 'right', color = ui.rgba(255, 255, 255, 200), background = BACK, padding = 2})
+        ui.text('Latest from the server (Ctrl+Y hides)', right - 420, y, {width = 420, align = 'right', color = ui.rgba(255, 255, 255, 200), background = BACK, padding = 2})
         for _, h in ipairs(history) do
             y = y + 18
             ui.text(h.text, right - 420, y, {width = 420, align = 'right', color = h.color, background = BACK, padding = 2})

@@ -10,13 +10,13 @@ Sacred Gear and the mod itself in your `mods` folder (see [Install](../Install.m
 
 ## How to use it
 
-Fill in "My build" (title, note, tags) in the Mods screen, then press **F7** and choose *Publish*. Use the list to look at other builds. Builds you published are also remembered in `saved_builds.json`.
+Fill in "My build" (title, note, tags) in the Mods screen, then press **Ctrl+K** and choose *Publish*. Use the list to look at other builds. Builds you published are also remembered in `saved_builds.json`.
 
 ## Keys
 
 | Key | What it does |
 |---|---|
-| **F7** | Open or close the build sharer. |
+| **Ctrl+K** | Open or close the build sharer. |
 
 You can change every key in the Mods screen (**F11**, then the mod's *Keys* page).
 
@@ -37,4 +37,3 @@ Open the Mods screen with **F11** and pick the mod.
 - **Depends on:** `gear.net` channel `buildsharer` (requests `list`, `get`, `mine`, `publish`), `gear.world.hero`, `gear.ui`, `gear.save` / `gear.read` for `saved_builds.json`.
 - **Server side:** `scripts-examples/build_sharer.lua`. All server texts are length-limited before they are drawn.
 - **Test it without the game:** `tests/modmock` has a strict mock of the Gear API and `build_scenario.lua` ([how to run](../../tests/modmock/README.md)).
-- **Known clash:** F7 is shared with damagemeter, achievements and serverfeed ([Hotkeys](../Hotkeys.md)).

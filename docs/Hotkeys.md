@@ -5,14 +5,14 @@ their data in the game; three work alone.
 
 | Mod (`id`) | Needs | What | Hotkey (default) | Doc |
 |---|---|---|---|---|
-| `bounty` | server `bounty_board.lua` | Bounty board panel and a small tracker | **F8** | [ServerMods.md](ServerMods.md#bounty--bounty-board) |
-| `achievements` | server `achievements.lua` | Toasts and a panel for achievements and the login streak | **F7** | [ServerMods.md](ServerMods.md#achievements--achievements-and-login-streak) |
-| `serverfeed` | server `rare_drops.lua`, `graveyard.lua` | Rare drops and hero deaths as lines on screen, a list of the latest | **F7** | [ServerMods.md](ServerMods.md#serverfeed--server-feed) |
-| `buildsharer` | server `build_sharer.lua` | Publish and browse hero builds | **F7** | [ServerMods.md](ServerMods.md#buildsharer--build-sharer) |
-| `questhelper` | server `quest_helper.lua` (for records) | Quest items near you and the server's quest records | **F8** | [ServerMods.md](ServerMods.md#questhelper--quest-helper) |
+| `bounty` | server `bounty_board.lua` | Bounty board panel and a small tracker | **Ctrl+J** | [ServerMods.md](ServerMods.md#bounty--bounty-board) |
+| `achievements` | server `achievements.lua` | Toasts and a panel for achievements and the login streak | **Ctrl+G** | [ServerMods.md](ServerMods.md#achievements--achievements-and-login-streak) |
+| `serverfeed` | server `rare_drops.lua`, `graveyard.lua` | Rare drops and hero deaths as lines on screen, a list of the latest | **Ctrl+Y** | [ServerMods.md](ServerMods.md#serverfeed--server-feed) |
+| `buildsharer` | server `build_sharer.lua` | Publish and browse hero builds | **Ctrl+K** | [ServerMods.md](ServerMods.md#buildsharer--build-sharer) |
+| `questhelper` | server `quest_helper.lua` (for records) | Quest items near you and the server's quest records | **Ctrl+U** | [ServerMods.md](ServerMods.md#questhelper--quest-helper) |
 | `sessiontracker` | nothing | Session time, kills, gold, experience, rates | **F2** | [Session mods](https://github.com/kirides/sacred-bild/blob/main/docs/GearSessionMods.md) |
 | `lootlog` | nothing | Log of drops and pickups | **F3** | [Session mods](https://github.com/kirides/sacred-bild/blob/main/docs/GearSessionMods.md) |
-| `damagemeter` | nothing | Damage dealt and taken, DPS | **F7** | [Session mods](https://github.com/kirides/sacred-bild/blob/main/docs/GearSessionMods.md) |
+| `damagemeter` | nothing | Damage dealt and taken, DPS | **Ctrl+D** | [Session mods](https://github.com/kirides/sacred-bild/blob/main/docs/GearSessionMods.md) |
 
 The server side of the first five (what the scripts do, their pages and chat commands, with screenshots) is documented in the
 SacredEngineRemake repository, `docs/mods/README.md`.
@@ -29,24 +29,29 @@ SacredEngineRemake repository, `docs/mods/README.md`.
 
 ## Hotkeys, and the clashes in the defaults
 
-All hotkeys are rebindable in the Mods screen (Keys page of each mod; **Default** restores it). The defaults of these examples
-overlap. This is how they stand today:
+All hotkeys are rebindable in the Mods screen (Keys page of each mod; **Default** restores it). The defaults of these mods do
+not overlap with each other or with the game's own keys:
 
 | Key | Used by (default) |
 |---|---|
 | F2 | `sessiontracker` |
 | F3 | `lootlog` |
-| **F7** | `damagemeter`, `achievements`, `serverfeed`, `buildsharer` (four mods) |
-| **F8** | `bounty`, `questhelper` (two mods); F8 is also the game's own **quick load** |
+| F5 | `lootfilter` |
+| F6 | `autosave` |
+| F10 | `shared-stash` |
+| F11 | the Mods screen |
+| Ctrl+D | `damagemeter` |
+| Ctrl+G | `achievements` |
+| Ctrl+J | `bounty` |
+| Ctrl+K | `buildsharer` |
+| Ctrl+U | `questhelper` |
+| Ctrl+Y | `serverfeed` |
 
-What happens with a clash: the Mods screen marks the key as a conflict on both mods' rows and on the Keys page, **both mods still
-fire**, so one key opens two panels at once. F8 additionally collides with the game's quick load key (the screen marks binds
-that equal one of the game's own hotkeys as a conflict with "The game"). Nothing is changed for you: if you run several of
-these mods, rebind all but one on each clashing key to a key that no mod uses and that is not one of the game's own (the game
-reacts to its hotkeys with any modifiers held, so `ctrl+b` is still B). The Mods screen shows a conflict marker while a
-choice is taken; other examples use F4 (`uidemo`), F5 (`lootfilter`), F6 and F10 (`sacred-gear-mods`) and F11 (the Mods screen).
+F7, F8 and F9 are left to the game (F8 is its **quick load**) and the letters the game uses (digits, Q W E R B, A, I, F, C, L,
+M, Tab, O, S, H, N, P, Space, Esc, + and -) react with any modifier held, so the mods use Ctrl with letters the game does not
+use. If you bind two mods to one key anyway, the Mods screen marks the conflict and both mods fire.
 
-The game's own hotkeys (digits, Q W E R B, A, I, F, C, L, M, Tab, O, S, H, N, P, Space, Esc, + and -, F8, F9) are listed in
+The game's own hotkeys are listed in
 [Gear.md](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md#mod-manager).
 
 ## Settings

@@ -1,7 +1,7 @@
 # Session mods: session tracker, loot log, damage meter
 
 Three client-side mods in `src`, built only on the public Gear API (no new native code). Each shows
-a panel (F2, F3, F7; rebind in the Mods screen) and keeps its data in its own folder. All three guard every API call
+a panel (F2, F3, Ctrl+D; rebind in the Mods screen) and keeps its data in its own folder. All three guard every API call
 and handler, so missing data (no hero, an item without a name, a failing setting) is skipped instead of raising.
 
 Tests (no game needed; the `gear` global is faked): `luajit tests/session_mods_test.lua`.
@@ -34,7 +34,7 @@ There is no pickup or drop event in the API, so it is inferred:
 - Items already around or in the backpack when a game starts are the baseline. Gold piles are logged only as drops
   ("Log gold piles"); their amount is not exposed. Plain (normal quality) items are skipped unless "Log plain items".
 
-## damagemeter (F7)
+## damagemeter (Ctrl+D)
 
 Uses the `damage` event, which gives the final damage of each hit and the creature TYPES of attacker and victim (no
 ids, no skill, no overkill clipping). Dealt = attacker type is the hero's type, taken = victim type is the hero's type.
@@ -68,9 +68,8 @@ checked in a running game.
 `main.lua`) into the game's `mods` folder as `mods\sessiontracker`, `mods\lootlog`, `mods\damagemeter`. They need no server. The
 Mods screen (F11) lists them with their settings and keys; choices are saved in `mods\gear_mods.json`.
 
-**Hotkeys** (rebindable in the Mods screen, Keys page): `sessiontracker` F2 (`panel`), `lootlog` F3 (`panel`), `damagemeter` F7
-(`panel`), `view` and `reset` (both unbound by default). F7 is also the default of the server mods `achievements`, `serverfeed` and
-`buildsharer`: if you run those too, both fire on one press, so rebind one side (see [Hotkeys](Hotkeys.md#hotkeys-and-the-clashes-in-the-defaults)).
+**Hotkeys** (rebindable in the Mods screen, Keys page): `sessiontracker` F2 (`panel`), `lootlog` F3 (`panel`), `damagemeter` Ctrl+D
+(`panel`), `view` and `reset` (both unbound by default). The defaults do not overlap with other mods (see [Hotkeys](Hotkeys.md#hotkeys-and-the-clashes-in-the-defaults)).
 
 **Settings** (Mods screen, Settings page):
 
@@ -96,7 +95,7 @@ Mods screen (F11) lists them with their settings and keys; choices are saved in 
 * *Loot log (F3)*, 420 x 360 at (300, 200), resizable, closed until F3. Three dropdowns (lowest quality, category, kind), "N of M entries",
   a **Clear** button (also empties the file), then a scrolling list, newest first, of `#session  m:ss  item name` in the quality colour
   with "dropped", "picked up" or "acquired" (and "(creature)") at the right; at most 300 rows are drawn.
-* *Damage meter (F7)*, 290 x 420 at (700, 200), closed until F7. "Fight (running / last)": dealt DPS / taken DPS and the rolling window; "Since
+* *Damage meter (Ctrl+D)*, 290 x 420 at (700, 200), closed until Ctrl+D. "Fight (running / last)": dealt DPS / taken DPS and the rolling window; "Since
   reset": damage dealt and taken with hit counts, biggest hit dealt / taken, average hit, fighting time, average DPS while fighting, kills
   (and per minute after 10 s of fighting); a 30-second bar graph (dealt green up, taken red down); "Biggest targets" (3) and "Biggest damage
   sources" (2); a **Reset** button. It says "no hero" until a hero is known.

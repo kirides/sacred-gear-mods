@@ -3,7 +3,7 @@ return {
     name = 'Build sharer',
     version = '0.1.0',
     author = 'Sacred Gear',
-    description = 'Publish your hero build to the game server and browse the builds other players shared (F7). '
+    description = 'Publish your hero build to the game server and browse the builds other players shared (Ctrl+K). '
         .. 'Needs the Sacred.GameServer of the SacredEngineRemake with scripts-examples/build_sharer.lua; the server reads your skills and '
         .. 'equipment itself, this mod only sends a title, a note, tags and the items you carry.',
     settings = {
@@ -17,7 +17,7 @@ return {
             tooltip = 'Send the names of the best items in your backpack (up to 12). The server lists them as "reported". Off: none'},
     },
     keys = {
-        {id = 'toggle', label = 'Open the build sharer', default = 'f7'},
+        {id = 'toggle', label = 'Open the build sharer', default = 'ctrl+k'},
     },
     config = {
         page_size = 12,

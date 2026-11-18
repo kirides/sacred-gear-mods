@@ -1,7 +1,7 @@
 -- Achievements and login streak, the client side of the game server's scripts-examples/achievements.lua.
 --
 -- The server (Sacred.GameServer with that script) pushes {op = 'unlock' | 'streak' | 'state'} on the custom net channel
--- 'achievements:sync'; this mod shows a toast for the first two and keeps the last 'state' for a panel (F7, rebind in the
+-- 'achievements:sync'; this mod shows a toast for the first two and keeps the last 'state' for a panel (Ctrl+G, rebind in the
 -- Mods screen) with the streak, tomorrow's reward and every achievement with its progress. It asks for the state with
 -- {op = 'get'} once the server's handshake is done and while the panel is open. Servers without the script, and the
 -- original GameServer.exe, never answer: the panel then says so and nothing else happens.
@@ -101,7 +101,7 @@ end
 local ROW = 40
 local function draw_panel()
     local px, py = gear.config.panel_x or 590, gear.config.panel_y or 40
-    local p = ui.panel('panel', 'Achievements (F7)', px, py, 410, 480, {resizable = true, min_width = 330, min_height = 240})
+    local p = ui.panel('panel', 'Achievements (Ctrl+G)', px, py, 410, 480, {resizable = true, min_width = 330, min_height = 240})
     if not p.open then return end
     local x, y = p.content_x, p.content_y
     local w = p.x + p.w - 8 - x

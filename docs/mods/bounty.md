@@ -10,13 +10,13 @@ Sacred Gear and the mod itself in your `mods` folder (see [Install](../Install.m
 
 ## How to use it
 
-Press **F8** to open the bounty board. The tracker at the top right shows your open bounties; switch it off in the settings if you do not want it.
+Press **Ctrl+J** to open the bounty board. The tracker at the top right shows your open bounties; switch it off in the settings if you do not want it.
 
 ## Keys
 
 | Key | What it does |
 |---|---|
-| **F8** | Open or close the bounty board. (F8 is also the game's own quick load.) |
+| **Ctrl+J** | Open or close the bounty board. |
 
 You can change every key in the Mods screen (**F11**, then the mod's *Keys* page).
 

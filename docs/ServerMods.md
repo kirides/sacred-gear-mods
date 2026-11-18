@@ -19,14 +19,14 @@ available). Nothing here is mocked up.
 Shows the bounties of `bounty_board.lua`: what to hunt, your progress, the time left and the reward.
 
 - **Install:** `src/bounty` into `mods\bounty`. Server: `bounty_board.lua`.
-- **Hotkey:** `panel`, default **F8** (also the game's quick-load key; rebind it).
+- **Hotkey:** `panel`, default **Ctrl+J**.
 - **Settings:** *Tracker* (on by default): a few lines with the progress of your open bounties. `mod.lua` `config`:
   `tracker_x`/`tracker_y` (780, 150 in the 1024x768 layout), `refresh` (60 s between asking the server; the server also pushes
   every change).
 - **Channel:** `bounty:state`. The server sends `{ v = 1, next_in, bounties = {{ id, title, text, region, target, n, done, left,
   reward, claims, level }} }` after the handshake and on every change of the board or your progress; the mod also asks with
   `{ req = 1 }`. `left` is relative seconds, so the clocks need not agree.
-- **Layout:** panel "Bounty board (F8)", 400 x 320 at (300, 70), resizable (minimum 300 x 160), closed until F8. A scrolling list;
+- **Layout:** panel "Bounty board (Ctrl+J)", 400 x 320 at (300, 70), resizable (minimum 300 x 160), closed until Ctrl+J. A scrolling list;
   each bounty is a 58 px row: the title in gold (bold) with the time left at the right (green "done" when finished), the
   text ("Defeat 32 orc creatures", with "(level N+)" when it has a minimum level), a progress bar with `n / target` centered in
   it (gold, green when done) and the reward line. Texts instead of the list: "Waiting for the server...", "The board is empty.", or
@@ -39,14 +39,14 @@ Shows the bounties of `bounty_board.lua`: what to hunt, your progress, the time 
 Toasts for every unlock and for the daily login reward of `achievements.lua`, and a panel listing all achievements with progress.
 
 - **Install:** `src/achievements` into `mods\achievements`. Server: `achievements.lua`.
-- **Hotkey:** `panel`, default **F7** (clashes with `damagemeter`, `serverfeed`, `buildsharer`).
+- **Hotkey:** `panel`, default **Ctrl+G**.
 - **Settings:** *Show toasts* (on), *Toast time* (6 s, 2 to 15). `config`: `panel_x`/`panel_y` (590, 40).
 - **Channel:** `achievements:sync`. Server to client: `{ op='state', ach={{id,name,desc,have,need,done,reward}...}, streak, best, days,
   claimed, next }`, `{ op='unlock', id, name, desc, reward }`, `{ op='streak', streak, best, reward }`. Client to server: `{ op='get' }`,
   sent once the handshake is done, when the panel opens and every 30 s while it is open.
 - **Layout:** toasts: up to four boxes stacked from y = 14, centered at the top (340 px wide, black with a gold frame, fading in
   over 0.2 s and out over the last 0.6 s): a gold title ("Achievement unlocked" or "Daily login: day N"), then the name, the
-  description and the reward, or the reward and the best streak. Panel "Achievements (F7)", 410 x 480, resizable: a gold line "Login streak:
+  description and the reward, or the reward and the best streak. Panel "Achievements (Ctrl+G)", 410 x 480, resizable: a gold line "Login streak:
   N days   best N   N days visited", a grey line with today's or tomorrow's reward, "N of 31 unlocked", then a scrolling list of
   40 px rows, one per achievement: name (bold) and description, at the right "Done" in gold, or `have / need` with a small progress
   bar. Unlocked rows have a gold-brown background.
@@ -58,14 +58,14 @@ Toasts for every unlock and for the daily login reward of `achievements.lua`, an
 Rare and unique drops (`rare_drops.lua`) and hero deaths (`graveyard.lua`) as lines on the screen, and a list of the latest.
 
 - **Install:** `src/serverfeed` into `mods\serverfeed`. Server: `rare_drops.lua` and/or `graveyard.lua`.
-- **Hotkey:** `history` (show or hide the list), default **F7** (clashes with three others).
+- **Hotkey:** `history` (show or hide the list), default **Ctrl+Y**.
 - **Settings:** *Rare drops* (on), *Hero deaths* (on), *Seconds on screen* (8, 3 to 30), *Position: right edge* (1008) and *top* (180).
 - **Channels:** `rare_drops:feed` (`{kind='drop', drop={item,tier,rarity,by,from,time}}` or `{kind='recent', drops}`) and
   `graveyard:feed` (`{kind='death', name, level, by, killer_kind, time}` or `{kind='recent', deaths}`). When the handshake is done the mod
   sends an empty request on each; the server answers with the latest five, which only fill the list (no lines on screen).
 - **Layout:** no panel. Live messages are right-aligned text lines, 420 px wide, 20 px apart, on a translucent black background
   at the right edge from the top position: drops in the game's rarity colours (unique gold-brown, rare yellow, magic blue),
-  deaths in red; at most five at once. The list (key on) comes below them: a heading "Latest from the server (F7 hides)" and
+  deaths in red; at most five at once. The list (key on) comes below them: a heading "Latest from the server (Ctrl+Y hides)" and
   the latest twelve, or "nothing yet". Examples: "Lyra Dawnbrook found a unique Stormcaller's Helm, dropped by Skeleton Lord";
   "Sir Plinth (level 34) was slain by Orc Warrior" (fictional names).
 - **Limits:** a server without the scripts never sends; a stock `GameServer.exe` drops the handshake, so the mod stays idle.
@@ -75,14 +75,14 @@ Rare and unique drops (`rare_drops.lua`) and hero deaths (`graveyard.lua`) as li
 Publish your hero build to the server and browse the builds other players shared.
 
 - **Install:** `src/buildsharer` into `mods\buildsharer`. Server: `build_sharer.lua`.
-- **Hotkey:** `toggle`, default **F7** (clashes with three others).
+- **Hotkey:** `toggle`, default **Ctrl+K**.
 - **Settings** (section "My build"): *Build title* (40 characters), *Note* (120), *Tags* (comma separated, up to 5 words, 80 characters),
   *Share carried items* (on: the names of the best up to 12 items in your backpack; the server lists them as "reported"). `config`:
   `page_size` 12.
 - **Channel:** `buildsharer`. Requests `list {q,class,sort,page,per}`, `get {id}`, `mine`, `publish {title,note,tags,carried,level}`,
   `unpublish`; answers `list`, `build`, `mine`, `published`, `unpublished`, `error`. At most one request per 0.4 s (the server limits
   bursts too).
-- **Layout:** panel "Build sharer (F7)", 560 x 430 at (80, 60), with four tabs: **Browse** (a Class dropdown, a Sort radio
+- **Layout:** panel "Build sharer (Ctrl+K)", 560 x 430 at (80, 60), with four tabs: **Browse** (a Class dropdown, a Sort radio
   "Newest / Highest level", Refresh, `<` and `>` buttons, a scrolling list with one button per build such as
   `Lyra Dawnbrook  Seraphim  L87  [verified]  - Smite and shield`, and "N builds, page X of Y"); **My build** (what you publish: hero,
   class, level, your title, note and tags, the number of carried items, buttons *Publish*, *Remove mine*, *Check server*, and what the
@@ -98,11 +98,11 @@ Publish your hero build to the server and browse the builds other players shared
 Quest items near you and in your backpack (read by the mod) and the quest records of your hero from the server.
 
 - **Install:** `src/questhelper` into `mods\questhelper`. Server: `quest_helper.lua` with hero data (web UI or `--authoritative`).
-- **Hotkey:** `toggle`, default **F8** (also the game's quick-load key; rebind it; clashes with `bounty`).
+- **Hotkey:** `toggle`, default **Ctrl+U**.
 - **Settings:** *Show change notices* (on): a line on the screen when a record is new or changed; *Refresh while open* (30 s, 5 to 120).
 - **Channel:** `questhelper`: `state { watch }` and `unwatch` to the server; `state` and `error` back. While the panel is open the
   mod asks to be watched and the server pushes when a record changes.
-- **Layout:** panel "Quest helper (F8)", 520 x 400 at (80, 60), three tabs. **Quest items**: "In your backpack" (name and size in
+- **Layout:** panel "Quest helper (Ctrl+U)", 520 x 400 at (80, 60), three tabs. **Quest items**: "In your backpack" (name and size in
   cells, or "no quest items") and "On the ground within 40 tiles" (name, distance in tiles and position, nearest first). **Records**: a
   line "N records, N with a catalog entry (the catalog has N)", a *Show unnamed records* check box, *Refresh*, and a scrolling list; a
   record is `name = value - label` (gold when the owner named it, `record <key>` otherwise) with "Where:" (area), the hint wrapped, and

@@ -83,7 +83,7 @@ gear.task(function()
                 {title = 'The orc chief', text = 'Slay the orc chief', n = 0, target = 1, left = 11100, reward = 'A rare weapon', level = 10},
                 {title = 'Pest control', text = 'Kill giant spiders', n = 8, target = 8, done = true, left = 600, reward = '200 gold'},
             }})
-            if gear.config.press then A.press('f8') end
+            if gear.config.press then A.key_down('control'); A.press('j'); A.key_up('control') end
         elseif w == 'buildsharer' then
             say('buildsharer', {op = 'list', total = 3, page = 1, pages = 1, builds = {
                 {id = 'b1', name = 'Ria', class_name = 'Seraphim', level = 42, title = 'Fire storm', verified = true},
@@ -110,7 +110,6 @@ gear.task(function()
         -- The damage meter, the loot log and the session tracker record it; one picture of each follows.
         local hero = gear.world.hero()
         local hx, hy = hero:position()
-        A.press('f7')
         for i = 1, 4 do
             local c, why = gear.world.spawn(gear.config.monster or 'ZOMBIE.GRN', hx + 60 * i, hy + 40, {label = 'shot'})
             A.write('spawn' .. i .. '.txt', c and 'ok' or tostring(why))
@@ -123,7 +122,6 @@ gear.task(function()
             gear.wait(0.6)
         end
         shot('damagemeter')
-        A.press('f7')
         A.press('f3')
         shot('lootlog')
         A.press('f3')

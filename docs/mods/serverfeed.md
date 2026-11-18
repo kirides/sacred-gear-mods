@@ -10,13 +10,13 @@ Sacred Gear and the mod itself in your `mods` folder (see [Install](../Install.m
 
 ## How to use it
 
-Just play; lines appear at the right edge of the screen. Press **F7** to see the latest drops and deaths.
+Just play; lines appear at the right edge of the screen. Press **Ctrl+Y** to see the latest drops and deaths.
 
 ## Keys
 
 | Key | What it does |
 |---|---|
-| **F7** | Show the latest drops and deaths. |
+| **Ctrl+Y** | Show the latest drops and deaths. |
 
 You can change every key in the Mods screen (**F11**, then the mod's *Keys* page).
 
@@ -36,4 +36,3 @@ Open the Mods screen with **F11** and pick the mod.
 - **Files:** `src/serverfeed/mod.lua`, `main.lua` (about 130 lines).
 - **Depends on:** `gear.net` (it listens on both server channels with `gear.net.channel(name):on`), `gear.ui`, `gear.keys`, `gear.settings`.
 - **Server side:** `scripts-examples/rare_drops.lua`, `graveyard.lua`. Protocol: [GearServerMods](https://github.com/kirides/sacred-bild/blob/main/docs/GearServerMods.md).
-- **Known clash:** F7 is shared with damagemeter, achievements and buildsharer ([Hotkeys](../Hotkeys.md)).

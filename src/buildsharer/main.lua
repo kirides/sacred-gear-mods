@@ -1,4 +1,4 @@
--- Build sharer: a panel (F7) to publish your hero build to the game server and to browse the builds other players shared.
+-- Build sharer: a panel (Ctrl+K) to publish your hero build to the game server and to browse the builds other players shared.
 -- Server half: SacredEngineRemake Sacred.GameServer/scripts-examples/build_sharer.lua (channel 'buildsharer'). The server fills class,
 -- level, skills and equipment from its own view of your hero; this mod sends a title, a note, tags (settings in the Mods screen) and
 -- the names of the best items in your backpack. Gear cannot read a hero's skills or worn equipment, so nothing else can be sent.
@@ -264,7 +264,7 @@ local function saved_tab(x, y, w, h)
 end
 
 local function panel()
-    local p = ui.panel('main', 'Build sharer (F7)', 80, 60, 560, 430, {})
+    local p = ui.panel('main', 'Build sharer (Ctrl+K)', 80, 60, 560, 430, {})
     if not p.open then S.opened = false; return end
     if not S.opened then                         -- just opened: ask the server for the first page and for my own build
         S.opened = true
