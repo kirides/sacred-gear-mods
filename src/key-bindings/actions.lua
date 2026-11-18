@@ -15,6 +15,8 @@ A.list = {
     {'logbook', 'Log book', 'l'}, {'worldmap', 'World map', 'm'}, {'collect', 'Collect all loot', 'a'},
     {'savemenu', 'Save / Load menu', 's'}, {'help', 'Help', 'h'}, {'options', 'Options', 'o'}, {'pause', 'Pause', 'p'},
     {'netinfo', 'Multiplayer info', 'n'},
+    {'show_names', 'Show item names (hold)', 'alt'}, {'stand_still', 'Attack in place (hold)', 'ctrl'},
+    {'zoom_in', 'Zoom in (hold)', 'add'}, {'zoom_out', 'Zoom out (hold)', 'subtract'},
 }
 
 -- Quick cast rows (unbound by default): the key selects combat art slot n and casts it once at the cursor.
