@@ -4,7 +4,7 @@ return {
     version = '0.1.0',
     author = 'Sacred Gear',
     description = 'Shows the bounties of a Sacred.GameServer with scripts-examples/bounty_board.lua: what to hunt, '
-        .. 'your progress, the time left and the reward, in a panel (Ctrl+J) and as a small tracker.',
+        .. 'your progress, the time left and the reward, in a panel and as a small tracker.',
     settings = {
         {id = 'tracker', type = 'bool', label = 'Tracker', default = true,
             tooltip = 'A few lines with the progress of your open bounties, at the top right'},

@@ -99,7 +99,7 @@ gear.on('draw', function(state)
     end
     if show_history then
         y = y + 8
-        ui.text('Latest from the server (Ctrl+Y hides)', right - 420, y, {width = 420, align = 'right', color = ui.rgba(255, 255, 255, 200), background = BACK, padding = 2})
+        ui.text('Latest from the server' .. (gear.keys.label('history') ~= '' and (' (' .. gear.keys.label('history') .. ' hides)') or ''), right - 420, y, {width = 420, align = 'right', color = ui.rgba(255, 255, 255, 200), background = BACK, padding = 2})
         for _, h in ipairs(history) do
             y = y + 18
             ui.text(h.text, right - 420, y, {width = 420, align = 'right', color = h.color, background = BACK, padding = 2})

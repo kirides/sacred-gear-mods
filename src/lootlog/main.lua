@@ -14,6 +14,11 @@
 --   * Gold piles are only drops ("Log gold piles"): the pile's amount is not exposed.
 -- The log is written to lootlog.json in the mod's folder.
 
+local function key_hint(id)
+    local k = gear.keys.label(id)
+    return k ~= '' and (' (' .. k .. ')') or ''
+end
+
 local ui = gear.ui
 local W = gear.world
 local FILE = 'lootlog.json'
@@ -276,7 +281,7 @@ local function clock_text(s)
 end
 
 local function draw_panel()
-    local p = ui.panel('log', 'Loot log (F3)', 300, 200, 420, 360, {resizable = true, min_width = 340, min_height = 220})
+    local p = ui.panel('log', 'Loot log' .. key_hint('panel'), 300, 200, 420, 360, {resizable = true, min_width = 340, min_height = 220})
     if not p.open then return end
     local x, y = p.content_x or 0, p.content_y or 0
     local w = p.content_w or 400

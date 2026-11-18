@@ -11,6 +11,11 @@
 -- A session is one game with a hero: 'session.start' begins one (the previous is put in the history), the button
 -- begins one by hand. Totals and history are written to session_totals.json in the mod's folder.
 
+local function key_hint(id)
+    local k = gear.keys.label(id)
+    return k ~= '' and (' (' .. k .. ')') or ''
+end
+
 local ui = gear.ui
 local W = gear.world
 local FILE = 'session_totals.json'
@@ -227,7 +232,7 @@ local function row(x, y, w, label, value, color)
 end
 
 local function draw_panel()
-    local p = ui.panel('tracker', 'Session (F2)', 16, 200, 270, 330, {})
+    local p = ui.panel('tracker', 'Session' .. key_hint('panel'), 16, 200, 270, 330, {})
     if not p.open then return end
     local x, y = p.content_x or 0, p.content_y or 0
     local w = p.content_w or 250

@@ -27,6 +27,11 @@
 -- The 'damage' handler runs inside the engine: it does arithmetic on a few counters and returns nothing (the damage is
 -- never changed).
 
+local function key_hint(id)
+    local k = gear.keys.label(id)
+    return k ~= '' and (' (' .. k .. ')') or ''
+end
+
 local ui = gear.ui
 local W = gear.world
 
@@ -644,7 +649,7 @@ local function draw_panel()
     local list = characters()
     if view == 'compact' then return draw_compact_panel(list) end
     local content_h = content_height(#list)
-    local p = ui.panel('meter', 'Damage meter (Ctrl+D)', 700, 200, WIDTH[view], content_h + CHROME, {})
+    local p = ui.panel('meter', 'Damage meter' .. key_hint('panel'), 700, 200, WIDTH[view], content_h + CHROME, {})
     if not p.open then return end
     local x, y = p.content_x or 0, p.content_y or 0
     local w = p.content_w or (WIDTH[view] - 20)

@@ -6,6 +6,11 @@
 --
 -- Nothing a server sends is trusted for more than showing it: texts are cut to a length, only the server (slot 0) is listened to.
 
+local function key_hint(id)
+    local k = gear.keys.label(id)
+    return k ~= '' and (' (' .. k .. ')') or ''
+end
+
 local ui, net, json = gear.ui, gear.net, gear.json
 local ch = net.channel('buildsharer')
 local PAGE = tonumber(gear.config.page_size) or 12
@@ -264,7 +269,7 @@ local function saved_tab(x, y, w, h)
 end
 
 local function panel()
-    local p = ui.panel('main', 'Build sharer (Ctrl+K)', 80, 60, 560, 430, {})
+    local p = ui.panel('main', 'Build sharer' .. key_hint('toggle'), 80, 60, 560, 430, {})
     if not p.open then S.opened = false; return end
     if not S.opened then                         -- just opened: ask the server for the first page and for my own build
         S.opened = true
