@@ -1,8 +1,6 @@
 # Loot filter
 
-![Loot filter](../images/lootfilter.svg)
-
-*Illustration with example values.*
+![Loot filter](../images/lootfilter.jpg)
 
 Your hero only picks up the items you want. Filter by class, quality and kind of item; everything else is dimmed on the ground so the good items stand out.
 

@@ -20,3 +20,5 @@ foreach ($st in 'deposit', 'ui') {
     "return {selftest = '$st', selftest_slot = $Save}" | Set-Content (Join-Path $mods 'shared-stash\config.lua')
     Run "shot-stash-$st" 'shared-stash'
 }
+# More pictures (phases of main.lua: lootfilter, damagemeter, sessiontracker, layout, modscreen): put the mod and `shots` in, write
+# mods\shots\config.lua with `return {phase = '<phase>', monster = 512}` and run `-gear-mods=<mod>,shots` as above.

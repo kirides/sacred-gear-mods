@@ -40,8 +40,8 @@ jobs:
           rm -rf dist && mkdir -p dist/mods
           for d in src/*/; do
             name=$(basename "$d")
-            # The *_selftest mods are automation tests (they overwrite saves etc.), not for players.
-            case "$name" in *_selftest) continue;; esac
+            # The *_selftest mods are automation tests (they overwrite saves etc.); sector-tools is for server admins.
+            case "$name" in *_selftest|sector-tools) continue;; esac
             mkdir -p "dist/mods/$name"
             cp -r "$d". "dist/mods/$name/"
             # Developer-only material inside a mod.
