@@ -68,7 +68,7 @@ gear.task(function()
             A.click(780, 321) -- (type test)
             gear.wait(0.5)
             A.screenshot('editor-click')
-            A.type('sword')
+            A.type(gear.config.type_text or 'klinge')
             gear.wait(1)
             A.screenshot('editor-search')
         end
