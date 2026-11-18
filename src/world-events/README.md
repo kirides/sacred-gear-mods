@@ -135,6 +135,10 @@ hidden with "only while Alt" and outside the event's sector, a sample in the lay
 
 The server half has its own tests in the remake repository (`WorldEventsScriptTests`).
 
+## Events for other mods
+
+The mod publishes `worldevent.*` events (started, progress, completed; failed, and `worldevent.hook` when a trigger fires) with `gear.emit`; see [Mod events](../../docs/ModEvents.md#world-events).
+
 ## Development
 
 - **Files:** `mod.lua`; `core.lua` (progress and reward odds, pure Lua); `hooks.lua` (hook checking, the engine, waves; pure); `localevents.lua` (the single player events; pure); `localgame.lua` (kills, spawning, items, gold); `regions.lua` (the region boss pill and the stack order; pure); `main.lua` (the bar, the server messages). `tests/` needs no game. Self test: `src/world-events_selftest`.

@@ -104,6 +104,7 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 | [Drop tuning](docs/DropTuning.md) | Drop chance, rarity weights, the generator; the self test |
 | [Shared stash](docs/SharedStash.md) | Using the stash, LAN, limits, the file, savegame caveats |
 | [Server mods](docs/ServerMods.md) | The five clients of the remake server's scripts: install, hotkeys, settings |
+| [Mod events](docs/ModEvents.md) | Events mods publish for other mods (bounty, world events) and how to subscribe |
 | [Session mods](docs/SessionMods.md) | Session tracker, loot log, damage meter |
 | [Hotkeys](docs/Hotkeys.md) | Install, default keys and the clashes between mods |
 | [Controller](docs/Controller.md) | Using the mods with a gamepad |

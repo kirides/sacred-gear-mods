@@ -6,6 +6,7 @@
 -- "always / only with Alt" and pin the details.
 local core = require('core')
 local hooks = require('hooks')
+local wevents = require('events')
 local localevents = require('localevents')
 local regions = require('regions')
 local ui, S = gear.ui, gear.settings
@@ -25,8 +26,21 @@ local PULSE = 1.6
 
 local last_server = -1e9    -- gear.time() of the last state a server pushed
 
-local function feed(payload)
+-- Hooks for other mods (README: Hooks): the states the bar receives, compared with the ones before.
+if gear.events then
+    for _, e in ipairs(wevents.EVENTS) do gear.events.declare(e[1], {doc = e[2], args = wevents.ARGS}) end
+end
+
+local function emit_hook(name, p) local ok, err = pcall(gear.emit, name, p) if not ok then gear.log('world-events: ' .. name .. ': ' .. tostring(err)) end end
+
+local function feed(payload, source)
+    local before = model.states or (model.state and {model.state}) or nil
     local ok, crossed = model:receive(payload, gear.time())
+    if ok then
+        local after = model.states or (model.state and {model.state}) or {}
+        local good, err = pcall(wevents.diff, before, after, emit_hook, source or 'server')
+        if not good then gear.log('world-events: hooks: ' .. tostring(err)) end
+    end
     if ok and crossed and S.get('pulse') ~= false then pulse_until = gear.time() + PULSE end
 end
 
@@ -98,6 +112,7 @@ local function on_spawn(wave)
     waves[#waves + 1] = {id = wave.id, made = made, why = why}
     if #waves > 20 then table.remove(waves, 1) end
     gear.log(('world-events: wave %s: %d creatures made%s'):format(wave.id, made, why and (' (' .. why .. ')') or ''))
+    emit_hook('worldevent.hook', {title = wave.event, action = 'spawn', text = wave.text, source = 'server'})
     if made == 0 then gear.log('world-events: the wave ' .. wave.id .. ' was not spawned: ' .. tostring(why)) end
     if wave.text and wave.text ~= '' then G.message(wave.event ~= '' and wave.event or 'World event', wave.text) end
 end
@@ -172,7 +187,11 @@ local function start_local()
     end
     localmode = localevents.new({
         defs = defs, store = local_file.data, log = function(t) gear.log('world-events: ' .. t) end,
-        act = function(action, ctx, key, index, def) G.run_action(action, def and def.title or 'World event') end,
+        act = function(action, ctx, key, index, def)
+            G.run_action(action, def and def.title or 'World event')
+            emit_hook('worldevent.hook', {title = def and def.title, id = localmode and localmode.store.current and localmode.store.current.n,
+                action = action.action, text = action.text, source = 'local'})
+        end,
     })
     G.on_kill(function(name, type_id, sector, region) localmode:kill(name, type_id, sector, region) end)
 end
@@ -191,7 +210,7 @@ function local_frame()
     if now - last_feed >= 1 then
         last_feed = now
         local payload = localmode:payload()
-        if payload then feed(payload); fed_local = true
+        if payload then feed(payload, 'local'); fed_local = true
         elseif fed_local then model:reset(); fed_local = false end
     end
 end

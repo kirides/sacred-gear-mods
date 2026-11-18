@@ -82,6 +82,10 @@ Open the Mods screen with **F11** and pick the mod.
 | Pool bounties | On: the board also draws bounties from the built-in list. Off: only your own bounties. |
 | Tracker | Shows or hides the small progress list at the top right. |
 
+## Events for other mods
+
+The mod publishes `bounty.*` events (started, progress, completed; claimed, failed) with `gear.emit`; see [Mod events](../ModEvents.md#bounty).
+
 ## Development
 
 - **Files:** `src/bounty/mod.lua` (manifest, tracker position, refresh time), `main.lua` (panel, tracker, toasts, the

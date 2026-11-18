@@ -23,6 +23,7 @@ local ui, net = gear.ui, gear.net
 local localboard = require('localboard')
 local localgame = require('localgame')
 local customs = require('customs')
+local hooks = require('hooks')
 local editor = require('editor')
 
 local channel = net and net.channel('bounty:state')
@@ -32,6 +33,15 @@ local asked = -1e9
 local is_local          -- defined below: whether this is the single player board
 
 local GOLD, GREEN, GREY = 0xFFFFD780, 0xFF80FF80, 0xFFB0B0B0
+
+-- Hooks for other mods (README: Hooks). Declared once; the board that arrives is compared with the one before.
+if gear.events then for _, e in ipairs(hooks.EVENTS) do gear.events.declare(e[1], {doc = e[2], args = hooks.ARGS}) end end
+
+local function set_board(new, source)
+    local old = board
+    board, received = new, gear.time()
+    hooks.diff(old, new, gear.emit, {source = source, claim_on_done = source == 'server'})
+end
 
 local function valid(payload)
     if type(payload) ~= 'table' or payload.v ~= 1 or type(payload.bounties) ~= 'table' then return false end
@@ -43,7 +53,7 @@ end
 
 if channel then
     channel:on(function(from, payload)
-        if valid(payload) then board, received = payload, gear.time() end
+        if valid(payload) then set_board(payload, 'server') end
     end)
 end
 
@@ -94,7 +104,7 @@ local function file_for(name)
 end
 
 local function refresh()
-    if mine then board, received = mine:payload(), gear.time() end
+    if mine then set_board(mine:payload(), 'local') end
 end
 
 local function save_mine()
@@ -126,6 +136,10 @@ local function close_mine()
 end
 
 local function reward(b)
+    local p
+    for _, e in ipairs(board and board.bounties or {}) do if e.id == b.id then p = hooks.payload(e, 'local') end end
+    gear.emit('bounty.claimed', p or hooks.payload({id = b.id, title = b.title, text = b.text, target = b.target, n = b.n,
+        level = b.min_level, custom = b.custom}, 'local'))
     local parts = {}
     if (b.gold or 0) > 0 and localgame.gold(b.gold) then parts[#parts + 1] = b.gold .. ' gold' end
     if b.item then
@@ -142,10 +156,12 @@ localgame.on_kill(function(type_name)
     local hero = gear.world.hero()
     local level = hero and hero:level() or 1
     local words = localboard.words(type_name)
-    for _, b in ipairs(mine:kill(words, level)) do reward(b) end
-    for _, b in ipairs(mine:trigger_kill(customs.defs, words, level)) do toast('Bounty started: ' .. b.title, b.text) end
+    local finished = mine:kill(words, level)
+    local started = mine:trigger_kill(customs.defs, words, level)
+    refresh()        -- bounty.progress / completed / started go out first, then the rewards (bounty.claimed)
+    for _, b in ipairs(finished) do reward(b) end
+    for _, b in ipairs(started) do toast('Bounty started: ' .. b.title, b.text) end
     dirty = true
-    refresh()
     if gear.time() - last_save > 5 then save_mine() end
 end)
 
