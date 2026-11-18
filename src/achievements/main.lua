@@ -19,21 +19,14 @@ local TODO_BG = ui.rgba(255, 255, 255, 22)
 
 local ch = net.channel('achievements:sync')
 local state = nil          -- the last {op = 'state'} table
-local toasts = {}          -- {title, lines, born}
-local now = 0              -- seconds, advanced by the frame event
+local toast = gear.toast
+toast.options({
+    seconds = function() return gear.settings.get('seconds', 6) end,
+    when = function(st) return st.mode == 'game' and gear.settings.get('toasts', true) end,
+})
 
 local function request()
     if ch and net.supported() then ch:send({op = 'get'}, 'server') end
-end
-
-local function toast(title, ...)
-    local lines = {}
-    for i = 1, select('#', ...) do
-        local line = select(i, ...)
-        if line and line ~= '' then lines[#lines + 1] = line end
-    end
-    toasts[#toasts + 1] = {title = title, lines = lines, born = now}
-    while #toasts > 4 do table.remove(toasts, 1) end
 end
 
 if ch then
@@ -42,10 +35,10 @@ if ch then
         if p.op == 'state' then
             state = p
         elseif p.op == 'unlock' then
-            toast('Achievement unlocked', tostring(p.name or '?'), tostring(p.desc or ''),
+            toast.show('Achievement unlocked', tostring(p.name or '?'), tostring(p.desc or ''),
                 p.reward and ('Reward: ' .. p.reward) or nil)
         elseif p.op == 'streak' then
-            toast(('Daily login: day %d'):format(tonumber(p.streak) or 0), p.reward and ('Reward: ' .. p.reward) or nil,
+            toast.show(('Daily login: day %d'):format(tonumber(p.streak) or 0), p.reward and ('Reward: ' .. p.reward) or nil,
                 ('Best streak: %d'):format(tonumber(p.best) or 0))
         end
     end)
@@ -55,8 +48,6 @@ gear.on('net_caps', function(caps)
     if caps.supported then request() else state = nil end
 end)
 gear.on('load', function() request() end)
-
-gear.on('frame', function(dt) now = now + (dt or 0) end)
 
 -- keep the panel's numbers fresh while it is open
 gear.every(30, function()
@@ -70,42 +61,6 @@ gear.keys.on('panel', function()
 end)
 
 -- ---- drawing ----
-
-local function draw_toasts()
-    local life = 6
-    local y = 14
-    local keep = {}
-    local TW, PAD, LINE = 360, 12, 15          -- width, padding all around, line height of the text
-    for _, t in ipairs(toasts) do
-        local age = now - t.born
-        if age < life then
-            keep[#keep + 1] = t
-            local a = math.max(0, math.min(1, (life - age) / 0.6, age / 0.2 + 0.2))
-            local x = 512 - TW / 2
-            local lines = {}
-            for _, line in ipairs(t.lines) do
-                for _, part in ipairs((ui.text_wrap(line, TW - 2 * PAD - 4, {size = 12}))) do lines[#lines + 1] = part end
-            end
-            -- title row 18, a gap of 6 and a hairline when there is text, then the lines; PAD above and below
-            local th = PAD + 18 + (#lines > 0 and (8 + #lines * LINE) or 0) + PAD
-            local function alpha(v) return math.floor(v * a) end
-            ui.rect(x, y, TW, th, ui.rgba(12, 10, 8, alpha(215)), {layer = 'top'})
-            ui.rect(x, y, 3, th, ui.rgba(224, 169, 68, alpha(255)), {layer = 'top'})
-            ui.frame(x, y, TW, th, ui.rgba(200, 170, 90, alpha(200)), 1, {layer = 'top'})
-            ui.text(t.title, x + PAD + 4, y + PAD, {color = ui.rgba(240, 200, 110, alpha(255)), bold = true, size = 14, layer = 'top'})
-            if #lines > 0 then
-                ui.rect(x + PAD + 4, y + PAD + 21, TW - 2 * PAD - 8, 1, ui.rgba(200, 170, 90, alpha(90)), {layer = 'top'})
-                local ly = y + PAD + 28
-                for _, line in ipairs(lines) do
-                    ui.text(line, x + PAD + 4, ly, {color = ui.rgba(255, 255, 255, alpha(230)), size = 12, layer = 'top'})
-                    ly = ly + LINE
-                end
-            end
-            y = y + th + 8
-        end
-    end
-    toasts = keep
-end
 
 local function bar(x, y, w, h, fraction)
     ui.rect(x, y, w, h, ui.rgba(255, 255, 255, 30))
@@ -160,6 +115,5 @@ end
 
 gear.on('draw', function(st)
     if not st or st.mode ~= 'game' then return end
-    if gear.settings.get('toasts') then draw_toasts() end
     if not st.exclusive then draw_panel() end
 end)

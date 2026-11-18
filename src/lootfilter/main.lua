@@ -174,7 +174,7 @@ local function overlay(state)
     line(('Nearby: %d items, %d filtered'):format(stats.near, stats.blocked), x + 6, ty); ty = ty + 13
     line(('Refused pickups: %d'):format(W.pickup_refused()), x + 6, ty, 0xFFB0B0B0)
     if not editing and ui.button('open-settings', x + 6, y + h + 4, 184, 20, 'Settings' .. key_hint('panel'), {tooltip = 'Change the rules in game'}) then
-        ui.show_panel('settings', not ui.panel_open('settings'))
+        ui.toggle_panel('settings')
     end
 end
 
@@ -367,7 +367,7 @@ gear.on('draw', function(state)
 end)
 
 gear.keys.on('panel', function()
-    ui.show_panel('settings', not ui.panel_open('settings'))
+    ui.toggle_panel('settings')
 end)
 
 ---------------------------------------------------------------------------------------------------------------

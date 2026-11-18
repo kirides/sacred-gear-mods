@@ -16,7 +16,7 @@ running the script `bounty_board.lua`; on any other server the mod says it has n
 ## How to use it
 
 Press **Ctrl+J** to open the bounty board. The tracker at the top right shows your open bounties; switch it off in the
-settings if you do not want it. Move the panel and the tracker with the [layout editor](layout.md) (hold **Alt**). With a
+settings if you do not want it. Move the panel, the tracker and the messages with the [layout editor](layout.md) (hold **Alt**). With a
 controller, **LT + LB** opens the mod menu, where *Open the bounty board* is a button.
 
 ### Single player

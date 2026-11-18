@@ -2,6 +2,8 @@
 -- global is faked (events, a hero, items, a recording UI) and each mod's main.lua runs against it. Run with LuaJIT
 -- from the repository root:
 --     luajit tests/session_mods_test.lua
+-- The libraries of SacredGear.dll the mods use (gear.fmt, gear.store) come from a sacred-bild checkout: $SACRED_BILD, else
+-- ../sacred-bild (tests/gear_libs.lua).
 -- Exit code 0: all passed. This checks the mods' logic and that they survive nil / missing data; it does not draw
 -- anything and says nothing about the real engine (see sacred-bild docs/GearApi.md).
 
@@ -9,6 +11,9 @@ local failures, passes = 0, 0
 local function ok(cond, name)
     if cond then passes = passes + 1 else failures = failures + 1; print('FAIL ' .. name) end
 end
+
+local libs = dofile('tests/gear_libs.lua')
+local function require_libs(gear) libs.install(gear, {'fmt', 'store'}) end
 
 -- A fake gear -----------------------------------------------------------------------------------------------
 local function make_gear(mod_dir, opts)
@@ -34,10 +39,25 @@ local function make_gear(mod_dir, opts)
     local gear = {version = 'test', mod = {id = mod_dir}}
     function gear.on(event, fn) G.handlers[event] = G.handlers[event] or {}; table.insert(G.handlers[event], fn) end
     gear.keys = {on = function(id, fn) G.keys[id] = fn end}
-    gear.settings = {get = function(id)
-        if opts.settings_throw then error('no settings') end
-        return G.settings_map[id]
+    -- get(id, fallback) as the kernel's: with a fallback, an undeclared id (here: every id when settings_throw) gives it
+    gear.settings = {get = function(id, fallback)
+        if opts.settings_throw then
+            if fallback ~= nil then return fallback end
+            error('no settings')
+        end
+        local v = G.settings_map[id]
+        if v == nil then return fallback end
+        return v
     end}
+    local warned = {}
+    function gear.guard(where, fn)
+        return function(...)
+            local good, err = pcall(fn, ...)
+            if not good and not warned[where] then warned[where] = true; G.logs[#G.logs + 1] = where .. ' failed: ' .. tostring(err) end
+            if good then return err end
+        end
+    end
+    function gear.log(...) G.logs[#G.logs + 1] = table.concat({...}, ' ') end
     function gear.read(name) return G.files[name], (G.files[name] == nil) and 'missing' or nil end
     function gear.save(name, text) G.files[name] = text; G.saves = (G.saves or 0) + 1; return true end
     gear.json = {
@@ -74,7 +94,9 @@ local function make_gear(mod_dir, opts)
     function ui.scroll_end() end
     function ui.show_panel(id, open) G.panels[id] = open end
     function ui.panel_open(id) return G.panels[id] end
+    function ui.toggle_panel(id) G.panels[id] = not G.panels[id]; return G.panels[id] end
     gear.ui = ui
+    require_libs(gear)
     G.gear = gear
     return G
 end
@@ -98,6 +120,13 @@ end
 local function frames(G, seconds, step)
     step = step or 0.125
     for _ = 1, math.floor(seconds / step + 0.5) do fire(G, 'frame', step) end
+end
+
+-- The log lines that are errors (gear.store's note that a broken file was replaced by the defaults is not one).
+local function errors(G)
+    local out = {}
+    for _, l in ipairs(G.logs) do if not l:find('^gear%.store: ') then out[#out + 1] = l end end
+    return out
 end
 
 local function joined(G) return table.concat(G.texts, '\n') end
@@ -145,7 +174,7 @@ do
     ok(joined(G):find('0:01:02', 1, true), 'tracker: no time counted in the escape menu')
     -- rates: 3 kills in 62 s is 174/h
     ok(joined(G):find('174/h', 1, true), 'tracker: kills per hour')
-    ok(#G.logs == 0, 'tracker: no errors on the main path: ' .. table.concat(G.logs, '|'))
+    ok(#G.logs == 0, 'tracker: no errors on the main path: ' .. table.concat(errors(G), '|'))
     fire(G, 'session.stop')
     local saved = G.gear.json.decode(G.files['session_totals.json'])
     ok(saved and saved.lifetime.kills == 3 and saved.lifetime.gold_gained == 50 and saved.lifetime.xp_gained == 300, 'tracker: lifetime saved')
@@ -178,7 +207,7 @@ do
     fire(G, 'session.stop'); fire(G, 'unload')
     G.files['session_totals.json'] = 'garbage'
     fire(G, 'load')
-    ok(#G.logs == 0, 'tracker: no errors logged on empty data: ' .. table.concat(G.logs, '|'))
+    ok(#errors(G) == 0, 'tracker: no errors logged on empty data: ' .. table.concat(errors(G), '|'))
     G.hero_state.present = true
     G.keys.panel()
     ok(true, 'tracker: survived')
@@ -198,7 +227,7 @@ do
     local unique = {id = 8, type = 4, type_name = 'Excalibur', quality = 'unique', category = 'weapon'}
     G.ground = {old, sword, plain, unique}
     frames(G, 1)
-    ok(#G.logs == 0, 'loot: no errors on the main path: ' .. table.concat(G.logs, '|'))
+    ok(#G.logs == 0, 'loot: no errors on the main path: ' .. table.concat(errors(G), '|'))
     -- read back through a save
     fire(G, 'session.stop')
     local data = G.gear.json.decode(G.files['lootlog.json'])
@@ -255,7 +284,7 @@ do
     fire(G, 'draw', {mode = 'game'}); fire(G, 'draw', nil)
     G.files['lootlog.json'] = 'nonsense'
     fire(G, 'load')
-    ok(#G.logs == 0, 'loot: no errors logged on hostile data: ' .. table.concat(G.logs, '|'))
+    ok(#errors(G) == 0, 'loot: no errors logged on hostile data: ' .. table.concat(errors(G), '|'))
 end
 
 -- Damage meter -----------------------------------------------------------------------------------------------
@@ -298,7 +327,7 @@ do
     ok(joined(G):find('0  (0 hits)', 1, true), 'damage: reset clears')
     G.keys.reset()
     G.keys.panel()
-    ok(#G.logs == 0, 'damage: no errors on the main path: ' .. table.concat(G.logs, '|'))
+    ok(#G.logs == 0, 'damage: no errors on the main path: ' .. table.concat(errors(G), '|'))
 end
 
 -- Damage meter: compact view (the default), view switching, party sharing
@@ -328,7 +357,7 @@ do
     G.texts = {}; fire(G, 'draw', {mode = 'game'})
     ok(not joined(G):find('Fight (', 1, true) and joined(G):find('Aria', 1, true), 'view: key cycles back to compact')
     ok(G.files['view.txt'] == 'compact', 'view: choice saved')
-    ok(#G.logs == 0, 'compact: no errors: ' .. table.concat(G.logs, '|'))
+    ok(#G.logs == 0, 'compact: no errors: ' .. table.concat(errors(G), '|'))
 end
 
 do
@@ -355,7 +384,7 @@ do
     G.texts = {}
     fire(G, 'draw', {mode = 'game'})
     ok(not joined(G):find('Bran', 1, true), 'party: silent player dropped after a while')
-    ok(#G.logs == 0, 'party: no errors: ' .. table.concat(G.logs, '|'))
+    ok(#G.logs == 0, 'party: no errors: ' .. table.concat(errors(G), '|'))
 end
 
 -- Damage meter: allies (Wilbur by name, a follower by walking along)
@@ -388,7 +417,7 @@ do
     fire(G, 'damage', {damage = 10, victim_type = 77, attacker_type = 120})
     G.texts = {}
     fire(G, 'draw', {mode = 'game'})
-    ok(#G.logs == 0, 'allies: no errors: ' .. table.concat(G.logs, '|'))
+    ok(#G.logs == 0, 'allies: no errors: ' .. table.concat(errors(G), '|'))
 end
 
 -- Damage meter: no hero, bad data
@@ -404,7 +433,7 @@ do
     fire(G, 'damage', {damage = 10, victim_type = 1, attacker_type = 2})
     fire(G, 'draw', {mode = 'game'})
     fire(G, 'frame', nil); fire(G, 'frame', 'x'); fire(G, 'draw', nil)
-    ok(#G.logs == 0, 'damage: no errors logged on missing data: ' .. table.concat(G.logs, '|'))
+    ok(#G.logs == 0, 'damage: no errors logged on missing data: ' .. table.concat(errors(G), '|'))
 end
 
 print(('%d passed, %d failed'):format(passes, failures))

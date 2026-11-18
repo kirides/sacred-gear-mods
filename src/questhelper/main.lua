@@ -21,15 +21,12 @@ local DIM, OK, WARN, GOLD = ui.rgba(255, 255, 255, 150), ui.rgba(143, 206, 122),
 local NEAR_TILES = 40
 
 local S = {
-    tab = 1, state = nil, reason = nil, asked = 0, opened = false, show_unknown = true, toast = nil, toast_until = 0,
+    tab = 1, state = nil, reason = nil, asked = 0, opened = false, show_unknown = true,
     near = {}, near_at = 0, status = '',
 }
 
-local function fit(text, max)
-    text = tostring(text == nil and '' or text):gsub('%c', ' ')
-    if #text > max then text = text:sub(1, max - 1) .. '...' end
-    return text
-end
+local fit = gear.fmt.fit
+gear.toast.options({seconds = 8, when = function(state) return state.mode == 'game' and not state.escape_menu end})
 
 -- ---- the server ----
 local function ask(watch)
@@ -50,8 +47,7 @@ local function announce(old, new)
     for _, r in ipairs(old.records) do if type(r) == 'table' then before[tostring(r.key)] = r.value end end
     for _, r in ipairs(new.records) do
         if type(r) == 'table' and before[tostring(r.key)] ~= r.value then
-            S.toast = ('Quest record: %s%s'):format(fit(title_of(r), 50), before[tostring(r.key)] == nil and ' (new)' or ' (changed)')
-            S.toast_until = gear.time() + 8
+            gear.toast.show(('Quest record: %s%s'):format(fit(title_of(r), 50), before[tostring(r.key)] == nil and ' (new)' or ' (changed)'))
             return
         end
     end
@@ -194,7 +190,7 @@ local function panel()
     if S.status ~= '' then ui.text(S.status, x, y + h - 16, {color = WARN}) end
 end
 
-gear.keys.on('toggle', function() ui.show_panel('main', not ui.panel_open('main')) end)
+gear.keys.on('toggle', function() ui.toggle_panel('main') end)
 
 -- Refresh while the panel is open (the server also pushes changes to a watching client).
 gear.every(5, function()
@@ -202,11 +198,7 @@ gear.every(5, function()
 end)
 
 gear.on('draw', function(state)
-    if not state or state.mode ~= 'game' then return end
-    if S.toast and gear.time() < S.toast_until and not state.escape_menu then
-        ui.text(S.toast, 0, 110, {width = 1024, align = 'center', color = GOLD, background = ui.rgba(0, 0, 0, 150), padding = 4, layer = 'top'})
-    end
-    if state.exclusive then return end
+    if not state or state.mode ~= 'game' or state.exclusive then return end
     panel()
 end)
 

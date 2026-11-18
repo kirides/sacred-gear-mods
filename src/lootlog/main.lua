@@ -49,27 +49,9 @@ local logged = {}              -- id -> {type = , t = }: ids we logged as drops 
 local pack = {}                -- id -> true: in the backpack at the last scan
 local chest = {}               -- id -> true: in the chest at the last scan
 local last_roll = nil          -- {creature = type id, t = clock}
-local warned = {}
+local guard, store = gear.guard, gear.store
 
-local function setting(id, fallback)
-    local ok, v = pcall(gear.settings.get, id)
-    if ok and v ~= nil then return v end
-    return fallback
-end
-
-local function warn(where, err)
-    if not warned[where] then
-        warned[where] = true
-        print(('lootlog: %s failed: %s'):format(where, tostring(err)))
-    end
-end
-
-local function guard(where, fn)
-    return function(...)
-        local ok, err = pcall(fn, ...)
-        if not ok then warn(where, err) end
-    end
-end
+local function setting(id, fallback) return gear.settings.get(id, fallback) end
 
 ---------------------------------------------------------------------------------------------------------------
 -- Persistence
@@ -80,10 +62,7 @@ local function trim()
 end
 
 local function load_file()
-    local text = gear.read(FILE)
-    if not text then return end
-    local data = gear.json.decode(text)
-    if type(data) ~= 'table' then return end
+    local data = store.load(FILE, {})
     session_no = tonumber(data.session) or 0
     if type(data.entries) == 'table' then
         for _, e in ipairs(data.entries) do
@@ -103,8 +82,7 @@ end
 local function save_file()
     dirty = false
     trim()
-    local ok, err = gear.save(FILE, gear.json.encode({session = session_no, entries = entries}))
-    if not ok then warn('save', err) end
+    store.save(FILE, {session = session_no, entries = entries})
 end
 
 ---------------------------------------------------------------------------------------------------------------
@@ -113,13 +91,7 @@ end
 -- Takes the game's text markup out of a tooltip line: `\cAARRGGBB` is a colour, `\gAARRGGBB` plus 8 more characters
 -- (hex, space padded) an inline image (equipment names start with one), `\r` a reset, `\w`. Returns nil when
 -- other backslash codes remain, so unknown markup never ends up in the log.
-local function plain(line)
-    line = line:gsub('\\g%x%x%x%x%x%x%x%x[%x ][%x ][%x ][%x ][%x ][%x ][%x ][%x ]', '')
-    line = line:gsub('\\c%x%x%x%x%x%x%x%x', ''):gsub('\\[rw]', '')
-    line = line:gsub('^%s+', ''):gsub('%s+$', '')
-    if line == '' or line:find('\\', 1, true) then return nil end
-    return line
-end
+local plain = gear.fmt.plain
 
 -- A readable name: the first line of the game's tooltip (the localized name, without its markup), else the type name.
 local function item_name(item)
@@ -275,10 +247,7 @@ local function passes(e)
     return true
 end
 
-local function clock_text(s)
-    s = math.max(0, math.floor(tonumber(s) or 0))
-    return ('%d:%02d'):format(math.floor(s / 60), s % 60)
-end
+local clock_text = gear.fmt.clock
 
 local function draw_panel()
     local p = ui.panel('log', 'Loot log' .. key_hint('panel'), 300, 200, 420, 360, {resizable = true, min_width = 340, min_height = 220})
@@ -327,6 +296,4 @@ gear.on('draw', guard('draw', function(state)
 end))
 
 ui.show_panel('log', false)
-gear.keys.on('panel', guard('key', function()
-    ui.show_panel('log', not ui.panel_open('log'))
-end))
+gear.keys.on('panel', guard('key', function() ui.toggle_panel('log') end))

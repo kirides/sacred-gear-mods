@@ -11,7 +11,7 @@ local function key_hint(id)
     return k ~= '' and (' (' .. k .. ')') or ''
 end
 
-local ui, net, json = gear.ui, gear.net, gear.json
+local ui, net = gear.ui, gear.net
 local ch = net.channel('buildsharer')
 local PAGE = tonumber(gear.config.page_size) or 12
 local TABS = {'Browse', 'My build', 'Saved', 'Detail'}
@@ -30,18 +30,12 @@ local S = {
 local function say(text) S.status = tostring(text) end
 
 -- Texts that come from outside are shown cut to a length (and only as text: gear.ui.text draws, it does not interpret).
-local function fit(text, max)
-    text = tostring(text == nil and '' or text):gsub('%c', ' ')
-    if #text > max then text = text:sub(1, max - 1) .. '...' end
-    return text
-end
+local fit = gear.fmt.fit
 
 -- ---- saved builds (a file of this mod) ----
 local function load_saved()
-    local text = gear.read('saved_builds.json')
-    if not text then return end
-    local data = json.decode(text)
-    if type(data) == 'table' and type(data.builds) == 'table' then
+    local data = gear.store.load('saved_builds.json', {})
+    if type(data.builds) == 'table' then
         for i = 1, math.min(#data.builds, MAX_SAVED) do
             local b = data.builds[i]
             if type(b) == 'table' and type(b.name) == 'string' then S.saved[#S.saved + 1] = b end
@@ -50,7 +44,7 @@ local function load_saved()
 end
 
 local function store_saved()
-    local ok, err = gear.save('saved_builds.json', json.encode({builds = S.saved}))
+    local ok, err = gear.store.save('saved_builds.json', {builds = S.saved})
     if not ok then say('could not save: ' .. tostring(err)) end
 end
 
@@ -286,7 +280,7 @@ local function panel()
     if S.status ~= '' then ui.text(fit(S.status, 90), x, y + h - 16, {color = WARN}) end
 end
 
-gear.keys.on('toggle', function() ui.show_panel('main', not ui.panel_open('main')) end)
+gear.keys.on('toggle', function() ui.toggle_panel('main') end)
 
 gear.on('draw', function(state)
     if not state or state.mode ~= 'game' or state.exclusive then return end

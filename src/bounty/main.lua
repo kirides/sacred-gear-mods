@@ -77,21 +77,12 @@ local mine = nil           -- localboard.Board of the hero, or nil
 local mine_file = nil
 local mine_hero = nil
 local dirty, last_tick, last_save = false, nil, 0
-local toasts, now = {}, 0
 
 is_local = function()
     return gear.settings.get('own_board') ~= false and not (gear.mp and gear.mp.active())
 end
 
-local function toast(title, ...)
-    local lines = {}
-    for i = 1, select('#', ...) do
-        local line = select(i, ...)
-        if line and line ~= '' then lines[#lines + 1] = line end
-    end
-    toasts[#toasts + 1] = {title = title, lines = lines, born = now}
-    while #toasts > 4 do table.remove(toasts, 1) end
-end
+local function toast(title, ...) gear.toast.show(title, ...) end
 
 local function rng(lo, hi) return math.random(lo, hi) end
 
@@ -209,51 +200,9 @@ gear.every(1, function()
     if dirty and t - last_save > 20 then save_mine() end
 end)
 
-gear.on('frame', function(dt) now = now + (dt or 0) end)
 gear.on('unload', function() if mine then save_mine() end end)
 
-local function draw_toasts()
-    local life = 6
-    local y = 14
-    local keep = {}
-    local TW, PAD, LINE = 360, 12, 15          -- width, padding all around, line height of the text
-    for _, t in ipairs(toasts) do
-        local age = now - t.born
-        if age < life then
-            keep[#keep + 1] = t
-            local a = math.max(0, math.min(1, (life - age) / 0.6, age / 0.2 + 0.2))
-            local x = 512 - TW / 2
-            local lines = {}
-            for _, line in ipairs(t.lines) do
-                for _, part in ipairs((ui.text_wrap(line, TW - 2 * PAD - 4, {size = 12}))) do lines[#lines + 1] = part end
-            end
-            -- title row 18, a gap of 6 and a hairline when there is text, then the lines; PAD above and below
-            local th = PAD + 18 + (#lines > 0 and (8 + #lines * LINE) or 0) + PAD
-            local function alpha(v) return math.floor(v * a) end
-            ui.rect(x, y, TW, th, ui.rgba(12, 10, 8, alpha(215)), {layer = 'top'})
-            ui.rect(x, y, 3, th, ui.rgba(224, 169, 68, alpha(255)), {layer = 'top'})
-            ui.frame(x, y, TW, th, ui.rgba(200, 170, 90, alpha(200)), 1, {layer = 'top'})
-            ui.text(t.title, x + PAD + 4, y + PAD, {color = ui.rgba(240, 200, 110, alpha(255)), bold = true, size = 14, layer = 'top'})
-            if #lines > 0 then
-                ui.rect(x + PAD + 4, y + PAD + 21, TW - 2 * PAD - 8, 1, ui.rgba(200, 170, 90, alpha(90)), {layer = 'top'})
-                local ly = y + PAD + 28
-                for _, line in ipairs(lines) do
-                    ui.text(line, x + PAD + 4, ly, {color = ui.rgba(255, 255, 255, alpha(230)), size = 12, layer = 'top'})
-                    ly = ly + LINE
-                end
-            end
-            y = y + th + 8
-        end
-    end
-    toasts = keep
-end
-
-local function time_text(seconds)
-    seconds = math.max(0, math.floor(seconds))
-    if seconds >= 3600 then return ('%dh %02dm'):format(math.floor(seconds / 3600), math.floor(seconds % 3600 / 60)) end
-    if seconds >= 60 then return ('%dm %02ds'):format(math.floor(seconds / 60), seconds % 60) end
-    return seconds .. 's'
-end
+local time_text = gear.fmt.span
 
 local function left_of(b) return (b.left or 0) - (gear.time() - received) end
 
@@ -336,11 +285,10 @@ gear.on('draw', function(state)
     tracker()
     panel()
     if is_local() and mine then editor.draw(editor_hooks) end
-    draw_toasts()
 end)
 
 gear.keys.on('panel', function()
-    ui.show_panel('board', not ui.panel_open('board'))
+    ui.toggle_panel('board')
 end)
 
 gear.keys.on('editor', function()
