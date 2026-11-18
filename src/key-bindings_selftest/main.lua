@@ -190,7 +190,7 @@ gear.task(function()
     settle()
 
     -- quick cast: Q on combat art 2, needs a slot select
-    set('qc2', 'v')
+    set('qc3', 'v')
     settle()
     A.move(560, 330)
     A.screenshot('before-cast')
@@ -199,7 +199,7 @@ gear.task(function()
     local abilities = {}
     local ah = gear.on('creature.ability', function(...) abilities[#abilities + 1] = {...} end)
     local n = slot_selects('v')
-    check('quick cast key selects slot 2', n >= 1, n)
+    check('quick cast V selects slot 3', n >= 1, n)
     gear.wait(1.5)
     A.screenshot('after-cast')
     local x1, y1 = hero:position()
@@ -216,6 +216,7 @@ gear.task(function()
     check('the options screen closed', not open('UI_WND_OPTIONS'))
     check('and the layer is on again', select(1, gear.input.context()) == true)
 
+    gear.wait(3)
     -- back to the defaults
     for _, group in ipairs({actions.list, actions.quick}) do
         for _, a in ipairs(group) do
