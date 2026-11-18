@@ -48,6 +48,8 @@ example for a stream:
   with groups (Orcs, Undead, Dragons...) first and then every creature the game has, read from its own data; the *Filter*
   box beside it shortens the list. A chosen creature is a button: click it to remove it. No creature means any monster. The
   trigger has the same picker.
+- **Search is forgiving:** the item search and the creature *Filter* take several words in any order, ignore case and
+  accents (`flugel` finds Flügel), forgive one typo (`scwert` finds Schwert) and rank the best matches first.
 - **Rewards:** gold, and one item: a *random item*, a *random item for your class* (the game rolls until your class can use
   it), or *chosen items*: search an item by its name **in your game's language** (the name the tooltip shows; the internal name matches too), press *Add*, and one of the chosen types drops.
   Random items have a quality tier (Good, Rare, Best).
@@ -83,7 +85,7 @@ Open the Mods screen with **F11** and pick the mod.
 
 - **Files:** `src/bounty/mod.lua` (manifest, tracker position, refresh time), `main.lua` (panel, tracker, toasts, the
   server board, the glue), `localboard.lua` (single player board: pool, posting, progress, expiry, saving; pure Lua, no
-  `gear` calls), `localgame.lua` (kills and rewards: the parts that touch the game), `customs.lua` (the player's bounties in `custom.json`), `editor.lua` (the editor panel with the creature picker) and `creatures.lua` (the creature list: the words of every monster type name of `gear.data.object_types`, plus groups).
+  `gear` calls), `localgame.lua` (kills and rewards: the parts that touch the game), `customs.lua` (the player's bounties in `custom.json`), `editor.lua` (the editor panel with the creature picker) and `fuzzy.lua` (the forgiving search of both lookups) and `creatures.lua` (the creature list: the words of every monster type name of `gear.data.object_types`, plus groups).
 - **Two sources, one panel:** `main.lua` shows a payload of the form `{ v = 1, bounties = {{ id, title, text, target, n,
   done, left, reward, claims, level }} }`. In a network game it comes from the server's `bounty:state` channel
   (`gear.net`), otherwise from `localboard.Board:payload()` (`gear.mp.active()` decides, checked once a second).

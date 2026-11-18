@@ -2,6 +2,8 @@
 -- the game's own object types. A "creature" here is a word of a monster's type name (ORC_WARRIOR.GRN has orc and warrior), the
 -- same words the bounty matches on, shown with a readable label and how many monster types carry it. Groups bundle several words.
 
+local fuzzy = require('fuzzy')
+
 local M = {}
 
 M.GROUPS = {
@@ -56,24 +58,34 @@ function M.catalog()
     return list
 end
 
--- Options of the "add creature" dropdown for a filter text: groups first, then the words that contain the filter.
--- Returns labels and a parallel list of {words = {...}} entries; entry 1 is the placeholder.
-function M.options(filter)
-    local labels, entries = {'+ Add a creature...'}, {false}
-    filter = (filter or ''):lower():gsub('[^%a]', '')
+-- Options of the "add creature" dropdown for a filter text (fuzzy, see fuzzy.lua): without a filter the groups, then every word
+-- in order; with one the best matches first. Returns labels and a parallel list of {words = {...}} entries; entry 1 is the
+-- placeholder.
+local entries_cache
+local function all_entries()
+    if entries_cache then return entries_cache end
+    entries_cache = {}
     for _, g in ipairs(M.GROUPS) do
-        if filter == '' or g.label:lower():find(filter, 1, true) then
-            labels[#labels + 1] = '[Group] ' .. g.label
-            entries[#entries + 1] = {words = g.words}
-        end
+        entries_cache[#entries_cache + 1] = {label = '[Group] ' .. g.label, pick = g.words, words = fuzzy.words(g.label .. ' ' .. table.concat(g.words, ' '))}
     end
     for _, e in ipairs(M.catalog()) do
-        if filter == '' or e.word:find(filter, 1, true) then
-            labels[#labels + 1] = ('%s (%d)'):format(e.label, e.count)
-            entries[#entries + 1] = {words = {e.word}}
-        end
+        entries_cache[#entries_cache + 1] = {label = ('%s (%d)'):format(e.label, e.count), pick = {e.word}, words = fuzzy.words(e.word)}
+    end
+    return entries_cache
+end
+
+local memo_filter, memo_labels, memo_entries
+function M.options(filter)
+    if filter == memo_filter and memo_labels then return memo_labels, memo_entries end
+    local labels, entries = {'+ Add a creature...'}, {false}
+    local list = all_entries()
+    if #fuzzy.words(filter) > 0 then list = fuzzy.rank(list, filter, 60) end
+    for _, e in ipairs(list) do
+        labels[#labels + 1] = e.label
+        entries[#entries + 1] = {words = e.pick}
     end
     if #labels == 1 then labels[2], entries[2] = 'Nothing matches', false end
+    memo_filter, memo_labels, memo_entries = filter, labels, entries
     return labels, entries
 end
 

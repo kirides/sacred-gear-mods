@@ -361,6 +361,9 @@ do
         elseif ctx.op == 'drop' then
             ctx.running = true
             localgame.drop_item(ctx.spec, function(ok) ctx.running, ctx.ok = false, ok end)
+        elseif ctx.op == 'fuzzy' then
+            ctx.items = editor.item_search(ctx.q)
+            ctx.creatures = (creatures_mod or require('creatures')).options(ctx.q)
         elseif ctx.op == 'toast' then
             toast(ctx.title, unpack(ctx.lines or {}))
         elseif ctx.op == 'open_form' then

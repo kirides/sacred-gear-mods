@@ -47,6 +47,18 @@ gear.task(function()
         A.screenshot('bounty-panel')
         return A.quit(0)
     end
+    if gear.config.phase == 'fuzzy' then
+        for _, q in ipairs({'schwert', 'scwert', 'sword bastard', 'drgn', 'dragn', 'orcs', 'zombi', 'heiltrank', 'trank heil', 'flugel', 'leather elf', 'xyzq'}) do
+            local c = {op = 'fuzzy', q = q}
+            gear.emit('bounty.test', c)
+            local items = {}
+            for i = 1, math.min(5, #c.items) do items[i] = c.items[i] end
+            local cr = {}
+            for i = 2, math.min(5, #c.creatures) do cr[#cr + 1] = c.creatures[i] end
+            say(('%s => items(%d): %s | creatures: %s'):format(q, #c.items, table.concat(items, '; '), table.concat(cr, ', ')))
+        end
+        return A.quit(0)
+    end
     if gear.config.phase == 'toasts' then
         gear.emit('bounty.test', {op = 'toast', title = 'Bounty complete: Orc slayer', lines = {'Reward: 1500 gold and an item'}})
         gear.emit('bounty.test', {op = 'toast', title = 'New bounty', lines = {'Web cleaner', 'Defeat 18 spider creatures, or as many as the long text needs to wrap onto a second line'}})
