@@ -2,7 +2,7 @@
 return {
     id = 'better-saveload',
     name = 'Better SaveLoad',
-    version = '1.1.0',
+    version = '1.1.1',
     author = 'kirides',
     description = 'The savegame screen made new: hero, class, level and picture of every savegame, filters by '
         .. 'character and class, newest first or by file name. Works with the mouse, the keyboard and the controller.',

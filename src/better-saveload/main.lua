@@ -26,7 +26,6 @@ local osk, name_row     -- the on-screen keyboard and the name row (below the li
 local view = {
     open = nil,         -- the replaced window that is open (WND_GAME / WND_MENUS), nil: closed
     mode = 'save',      -- 'load' | 'save' (in the menus always 'load')
-    game_mode = 'save', -- the tab last used in game
     all = {},           -- gear.game.saves()
     shown = {},         -- filtered and sorted
     heroes = {},        -- the character filter's names (index 1: all)
@@ -427,7 +426,6 @@ local function toolbar(x, y, w)
         local changed, i = ui.radio_group('mode', x, y + 3, {'Load', 'Save'}, idx, L({horizontal = true, spacing = 14}))
         if changed then
             view.mode = i == 1 and 'load' or 'save'
-            view.game_mode = view.mode
             view.confirm = nil
             view.osk = nil
             if view.mode == 'save' then view.sel = 'new' end
@@ -619,7 +617,7 @@ local function opened(name)
     view.open = name
     view.confirm = nil
     view.message = nil
-    if name == WND_GAME then view.mode = view.game_mode else view.mode = 'load' end
+    view.mode = name == WND_GAME and 'save' or 'load'     -- in game always the Save tab first
     for i, s in ipairs(SORTS) do
         if s.id == S.get('sort') then view.sort_i = i end
     end
