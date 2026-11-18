@@ -117,11 +117,13 @@ gear.task(function()
         end
         local art = (comp:abilities() or {})[1]
         local used = false
-        for _ = 1, 30 do
+        for _ = 1, 60 do
             gear.wait(0.5)
             local a = art and comp:ability(art.id)
             if a and not a.ready then used = true end
+            if used then break end
         end
+        gear.wait(1)
         local hurt = 0
         for _, f in ipairs(foes) do
             if f[1]:is_dead() or (f[1]:hp() or f[2]) < f[2] then hurt = hurt + 1 end
