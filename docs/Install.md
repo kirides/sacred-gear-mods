@@ -6,9 +6,13 @@
   [release](https://github.com/kirides/sacred-bild/releases) of sacred-bild into the game folder. `SacredGear.dll` next to
   the game is loaded by SacredBild and runs the mods. It also works without SacredBild
   ([Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md)).
-- This repository (a zip of it from GitHub's *Code* button, or a `git clone`).
+- The mods: `sacred-gear-mods-<version>.zip` from the [latest release](https://github.com/kirides/sacred-gear-mods/releases/latest)
+  (or this repository: a zip of it from GitHub's *Code* button, or a `git clone`).
 
 ## Copy the mods
+
+From a release zip: extract it into the game folder; the `mods` folder lands next to `Sacred.exe`. Delete the folders of the mods
+you do not want. From the repository: copy folders as below.
 
 A mod is a folder in the game's `mods` folder (next to `Sacred.exe`; create `mods` if it is missing).
 
@@ -20,8 +24,8 @@ A mod is a folder in the game's `mods` folder (next to `Sacred.exe`; create `mod
 Do not copy `autosave_selftest`: it is a test that overwrites the autosave slots. (`shared-stash` contains a self test
 too, but it only runs when the game starts with `-gear-auto`.)
 
-The loot filter, the layout editor and the realm picker are in the sacred-bild repository
-(`gear\examples\lootfilter`, `layout`, `realms`); install them the same way.
+The loot filter, the layout editor, the realm picker and the other mods in `src` are installed the same way (`src\lootfilter` to
+`mods\lootfilter`, and so on). The server mods are described in [Server mods](ServerMods.md).
 
 ## The Mods screen
 

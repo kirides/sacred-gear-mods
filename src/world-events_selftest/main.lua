@@ -7,7 +7,7 @@
 -- 'world-events:bar' in the layout (so the layout editor can move it), hidden with "Only while Alt" and elsewhere in "where the
 -- event counts", a sample while the layout editor is on, a bigger size kept by an older version brought back, the result line,
 -- and a move through gear.ui.set_panel_rect. Screenshots (pill-*.bmp: normal, hover, Alt, pulse, layout editor, result) go to
--- GearAutomation\<instance>\. Add the layout example mod (gear/examples/layout, without its self test) to get its overlay.
+-- GearAutomation\<instance>\. Add the layout example mod (src/layout, without its self test) to get its overlay.
 if not gear.auto then
     print('no automation (start the game with -gear-auto): nothing to do')
     return

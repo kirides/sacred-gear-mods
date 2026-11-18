@@ -33,14 +33,22 @@ all from sliders on its page of the Mods screen. Off by default in effect: every
 Each of them is set in the **Mod manager** (**F11**, or the *Mods* button under the escape menu): switch each mod on or off,
 change its settings and re-bind its keys.
 
-### Also for Sacred Gear, in the sacred-bild repository
+**Loot filter**: picks up only the items you want (class, quality and category rules, potion choices) and dims the rest on
+the ground. **F5** opens its settings.
 
-The mod manager, the **loot filter** (class, quality and category rules, dimmed labels, **F5**), the **layout editor**
-(move every window and mod panel, **Alt** + *Edit layout*) and the **realm picker** (a private online play server) are
-part of [sacred-bild](https://github.com/kirides/sacred-bild#what-you-get-from-sacred-gear-sacredgeardll), with
-screenshots there. The loot filter, layout editor and realm picker are its examples (`gear/examples/lootfilter`,
-`layout`, `realms`): copy them to `mods` like the mods here. See also
-[Realms](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md#realms).
+**Layout editor**: move every window of the game and every mod panel where you want it (hold **Alt**, press *Edit layout*).
+
+**Realm picker**: choose the online play server (realm) for Closed / Open Internet, a page in the Mods screen.
+
+**Server mods** (they need a SacredEngineRemake game server with the matching script): bounty board, achievements and
+login streak, server feed (rare drops, hero deaths), build sharer and quest helper. See [Server mods](docs/ServerMods.md);
+the default hotkeys and their clashes are in [Hotkeys](docs/Hotkeys.md).
+
+**Twitch Integration** (`twitch_integration` and `twi_sacred`): Twitch viewers spawn monsters, give gold, heal or teleport the hero.
+
+The mod manager itself is part of Sacred Gear in [sacred-bild](https://github.com/kirides/sacred-bild#what-you-get-from-sacred-gear-sacredgeardll).
+The session mods **sessiontracker**, **lootlog** and **damagemeter** still live in sacred-bild
+(`gear/examples`), see [Session mods](https://github.com/kirides/sacred-bild/blob/main/docs/GearSessionMods.md).
 
 ### Sacred ReBorn
 
@@ -80,6 +88,12 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/world-events_selftest` | Automation self test of the world-events mod |
 | `src/sector-tools` | For server admins: the sector id and grid cell you stand in, boundaries on the ground, recording areas by walking, copy-to-clipboard of the config line for the server's `world_events.lua`. [README](src/sector-tools/README.md) |
 | `src/sector-tools_selftest` | Automation self test of the sector-tools mod |
+| `src/achievements`, `bounty`, `buildsharer`, `questhelper`, `serverfeed` | Clients of the SacredEngineRemake server mods. [Doc](docs/ServerMods.md) |
+| `src/lootfilter` | Loot filter: pick up by class, quality and category, dim the rest |
+| `src/layout` | Layout editor: move the game's windows and mod panels |
+| `src/realms` | Realm picker for the online play server |
+| `src/twitch_integration`, `src/twi_sacred` | Twitch Integration: the connector's pipe and the actions (monsters, gold, heal, teleport) |
+| `tests/modmock` | Smoke tests of buildsharer and questhelper without the game ([how](tests/modmock/README.md)) |
 | `src/shared-stash` | The shared stash, built on `gear.inv`; includes its self tests. [README](src/shared-stash/README.md) |
 | `tools/readme-shots` | Takes this README's screenshots in a copy of the game folder ([how](docs/Screenshots.md)) |
 
@@ -95,5 +109,7 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 | [Autosave](docs/Autosave.md) | Timer, slots, settings, loading an autosave |
 | [Drop tuning](docs/DropTuning.md) | Drop chance, rarity weights, the generator; the self test |
 | [Shared stash](docs/SharedStash.md) | Using the stash, LAN, limits, the file, savegame caveats |
+| [Server mods](docs/ServerMods.md) | The five clients of the remake server's scripts: install, hotkeys, settings |
+| [Hotkeys](docs/Hotkeys.md) | Install, default keys and the clashes between mods |
 | [Controller](docs/Controller.md) | Using the mods with a gamepad |
 | [Screenshots](docs/Screenshots.md) | Re-taking the README's screenshots |

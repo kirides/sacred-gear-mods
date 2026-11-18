@@ -1,0 +1,82 @@
+name: Build and release mods
+
+# Pushing a tag like v1.2.0 builds sacred-gear-mods-<tag>.zip and publishes it as a GitHub release.
+# The zip holds a ready-to-use `mods` folder: extract it into the game folder (next to Sacred.exe).
+# Every other push / pull request / manual run builds the same zip as a workflow artifact only.
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+
+jobs:
+  package:
+    permissions:
+      contents: write   # only used to publish the release on tags
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check every mod has a manifest
+        shell: bash
+        run: |
+          set -e
+          for d in src/*/; do
+            case "$d" in *_selftest/) continue;; esac
+            [ -f "${d}mod.lua" ] || { echo "::error::${d} has no mod.lua"; exit 1; }
+            [ -f "${d}main.lua" ] || { echo "::error::${d} has no main.lua"; exit 1; }
+          done
+
+      - name: Assemble the mods folder
+        shell: bash
+        run: |
+          set -e
+          rm -rf dist && mkdir -p dist/mods
+          for d in src/*/; do
+            name=$(basename "$d")
+            # The *_selftest mods are automation tests (they overwrite saves etc.), not for players.
+            case "$name" in *_selftest) continue;; esac
+            mkdir -p "dist/mods/$name"
+            cp -r "$d". "dist/mods/$name/"
+            # Developer-only material inside a mod.
+            rm -rf "dist/mods/$name/tests" "dist/mods/$name/tools"
+          done
+          cat > dist/README.txt <<'TXT'
+          Sacred Gear mods
+          ================
+          Extract this zip into the Sacred game folder (the one with Sacred.exe), so that the `mods` folder
+          lands next to it. Needs SacredBild + Sacred Gear: https://github.com/kirides/sacred-bild
+          Start the game and press F11 to switch the mods on or off.
+          Docs: https://github.com/kirides/sacred-gear-mods
+          TXT
+          sed -i 's/^          //' dist/README.txt
+          ls dist/mods
+
+      - name: Create the zip
+        shell: bash
+        run: |
+          set -e
+          version="${GITHUB_REF_NAME//\//-}"
+          [ "$GITHUB_REF_TYPE" = "tag" ] || version="${GITHUB_SHA::7}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          (cd dist && zip -qr "../sacred-gear-mods-$version.zip" mods README.txt)
+          unzip -l "sacred-gear-mods-$version.zip" | tail -5
+
+      - name: Upload the zip as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sacred-gear-mods-${{ env.VERSION }}
+          path: sacred-gear-mods-${{ env.VERSION }}.zip
+
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sacred-gear-mods-${{ env.VERSION }}.zip
+          generate_release_notes: true
