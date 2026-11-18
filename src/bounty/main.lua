@@ -99,7 +99,12 @@ local function rng(lo, hi) return math.random(lo, hi) end
 local function file_for(name)
     local clean = name:gsub('[^%w]', '_')
     local h = 2166136261
-    for i = 1, #name do h = (h ~ name:byte(i)) * 16777619 % 4294967296 end
+    -- FNV-1a, exactly: LuaJIT has no ~ operator (bit.bxor), and a double cannot hold h * 16777619, so the multiplication by
+    -- 2^24 + 403 is split: (h * 2^24) mod 2^32 only keeps the low byte of h.
+    for i = 1, #name do
+        h = bit.bxor(h, name:byte(i)) % 4294967296
+        h = (h * 403 + (h % 256) * 16777216) % 4294967296
+    end
     return ('board_%s_%08x.json'):format(clean:sub(1, 24), h)
 end
 
