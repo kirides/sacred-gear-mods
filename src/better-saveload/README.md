@@ -8,7 +8,7 @@ start menu's *Load game* screen:
 - **filters** by character and by class;
 - **order**: newest first, or by file name as the game lists them;
 - **Load**, **Save** (a new savegame or overwriting one), **Delete**, each with a question first where something would
-  be lost;
+  be lost; a **double click** on a savegame loads it (Load tab) or saves over it (Save tab), as its button does;
 - **your own savegame names**: type the name while the Save tab is open (umlauts work), or use the on-screen keyboard
   (*Keyboard*, for the controller). It starts as the overwritten savegame's name, or the *Name of new savegames*
   setting.

@@ -6,7 +6,7 @@
 -- In the menus: opens the start menu's Load game screen (its 5th entry), checks that the mod's screen replaces it,
 -- the filters and the order, that the game's own screen comes back when the mod stops drawing (and that the mod's
 -- screen is back the next time it opens), then loads a savegame with Enter. In game: opens the savegame window (S),
--- saves a new savegame from the mod's screen, opens it again, deletes that savegame (Delete, Enter on the question)
+-- saves a new savegame from the mod's screen (double click on its row), opens it again, deletes that savegame (Delete, Enter on the question)
 -- and closes the screen with its Back button. Results and screenshots in GearAutomation\<instance>.
 
 if not gear.auto then
@@ -20,6 +20,7 @@ local results = {checks = {}, passed = 0, failed = 0}
 local WND_GAME, WND_MENUS = 'UI_WND_SAVEGAME', 'UI_MENU_LOADGAME'
 local LOAD_ENTRY = {512, 413}       -- the start menu's 5th entry (Load game), 1024x768 layout
 local BACK_BUTTON = {854, 673}      -- the screen's Back button at the panel's default place and size
+local NEW_ROW = {420, 159}          -- the first row of the list (in save mode: New savegame)
 
 local function check(name, ok, detail)
     results.checks[#results.checks + 1] = {name = name, ok = ok and true or false, detail = detail}
@@ -223,8 +224,10 @@ gear.task(function()
     gear.wait(0.3)
     A.screenshot('game_save')
     local had = slots()
-    A.press('enter')
-    check('save closes the window', wait_open(WND_GAME, false))
+    -- A double click on the "New savegame" row (the list's first, at the panel's default place) saves.
+    A.ui_click(NEW_ROW[1], NEW_ROW[2])
+    A.ui_click(NEW_ROW[1], NEW_ROW[2])
+    check('double click saves: the window closes', wait_open(WND_GAME, false))
     check('saved', gear.wait_until(function() return #saved > 0 end, 30), saved[1])
     local new_slot = type(saved[1]) == 'number' and saved[1] or nil
     check('a new savegame', new_slot ~= nil and not had[new_slot] and slots()[new_slot] ~= nil, new_slot)
