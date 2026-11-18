@@ -49,7 +49,7 @@ example for a stream:
   box beside it shortens the list. A chosen creature is a button: click it to remove it. No creature means any monster. The
   trigger has the same picker.
 - **Rewards:** gold, and one item: a *random item*, a *random item for your class* (the game rolls until your class can use
-  it), or *chosen items*: search an item type name (`sword`, `ring`...), press *Add*, and one of the chosen types drops.
+  it), or *chosen items*: search an item by its name **in your game's language** (the name the tooltip shows; the internal name matches too), press *Add*, and one of the chosen types drops.
   Random items have a quality tier (Good, Rare, Best).
 - **Start and Stop:** the list shows every bounty with its state. *Start* puts it on your board (next to the others);
   *Stop* takes it off. A finished one can be started again.

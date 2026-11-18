@@ -127,14 +127,40 @@ local function def_of(f)
     }
 end
 
+-- Every item type with its name as the game shows it (the player's language) and its internal name; built once.
+local item_catalog
+local function items()
+    if item_catalog then return item_catalog end
+    item_catalog = {}
+    local types = gear.data.object_types
+    for id = 1, 0x7E5F do
+        if ITEM_KINDS[types:kind(id)] then
+            local internal = types:name(id)
+            local shown = types:display_name(id)
+            if internal and shown then
+                item_catalog[#item_catalog + 1] = {id = id, name = shown, internal = internal, key = (shown .. ' ' .. internal):lower()}
+            end
+        end
+    end
+    return item_catalog
+end
+
+-- Types whose shown or internal name contains the text (any case), best first: names that start with it.
 local function search_items(text)
     if text == search_for then return end
     search_for = text
     search_results = {}
-    if #text < 2 then return end
-    for _, m in ipairs(gear.data.object_types:search(text, 60)) do
-        if ITEM_KINDS[m.kind] then search_results[#search_results + 1] = m end
-        if #search_results >= 24 then break end
+    local needle = text:lower()
+    if #needle < 2 then return end
+    local starts, others = {}, {}
+    for _, e in ipairs(items()) do
+        local at = e.key:find(needle, 1, true)
+        if at == 1 then starts[#starts + 1] = e elseif at then others[#others + 1] = e end
+    end
+    for _, list in ipairs({starts, others}) do
+        for _, e in ipairs(list) do
+            if #search_results < 40 then search_results[#search_results + 1] = e end
+        end
     end
 end
 
@@ -165,8 +191,8 @@ local function draw_form(x, y, w, h)
     end
     cy = cy + 26
     if f.mode == 4 then
-        row_label('Find item type', lx, cy)
-        f.search = field('search', fx, cy, 200, f.search, 'Part of an item type name, e.g. sword, ring, helmet')
+        row_label('Find an item', lx, cy)
+        f.search = field('search', fx, cy, 200, f.search, 'Part of an item name in your game language, e.g. sword, ring, helmet')
         search_items(f.search)
         cy = cy + 24
         if #search_results > 0 then
