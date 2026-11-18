@@ -22,6 +22,11 @@ confirms each save. Your own saves and the quicksave are never touched.
 
 ![An autosave note at the top of the screen](docs/images/autosave.jpg)
 
+**Better SaveLoad**: a new savegame screen in place of the game's (in game and the start menu's *Load game*): each
+savegame's picture, hero, class and level, filters by character and class, newest first or by file name.
+
+![The savegame screen](docs/images/better-saveload.jpg)
+
 **Drop tuning**: more or fewer drops, a tilt of the rarity odds (the best items, set and unique items) and an optional fair random generator for drops,
 all from sliders on its page of the Mods screen. Off by default in effect: every setting starts at "as the game has it".
 
@@ -67,6 +72,8 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 |---|---|
 | `src/autosave` | Periodic autosave. [README](src/autosave/README.md) |
 | `src/autosave_selftest` | Automation self test of the autosave mod |
+| `src/better-saveload` | The savegame screen on Gear's replaced windows. [README](src/better-saveload/README.md) |
+| `src/better-saveload_selftest` | Automation self test of Better SaveLoad |
 | `src/drop-tuning` | Drop chance, rarity weights and drop random numbers on `gear.drops`. [Doc](docs/DropTuning.md) |
 | `src/drop-tuning_selftest` | Automation self test of the drop-tuning mod |
 | `src/world-events` | A movable progress bar for the game server's world event (needs the remake server's `world_events.lua`). [README](src/world-events/README.md) |
