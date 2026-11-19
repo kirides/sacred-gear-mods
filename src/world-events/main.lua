@@ -186,6 +186,12 @@ local function local_on()
     return G ~= nil and S.get('local_mode') ~= 'off' and gear.time() - last_server > LOCAL_AFTER
 end
 
+-- Type ids in hooks read as the game's localized names.
+do
+    local T = gear.data and gear.data.object_types
+    if T and T.label then hooks.labeler = function(id) local ok, n = pcall(T.label, T, id) return ok and n or nil end end
+end
+
 local function start_local()
     if localmode or not G then return end
     -- The run of events (the count, the running one, the wait) belongs to the savegame: kept per savegame (an older Gear keeps one
@@ -196,6 +202,19 @@ local function start_local()
     local defs = FILES.load('events.json', nil)
     if defs == nil then
         defs = localevents.DEFAULT
+        -- the creatures a wave spawns are saved as type ids, not as names of the game's language (a name still works when read)
+        local copy = gear.json.decode(gear.json.encode(defs))
+        for _, ev in ipairs(copy.events or {}) do
+            for _, hook in ipairs(ev.hooks or {}) do
+                for _, act in ipairs(hook.actions or {}) do
+                    for _, kind in ipairs(act.kinds or {}) do
+                        local id = type(kind.type) == 'string' and G.resolve(kind.type) or nil
+                        if id then kind.type = id end
+                    end
+                end
+            end
+        end
+        defs = copy
         FILES.save('events.json', defs)                        -- a first run: a file to edit
     end
     localmode = localevents.new({

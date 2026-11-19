@@ -29,7 +29,7 @@ local roll_at = {}          -- type -> gear.time() when the loot roll of its dea
 local hero_type
 local kill_listeners = {}
 
--- Called as fn(type_name) for every kill that counts (the bounty board and the daily quests both listen).
+-- Called as fn(type_name, type_id) for every kill that counts (the bounty board and the daily quests both listen).
 function G.on_kill(fn) kill_listeners[#kill_listeners + 1] = fn end
 
 function G.reset()
@@ -83,7 +83,7 @@ function G.poll()
             tracked[id] = nil
             if counts(e, now) then
                 for _, fn in ipairs(kill_listeners) do
-                    local ok, err = pcall(fn, e.name)        -- one listener's error must not stop the others
+                    local ok, err = pcall(fn, e.name, e.type)        -- one listener's error must not stop the others
                     if not ok then print('bounty: kill listener: ' .. tostring(err)) end
                 end
             end

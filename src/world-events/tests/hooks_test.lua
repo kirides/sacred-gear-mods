@@ -188,6 +188,11 @@ local L6 = localevents.new({defs = 'garbage', store = {}}); L6:tick(1); check(#L
 local RH = hooks.clean({{kills = {creature = 'orc', count = 2, region = 4}, actions = {{action = 'message', text = 'in the desert'}}}})
 eq(RH[1].kills.region, 4, 'a kills trigger keeps its region')
 eq(hooks.trigger_text(RH[1]), 'When the realm has defeated 2 x orc in region 4', 'and says so')
+-- a trigger that names its creature by type id shows the localized name (ids are what is saved)
+hooks.labeler = function(id) return id == 38 and 'Orkkrieger' or nil end
+local IH = hooks.clean({{kills = {creature = 38, count = 3}, actions = {{action = 'message', text = 'x'}}}})
+eq(hooks.trigger_text(IH[1]), 'When the realm has defeated 3 x Orkkrieger', 'a creature type id is shown as its localized name')
+hooks.labeler = nil
 local rfired = {}
 local rr = hooks.runner(RH, {}, function(a) rfired[#rfired + 1] = a.text end)
 rr:kill('Orc', 38, 'me', {}, 3); rr:kill('Orc', 38, 'me', {}, nil); rr:kill('Orc', 38, 'me', {}, 3)

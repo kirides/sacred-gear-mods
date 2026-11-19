@@ -40,6 +40,60 @@ local function item_spec(v)
 end
 M.item_spec = item_spec
 
+-- Creature targets. A bounty names its creatures two ways: `names`, family words that match a whole word of the model name (orc),
+-- and `types`, creature type ids (38): ids are what is saved for one kind of creature, whatever the language. Both together
+-- are one filter: a kill counts when its type is listed or one of its words is; no names and no types count any creature.
+-- M.resolver(text) -> type id | nil (set by main.lua to gear.data.object_types:resolve) turns a name that an older version saved
+-- into an id; M.labeler(id) -> the localized name (object_types:label). Without them (tests, old Gear) names stay as they are.
+M.resolver, M.labeler = nil, nil
+
+-- The name of a chosen item type {id, name}: the localized name of its id, the saved name when the game has none.
+function M.item_label(t)
+    local shown = M.labeler and t.id and M.labeler(t.id)
+    return (shown and not shown:find('^type %d+$')) and shown or t.name or tostring(t.id)
+end
+
+local function split_targets(list, types)
+    local words, ids, seen = {}, {}, {}
+    local function add_id(t) if not seen[t] then seen[t] = true ids[#ids + 1] = t end end
+    for _, t in ipairs(type(types) == 'table' and types or {}) do
+        local n = tonumber(t)
+        if n and n >= 1 and n == math.floor(n) then add_id(n) end
+    end
+    for _, w in ipairs(type(list) == 'table' and list or {}) do
+        if type(w) == 'number' then
+            add_id(math.floor(w))
+        elseif type(w) == 'string' and w:match('%S') then
+            local id = w:find('[^%a]') and M.resolver and M.resolver(w) or nil       -- 'ORC_WARRIOR.GRN', 'Goblin-Krieger': a name, not a word
+            if id then add_id(id) else words[#words + 1] = w:lower():gsub('[^%a]', '') end
+        end
+    end
+    return words, ids
+end
+M.split_targets = split_targets
+
+local function hits(names, types, words, type_id)
+    types = types or {}
+    if #names == 0 and #types == 0 then return true end
+    for _, t in ipairs(types) do if t == type_id then return true end end
+    for _, w in ipairs(names) do if words[w] then return true end end
+    return false
+end
+M.hits = hits
+
+-- What a filter is called for the player: the family words, then the localized names of up to three listed types.
+function M.target_text(names, types)
+    local parts = {}
+    for _, w in ipairs(names or {}) do parts[#parts + 1] = w end
+    local shown = 0
+    for _, t in ipairs(types or {}) do
+        if shown < 3 then parts[#parts + 1] = M.labeler and M.labeler(t) or ('type ' .. t) end
+        shown = shown + 1
+    end
+    if shown > 3 then parts[#parts + 1] = '+' .. (shown - 3) end
+    return table.concat(parts, '/')
+end
+
 local function ids_of(list)
     local set = {}
     for _, b in ipairs(list) do set[b.def] = true end
@@ -56,7 +110,7 @@ local function reward_text(b)
     if (b.gold or 0) > 0 then parts[#parts + 1] = b.gold .. ' gold' end
     local it = item_spec(b.item)
     if it then
-        local what = it.mode == 'specific' and (#it.types == 1 and it.types[1].name or 'one of ' .. #it.types .. ' items')
+        local what = it.mode == 'specific' and (#it.types == 1 and M.item_label(it.types[1]) or 'one of ' .. #it.types .. ' items')
             or it.mode == 'class' and 'an item for your class' or 'an item'
         parts[#parts + 1] = what
     end
@@ -64,7 +118,8 @@ local function reward_text(b)
 end
 
 local function what_text(b)
-    return 'Defeat ' .. b.target .. ' ' .. (#b.names > 0 and table.concat(b.names, '/') .. ' ' or '') .. 'creatures'
+    local what = M.target_text(b.names, b.types)
+    return 'Defeat ' .. b.target .. ' ' .. (what ~= '' and what .. ' ' or '') .. 'creatures'
 end
 
 local Board = {}
@@ -111,7 +166,7 @@ function Board:fill(level, first)
         if first then duration = duration * (0.4 + 0.6 * (self:pool_count() + 1) / M.SLOTS) end
         self.seq = self.seq + 1
         local b = {
-            id = self.seq, def = def.id, title = def.title, names = def.names, target = draw_target(self, def.target),
+            id = self.seq, def = def.id, title = def.title, names = def.names, types = def.types or {}, target = draw_target(self, def.target),
             min_level = def.min_level or 1, gold = M.gold_for(def.gold or 0, level), item = item_spec(def.item), left = duration, n = 0,
             done = false,
         }
@@ -140,12 +195,11 @@ function Board:tick(dt)
 end
 
 -- A kill of a creature with these type-name `words` by a hero of `level`. Returns the bounties it completed.
-function Board:kill(words, level)
+function Board:kill(words, level, type_id)
     local finished = {}
     for _, b in ipairs(self.list) do
         if not b.done and level >= b.min_level then
-            local hit = #b.names == 0
-            for _, w in ipairs(b.names) do if words[w] then hit = true break end end
+            local hit = hits(b.names, b.types, words, type_id)
             do
                 if hit then
                     b.n = b.n + 1
@@ -167,23 +221,17 @@ end
 -- item = item spec, trigger = {on, names, count, cooldown (minutes)}}. Returns a cleaned copy or nil.
 function M.clean_def(d)
     if type(d) ~= 'table' or type(d.id) ~= 'string' or d.id == '' then return nil end
-    local names = {}
-    for _, w in ipairs(type(d.names) == 'table' and d.names or {}) do
-        if type(w) == 'string' and w:match('%S') then names[#names + 1] = w:lower():gsub('[^%a]', '') end
-    end
+    local names, types = split_targets(d.names, d.types)
     local trig = type(d.trigger) == 'table' and d.trigger or {}
-    local tnames = {}
-    for _, w in ipairs(type(trig.names) == 'table' and trig.names or {}) do
-        if type(w) == 'string' and w:match('%S') then tnames[#tnames + 1] = w:lower():gsub('[^%a]', '') end
-    end
+    local tnames, ttypes = split_targets(trig.names, trig.types)
     return {
-        id = d.id, title = tostring(d.title or d.id):sub(1, 40), names = names,
+        id = d.id, title = tostring(d.title or d.id):sub(1, 40), names = names, types = types,
         target = math.max(1, math.min(100000, math.floor(tonumber(d.target) or 10))),
         minutes = math.max(0, math.min(100000, tonumber(d.minutes) or 0)),
         min_level = math.max(1, math.floor(tonumber(d.min_level) or 1)),
         gold = math.max(0, math.min(2000000000, math.floor(tonumber(d.gold) or 0))),
         item = item_spec(d.item),
-        trigger = {on = trig.on == true, names = tnames, count = math.max(1, math.floor(tonumber(trig.count) or 10)),
+        trigger = {on = trig.on == true, names = tnames, types = ttypes, count = math.max(1, math.floor(tonumber(trig.count) or 10)),
             cooldown = math.max(0, tonumber(trig.cooldown) or 30)},
     }
 end
@@ -200,7 +248,7 @@ function Board:start(def)
     self:stop(def.id)
     self.seq = self.seq + 1
     local b = {
-        id = self.seq, def = def.id, custom = true, title = def.title, names = def.names, target = def.target,
+        id = self.seq, def = def.id, custom = true, title = def.title, names = def.names, types = def.types or {}, target = def.target,
         min_level = def.min_level, gold = def.gold, item = def.item, n = 0, done = false,
         left = (def.minutes or 0) > 0 and def.minutes * 60 or 0, endless = (def.minutes or 0) <= 0,
     }
@@ -222,13 +270,12 @@ end
 
 -- Automatic triggers: a kill with these `words` counts for every custom definition whose trigger matches. A definition whose
 -- count is reached starts (unless it is already running or cooling down). Returns the bounties started.
-function Board:trigger_kill(defs, words, level)
+function Board:trigger_kill(defs, words, level, type_id)
     local started = {}
     for _, def in ipairs(defs) do
         local tr = def.trigger
         if tr and tr.on and level >= def.min_level then
-            local hit = #tr.names == 0
-            for _, w in ipairs(tr.names) do if words[w] then hit = true break end end
+            local hit = hits(tr.names, tr.types, words, type_id)
             if hit and not self:active(def.id) then
                 local t = self.triggers[def.id]
                 if not t then t = {n = 0, cool = 0} self.triggers[def.id] = t end
@@ -267,7 +314,7 @@ end
 function Board:save_table()
     local list = {}
     for _, b in ipairs(self.list) do
-        list[#list + 1] = {id = b.id, def = b.def, title = b.title, names = b.names, target = b.target, min_level = b.min_level,
+        list[#list + 1] = {id = b.id, def = b.def, title = b.title, names = b.names, types = b.types, target = b.target, min_level = b.min_level,
             gold = b.gold, item = b.item, left = b.left, n = b.n, done = b.done, custom = b.custom, endless = b.endless}
     end
     local triggers = {}
@@ -290,8 +337,9 @@ function M.load(data, rng, pool)
     for _, e in ipairs(type(data.board) == 'table' and data.board or {}) do
         if type(e) == 'table' and type(e.def) == 'string' and type(e.title) == 'string' and is_names(e.names)
             and tonumber(e.target) and tonumber(e.left) and (tonumber(e.left) > 0 or e.endless == true) then
+            local names, types = split_targets(e.names, e.types)          -- an old save holds names only
             local b = {
-                id = tonumber(e.id) or 0, def = e.def, title = e.title, names = e.names, target = math.max(1, math.floor(e.target)),
+                id = tonumber(e.id) or 0, def = e.def, title = e.title, names = names, types = types, target = math.max(1, math.floor(e.target)),
                 min_level = math.max(1, math.floor(tonumber(e.min_level) or 1)), gold = math.max(0, math.floor(tonumber(e.gold) or 0)),
                 item = item_spec(e.item), left = e.endless == true and 0 or math.min(tonumber(e.left), M.DURATION * 100),
                 n = math.max(0, math.floor(tonumber(e.n) or 0)), done = e.done == true, custom = e.custom == true, endless = e.endless == true,

@@ -241,8 +241,7 @@ do
     ok(data and #data.entries == 2, 'loot: two worthwhile drops logged (plain and baseline skipped): ' .. tostring(data and #data.entries))
     local names = {}
     for _, e in ipairs(data and data.entries or {}) do names[e.name] = e end
-    ok(names['Blade of Haste'] and names['Blade of Haste'].src == 'Goblin-Krieger' and names['Blade of Haste'].kind == 'drop', 'loot: name from tooltip, source from drops.roll')
-    ok(names['Blade of Haste'] and not names['Blade of Haste'].src:lower():find('%.grn$'), 'loot: the drop source is the localized creature name, not a model name')
+    ok(names['Blade of Haste'] and names['Blade of Haste'].st == 12 and names['Blade of Haste'].src == nil and names['Blade of Haste'].kind == 'drop', 'loot: name from tooltip, the source saved as its type id (not as a name)')
     ok(names['Excalibur'] and names['Excalibur'].quality == 'unique', 'loot: without a tooltip the localized type name (object_types:label) is shown')
     -- pickup: the sword moves into the backpack
     fire(G, 'session.start')
@@ -274,6 +273,12 @@ do
     fire(G2, 'draw', {mode = 'game'})
     ok(joined(G2):find('Blade', 1, true), 'loot: reloaded entries are drawn')
     ok(joined(G2):find('entries', 1, true), 'loot: count line')
+    ok(joined(G2):find('Goblin-Krieger', 1, true), 'loot: the source is drawn as the localized name of its id')
+    -- a log of an older version holds the source as text: still shown as it is
+    local G3 = load_mod('lootlog', {files = {['lootlog.json'] = G.gear.json.encode({session = 1, entries = {{s = 1, t = 5, kind = 'drop', name = 'Old Blade', quality = 'rare', category = 'weapon', src = 'gob_warrior.grn'}}})}, json = G.gear.json})
+    fire(G3, 'load')
+    fire(G3, 'draw', {mode = 'game'})
+    ok(joined(G3):find('gob_warrior.grn', 1, true), 'loot: an older entry keeps its saved source text')
 end
 
 -- Loot log: hostile data

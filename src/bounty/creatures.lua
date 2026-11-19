@@ -31,6 +31,14 @@ function M.options(filter)
             entries[#entries + 1] = {words = g.words}
         end
     end
+    -- single creature types, searched by their localized and their internal names: saved as ids
+    if #q > 0 then
+        local ok, found = pcall(lookup.search, 'creature_type', filter, 40)
+        for _, t in ipairs(ok and found or {}) do
+            labels[#labels + 1] = t.name
+            entries[#entries + 1] = {types = {t.id}}
+        end
+    end
     for _, t in ipairs(lookup.search('creature', filter, 200)) do
         labels[#labels + 1] = ('%s (%d)'):format(t.name, t.count)
         entries[#entries + 1] = {words = {t.word}}
@@ -42,6 +50,12 @@ end
 
 function M.label(word)
     return (word:gsub('^%l', string.upper))
+end
+
+-- The chip of a creature type id: its localized name.
+function M.type_label(id)
+    local ok, n = pcall(function() return gear.data.object_types:label(id) end)
+    return ok and type(n) == 'string' and n or ('type ' .. tostring(id))
 end
 
 return M

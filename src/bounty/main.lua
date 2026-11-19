@@ -188,13 +188,13 @@ local function reward(b)
     toast('Bounty complete: ' .. b.title, #parts > 0 and ('Reward: ' .. table.concat(parts, ' and ')) or nil)
 end
 
-localgame.on_kill(function(type_name)
+localgame.on_kill(function(type_name, type_id)
     if not mine then return end
     local hero = gear.world.hero()
     local level = hero and hero:level() or 1
     local words = localboard.words(type_name)
-    local finished = mine:kill(words, level)
-    local started = mine:trigger_kill(customs.defs, words, level)
+    local finished = mine:kill(words, level, type_id)
+    local started = mine:trigger_kill(customs.defs, words, level, type_id)
     refresh()        -- bounty.progress / completed / started go out first, then the rewards (bounty.claimed)
     for _, b in ipairs(finished) do reward(b) end
     for _, b in ipairs(started) do toast('Bounty started: ' .. b.title, b.text) end
@@ -218,6 +218,12 @@ local editor_hooks = {
     trigger_state = function(id) if mine then return mine:trigger_state(id) end return 0, 0 end,
 }
 
+-- Names a bounty file of an older version holds become type ids (Gear's object_types:resolve); the player sees localized names.
+do
+    local T = gear.data and gear.data.object_types
+    if T and T.resolve then localboard.resolver = function(text) local ok, id = pcall(T.resolve, T, text) return ok and id or nil end end
+    if T and T.label then localboard.labeler = function(id) local ok, n = pcall(T.label, T, id) return ok and n or nil end end
+end
 customs.load()
 
 gear.every(0.25, function()
@@ -387,7 +393,7 @@ do
         elseif ctx.op == 'open_editor' then
             editor.open()
         elseif ctx.op == 'trigger_kill' and mine then
-            for _, b in ipairs(mine:trigger_kill(customs.defs, localboard.words(ctx.name), 10)) do toast('Bounty started: ' .. b.title) end
+            for _, b in ipairs(mine:trigger_kill(customs.defs, localboard.words(ctx.name), 10, ctx.type)) do toast('Bounty started: ' .. b.title) end
             refresh()
         elseif ctx.op == 'save' then
             save_mine()
