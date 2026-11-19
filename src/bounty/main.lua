@@ -70,16 +70,6 @@ local function ask(force)
 end
 
 gear.on('net_caps', function(caps) if caps and caps.supported then ask(true) end end)
-gear.on('session.start', function()
-    if mine then close_mine() end
-    board = nil
-    ask(true)
-    ui.show_panel('editor', false)
-end)
-gear.on('session.stop', function()
-    if mine then close_mine() end
-    board = nil
-end)
 gear.every(5, function() ask(false) end)
 
 ---------------------------------------------------------------------------------------------------------------
@@ -168,6 +158,19 @@ local function close_mine()
     mine, mine_file, mine_hero, board = nil, nil, nil, nil
     localgame.reset()
 end
+
+-- A game starts or ends: the board of the game before is saved and closed (the next tick opens the new hero's).
+-- (These handlers must come after the locals mine and close_mine: above them those names would be globals, always nil.)
+gear.on('session.start', function()
+    if mine then close_mine() end
+    board = nil
+    ask(true)
+    ui.show_panel('editor', false)
+end)
+gear.on('session.stop', function()
+    if mine then close_mine() end
+    board = nil
+end)
 
 local function reward(b)
     local p
