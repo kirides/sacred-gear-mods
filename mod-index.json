@@ -297,6 +297,14 @@
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/shared-stash.jpg"
     },
     {
+      "id": "spawn-rate",
+      "path": "mods/spawn-rate",
+      "name": "Spawn rate",
+      "version": "1.0.0",
+      "author": "kirides",
+      "description": "Multiplies the creatures the game spawns, from 1x (the game as it is) up to 100x. Every creature the world creates for you brings extra ones of its kind with it. Single player only; safeguards keep the frame rate up."
+    },
+    {
       "id": "twi_sacred",
       "path": "mods/twi_sacred",
       "name": "Twitch Integration: actions",
