@@ -57,6 +57,10 @@ jobs:
           done < <(jq -r '(.mods // [])[] | "\(.id) \(.path)"' mod-index.json | tr -d '\r')
           echo "mod-index.json ok: $(jq '(.mods // []) | length' mod-index.json) mods"
 
+      - name: Check mod-index.json is up to date
+        shell: bash
+        run: python3 tools/make_mod_index.py --check
+
       - name: Assemble the mods folder
         shell: bash
         run: |

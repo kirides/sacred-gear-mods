@@ -125,6 +125,7 @@ reads it. Every release ships it next to `sacred-gear-mods.zip` (a fixed-name co
 can always fetch `releases/latest/download/mod-index.json` and `.../sacred-gear-mods.zip`. A CI step fails when the index
 and the mods in `src` disagree. Other repositories can publish their own `mod-index.json` the same way, and an index can
 also point at other indexes. The full format is in [Mod index](docs/ModIndex.md).
+`python tools/make_mod_index.py` regenerates the `mods` array from the `mod.lua` files (`--check` for CI); see [Generating the index](docs/ModIndex.md#generating-the-index).
 
 | Field | |
 |---|---|
