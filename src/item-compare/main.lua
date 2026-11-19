@@ -30,7 +30,11 @@ end
 
 local GREEN, RED, DIM, TEXT = 0xFF66DD70, 0xFFF26B6B, 0xFFA9A9B4, 0xFFE6E6E6
 local SIZE, ROW = 12, 15
-local PAD = 7
+-- The panel's frame is the game's own tooltip frame (gear.ui.native.frame; the plain rectangle where an older Sacred Gear lacks it).
+-- The text keeps PAD from the bars' outer edge; the corner ornaments reach OVER units beyond the frame's box.
+local NATIVE = ui.native ~= nil
+local PAD = NATIVE and 12 or 7
+local OVER = 12
 
 gear.events.declare('itemcompare.compared', {
     description = 'The comparison of the hovered item was made: (item id, number of blocks, blocks): blocks are {hero = hero id, hero_name, worn = item id, name, rows} (a hero with nothing worn there: empty = true).',
@@ -373,8 +377,12 @@ local function layout(blocks)
 end
 
 local function draw_items(x, y, w, h, items)
-    ui.rect(x, y, w, h, 0xE6100D0A, {layer = 'top'})
-    ui.frame(x, y, w, h, 0xFF6B5A3A, 1, {layer = 'top'})
+    if NATIVE then
+        ui.native.frame(x, y, w, h, {layer = 'top'})
+    else
+        ui.rect(x, y, w, h, 0xE6100D0A, {layer = 'top'})
+        ui.frame(x, y, w, h, 0xFF6B5A3A, 1, {layer = 'top'})
+    end
     local cy = y + PAD
     for i, it in ipairs(items) do
         if it.kind == 'title' then
@@ -443,10 +451,10 @@ gear.on('draw', guard('draw', function(state)
     local sl, st, sr, sb = ui.screen()
     local dx, dy = last_dx, last_dy
     if follow and hover and hover.w and not edit then
-        dx = hover.x + hover.w + 6
-        if dx + w > sr - 2 then dx = hover.x - w - 6 end
-        dx = math.max(sl + 2, math.min(dx, sr - w - 2))
-        dy = math.max(st + 2, math.min(hover.y, sb - h - 2))
+        dx = hover.x + hover.w + 6 + OVER
+        if dx + w + OVER > sr - 2 then dx = hover.x - w - 6 - OVER end
+        dx = math.max(sl + 2 + OVER, math.min(dx, sr - w - 2 - OVER))
+        dy = math.max(st + 2 + OVER, math.min(hover.y, sb - h - 2 - OVER))
     end
     local p = ui.panel('compare', 'Item comparison', dx, dy, w, h, {bare = true, min_width = w, min_height = h})
     if not p.open then return end
