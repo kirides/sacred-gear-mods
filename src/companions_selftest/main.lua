@@ -63,9 +63,14 @@ gear.task(function()
     check('a hero, no companions yet', main ~= nil and #party.companions() == 0, #party.companions())
 
     -- Recruit through the party window: Home, then its Recruit button (the second widget row from the bottom).
-    A.press(0x24)   -- Home
-    gear.wait(1)
-    local p = panel_rect('companions:party')
+    -- Home (again if the first press came too early for the game to pass it on)
+    local p
+    for _ = 1, 3 do
+        A.press(0x24)
+        gear.wait(1)
+        p = panel_rect('companions:party')
+        if p then break end
+    end
     check('party window opens', p ~= nil)
     A.screenshot('companions-1-window')
     if p then
@@ -179,9 +184,13 @@ gear.task(function()
 
     -- Keep the hero you play for other savegames, then bring a hero from a hero file (the first in the list: a
     -- network character in Save\ if the copy has one).
-    A.press(0x24)   -- Home
-    gear.wait(1)
-    local w = panel_rect('companions:party')
+    local w
+    for _ = 1, 3 do
+        A.press(0x24)   -- Home
+        gear.wait(1)
+        w = panel_rect('companions:party')
+        if w then break end
+    end
     check('party window again', w ~= nil)
     if w then
         local cx0, cy0 = w.x + 10, w.y + 30
@@ -191,8 +200,12 @@ gear.task(function()
         gear.wait(1)
         local first = party.hero_files()[1]
         local n0 = #party.companions()
-        A.ui_click(cx0 + 402 + 50, yy + 30 + 11)   -- Bring (the button column, second line)
-        gear.wait(1.5)
+        -- Bring (the button column, second line); once more if the first click came before the button was hovered
+        for _ = 1, 2 do
+            A.ui_click(cx0 + 402 + 50, yy + 30 + 11)
+            gear.wait(1.5)
+            if #party.companions() > n0 then break end
+        end
         local cs = party.companions()
         check('Bring adds a companion from the file', #cs == n0 + 1, #cs)
         local brought
