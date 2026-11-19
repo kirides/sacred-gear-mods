@@ -82,7 +82,7 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/sector-tools` | For server admins: the sector id and grid cell you stand in, boundaries on the ground, recording areas by walking, copy-to-clipboard of the config line for the server's `world_events.lua`. [README](src/sector-tools/README.md) |
 | `src/sector-tools_selftest` | Automation self test of the sector-tools mod |
 | `src/achievements`, `buildsharer`, `questhelper`, `serverfeed` | Clients of the SacredEngineRemake server mods. [Doc](docs/ServerMods.md) |
-| `src/bounty`, `src/bounty_selftest`, `src/quests_selftest` | Bounty board and daily / weekly quests: own board and quests in single player, the server's in network games, and the self tests. [Doc](docs/mods/bounty.md); logic tests `tests/bounty_hooks_test.lua`, `tests/quests_test.lua` |
+| `src/bounty`, `src/bounty_selftest`, `src/quests_selftest` | Bounty board and daily / weekly quests: own board and quests in single player, the server's in network games, and the self tests. [Doc](docs/mods/bounty.md); logic tests `tests/bounty_hooks_test.lua`, `tests/bounty_board_test.lua`, `tests/quests_test.lua` |
 | `server-scripts/daily_quests.lua` | The game server's half of the daily and weekly quests (copy it into the server's `scripts` folder) |
 | `src/lootfilter` | Loot filter: pick up by class, quality and category, dim the rest |
 | `src/layout` | Layout editor: move the game's windows and mod panels |
@@ -113,3 +113,4 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 | [Hotkeys](docs/Hotkeys.md) | Install, default keys and the clashes between mods |
 | [Controller](docs/Controller.md) | Using the mods with a gamepad |
 | [Screenshots](docs/Screenshots.md) | Re-taking the README's screenshots |
+| [Names and IDs](docs/NamesAndIds.md) | Mods save ids and show localized names; migrating saved names |

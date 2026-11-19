@@ -54,12 +54,12 @@ end
 
 -- A sentence about what a definition asks for and pays, for the list.
 function M.summary(d)
-    local what = #d.names > 0 and table.concat(d.names, '/') or 'any monster'
+    local what = (#d.names > 0 or #(d.types or {}) > 0) and board.target_text(d.names, d.types) or 'any monster'
     local parts = {}
     if d.gold > 0 then parts[#parts + 1] = d.gold .. ' gold' end
     if d.item then
         local it = d.item
-        parts[#parts + 1] = it.mode == 'specific' and (#it.types == 1 and it.types[1].name or (#it.types .. ' chosen items'))
+        parts[#parts + 1] = it.mode == 'specific' and (#it.types == 1 and board.item_label(it.types[1]) or (#it.types .. ' chosen items'))
             or it.mode == 'class' and 'class loot' or 'random loot'
     end
     return ('%d x %s -> %s'):format(d.target, what, #parts > 0 and table.concat(parts, ' + ') or 'glory')

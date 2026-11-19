@@ -17,19 +17,14 @@ local function clamp(v, lo, hi) return math.max(lo, math.min(hi, v)) end
 local function choice(list) return list[math.random(#list)] end
 
 -- The monster pool: type ids of the configured names, found once the game's types are loaded.
--- 'ORC_WARRIOR.GRN' -> 'Orc warrior'
-local function pretty(name)
-    local t = name:gsub('%.%w+$', ''):gsub('_', ' '):lower()
-    return t:sub(1, 1):upper() .. t:sub(2)
-end
-
 local pool
 local function monsters()
     if pool then return pool end
     pool = {}
     for _, name in ipairs(cfg.monsters or {}) do
-        local id = gear.data.object_types:find(name)
-        if id then pool[#pool + 1] = {id = id, name = (function() local ok, d = pcall(function() return gear.data.object_types:display_name(id) end) return ok and type(d) == 'string' and d ~= '' and d or pretty(name) end)()} else print('no object type ' .. name) end
+        -- config.monsters holds type ids (what to save) or names (internal or localized; older configs)
+        local id = gear.data.object_types:resolve(name)
+        if id then pool[#pool + 1] = {id = id, name = gear.data.object_types:label(id)} else print('no object type ' .. tostring(name)) end
     end
     return pool
 end
@@ -51,8 +46,9 @@ end
 
 actions.twi_spawnenemy = function(_, argv, hero)
     if not argv[1] then return false, 'usage: TWI_SpawnEnemy <type name> [amount]' end
-    if not gear.data.object_types:find(argv[1]) then return false, 'no object type ' .. argv[1] end
-    return spawn_around(hero, argv[1], argv[1], clamp(math.floor(num(argv[2], 1)), 1, 10)) > 0
+    local id = gear.data.object_types:resolve(tonumber(argv[1]) or argv[1])       -- a type id, an internal or a localized name
+    if not id then return false, 'no object type ' .. argv[1] end
+    return spawn_around(hero, id, gear.data.object_types:label(id), clamp(math.floor(num(argv[2], 1)), 1, 10)) > 0
 end
 
 actions.twi_spawnrandommonster = function(_, argv, hero)

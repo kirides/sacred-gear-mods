@@ -7,7 +7,7 @@ return {
     description = 'Twitch viewers spawn monsters, give gold, heal or teleport the hero.',
     requires = {'twitch_integration'},
     config = {
-        -- Object type names (data.object_types) the monster actions pick from; names that are not found are
+        -- Object types (type ids; names also work) the monster actions pick from; ones that are not found are
         -- logged and left out. Run the selftest example once: it writes every type name to GearAutomation\types.txt.
         -- object type names of the game (the .GRN model names); the label shows them in plain words
         monsters = {'WOLF.GRN', 'ORC_WARRIOR.GRN', 'ZOMBIE.GRN', 'SKELETON_WARRIOR_HEADLESS.GRN', 'small_spider.grn'},

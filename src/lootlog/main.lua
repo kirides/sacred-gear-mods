@@ -37,7 +37,7 @@ local K_OPTIONS = {'Drops and pickups', 'Drops', 'Picked up', 'Acquired'}
 local K_VALUE = {nil, 'drop', 'pickup', 'acquired'}
 local KIND_LABEL = {drop = 'dropped', pickup = 'picked up', acquired = 'acquired'}
 
-local entries = {}             -- oldest first: {s = session number, t = seconds into the session, kind, name, quality, category, src}
+local entries = {}             -- oldest first: {s = session number, t = seconds into the session, kind, name, quality, category, st (source creature type id), src (older: its name as text)}
 local session_no = 0
 local clock = 0
 local scan_t, save_t = 0, 0
@@ -75,7 +75,8 @@ local function load_file()
                     s = tonumber(e.s) or 0, t = tonumber(e.t) or 0, kind = tostring(e.kind or 'drop'), name = e.name,
                     quality = QUALITY_RANK[e.quality] and e.quality or 'normal',
                     category = type(e.category) == 'string' and e.category or 'other',
-                    src = type(e.src) == 'string' and e.src or nil,
+                    src = type(e.src) == 'string' and e.src or nil,          -- text of an older version (a name in that day's language)
+                    st = tonumber(e.st),                                     -- the source creature's type id: shown as its name today
                 }
             end
         end
@@ -130,22 +131,26 @@ local function worth_logging(item)
     return setting('log_normal', false)
 end
 
-local function source_name()
-    if last_roll and clock - last_roll.t <= ROLL_WINDOW then
-        -- the localized creature name (Gear 0.x: display_name knows creatures); the model name where there is none
-        local ok, n = pcall(function() return gear.data.object_types:display_name(last_roll.creature) end)
-        if ok and type(n) == 'string' and n ~= '' then return n end
-        ok, n = pcall(function() return gear.data.object_types:name(last_roll.creature) end)
-        if ok and type(n) == 'string' then return n end
-    end
+-- The name of creature type `id` for the player: localized, else the model name (what an older Gear has).
+local function creature_label(id)
+    local ok, n = pcall(function() return gear.data.object_types:display_name(id) end)       -- localized (Gear with creature names)
+    if ok and type(n) == 'string' and n ~= '' then return n end
+    ok, n = pcall(function() return gear.data.object_types:name(id) end)
+    if ok and type(n) == 'string' then return n end
     return nil
 end
 
-local function add(kind, item, src)
+-- The creature that dropped what is on the ground now: its type id (what the log saves), or nil.
+local function source_type()
+    if last_roll and clock - last_roll.t <= ROLL_WINDOW and tonumber(last_roll.creature) then return tonumber(last_roll.creature) end
+    return nil
+end
+
+local function add(kind, item, st)
     entries[#entries + 1] = {
         s = session_no, t = math.floor(clock), kind = kind, name = item_name(item),
         quality = QUALITY_RANK[item.quality] and item.quality or 'normal',
-        category = type(item.category) == 'string' and item.category or 'other', src = src,
+        category = type(item.category) == 'string' and item.category or 'other', st = st,
     }
     dirty = true
     trim()
@@ -191,14 +196,14 @@ local function scan()
         for id, it in pairs(now_ground) do logged[id] = {type = it.type, t = clock} end
     else
         -- drops: lying around now, not logged before
-        local src
+        local st
         for id, it in pairs(now_ground) do
             local seen = logged[id]
             if not (seen and seen.type == it.type) then
                 logged[id] = {type = it.type, t = clock}
                 if worth_logging(it) then
-                    src = src or source_name()
-                    add('drop', it, src)
+                    st = st or source_type()
+                    add('drop', it, st)
                 end
             end
         end
@@ -307,7 +312,8 @@ local function draw_panel()
         ui.text(('#%d %s'):format(e.s, clock_text(e.t)), ax, ry, {color = 0xFF808080})
         ui.text(e.name, ax + 62, ry, {color = color})
         local tail = KIND_LABEL[e.kind] or e.kind
-        if e.src then tail = tail .. ' (' .. e.src .. ')' end
+        local src = e.st and creature_label(e.st) or e.src
+        if src then tail = tail .. ' (' .. src .. ')' end
         ui.text(tail, ax, ry, {width = (area.w or w) - 6, align = 'right', color = 0xFFA0A0A0})
     end
     ui.scroll_end(shown_n * 18)

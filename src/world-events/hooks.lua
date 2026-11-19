@@ -195,12 +195,19 @@ local function duration_text(s)
     return ('%dm %02ds'):format(m, sec)
 end
 
+-- A creature kind for the player: a type id shows its localized name (M.labeler, set by main.lua), a name as it is.
+M.labeler = nil
+local function shown(v)
+    if type(v) == 'number' and M.labeler then return M.labeler(v) or tostring(v) end
+    return tostring(v)
+end
+
 function M.trigger_text(h)
     if h.on == 'start' then return 'When the event starts'
     elseif h.on == 'success' then return 'When the goal is reached'
     elseif h.on == 'fail' then return 'When the time runs out'
     elseif h.kills then
-        return ('When %s has defeated %d x %s%s'):format(h.kills.per_player and 'a hero' or 'the realm', h.kills.count, tostring(h.kills.creature),
+        return ('When %s has defeated %d x %s%s'):format(h.kills.per_player and 'a hero' or 'the realm', h.kills.count, shown(h.kills.creature),
             h.kills.region and (' in region ' .. h.kills.region) or '')
     elseif h.at_time then return 'After ' .. duration_text(h.at_time) end
     return 'At ' .. percent_text(h.at) .. ' of the goal'
@@ -208,7 +215,7 @@ end
 
 local function kind_text(kinds)
     local parts = {}
-    for _, k in ipairs(kinds) do parts[#parts + 1] = tostring(k.type) .. (k.weight > 1 and (' x' .. k.weight) or '') end
+    for _, k in ipairs(kinds) do parts[#parts + 1] = shown(k.type) .. (k.weight > 1 and (' x' .. k.weight) or '') end
     return table.concat(parts, ' / ')
 end
 
