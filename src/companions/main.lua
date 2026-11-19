@@ -340,33 +340,84 @@ apply_share()
 -- Portraits: the companions under the game's own portraits. A click plays that hero; the controller's D-pad stops on
 -- them like on any window button.
 ---------------------------------------------------------------------------------------------------------------
-local PW, PH, ROW = 62, 62, 76
+-- The portraits look like the game's own (its mercenaries' at the top right): the portrait ring of GUI_main_02 (red;
+-- grey when fallen, gilded under the cursor) with the round portrait inside, the game's health bar under it.
+local IMG_RING, IMG_RING_GREY, IMG_BAR, IMG_BAR_FILL = 41, 42, 66, 67
+local RW, RH = 92, 104              -- the ring (96x108) at the width of the game's portrait column (UI_WND_MERC, 92)
+local PX, PY, PS = 13, 13, 65       -- the portrait inside it (the ring's hole)
+local BX, BW, BH = 11, 70, 10       -- the health bar under the ring's hole
+local PW, ROW = RW, 128             -- the game's portraits are 128 apart
 
 local function bar(x, y, w, h, frac, color)
     ui.rect(x, y, w, h, 0xC0000000)
     ui.rect(x + 1, y + 1, math.max(0, (w - 2) * math.min(1, math.max(0, frac))), h - 2, color)
 end
 
+-- The game's health bar: its frame, the green beads, the lost part dimmed.
+local function health_bar(x, y, frac, dead)
+    frac = math.min(1, math.max(0, frac))
+    if not ui.image(IMG_BAR, x, y, BW, BH) then
+        return bar(x, y, BW, BH - 2, frac, dead and BAD or GOOD)
+    end
+    if dead then return end
+    local ix, iw = x + 1, BW - 2
+    ui.image(IMG_BAR_FILL, ix, y + 1, iw, BH - 2, {color = frac < 0.3 and 0xFFFFC060 or 0xFFFFFFFF})
+    local lost = iw * (1 - frac)
+    if lost > 0.5 then ui.rect(ix + iw - lost, y + 1, lost, BH - 2, 0xD8101010) end
+end
+
 local function draw_portrait(c, x, y)
     local dead = c:is_dead()
-    local r = ui.region('portrait' .. c.id, x, y, PW, ROW - 6, {
+    local r = ui.region('portrait' .. c.id, x, y, RW, RH + BH + 2, {
         tooltip = name_of(c) .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level())
             .. ')\n' .. (dead and 'Fallen' or ('Click to play' .. key_hint('next')))})
-    ui.rect(x, y, PW, PH, r.hover and 0xD0302818 or 0xB0000000)
     local img = c:portrait()
-    if img then ui.image(img, x + 3, y + 3, PW - 6, PH - 6, {fit = 'contain', color = dead and 0xFF505050 or 0xFFFFFFFF}) end
-    ui.frame(x, y, PW, PH, r.hover and ACCENT or 0xFF6A5A3C, 1)
+    -- the hole first (dark behind a portrait with transparent corners), then the ring over its edge
+    ui.rect(x + PX + 4, y + PY + 4, PS - 8, PS - 8, 0xFF101010)
+    if img then
+        ui.image(img, x + PX, y + PY, PS, PS, {fit = 'contain', color = dead and 0xFF505050 or (r.hover and 0xFFFFFFFF or 0xFFE8E8E8)})
+    end
+    local ring = dead and IMG_RING_GREY or (r.hover and IMG_RING_GREY or IMG_RING)
+    local tint = dead and 0xFF808080 or (r.hover and 0xFFFFD27A or 0xFFFFFFFF)
+    if not ui.image(ring, x, y, RW, RH, {color = tint}) then
+        ui.frame(x + PX, y + PY, PS, PS, r.hover and ACCENT or 0xFF6A5A3C, 1)
+    end
     local hp, max = c:hp() or 0, c:max_hp() or 1
-    bar(x, y + PH + 1, PW, 6, hp / math.max(1, max), dead and BAD or (hp / max < 0.3 and 0xFFE0A030 or GOOD))
-    ui.text(tostring(c:level() or ''), x + 3, y + 2, {color = ACCENT, size = 11})
+    health_bar(x + BX, y + RH + 1, hp / math.max(1, max), dead)
+    local lvl = tostring(c:level() or '')
+    ui.text(lvl, x + PX - 1, y + PY + PS - 13, {color = 0xFF000000, size = 12})
+    ui.text(lvl, x + PX - 2, y + PY + PS - 14, {color = ACCENT, size = 12})
     if r.clicked and not dead then play(c) end
+end
+
+-- Where the column goes: under the game's own portraits (its UI_WND_MERC at the screen's right edge), so the
+-- companions continue that column; the layout's 1024x768 place from the config when the game's is not known.
+local placed_at
+local function column_place()
+    local w = ui.window('UI_WND_MERC')
+    local b = w and w.drawn and w.bounds
+    local x, y
+    if b and b.w and b.w > 0 then
+        -- its rows: 120 high in its bounds, the rings 128 apart from 10 under the top
+        x, y = b.x + (b.w - PW) / 2, b.y + 10 + math.floor(b.h / 120 + 0.5) * ROW
+    elseif w then
+        local st = ui.state()
+        x, y = (st.screen_right or 1024) - PW, 16
+    else
+        return nil
+    end
+    return math.floor(x + 0.5) - 2, math.floor(y + 0.5) - 2
 end
 
 local function draw_portraits()
     if not setting('portraits', true) or not party.available() then return end
     local list = party.companions()
     if #list == 0 then return end
-    local p = ui.panel('portraits', 'Companions', cfg.portraits_x or 948, cfg.portraits_y or 300, PW + 4, #list * ROW + 4, {bare = true})
+    local x, y = column_place()
+    if x and setting('portraits_follow', true) and (not placed_at or placed_at[1] ~= x or placed_at[2] ~= y) then
+        if ui.set_panel_rect('companions:portraits', x, y) then placed_at = {x, y} end
+    end
+    local p = ui.panel('portraits', 'Companions', x or cfg.portraits_x or 932, y or cfg.portraits_y or 260, PW + 4, #list * ROW + 4, {bare = true, min_width = PW + 4, min_height = ROW})
     if not p.open then return end
     for i, c in ipairs(list) do
         draw_portrait(c, (p.content_x or 0) + 2, (p.content_y or 0) + 2 + (i - 1) * ROW)

@@ -21,6 +21,8 @@ return {
         {id = 'switch_on_death', type = 'bool', label = 'Play a living companion when your hero falls', default = true, section = 'Party'},
         {id = 'portraits', type = 'bool', label = 'Companion portraits', default = true, section = 'Party',
             tooltip = 'Portraits of the companions under the game\'s own, at the top right; a click plays that hero'},
+        {id = 'portraits_follow', type = 'bool', label = 'Portraits under the game\'s own', default = true, section = 'Party',
+            tooltip = 'The companions continue the column of the game\'s portraits at the right edge. Off: the layout editor (hold Alt) places them'},
         {id = 'ai', type = 'bool', label = 'Companions act on their own', default = true, section = 'Behaviour',
             tooltip = 'Off: the companions stand where they are'},
         {id = 'behaviour', type = 'choice', label = 'Default behaviour', default = 'aggressive', section = 'Behaviour',
@@ -40,8 +42,8 @@ return {
         {id = 'window', label = 'Party window (recruit, tactics)', default = 'home'},
     },
     config = {
-        portraits_x = 948,  -- the portrait column's place in the 1024x768 layout (the layout editor moves it)
-        portraits_y = 300,
+        portraits_x = 932,  -- the portrait column's place in the 1024x768 layout when it does not follow the game's
+        portraits_y = 260,
         think = 0.25,       -- seconds between two thinks of a companion
         debug = false,      -- log the AI's decisions
     },
