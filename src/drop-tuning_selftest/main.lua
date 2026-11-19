@@ -45,7 +45,7 @@ local function run(creature, n)
 end
 
 local DEFAULTS = {chance = 1, find = 1, special = 1, low = 1, mid = 1, high = 1, rng = 'game', seed = 1,
-                  icon_weight = 0, icon_min_level = 1, icon_per_level = 0, carry_chance = 0, carry_filter = 'special'}
+                  icon_weight = 0, icon_min_level = 1, icon_per_level = 0, xmas_weight = 0, xmas_min_level = 1, xmas_per_level = 0, carry_chance = 0, carry_filter = 'special'}
 
 gear.task(function()
     A.wait_for_menu(cfg.timeout_menu)
@@ -103,6 +103,28 @@ gear.task(function()
     configure({icon_weight = 1000, icon_min_level = 200})
     local none = run(creature, cfg.rolls)
     check('icon set: nothing below the lowest level', none.overridden == 0, none.overridden)
+
+    -- X-MAS set: a share of the picks become a piece of the hero's class's set; nothing at weight 0 or below the lowest level.
+    configure(DEFAULTS)
+    local class = hero:class()
+    local pieces
+    gear.emit('drop-tuning.xmas_pieces', class, function(v) pieces = v end)
+    check('xmas: a hero class has pieces', pieces ~= nil and #pieces >= 3, tostring(class))
+    for _, t in ipairs(pieces or {}) do
+        local made = gear.world.spawn(t, x + 120, y + 120, {layer = layer})
+        local it = made and gear.world.item(made.id)
+        check('xmas: type ' .. t .. ' is a set item of the class', it and it.set and #it.classes == 1 and it.classes[1] == class, it and table.concat(it.classes, ','))
+        if made then made:remove() end
+    end
+    configure({xmas_weight = 1000})
+    local xm, xm2 = run(creature, cfg.rolls * 2), nil
+    check('xmas: about a tenth of the picks become pieces', xm.picks > 40 and xm.overridden > xm.picks * 0.04 and xm.overridden < xm.picks * 0.2,
+          xm.overridden .. ' of ' .. xm.picks)
+    configure({xmas_weight = 1000, xmas_min_level = 200})
+    local xn = run(creature, cfg.rolls)
+    check('xmas: nothing below the lowest level', xn.overridden == 0, xn.overridden)
+    configure({xmas_weight = 0})
+    check('xmas: nothing at weight 0', run(creature, cfg.rolls).overridden == 0)
 
     -- Carried gear: a creature that holds items (an orc's weapons) drops them at the chance, set and unique ones only by default.
     configure(DEFAULTS)

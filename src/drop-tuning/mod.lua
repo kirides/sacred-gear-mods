@@ -2,9 +2,9 @@
 return {
     id = 'drop-tuning',
     name = 'Drop tuning',
-    version = '1.2.0',
+    version = '1.3.0',
     author = 'kirides',
-    description = 'Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, can swap the game\'s random numbers for a fair generator, can let the Icon Set pieces drop at any level, and can make creatures drop the gear you could otherwise only take with the Disarming skill.',
+    description = 'Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, can swap the game\'s random numbers for a fair generator, can let the Icon Set pieces and the pieces of the X-MAS set of your class drop at any level, and can make creatures drop the gear you could otherwise only take with the Disarming skill.',
     settings = {
         {id = 'chance', type = 'number', label = 'Drop chance (x)', min = 0, max = 5, step = 0.1, default = 1,
          section = 'How often',
@@ -36,6 +36,13 @@ return {
         {id = 'icon_min_level', type = 'number', label = 'Icon Set: lowest creature level', min = 1, max = 200, step = 1, default = 1,
          tooltip = 'Creatures below this level never drop a piece through this setting'},
         {id = 'icon_per_level', type = 'number', label = 'Icon Set: extra weight per level', min = 0, max = 10, step = 0.1, default = 0,
+         tooltip = 'Added to the weight for every creature level above the lowest level'},
+        {id = 'xmas_weight', type = 'number', label = 'X-MAS set weight (of 10000 equipment drops)', min = 0, max = 1000, step = 1, default = 0,
+         section = 'X-MAS set',
+         tooltip = 'The X-MAS set of your hero\'s class (Seraphim, Gladiator, Battle Mage, Dark Elf, Wood Elf, Vampiress) is a set the game never drops by itself, at any time of the year (it has no date check). Out of 10000 random equipment drops of a creature this many become one of its pieces (10 = 0.1%; 0 = off, the game as it is). The More tab shows the percentage at your hero\'s level'},
+        {id = 'xmas_min_level', type = 'number', label = 'X-MAS set: lowest creature level', min = 1, max = 200, step = 1, default = 1,
+         tooltip = 'Creatures below this level never drop a piece through this setting'},
+        {id = 'xmas_per_level', type = 'number', label = 'X-MAS set: extra weight per level', min = 0, max = 10, step = 0.1, default = 0,
          tooltip = 'Added to the weight for every creature level above the lowest level'},
     },
 }

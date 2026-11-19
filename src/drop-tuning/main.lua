@@ -22,12 +22,45 @@ local function icon_chance(level)
     return math.min(1, ((S.get('icon_weight') or 0) + (S.get('icon_per_level') or 0) * (level - lowest)) / 10000)
 end
 
--- drops.select: a share of the equipment picks of creature loot becomes an Icon Set piece (nothing at weight 0).
+-- The X-MAS sets (sets 33 .. 38 of sets.bin, one per class; item types as Sacred Gear lists them with their class masks). The game
+-- itself has no date check for them (nothing in Sacred.exe compares the month), and its set drops never produced one in 823 set
+-- drops at creature level 10, so they only come from this setting (or from Carried gear).
+local XMAS_PIECES = {
+    seraphim = {1840, 1841, 1842, 7978, 7979},
+    gladiator = {1833, 1834, 1837},
+    battlemage = {1838, 7974, 7975},
+    darkelf = {1835, 7968, 7969},
+    woodelf = {1836, 7970, 7971},
+    vampiress = {1839, 7976, 7977},
+}
+
+local function hero_class()
+    local hero = gear.world.hero()
+    return hero and hero:class()
+end
+
+local function xmas_chance(level)
+    local lowest = S.get('xmas_min_level') or 1
+    if level < lowest then return 0 end
+    return math.min(1, ((S.get('xmas_weight') or 0) + (S.get('xmas_per_level') or 0) * (level - lowest)) / 10000)
+end
+
+-- drops.select: a share of the equipment picks of creature loot becomes an Icon Set piece, or a piece of the hero's X-MAS set
+-- (nothing at weight 0).
 gear.on('drops.select', function(ev)
     if ev.type then return end          -- another mod already named the item
-    local p = icon_chance(ev.level or 1)
-    if p > 0 and math.random() < p then ev.type = ICON_PIECES[math.random(#ICON_PIECES)] end
+    local level = ev.level or 1
+    local p = icon_chance(level)
+    if p > 0 and math.random() < p then ev.type = ICON_PIECES[math.random(#ICON_PIECES)]; return end
+    p = xmas_chance(level)
+    if p > 0 and math.random() < p then
+        local pieces = XMAS_PIECES[hero_class()]
+        if pieces then ev.type = pieces[math.random(#pieces)] end
+    end
 end)
+
+-- For the self test: the class of the hero decides which pieces drop.
+gear.on('drop-tuning.xmas_pieces', function(class, answer) answer(XMAS_PIECES[class]) end)
 
 -- Carried gear: monsters hold the items the Disarming skill takes from them in their equipment slots; only the Disarming skill gets them.
 -- With a chance above 0 a dying creature drops (a share of) them instead, so no hero needs the skill. The drop is a fresh item of the same
@@ -166,6 +199,20 @@ gear.mods.page(function(x, y, w, h)
         line(('about one piece in %d equipment drops (one given piece: one in %d)'):format(math.floor(1 / p + 0.5), math.floor(6 / p + 0.5)))
     end
     line('The game alone: set weight 9 (x10 of 10000), 60% take the set path, then one of up to 65 sets: roughly 0.01% or less')
+    cy = cy + 6
+    local class = hero_class()
+    local pieces = XMAS_PIECES[class]
+    local xp = xmas_chance(level)
+    if xp > 0 and pieces then
+        line(('X-MAS set (%s) at level %d: %.3f%% of equipment drops become a piece, about one in %d (one given piece: one in %d)'):format(
+            tostring(class), level, xp * 100, math.floor(1 / xp + 0.5), math.floor(#pieces / xp + 0.5)))
+    elseif xp > 0 then
+        line(('X-MAS set: there is no set for the class %s'):format(tostring(class)))
+    else
+        line('X-MAS set: off (give it a weight to let creatures drop the pieces of the X-MAS set of your class)')
+    end
+    line('The game alone: the X-MAS pieces never showed up in a test of 823 set drops of a creature (and the game has no date check for them), so their odds are about 0%')
+    cy = cy + 6
     if (S.get('carry_chance') or 0) > 0 then
         line(('Carried gear: %d%% chance (%s); %d items seen on dying creatures, %d dropped'):format(
             S.get('carry_chance') or 0, S.get('carry_filter') == 'all' and 'all equipment' or 'set and unique items', carry.seen, carry.dropped))
