@@ -3,7 +3,7 @@
 --     Sacred.exe -gear-auto -gear-load=1 -gear-instance=iconset -gear-mods=icon-set,icon-set_selftest
 --
 -- Finds a creature near the hero whose loot function drops equipment, has the engine roll it 600 times with the mod's chance at 0
--- and at 50 percent, and counts the Icon Set pieces (types 5101 .. 5106) that lie on the ground afterwards.
+-- and at 20 percent (the largest value the setting takes), and counts the Icon Set pieces (types 5101 .. 5106) that lie on the ground afterwards.
 
 if not gear.auto then print('no automation (start the game with -gear-auto): nothing to do') return end
 local A, cfg = gear.auto, gear.config
@@ -34,36 +34,38 @@ local function icons(x, y, layer)
     return n
 end
 
-check('main menu', A.wait_for_menu(cfg.timeout_menu))
-if not A.wait_for_game(cfg.timeout_game) then check('game with a hero', false) return finish() end
-gear.wait(3)
-local hero = gear.world.hero()
-local x, y, layer = hero:position()
-local creature
-for _, c in ipairs(gear.world.creatures_near(x, y, 4000, {layer = layer})) do
-    if c.id ~= hero.id then
-        local s = roll(c.id, 200)
-        if s and s.picks > 0 then creature = c break end
+gear.task(function()
+    check('main menu', A.wait_for_menu(cfg.timeout_menu))
+    if not A.wait_for_game(cfg.timeout_game) then check('game with a hero', false) return finish() end
+    gear.wait(3)
+    local hero = gear.world.hero()
+    local x, y, layer = hero:position()
+    local creature
+    for _, c in ipairs(gear.world.creatures_near(x, y, 4000, {layer = layer})) do
+        if c.id ~= hero.id then
+            local s = roll(c.id, 200)
+            if s and s.picks > 0 then creature = c break end
+        end
     end
-end
-if not creature then check('a creature that drops equipment', false) return finish() end
-local cx, cy, clayer = creature:position()
+    if not creature then check('a creature that drops equipment', false) return finish() end
+    local cx, cy, clayer = creature:position()
 
-gear.emit('icon-set.configure', {chance = 0, per_level = 0, min_level = 1})
-local before = icons(cx, cy, clayer)
-local off = roll(creature.id, 600)
-local after_off = icons(cx, cy, clayer)
-check('chance 0: no Icon Set pieces from the mod', off and off.picks > 0 and after_off == before, after_off - before)
+    gear.emit('icon-set.configure', {chance = 0, per_level = 0, min_level = 1})
+    local before = icons(cx, cy, clayer)
+    local off = roll(creature.id, 600)
+    local after_off = icons(cx, cy, clayer)
+    check('chance 0: no Icon Set pieces from the mod', off and off.picks > 0 and after_off == before, after_off - before)
 
-gear.emit('icon-set.configure', {chance = 50})
-local on = roll(creature.id, 600)
-local after_on = icons(cx, cy, clayer)
-local made = after_on - after_off
-check('chance 50: about half of the picks are Icon Set pieces', on and on.picks > 20 and made > on.picks * 0.3 and made < on.picks * 0.7,
-      on and (made .. ' of ' .. on.picks))
+    gear.emit('icon-set.configure', {chance = 20})
+    local on = roll(creature.id, 600)
+    local after_on = icons(cx, cy, clayer)
+    local made = after_on - after_off
+    check('chance 20 (the maximum): about a fifth of the picks are Icon Set pieces', on and on.picks > 20 and made > on.picks * 0.1 and made < on.picks * 0.35,
+          on and (made .. ' of ' .. on.picks))
 
-gear.emit('icon-set.configure', {chance = 50, min_level = 200})
-local high = roll(creature.id, 600)
-local after_high = icons(cx, cy, clayer)
-check('lowest level 200: no pieces below that level', high and after_high == after_on, after_high - after_on)
-finish()
+    gear.emit('icon-set.configure', {chance = 20, min_level = 200})
+    local high = roll(creature.id, 600)
+    local after_high = icons(cx, cy, clayer)
+    check('lowest level 200: no pieces below that level', high and after_high == after_on, after_high - after_on)
+    finish()
+end)
