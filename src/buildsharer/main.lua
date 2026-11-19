@@ -17,6 +17,22 @@ local PAGE = tonumber(gear.config.page_size) or 12
 local TABS = {'Browse', 'My build', 'Saved', 'Detail'}
 local CLASSES = {'All classes', 'Seraphim', 'Gladiator', 'Battle Mage', 'Dark Elf', 'Wood Elf', 'Vampiress', 'Dwarf', 'Daemon'}
 local CLASS_FILTER = {false, 1, 2, 3, 4, 5, 6, 8, 9}     -- false: all
+local class_labels
+-- the dropdown's entries: the game's own (localized) hero names, the English ones where the game has none
+local function class_choices()
+    if not class_labels then
+        class_labels = {}
+        for i, name in ipairs(CLASSES) do
+            local t = CLASS_FILTER[i]
+            if t then
+                local ok, n = pcall(function() return gear.data.object_types:display_name(t) end)
+                if ok and type(n) == 'string' and n ~= '' then name = n end
+            end
+            class_labels[i] = name
+        end
+    end
+    return class_labels
+end
 local SORTS = {'Newest', 'Highest level'}
 local SORT_KEY = {'new', 'level'}
 local MAX_SAVED = 50
@@ -183,7 +199,7 @@ local function browse(x, y, w, h)
     end
     -- drawn last: the open list covers what is under it
     local class_changed
-    class_changed, view.class = ui.dropdown('class', x + 40, y, 100, CLASSES, view.class, {tooltip = 'Only this class'})
+    class_changed, view.class = ui.dropdown('class', x + 40, y, 100, class_choices(), view.class, {tooltip = 'Only this class'})
     if class_changed then view.page = 1; fetch_list() end
 end
 

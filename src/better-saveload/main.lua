@@ -18,10 +18,28 @@ local DOUBLE_CLICK = 0.4    -- seconds between the two clicks of a double click
 local SEARCH_MAX = 40
 local NAME_MAX = 60     -- the engine keeps 60 characters of a savegame's name (Windows-1252: umlauts and the like)
 
-local CLASS_LABEL = {
+-- the game's own (localized) name of the hero body, the English one if the game has none; looked up when first shown
+local function localized_labels(english, types)
+    local cache = {}
+    return setmetatable({}, {__index = function(_, k)
+        local v = cache[k]
+        if v == nil then
+            v = english[k]
+            local t = types[k]
+            if t and gear and gear.data and gear.data.object_types then
+                local ok, n = pcall(function() return gear.data.object_types:display_name(t) end)
+                if ok and type(n) == 'string' and n ~= '' then v = n end
+            end
+            cache[k] = v or false
+        end
+        return v or nil
+    end})
+end
+
+local CLASS_LABEL = localized_labels({
     seraphim = 'Seraphim', gladiator = 'Gladiator', battlemage = 'Battle Mage', darkelf = 'Dark Elf',
     woodelf = 'Wood Elf', vampiress = 'Vampiress', dwarf = 'Dwarf', daemon = 'Daemon',
-}
+}, {seraphim = 1, gladiator = 2, battlemage = 3, darkelf = 4, woodelf = 5, vampiress = 6, dwarf = 8, daemon = 9})
 local CLASS_ORDER = {'seraphim', 'gladiator', 'battlemage', 'darkelf', 'woodelf', 'vampiress', 'dwarf', 'daemon'}
 local SORTS = {
     {id = 'newest', label = 'Newest first'}, {id = 'oldest', label = 'Oldest first'},

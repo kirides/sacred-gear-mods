@@ -28,8 +28,26 @@ end
 
 local BODIES = {seraphim = 1, gladiator = 2, battlemage = 3, darkelf = 4, woodelf = 5, vampiress = 6, dwarf = 8, daemon = 9}
 M.BODIES = BODIES
-M.BODY_LABEL = {seraphim = 'Seraphim', gladiator = 'Gladiator', battlemage = 'Battle Mage', darkelf = 'Dark Elf',
-    woodelf = 'Wood Elf', vampiress = 'Vampiress', dwarf = 'Dwarf', daemon = 'Daemon'}
+-- the game's own (localized) name of the hero body, the English one if the game has none; looked up when first shown
+local function localized_labels(english, types)
+    local cache = {}
+    return setmetatable({}, {__index = function(_, k)
+        local v = cache[k]
+        if v == nil then
+            v = english[k]
+            local t = types[k]
+            if t and gear and gear.data and gear.data.object_types then
+                local ok, n = pcall(function() return gear.data.object_types:display_name(t) end)
+                if ok and type(n) == 'string' and n ~= '' then v = n end
+            end
+            cache[k] = v or false
+        end
+        return v or nil
+    end})
+end
+
+M.BODY_LABEL = localized_labels({seraphim = 'Seraphim', gladiator = 'Gladiator', battlemage = 'Battle Mage', darkelf = 'Dark Elf',
+    woodelf = 'Wood Elf', vampiress = 'Vampiress', dwarf = 'Dwarf', daemon = 'Daemon'}, BODIES)
 
 local LEARN = {start = true, level = true, rune = true}
 
