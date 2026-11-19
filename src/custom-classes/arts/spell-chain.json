@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "id": "strike-and-fire",
+  "kind": "chain",
+  "art_id": 2101,
+  "steps": [1059, 5],
+  "delay": 0.2,
+  "name": { "en": "Strike and Fire", "de": "Schlag und Feuer" },
+  "description": { "en": "An attack, then a fireball.", "de": "Ein Angriff, dann ein Feuerball." }
+}

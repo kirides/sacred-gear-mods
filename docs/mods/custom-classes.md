@@ -69,10 +69,45 @@ editor). Files that are not valid are listed in the log and skipped.
 | `name`, `description` | A text, or `{"en": ..., "de": ..., "ru": ...}` (the game's language, else `en`). |
 | `body` | `seraphim`, `gladiator`, `battlemage`, `darkelf`, `woodelf`, `vampiress`, `dwarf` or `daemon`. |
 | `skills` | Optional. Two start skills and up to 16 available skills, by the game's skill ids (the body's own when missing). |
-| `arts` | The combat arts (ids from 1000) and spells (below 1000) of the class, and art copies by their ids (see the editor). `learn`: `start` (known at once, at `level`), `level` (granted when the hero reaches `level`), `rune` (only readable). |
+| `arts` | The combat arts (ids from 1000), spells (below 1000), art copies and chains (their `art_id`, see below) of the class. `learn`: `start` (known at once, at `level`), `level` (granted when the hero reaches `level`), `rune` (only readable). |
 | `motion_remap` | Optional. For a slot the body has no clip for: the slot to play instead (otherwise the mod picks the nearest slot the body has). |
 
 The ids are the game's own (skill ids, art ids, motion slots); the mod checks them when it loads.
+
+## Art copies and chains
+
+Files `arts/<name>.json` (this mod's folder or any installed mod's) make new combat arts from existing ones.
+
+**A copy** is the same art with its own id, name, description and numbers: a stronger "Venom Strike" next to the original.
+The copy runs the original's code (so it works wherever the original does); the hero's art list, the tooltip, runes and
+savegames use the copy's own id and texts.
+
+```json
+{ "format": 1, "id": "venom-strike", "kind": "copy", "art_id": 2001, "base": 1059,
+  "name": { "en": "Venom Strike" }, "description": { "en": "..." },
+  "values": { "effect_base": 40, "effect_per_level": 6, "regen_base": 8 } }
+```
+
+`art_id` is 2000 to 4999 (the game refuses art ids above 5000), `base` a combat art (1000 to 1999; spells cannot be copied:
+the game does not run a spell under an id of its own). `values` are the fields of `gear.data.abilities` (the
+[GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md) lists them: `effect_base`, `effect_per_level`,
+`regen_base`, `regen_per_level`, `target_mode`, and the `unk_` fields). The editor shows the game's ranges.
+
+![A copied art in use](../images/custom-classes-copy.jpg)
+
+**A chain** is a named art that uses 2 to 8 arts or spells one after the other. It must start with a combat art.
+
+```json
+{ "format": 1, "id": "double-strike", "kind": "chain", "art_id": 2100, "steps": [1058, 1059], "delay": 0.1,
+  "name": { "en": "Double Strike" }, "description": { "en": "A heavy blow, then an attack." } }
+```
+
+The chain is a copy of its first step (so the game starts it like any art), and when that step is done the mod orders the next
+ones on the enemy nearest to the hero; a step still regenerating is waited for. The chain's regeneration is the sum of the steps'
+(base and per level), so it is never cheaper than using the parts. The steps are learned with the chain. If the enemy dies
+the chain ends. (The game's own combos hold four arts at most and cannot have a name, so chains do not use them.)
+
+![A chain](../images/custom-classes-chain.jpg)
 
 ## Settings and keys
 
@@ -103,7 +138,7 @@ Key: *Class window* (Ctrl+Shift+C), changeable on the mod's *Keys* page (**F11**
 
 - **Files:** `src/custom-classes/mod.lua` (manifest), `main.lua` (assignments per savegame, taking a class, the engine
   questions), `profiles.lua` (reading and checking the files), `arts.lua` (art copies and chains), `window.lua` (the class
-  window: drawing only), `classes/*.json` (the two example classes).
+  window: drawing only), `classes/*.json` (the two example classes), `arts/*.json` (a copy and two chains).
 - **Depends on:** `gear.classes` (tiers, hero skills, ability copies), `gear.models` (motion slots), the events `ability.route`,
   `motion.select` and `rune.usable`, `creature:learn`, `gear.mods.read` / `files`, `gear.store.game`
   ([GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md), engine facts in
@@ -113,4 +148,4 @@ Key: *Class window* (Ctrl+Shift+C), changeable on the mod's *Keys* page (**F11**
 - **Self test:** `src/custom-classes_selftest` (`Sacred.exe -gear-auto -gear-load=N -gear-mods=custom-classes,custom-classes_selftest
   -gear-instance=NAME`, a single player savegame with enemies nearby, in a copy of the game folder): profiles load, a Seraphim
   takes *Spellblade* (granted arts, the class skills while played, a spell cast, a routed Gladiator art), a Gladiator takes
-  *Battle Caster* (casts although the body has no cast clip; without the class the cast aborts).
+  *Battle Caster* (casts although the body has no cast clip, uses a copied art, a chain of two arts and a chain that ends in a spell).

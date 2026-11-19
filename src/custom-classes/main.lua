@@ -90,6 +90,10 @@ local function grant(c, p, r)
                 local ok, why = c:learn(a.id, a.learn == 'start' and a.level or 1)
                 if not ok then log('learn %d for %s: %s', a.id, tostring(c.id), tostring(why)) end
             end
+            -- a chain needs its steps known
+            for _, step in ipairs(arts.steps_of(a.id) or {}) do
+                if not c:ability(step) then c:learn(step, 1) end
+            end
             r.granted[tostring(a.id)] = true
             changed = true
         end
@@ -129,9 +133,68 @@ end
 ---------------------------------------------------------------------------------------------------------------
 -- The engine's questions.
 ---------------------------------------------------------------------------------------------------------------
+-- Chains (arts.lua): the chain art is a copy of its first step, so the game starts that step; the next steps are ordered here
+-- when the hero's action ends, on the enemy nearest to the hero.
+local running = {}
+local function nearest_foe(h)
+    local x, y, layer = h:position()
+    local best, bd
+    for _, c in ipairs(gear.world.creatures_near(x, y, 900, {layer = layer})) do
+        if not c:is_dead() and h:is_enemy(c) and not c:is_hero() then
+            local d = h:distance(c)
+            if not bd or d < bd then best, bd = c, d end
+        end
+    end
+    return best
+end
+
+local function start_chain(id, art)
+    if running[id] then return end
+    local chain = arts.chains[art]
+    if not chain then return end
+    running[id] = true
+    gear.task(function()
+        local ok, err = pcall(function()
+            local h = gear.world.object(id)
+            local function wait_done()
+                gear.wait(0.2)
+                local t = 0
+                while t < 4 and h:action() ~= nil and (h:action() == 'ability' or h:action() == 'busy') do
+                    gear.wait(0.1)
+                    t = t + 0.1
+                end
+            end
+            wait_done()
+            for i = 2, #chain.steps do
+                if not h or h:is_dead() then break end
+                gear.wait(chain.delay)
+                -- a step still regenerating from earlier use is waited for (the chain's own regeneration is the sum of its steps')
+                for _ = 1, 100 do
+                    local ab = h:ability(chain.steps[i])
+                    if not ab or ab.ready then break end
+                    gear.wait(0.2)
+                end
+                -- the order is refused while the hero is still busy: try a few times
+                local done = false
+                for _ = 1, 8 do
+                    local foe = nearest_foe(h)
+                    if not foe then break end
+                    if h:order_ability(chain.steps[i], foe) then done = true break end
+                    gear.wait(0.3)
+                end
+                if not done then log('chain %d: step %d not started', art, chain.steps[i]) break end
+                wait_done()
+            end
+        end)
+        if not ok then print('[custom-classes] chain: ' .. tostring(err)) end
+        running[id] = nil
+    end)
+end
+
 -- ability.route: a hero of a profile uses an art another class's handler knows: that handler runs it.
 local route_cache = {}
 gear.on('ability.route', guard('route', function(type_id, art, vanilla, action, id)
+    if arts.chains[art] then start_chain(id, art) end
     local p = profile_of_id(id)
     if not p then return nil end
     local a = gear.data.abilities[art]

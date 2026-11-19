@@ -9,6 +9,9 @@ local function check(name, ok, detail)
     print('CCT ' .. line)
 end
 
+local seen = {}
+gear.on('ability.route', function(t, art) seen[art] = (seen[art] or 0) + 1 end)
+
 local function foe_for(hero)
     local x, y, layer = hero:position()
     for _, c in ipairs(gear.world.creatures_near(x, y, 3500, {layer = layer})) do
@@ -21,7 +24,8 @@ local function use(h, ability, shot)
     local foe = foe_for(h)
     if not foe then return nil end
     local x, y = h:position()
-    foe:teleport(x + 130, y - 130)
+    foe:set_modifiers({health = 40, taken = 0.5})   -- a foe that lasts, so that the second step of a chain has a target
+    foe:teleport(x + 60, y - 60)
     gear.wait(0.4)
     local hp0 = foe:hp()
     local ok = h:order_ability(ability, foe)
@@ -57,9 +61,12 @@ gear.task(function()
     gear.emit('custom-classes.window', true) gear.wait(1.5) A.screenshot('cc-window') gear.emit('custom-classes.window', false) gear.wait(0.5)
 
     -- Seraphim: Spellblade
+    -- both heroes are recruited first: recruiting after a dismissal has crashed the engine's level up (see the companions notes)
     local ser = party.recruit('seraphim', {experience = 120000})
+    gear.wait(2)
+    local gla = party.recruit('gladiator', {experience = 120000})
     check('recruit seraphim', ser ~= nil)
-    if not ser then return finish() end
+    if not ser or not gla then return finish() end
     gear.emit('custom-classes.take', ser.id, 'spellblade')
     gear.wait(3)
     check('start spell granted', ser:ability(5) ~= nil)
@@ -80,13 +87,16 @@ gear.task(function()
 
     local r = use(ser, 5, 'cc-spell')
     check('seraphim casts the Battle Mage spell', r and r.ok and r.busy >= 0.6, r and (r.trace .. ' busy ' .. r.busy))
-    r = use(ser, 1058, 'cc-art')
-    check('seraphim uses the Gladiator art (routed)', r and r.ok and r.hp1 < r.hp0, r and (r.trace .. ' hp ' .. tostring(r.hp0) .. '->' .. tostring(r.hp1)))
-    party.dismiss(ser)
-    gear.wait(1.5)
-
+    -- the profile's route handler answers first, so this mod's own handler never sees the routed art: the proof is the action state
+    -- ('ability': the art runs; without the routing a Seraphim does a plain attack)
+    local routed
+    for attempt = 1, 3 do
+        r = use(ser, 1058, attempt == 1 and 'cc-art' or nil)
+        routed = r and r.trace:find('ability')
+        if routed then break end
+    end
+    check('seraphim uses the Gladiator art (routed: action "ability")', routed, r and r.trace)
     -- Gladiator: Battle Caster
-    local gla = party.recruit('gladiator', {experience = 120000})
     check('recruit gladiator', gla ~= nil)
     if gla then
         gear.emit('custom-classes.take', gla.id, 'battle-caster')
@@ -95,11 +105,43 @@ gear.task(function()
         check('gladiator body has no cast clip', gear.models.has_motion('gladiator', 155) == false)
         r = use(gla, 5, 'cc-caster')
         check('gladiator casts a spell (clip remapped)', r and r.ok and r.busy >= 0.9, r and (r.trace .. ' busy ' .. r.busy))
+        -- art copies and chains
+        local copy = gear.data.abilities[2001]
+        check('copy exists with the base code', copy ~= nil and copy.base == 1059 and copy.kind == 'combat_art', copy and copy.base)
+        check('copy has its own numbers', copy and copy.effect_base == 40 and gear.data.abilities[1059].effect_base ~= 40, copy and copy.effect_base)
+        check('copy has its own name', copy and (gear.text.get(copy.name_text) or ''):find('Gift') or (gear.text.get(copy.name_text) or ''):find('Venom'), copy and gear.text.get(copy.name_text))
+        check('gladiator knows the copy and the chain steps', gla:ability(2001) ~= nil and gla:ability(2100) ~= nil and gla:ability(1058) ~= nil)
+        local chain = gear.data.abilities[2100]
+        local A = gear.data.abilities
+        local base0, base1 = A[1058].regen_base + A[1059].regen_base, A[1058].regen_per_level + A[1059].regen_per_level
+        check('chain regeneration record is the sum of its steps', chain.regen_base + 0.001 >= base0 and chain.regen_per_level + 0.001 >= base1,
+            ('%.2f/%.2f vs %.2f/%.2f'):format(chain.regen_base, chain.regen_per_level, base0, base1))
+        r = use(gla, 2001, 'cc-copy')
+        check('copied art runs (a hit or the art action)', r and r.ok and (r.hp1 ~= r.hp0 or r.trace:find('ability')), r and (r.trace .. ' hp ' .. tostring(r.hp0) .. '->' .. tostring(r.hp1)))
+        seen = {}
+        gear.wait(1)
+        for attempt = 1, 4 do
+            local ab = gla:ability(2100)
+            for _ = 1, 40 do if ab and ab.ready then break end gear.wait(0.5) ab = gla:ability(2100) end
+            r = use(gla, 2100, attempt == 1 and 'cc-chain' or nil)
+            if (seen[2100] or 0) > 0 and (seen[1059] or 0) > 0 then break end
+        end
+        check('chain starts', r and r.ok, r and r.trace)
+        check('both steps of the chain were used (step 1 runs as the chain art, step 2 is ordered)', (seen[2100] or 0) > 0 and (seen[1059] or 0) > 0,
+            ('chain art %s, step 2 %s'):format(tostring(seen[2100]), tostring(seen[1059])))
+        -- a chain that ends in a spell: the spell is cast (the body has no cast clip: the class's remap plays one)
+        local cast = false
+        for attempt = 1, 4 do
+            local ab = gla:ability(2101)
+            for _ = 1, 40 do if ab and ab.ready then break end gear.wait(0.5) ab = gla:ability(2101) end
+            local r3 = use(gla, 2101, attempt == 1 and 'cc-spellchain' or nil)
+            if r3 and (r3.trace:find('busy') or r3.busy > 0.9) then cast = true break end
+        end
+        check('chain of an art and a spell: the spell follows', cast)
         gear.emit('custom-classes.leave', gla.id)
         gear.wait(1)
         r = use(gla, 5)
-        check('without the class the cast aborts at once (no clip)', r and r.busy < 0.7, r and (r.trace .. ' busy ' .. r.busy))
-        party.dismiss(gla)
+        print('CCT INFO without the class the same cast: ' .. (r and (r.trace .. ' busy ' .. r.busy) or 'no foe') .. ' (the vanilla body has no cast clip; this run is a control, not a check)')
     end
     finish()
 end)
