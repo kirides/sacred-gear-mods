@@ -330,7 +330,10 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
         -- themselves until the target falls, so they are ordered again only for a new target or an idle hero.
         if action == 'ability' then return end
         s.fight_end = nil
-        if opts.use_abilities and now - s.ability_at > 2 then
+        local style = tactics.style or 'balanced'
+        -- weapon first: combat arts and spells only every 8 s
+        local gap = style == 'weapon' and 8 or 2
+        if opts.use_abilities and now - s.ability_at > gap then
             local form = pick_form(c, s, now, true, tactics)
             if form and c:order_ability(form.id, c) then
                 s.ability_at, s.ordered = now, now
@@ -348,6 +351,16 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
                     return
                 end
             end
+        end
+        if style == 'arts' then
+            -- combat arts only: no weapon; between casts they keep back with the hero they protect
+            if action == 'attacking' then c:order_stop() end
+            s.target = target.id
+            if d > opts.follow and now - s.ordered > 0.5 then
+                local fx, fy = formation(lx, ly, slot, count, opts.follow * 0.6)
+                if c:order_move(fx, fy) then s.ordered = now end
+            end
+            return
         end
         if s.target ~= target.id or action == 'idle' then
             local ok, err = c:order_attack(target)

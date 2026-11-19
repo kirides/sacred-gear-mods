@@ -83,7 +83,7 @@ local function tactics(id)
     for k, v in pairs(r.abilities) do
         if v == false then off[tonumber(k)] = false end
     end
-    return {behaviour = r.behaviour, abilities = off}
+    return {behaviour = r.behaviour, style = r.style, abilities = off}
 end
 
 local function default_name(c)
