@@ -1,5 +1,9 @@
 # Sacred Gear mods
 
+<a href="https://kirides.github.io/sacred-bild/add-to-mod-manager.html?index=https%3A%2F%2Fraw.githubusercontent.com%2Fkirides%2Fsacred-gear-mods%2Fmain%2Fmod-index.json"><img src="docs/images/gear-mod-manager.png" alt="Gear Mod Manager icon" width="56" align="middle"> <img src="https://img.shields.io/badge/Gear_Mod_Manager-Add_this_source-2e7d32?style=for-the-badge" alt="Add to Gear Mod Manager" align="middle"></a>
+<!-- GitHub strips gear-mod-manager:// links, so the button opens an https page that hands the link to the manager (docs/add-to-mod-manager.html in sacred-bild). -->
+Have the [Gear Mod Manager](https://github.com/kirides/sacred-mod-manager)? Press the button to add this repository's index as a source (it asks first).
+
 **More Sacred Gold, from small Lua scripts.** These are mods for [Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md),
 the mod kit of [SacredBild](https://github.com/kirides/sacred-bild) for the GOG / Steam Sacred Gold (also the German
 build). A mod is a folder you copy into the game's `mods` folder; you switch it on or off in game.
