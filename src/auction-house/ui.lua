@@ -219,17 +219,16 @@ local function browse_rows(client, page, x, y, w)
         local ry = y + (n - 1) * row_h
         local reg = ui.region('ah-row' .. r.id, x, ry, w - 96, row_h - 2)
         ui.rect(x, ry, w, row_h - 2, reg.hover and 0x70405070 or (n % 2 == 0 and 0x40202830 or 0x40101820))
-        icon(r.type, x + 2, ry + 1, 32, 32)
-        ui.text(r.name or '?', x + 40, ry + 1, {color = QUALITY_COLOR[r.quality] or 0xFFFFFFFF, size = 13, width = 230})
-        local classes = (r.classes and #r.classes > 0) and table.concat(r.classes, ', ') or 'all classes'
-        ui.text(('Lv %d  -  %s  -  %s  -  %s'):format(r.level or 0, r.seller or '?', left(r.ends, now), classes),
-            x + 40, ry + 18, {size = 11, color = DIM, width = w - 200})
-        ui.text(gold(r.price), x + w - 200, ry + 1, {size = 13, width = 100, align = 'right', color = 0xFFFFE080})
-        if r.median then
-            ui.text(('recent %s'):format(gold(r.median)), x + w - 200, ry + 18, {size = 11, width = 100, align = 'right', color = DIM})
-        end
+        -- icon | name over the details | price over the recent median | Buy
+        local t = ui.table('ah-l' .. r.id, x, ry + 1, w, {columns = {36, '*', 100, 88}, spacing = {4, 0}, row_heights = {17, 17}})
+        t:row()
+        local ix, iy = t:cell(1, 1, 2)
+        icon(r.type, ix + 1, iy, 32, 32)
+        t:label(2, r.name or '?', {id = 'n', color = QUALITY_COLOR[r.quality] or 0xFFFFFFFF, size = 13})
+        t:label(3, gold(r.price), {id = 'p', size = 13, halign = 'right', color = 0xFFFFE080})
         local mine = r.seller_key == me
-        if ui.button('ah-buy' .. r.id, x + w - 90, ry + 6, 88, 22, mine and 'Yours' or 'Buy', {enabled = not mine and not view.busy,
+        if t:button(4, mine and 'Yours' or 'Buy', {id = 'ah-buy' .. r.id, rowspan = 2, height = 22, valign = 'center',
+            enabled = not mine and not view.busy,
             tooltip = mine and 'Your own listing' or ('Buy for %s gold (taken from your wallet; what it lacks from the gold you carry)'):format(gold(r.price))}) then
             view.busy = true
             client:buy(r, function(ok, err)
@@ -244,6 +243,11 @@ local function browse_rows(client, page, x, y, w)
                 end
             end)
         end
+        t:row()
+        local classes = (r.classes and #r.classes > 0) and table.concat(r.classes, ', ') or 'all classes'
+        t:label(2, ('Lv %d  -  %s  -  %s  -  %s'):format(r.level or 0, r.seller or '?', left(r.ends, now), classes),
+            {id = 'd', size = 11, color = DIM})
+        if r.median then t:label(3, ('recent %s'):format(gold(r.median)), {id = 'm', size = 11, halign = 'right', color = DIM}) end
         if reg.hover then view.hover = {listing = r.id} end
     end
     if #page.rows == 0 then ui.text('Nothing for sale matches.', x, y, {color = DIM}) end
@@ -253,29 +257,48 @@ end
 local function browse(client, x, y, w, h)
     local q = view.q
     local changed = false
-    local text = field('ah-q', x, y, 250, q.text, {hint = 'Search name or any tooltip line', max = 40})
+    -- row 1: search field | category | quality; row 2: level, price, my class, sort, order
+    local f1 = ui.table('ah-f1', x, y, w, {columns = {250, 130, '*'}, spacing = {8, 0}, row_height = 20})
+    f1:row()
+    local fx, fy, fw = f1:cell(1)
+    local text = field('ah-q', fx, fy, fw, q.text, {hint = 'Search name or any tooltip line', max = 40})
     if text ~= q.text then q.text = text end
     local c, i
-    c, i = ui.dropdown('ah-cat', x + 258, y, 130, labels(CATEGORIES), q.cat)
+    c, i = f1:dropdown(2, labels(CATEGORIES), q.cat, {id = 'ah-cat'})
     if c then q.cat, changed = i, true end
-    c, i = ui.dropdown('ah-qual', x + 394, y, w - 394, labels(QUALITIES), q.qual)
+    c, i = f1:dropdown(3, labels(QUALITIES), q.qual, {id = 'ah-qual'})
     if c then q.qual, changed = i, true end
     y = y + 26
-    c, i = ui.dropdown('ah-lvl', x, y, 120, labels(LEVELS, 3), q.level)
+    local f2 = ui.table('ah-f2', x, y, w, {columns = {120, 130, 82, 120, '*'}, spacing = {6, 0}, row_height = 20})
+    f2:row()
+    c, i = f2:dropdown(1, labels(LEVELS, 3), q.level, {id = 'ah-lvl'})
     if c then q.level, changed = i, true end
-    c, i = ui.dropdown('ah-price', x + 126, y, 130, labels(PRICES, 3), q.price)
+    c, i = f2:dropdown(2, labels(PRICES, 3), q.price, {id = 'ah-price'})
     if c then q.price, changed = i, true end
-    local cc, cv = ui.checkbox('ah-class', x + 264, y + 2, 'My class', q.mine_class)
+    local cc, cv = f2:checkbox(3, 'My class', q.mine_class, {id = 'ah-class'})
     if cc then q.mine_class, changed = cv, true end
-    c, i = ui.dropdown('ah-sort', x + 352, y, 120, labels(SORTS), view.sort)
+    c, i = f2:dropdown(4, labels(SORTS), view.sort, {id = 'ah-sort'})
     if c then view.sort, changed = i, true end
-    if ui.button('ah-desc', x + 478, y, w - 478, 20, view.desc and 'High-low' or 'Low-high',
-        {tooltip = 'Sort order'}) then view.desc, changed = not view.desc, true end
+    if f2:button(5, view.desc and 'High-low' or 'Low-high', {id = 'ah-desc', tooltip = 'Sort order'}) then
+        view.desc, changed = not view.desc, true
+    end
     y = y + 26
-    if ui.button('ah-search', x, y, 90, 20, 'Search') or changed or (edit.id == nil and view.last_text ~= q.text) then
+    -- Search | the count | < page / pages >
+    local page = client.page
+    local bar = ui.table('ah-bar', x, y, w, {columns = {90, '*', 24, 48, 24}, spacing = {4, 0}, row_height = 20})
+    bar:row()
+    if bar:button(1, 'Search', {id = 'ah-search'}) or changed or (edit.id == nil and view.last_text ~= q.text) then
         view.last_text = q.text
         search(client, 1)
     end
+    if page then
+        bar:label(2, ('%d found'):format(page.total or 0), {id = 'ah-count', color = DIM})
+        if bar:button(3, '<', {id = 'ah-prev', enabled = page.page > 1}) then search(client, page.page - 1) end
+        bar:label(4, ('%d / %d'):format(page.page, page.pages), {id = 'ah-pg', halign = 'center'})
+        if bar:button(5, '>', {id = 'ah-next', enabled = page.page < page.pages}) then search(client, page.page + 1) end
+    end
+    y = y + 26
+    if not page then
     local page = client.page
     if page then
         ui.label('ah-count', ('%d found'):format(page.total or 0), x + 100, y, {height = 20, valign = 'middle', color = DIM})
@@ -395,10 +418,12 @@ local function sell_grid(client, cfg, x, y, w)
     end
     local cells = view.src_cells
     s.page = math.max(0, math.min(s.page, view.src_pages - 1))
-    ui.label('ah-src', 'Your backpack and chest: pick an item', x, y, {height = 20, valign = 'middle', color = ui.COLORS.accent})
-    if ui.button('ah-sp', x + w - 104, y, 24, 20, '<', {enabled = s.page > 0}) then s.page = s.page - 1 end
-    ui.label('ah-spn', ('%d / %d'):format(s.page + 1, view.src_pages), x + w - 76, y, {height = 20, valign = 'middle'})
-    if ui.button('ah-sn', x + w - 24, y, 24, 20, '>', {enabled = s.page < view.src_pages - 1}) then s.page = s.page + 1 end
+    local head = ui.table('ah-sh', x, y, w, {columns = {'*', 24, 48, 24}, spacing = {4, 0}, row_height = 20})
+    head:row()
+    head:label(1, 'Your backpack and chest: pick an item', {id = 'ah-src', color = ui.COLORS.accent})
+    if head:button(2, '<', {id = 'ah-sp', enabled = s.page > 0}) then s.page = s.page - 1 end
+    head:label(3, ('%d / %d'):format(s.page + 1, view.src_pages), {id = 'ah-spn', halign = 'center'})
+    if head:button(4, '>', {id = 'ah-sn', enabled = s.page < view.src_pages - 1}) then s.page = s.page + 1 end
     y = y + 24
     local gx = x + (w - COLS * CELL) / 2
     ui.rect(gx, y, COLS * CELL, ROWS * CELL, 0x60000000)
@@ -430,42 +455,51 @@ local function sell_form(client, sel, x, y, w)
     local s = view.sell
     local it = sel.src.item
     s.meta = s.meta or M.meta_of(it)
-    icon(it, x, y, 32, 32)
-    ui.text(s.meta.name, x + 40, y, {color = QUALITY_COLOR[it.quality] or 0xFFFFFFFF, size = 13, width = w - 40})
     local hist = client:fetch_history(it.type)
     local htext = 'no recent sales of this kind'
     if hist and hist.median then htext = ('recent sales: median %s gold (%d)'):format(gold(hist.median), #(hist.sales or {})) end
-    ui.text(('Level %d  -  from your %s  -  %s'):format(s.meta.level or 0, sel.src.where, htext), x + 40, y + 17,
-        {size = 11, color = DIM, width = w - 40})
+    -- icon | name over the details
+    local head = ui.table('ah-sf', x, y, w, {columns = {36, '*'}, spacing = {4, 0}, row_heights = {17, 17}})
+    head:row()
+    local ix, iy = head:cell(1, 1, 2)
+    icon(it, ix, iy, 32, 32)
+    head:label(2, s.meta.name, {id = 'n', color = QUALITY_COLOR[it.quality] or 0xFFFFFFFF, size = 13})
+    head:row()
+    head:label(2, ('Level %d  -  from your %s  -  %s'):format(s.meta.level or 0, sel.src.where, htext), {id = 'd', size = 11, color = DIM})
     y = y + 40
-    ui.label('ah-pl', 'Price', x, y, {height = 20, valign = 'middle'})
-    s.price = field('ah-price-in', x + 50, y, 170, s.price, {digits = true, max = 10, hint = 'gold'})
+    -- Price | field | the five steps
+    local pt = ui.table('ah-pf', x, y, w, {columns = {46, 170, 44, 44, 44, 44, 44}, spacing = {4, 0}, row_height = 20})
+    pt:row()
+    pt:label(1, 'Price', {id = 'ah-pl'})
+    local fx, fy, fw = pt:cell(2)
+    s.price = field('ah-price-in', fx, fy, fw, s.price, {digits = true, max = 10, hint = 'gold'})
     local price = tonumber(s.price) or 0
-    local bx = x + 228
-    for _, step in ipairs({-1000, -100, 100, 1000, 10000}) do
+    for n, step in ipairs({-1000, -100, 100, 1000, 10000}) do
         local label = (step > 0 and '+' or '') .. (math.abs(step) >= 1000 and ((math.floor(step / 1000)) .. 'k') or tostring(step))
-        if ui.button('ah-st' .. step, bx, y, 44, 20, label) then
+        if pt:button(2 + n, label, {id = 'ah-st' .. step}) then
             price = math.max(0, price + step)
             s.price = tostring(price)
         end
-        bx = bx + 48
     end
     y = y + 26
     local rules = client.info and client.info.rules or {durations = {1, 3, 7}, fee_per_day = 0, sale_cut = 0}
     local durs = {}
     for i, d in ipairs(rules.durations) do durs[i] = d == 1 and '1 day' or (d .. ' days') end
     s.days = math.max(1, math.min(s.days, #durs))
-    local dc, di = ui.dropdown('ah-days', x + 50, y, 120, durs, s.days)
-    if dc then s.days = di end
-    ui.label('ah-dl', 'For', x, y, {height = 20, valign = 'middle'})
     local days = rules.durations[s.days] or 1
     local fee = 0
     if (rules.fee_per_day or 0) > 0 and price > 0 then
         fee = math.max(rules.fee_min or 0, math.floor(price * rules.fee_per_day / 100 * days))
     end
     local net = price - math.floor(price * (rules.sale_cut or 0) / 100)
-    ui.text(('Fee %s now  -  you get %s if it sells (%s%% cut)'):format(gold(fee), gold(net), tostring(rules.sale_cut or 0)),
-        x + 178, y, {height = 20, valign = 'middle', size = 12, color = DIM})
+    -- For | duration | the fee and what the sale brings
+    local dt = ui.table('ah-df', x, y, w, {columns = {46, 120, '*'}, spacing = {4, 0}, row_height = 20})
+    dt:row()
+    dt:label(1, 'For', {id = 'ah-dl'})
+    local dc, di = dt:dropdown(2, durs, s.days, {id = 'ah-days'})
+    if dc then s.days = di end
+    dt:label(3, ('Fee %s now  -  you get %s if it sells (%s%% cut)'):format(gold(fee), gold(net), tostring(rules.sale_cut or 0)),
+        {id = 'ah-fee', size = 12, color = DIM})
     y = y + 28
     local ok = price >= (rules.price_min or 1) and price <= (rules.price_max or 2e9) and not view.busy and client:online()
     if ui.button('ah-list', x, y, 160, 24, 'Put up for sale', {enabled = ok,
@@ -513,10 +547,13 @@ local function mine(client, x, y, w)
         end
         local reg = ui.region('ah-m' .. r.id, x, y, w - 96, 34)
         ui.rect(x, y, w, 34, reg.hover and 0x70405070 or 0x40202830)
-        icon(r.type, x + 2, y + 1, 32, 32)
-        ui.text(r.name or '?', x + 40, y + 1, {color = QUALITY_COLOR[r.quality] or 0xFFFFFFFF, size = 13, width = 260})
-        ui.text(('%s gold  -  %s left'):format(gold(r.price), left(r.ends, now)), x + 40, y + 18, {size = 11, color = DIM})
-        if ui.button('ah-cancel' .. r.id, x + w - 90, y + 6, 88, 22, 'Cancel', {enabled = not view.busy,
+        -- icon | name over price and time left | Cancel
+        local t = ui.table('ah-ml' .. r.id, x, y + 1, w, {columns = {36, '*', 88}, spacing = {4, 0}, row_heights = {17, 17}})
+        t:row()
+        local ix, iy = t:cell(1, 1, 2)
+        icon(r.type, ix + 1, iy, 32, 32)
+        t:label(2, r.name or '?', {id = 'n', color = QUALITY_COLOR[r.quality] or 0xFFFFFFFF, size = 13})
+        if t:button(3, 'Cancel', {id = 'ah-cancel' .. r.id, rowspan = 2, height = 22, valign = 'center', enabled = not view.busy,
             tooltip = 'Take it off the market; it goes to your mailbox (the fee is not returned)'}) then
             view.busy = true
             client:cancel(r.id, function(ok, err)
@@ -526,6 +563,8 @@ local function mine(client, x, y, w)
                 client:refresh_mail()
             end)
         end
+        t:row()
+        t:label(2, ('%s gold  -  %s left'):format(gold(r.price), left(r.ends, now)), {id = 'd', size = 11, color = DIM})
         if reg.hover then view.hover = {listing = r.id} end
         y = y + 36
     end
@@ -545,9 +584,13 @@ local function mailbox(client, x, y, w)
     ui.label('ah-w', ('Wallet: %s gold   (you carry %s)'):format(gold(client:wallet()), gold(hero and hero:gold() or 0)), x, y,
         {height = 20, valign = 'middle', color = 0xFFFFE080})
     y = y + 24
-    view.gold_amount = field('ah-gold', x, y, 150, view.gold_amount, {digits = true, max = 10, hint = 'amount'})
+    -- amount field | Deposit | Withdraw | All
+    local wt = ui.table('ah-wt', x, y, w, {columns = {150, 90, 90, 90}, spacing = {8, 0}, row_height = 20})
+    wt:row()
+    local fx, fy, fw = wt:cell(1)
+    view.gold_amount = field('ah-gold', fx, fy, fw, view.gold_amount, {digits = true, max = 10, hint = 'amount'})
     local amount = tonumber(view.gold_amount) or 0
-    if ui.button('ah-dep', x + 158, y, 90, 20, 'Deposit', {enabled = amount > 0 and not view.busy and client:online(),
+    if wt:button(2, 'Deposit', {id = 'ah-dep', enabled = amount > 0 and not view.busy and client:online(),
         tooltip = 'Gold you carry into the wallet (buying and fees use it)'}) then
         view.busy = true
         client:deposit(amount, function(ok, err)
@@ -556,7 +599,7 @@ local function mailbox(client, x, y, w)
         end)
         view.gold_amount = ''
     end
-    if ui.button('ah-wd', x + 254, y, 90, 20, 'Withdraw', {enabled = amount > 0 and not view.busy and client:online(),
+    if wt:button(3, 'Withdraw', {id = 'ah-wd', enabled = amount > 0 and not view.busy and client:online(),
         tooltip = 'Gold from the wallet to your hero'}) then
         view.busy = true
         client:withdraw(amount, function(ok, err)
@@ -565,22 +608,27 @@ local function mailbox(client, x, y, w)
         end)
         view.gold_amount = ''
     end
-    if ui.button('ah-wall', x + 350, y, 90, 20, 'All', {enabled = client:wallet() > 0, tooltip = 'The whole wallet'}) then
+    if wt:button(4, 'All', {id = 'ah-wall', enabled = client:wallet() > 0, tooltip = 'The whole wallet'}) then
         view.gold_amount = tostring(client:wallet())
     end
     y = y + 30
     local entries = client.mail and client.mail.entries or {}
     local returns = client:returns()
-    ui.label('ah-mb', ('Mailbox: %d'):format(#entries + #returns), x, y, {height = 20, valign = 'middle', color = ui.COLORS.accent})
-    if ui.button('ah-call', x + w - 110, y, 110, 20, 'Collect all', {enabled = (#entries > 0) and not view.busy}) then
+    local mh = ui.table('ah-mh', x, y, w, {columns = {'*', 110}, spacing = {8, 0}, row_height = 20})
+    mh:row()
+    mh:label(1, ('Mailbox: %d'):format(#entries + #returns), {id = 'ah-mb', color = ui.COLORS.accent})
+    if mh:button(2, 'Collect all', {id = 'ah-call', enabled = (#entries > 0) and not view.busy}) then
         for _, m in ipairs(entries) do client:collect(m.mid) end
     end
     y = y + 26
     for _, e in ipairs(returns) do
         ui.rect(x, y, w, 34, 0x40302020)
-        icon(inv.unhex(e.data), x + 2, y + 1, 32, 32)
-        ui.text((e.meta and e.meta.name or 'Item') .. '  (sale refused, kept here)', x + 40, y + 8, {size = 12, width = w - 140})
-        if ui.button('ah-ret' .. e.rid, x + w - 90, y + 6, 88, 22, 'Take') then
+        local t = ui.table('ah-rt' .. e.rid, x, y + 1, w, {columns = {36, '*', 88}, spacing = {4, 0}, row_height = 32})
+        t:row()
+        local ix, iy = t:cell(1)
+        icon(inv.unhex(e.data), ix + 1, iy, 32, 32)
+        t:label(2, (e.meta and e.meta.name or 'Item') .. '  (sale refused, kept here)', {id = 'n', size = 12})
+        if t:button(3, 'Take', {id = 'ah-ret' .. e.rid, height = 22}) then
             if not client:take_return(e) then say('no room in the backpack or the chest', false) end
         end
         y = y + 36
@@ -591,19 +639,23 @@ local function mailbox(client, x, y, w)
             break
         end
         ui.rect(x, y, w, 34, 0x40202830)
+        local t = ui.table('ah-mt' .. m.mid, x, y + 1, w, {columns = {36, '*', 88}, spacing = {4, 0}, row_heights = {17, 17}})
+        t:row()
         if m.kind == 'gold' then
-            ui.text(('%s gold'):format(gold(m.gold)), x + 40, y + 8, {color = 0xFFFFE080, size = 13})
+            t:label(2, ('%s gold'):format(gold(m.gold)), {id = 'n', rowspan = 2, color = 0xFFFFE080, size = 13})
         else
-            icon(m.type, x + 2, y + 1, 32, 32)
-            ui.text(m.name or 'Item', x + 40, y + 1, {color = QUALITY_COLOR[m.quality] or 0xFFFFFFFF, size = 13, width = w - 140})
-            ui.text(REASON[m.reason] or m.reason or '', x + 40, y + 18, {size = 11, color = DIM})
+            local ix, iy = t:cell(1, 1, 2)
+            icon(m.type, ix + 1, iy, 32, 32)
+            t:label(2, m.name or 'Item', {id = 'n', color = QUALITY_COLOR[m.quality] or 0xFFFFFFFF, size = 13})
         end
-        if ui.button('ah-col' .. m.mid, x + w - 90, y + 6, 88, 22, 'Collect', {enabled = not view.busy}) then
+        if t:button(3, 'Collect', {id = 'ah-col' .. m.mid, rowspan = 2, height = 22, valign = 'center', enabled = not view.busy}) then
             client:collect(m.mid, function(ok, err)
                 if not ok and err then say(err, false) end
                 view.mail_asked = nil
             end)
         end
+        t:row()
+        if m.kind ~= 'gold' then t:label(2, REASON[m.reason] or m.reason or '', {id = 'd', size = 11, color = DIM}) end
         y = y + 36
     end
     ui.text('Save the game after collecting: an item collected and not saved is lost if the game ends.', x, y + 4,
@@ -624,17 +676,17 @@ function M.panel(client, cfg)
     end
     view.hover = nil
     local x, y, w = p.content_x + 4, p.content_y + 2, p.content_w - 8
-    local tx = x
-    for _, t in ipairs(TABS) do
+    local tabs = ui.table('ah-tabs', x, y, w, {columns = {120, 120, 120, 120}, spacing = {6, 0}, row_height = 22})
+    tabs:row()
+    for n, t in ipairs(TABS) do
         local on = view.tab == t[1]
-        if ui.button('ah-tab-' .. t[1], tx, y, 120, 22, t[2], {color = on and ui.COLORS.accent or nil}) then
+        if tabs:button(n, t[2], {id = 'ah-tab-' .. t[1], color = on and ui.COLORS.accent or nil}) then
             view.tab = t[1]
             edit.id = nil
             if t[1] == 'browse' then search(client, view.page) end
             if t[1] == 'mail' then view.mail_asked = nil end
             if t[1] == 'mine' then view.mine_asked = nil end
         end
-        tx = tx + 126
     end
     y = y + 30
     local status, scolor
