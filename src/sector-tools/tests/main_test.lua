@@ -68,6 +68,14 @@ local function new_gear()
             button = function(id, x, y, w, h, text) g.buttons[id] = text; local p = g.pressed[id]; g.pressed[id] = nil; return p == true end,
             slider = function(id, x, y, w, min, max, value) return false, value end,
             text = function(t) table.insert(g.calls, 'text:' .. tostring(t)) end,
+            table = function()
+                local t = {}
+                function t:row() end
+                function t:height() return 24 end
+                function t:button(col, text, opts) g.buttons[opts.id] = text; local p = g.pressed[opts.id]; g.pressed[opts.id] = nil; return p == true end
+                function t:slider(col, min, max, value) return false, value end
+                return t
+            end,
             rect = function() g.rects = g.rects + 1 end,
             text_wrap = function(t) return {t}, 14 end,
             mouse = function() return g.mouse[1], g.mouse[2] end,

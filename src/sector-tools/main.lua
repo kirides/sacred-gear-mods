@@ -282,23 +282,24 @@ local function draw_panel()
     else
         text('No hero yet.', {size = 12}, 20)
     end
-    -- the recording: three buttons, the circle's radius, what was recorded
+    -- the recording: three buttons, the circle's radius (a slider over two thirds and a button), what was recorded
     text(('Area "%s"  (id %s)'):format(S.get('area_name'), core.slug(S.get('area_name'))), {size = 12}, 18)
-    local bw = math.floor((w - 12) / 3)
-    if ui.button('rec', x, y + line, bw, 24, rec.on and 'Stop' or 'Start area', {tooltip = 'Start: a new area; every sector you walk into is added'}) then
+    local t = ui.table('rec', x, y + line, w, {columns = {'*', '*', '*'}, spacing = {6, 6}, row_height = 24})
+    t:row()
+    if t:button(1, rec.on and 'Stop' or 'Start area', {id = 'rec', tooltip = 'Start: a new area; every sector you walk into is added'}) then
         if rec.on then actions.stop() else actions.start() end
     end
-    if ui.button('add', x + bw + 6, y + line, bw, 24, 'Add sector', {tooltip = 'Add the sector you stand in'}) then actions.add() end
-    if ui.button('clear', x + 2 * (bw + 6), y + line, bw, 24, 'Clear', {tooltip = 'Forget the recorded sectors and the circle'}) then actions.clear() end
-    line = line + 30
-    local changed, radius = ui.slider('radius', x, y + line, w - 92, 0, 8000, S.get('radius'), {step = 100, format = false,
+    if t:button(2, 'Add sector', {id = 'add', tooltip = 'Add the sector you stand in'}) then actions.add() end
+    if t:button(3, 'Clear', {id = 'clear', tooltip = 'Forget the recorded sectors and the circle'}) then actions.clear() end
+    t:row()
+    local changed, radius = t:slider(1, 0, 8000, S.get('radius'), {id = 'radius', span = 2, step = 100, format = false, value_width = 0,
         tooltip = 'Radius of the circle in world units (a tile is 54, a sector 3435)'})
     if changed then
         S.set('radius', radius)
         if rec.circle then rec.circle.r = radius; touch() end
     end
-    if ui.button('circle', x + w - 86, y + line - 3, 86, 24, ('Circle %d'):format(S.get('radius')), {tooltip = 'A circle around where you stand with this radius (the slider), in world units'}) then actions.circle() end
-    line = line + 28
+    if t:button(3, ('Circle %d'):format(S.get('radius')), {id = 'circle', tooltip = 'A circle around where you stand with this radius (the slider), in world units'}) then actions.circle() end
+    line = line + t:height() + 6
     local compact = core.compact_text(core.compact(core.sorted(rec.ids)))
     local summary = ('%d sectors%s: %s'):format(ids_count(), rec.circle and (' + circle r ' .. math.floor(rec.circle.r)) or '', compact ~= '' and compact or '-')
     local lines = ui.text_wrap(summary, w, {size = 11})
@@ -306,15 +307,16 @@ local function draw_panel()
     for i = 1, shown do ui.text(lines[i], x, y + line + (i - 1) * 14, {size = 11, color = rec.on and COLOR.rec or COLOR.cell}) end
     line = line + math.max(shown, 1) * 14 + 8
     -- copying, and the ground lines
-    local cw = math.floor((w - 12) / 3)
-    if ui.button('copy', x, y + line, cw + 14, 24, 'Copy config', {tooltip = 'Puts the line for world_events.lua on the clipboard'}) then actions.copy() end
-    if ui.button('copyid', x + cw + 20, y + line, cw - 14, 24, 'Copy id', {tooltip = 'The sector id you stand in'}) then actions.copy_id() end
-    if ui.button('labels', x + 2 * cw + 12, y + line, cw, 24, S.get('labels') and 'Lines: on' or 'Lines: off', {tooltip = 'Sector boundaries on the ground'}) then
+    local c = ui.table('copy', x, y + line, w, {columns = {'7*', '5*', '6*'}, spacing = {6, 6}, row_height = 24})
+    c:row()
+    if c:button(1, 'Copy config', {id = 'copy', tooltip = 'Puts the line for world_events.lua on the clipboard'}) then actions.copy() end
+    if c:button(2, 'Copy id', {id = 'copyid', tooltip = 'The sector id you stand in'}) then actions.copy_id() end
+    if c:button(3, S.get('labels') and 'Lines: on' or 'Lines: off', {id = 'labels', tooltip = 'Sector boundaries on the ground'}) then
         actions.labels()
     end
-    line = line + 30
-    if ui.button('copyregion', x, y + line, w, 24, 'Copy region line', {tooltip = 'regions = { id },  -- name: for an event or an area of world_events.lua, the region you stand in'}) then actions.copy_region() end
-    line = line + 30
+    c:row()
+    if c:button(1, 'Copy region line', {id = 'copyregion', span = 3, tooltip = 'regions = { id },  -- name: for an event or an area of world_events.lua, the region you stand in'}) then actions.copy_region() end
+    line = line + c:height() + 6
     if gear.time() < status_until then ui.text(status, x, y + line, {size = 11, color = COLOR.ok, width = w, height = 28}) end
 end
 
