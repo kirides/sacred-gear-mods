@@ -1,5 +1,7 @@
 # Item comparison
 
+![Item comparison](../images/item-compare.jpg)
+
 Hover an item and see what it would change. A panel beside the game's own tooltip lists the differences to the item your hero wears in that slot, **green** where the new item is better and **red** where it is worse. It works wherever the game shows an item tooltip (backpack, chest, shops, the equipment window) and with the controller's cursor: nothing to press.
 
 ## What you need

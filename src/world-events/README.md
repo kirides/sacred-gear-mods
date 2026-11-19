@@ -120,6 +120,8 @@ the format and runs them; this mod's part:
 A hook action **`boss`** turns a creature into a *world boss*: much more health, damage dealt multiplied, a share of the damage it takes
 deflected or reflected, optional regeneration, a **name** and a **health bar** on the screen, an announcement and a **reward** when it falls.
 
+![The boss's announcement, name and health bar](../../docs/images/world-events-boss.jpg)
+
 ```json
 {"at": 50, "actions": [{"action": "boss", "name": "Grakk the Ravager", "kinds": [{"type": "Orc Warrior"}], "radius": 500,
    "health": 20, "damage": 3, "taken": 0.5, "reflect": 0.15, "deflect": 0.1, "regen": 0.005,
