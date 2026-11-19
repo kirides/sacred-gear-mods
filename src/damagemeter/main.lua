@@ -494,9 +494,14 @@ local GOLD = 0xFFFFE6A0
 local MAX_ROWS = 8
 local ROW = 17
 
-local function row(x, y, w, label, value, color)
-    ui.text(label, x, y, {color = DIM})
-    ui.text(value, x, y, {width = w, align = 'right', color = color or WHITE})
+-- A table of label (left) and value (right, as wide as its widest value) rows, `h` high each.
+local function kv_table(id, x, y, w, h)
+    local t = ui.table(id, x, y, w, {columns = {'*', {width = 'auto', align = 'right'}}, spacing = {8, 0}, row_height = h or 18})
+    return t, function(label, value, color)
+        t:row()
+        t:label(1, label, {color = DIM})
+        t:label(2, value, {color = color or WHITE})
+    end
 end
 
 -- Height of a view's content, from the number of characters.
@@ -528,11 +533,12 @@ local function draw_compact(x, y, w, list)
         ui.text(num(e.dps), x, y, {width = w, align = 'right', color = e.fighting and GREEN or WHITE, size = 18})
         ui.text('DPS', x, y + 20, {color = DIM, size = 11})
     else
+        local t = ui.table('compact', x, y, w, {columns = {'*', {width = 'auto', align = 'right'}}, spacing = {8, 0}, row_height = ROW})
         for i = 1, math.min(MAX_ROWS, #list) do
             local e = list[i]
-            local yy = y + (i - 1) * ROW
-            ui.text(e.ally and ('  ' .. fit_name(e.name, 12)) or fit_name(e.name, 14), x, yy, {color = e.ally and DIM or (e.mine and GOLD or WHITE)})
-            ui.text(num(e.dps), x, yy, {width = w, align = 'right', color = e.fighting and GREEN or DIM})
+            t:row()
+            t:label(1, e.ally and ('  ' .. e.name) or e.name, {color = e.ally and DIM or (e.mine and GOLD or WHITE)})
+            t:label(2, num(e.dps), {color = e.fighting and GREEN or DIM})
         end
     end
 end
@@ -542,49 +548,54 @@ local function draw_extended(x, y, w, list)
         ui.text('no hero', x, y, {color = DIM})
         return
     end
-    local right = x + w
-    ui.text('DPS', right - 210, y, {width = 60, align = 'right', color = DIM, size = 11})
-    ui.text('Taken', right - 140, y, {width = 60, align = 'right', color = DIM, size = 11})
-    ui.text('Dealt', right - 70, y, {width = 70, align = 'right', color = DIM, size = 11})
-    local n = math.min(MAX_ROWS, #list)
-    for i = 1, n do
-        local e = list[i]
-        local yy = y + 16 + (i - 1) * ROW
-        ui.text(e.ally and ('  ' .. fit_name(e.name, 10)) or fit_name(e.name, 12), x, yy, {color = e.ally and DIM or (e.mine and GOLD or WHITE)})
-        ui.text(num(e.dps), right - 210, yy, {width = 60, align = 'right', color = e.fighting and GREEN or WHITE})
-        ui.text(num(e.tdps), right - 140, yy, {width = 60, align = 'right', color = RED})
-        ui.text(short(e.dealt), right - 70, yy, {width = 70, align = 'right', color = DIM})
+    -- Name, then three right-aligned number columns; the totals of the local hero under the list.
+    local t = ui.table('extended', x, y, w, {columns = {'*', 60, 60, 70}, spacing = {10, 0}, row_height = ROW})
+    t:row(16)
+    for c, title in ipairs({'DPS', 'Taken', 'Dealt'}) do
+        t:label(c + 1, title, {color = DIM, size = 11, halign = 'right'})
     end
-    local yy = y + 16 + n * ROW + 6
+    for i = 1, math.min(MAX_ROWS, #list) do
+        local e = list[i]
+        t:row()
+        t:label(1, e.ally and ('  ' .. e.name) or e.name, {color = e.ally and DIM or (e.mine and GOLD or WHITE)})
+        t:label(2, num(e.dps), {color = e.fighting and GREEN or WHITE, halign = 'right'})
+        t:label(3, num(e.tdps), {color = RED, halign = 'right'})
+        t:label(4, short(e.dealt), {color = DIM, halign = 'right'})
+    end
     local active = total_active()
-    row(x, yy, w, 'Biggest hit (you)', num(T.max_dealt))
-    row(x, yy + ROW, w, 'Fighting time (you)', num(active) .. ' s')
-    row(x, yy + 2 * ROW, w, 'Average DPS (you)', active > 0 and num(T.dealt / active) or '-')
+    local _, row = kv_table('extended_you', x, y + t:height() + 6, w, ROW)
+    row('Biggest hit (you)', num(T.max_dealt))
+    row('Fighting time (you)', num(active) .. ' s')
+    row('Average DPS (you)', active > 0 and num(T.dealt / active) or '-')
 end
 
 local function draw_detailed(x, y, w)
     local accent = ui.COLORS and ui.COLORS.accent
     local f = T.fight
     local fd, ft = fight_dps(f)
-    ui.label('l-fight', f and 'Fight (running)' or 'Fight (last)', x, y, {color = accent})
+    local t, row = kv_table('detail', x, y, w)
+    local function heading(id, text, h)
+        t:row(h)
+        t:label(1, text, {id = id, color = accent, span = 2, valign = 'bottom'})
+    end
+    heading('l-fight', f and 'Fight (running)' or 'Fight (last)', 18)
     local last = T.fights[1]
     if not f and last then fd, ft = last.dealt / last.dur, last.taken / last.dur end
-    row(x, y + 18, w, 'Dealt DPS / taken DPS', num(fd) .. ' / ' .. num(ft))
-    row(x, y + 36, w, 'Last ' .. num(setting('window', 10)) .. ' s', num(rolling(T.bucket_dealt)) .. ' / ' .. num(rolling(T.bucket_taken)))
-
-    ui.label('l-total', 'Since reset', x, y + 62, {color = accent})
-    row(x, y + 80, w, 'Damage dealt', num(T.dealt) .. '  (' .. num(T.hits_dealt) .. ' hits)', GREEN)
-    row(x, y + 98, w, 'Damage taken', num(T.taken) .. '  (' .. num(T.hits_taken) .. ' hits)', RED)
-    row(x, y + 116, w, 'Biggest hit dealt / taken', num(T.max_dealt) .. ' / ' .. num(T.max_taken))
+    row('Dealt DPS / taken DPS', num(fd) .. ' / ' .. num(ft))
+    row('Last ' .. num(setting('window', 10)) .. ' s', num(rolling(T.bucket_dealt)) .. ' / ' .. num(rolling(T.bucket_taken)))
+    heading('l-total', 'Since reset', 26)
+    row('Damage dealt', num(T.dealt) .. '  (' .. num(T.hits_dealt) .. ' hits)', GREEN)
+    row('Damage taken', num(T.taken) .. '  (' .. num(T.hits_taken) .. ' hits)', RED)
+    row('Biggest hit dealt / taken', num(T.max_dealt) .. ' / ' .. num(T.max_taken))
     local avg = T.hits_dealt > 0 and T.dealt / T.hits_dealt or 0
-    row(x, y + 134, w, 'Average hit dealt', num(avg))
+    row('Average hit dealt', num(avg))
     local active = total_active()
-    row(x, y + 152, w, 'Fighting time', num(active) .. ' s')
-    row(x, y + 170, w, 'Average DPS while fighting', active > 0 and num(T.dealt / active) or '-')
-    row(x, y + 188, w, 'Kills', num(T.kills) .. (active >= 10 and T.kills > 0 and ('  (' .. ('%.1f'):format(T.kills / active * 60) .. '/min)') or ''))
+    row('Fighting time', num(active) .. ' s')
+    row('Average DPS while fighting', active > 0 and num(T.dealt / active) or '-')
+    row('Kills', num(T.kills) .. (active >= 10 and T.kills > 0 and ('  (' .. ('%.1f'):format(T.kills / active * 60) .. '/min)') or ''))
 
     -- The last 30 seconds as bars: dealt up (green), taken down (red), scaled to the biggest second.
-    local gy, gh, gw = y + 214, 44, math.min(w, 180)
+    local gy, gh, gw = y + t:height() + 8, 44, math.min(w, 180)
     ui.rect(x, gy, gw, gh, ui.rgba(0, 0, 0, 90))
     local now = math.floor(clock)
     local peak = 1
@@ -598,21 +609,18 @@ local function draw_detailed(x, y, w)
         local i = s % BUCKETS + 1
         if T.bucket_stamp[i] == s then
             local d = (T.bucket_dealt[i] or 0) / peak * (gh / 2)
-            local t = (T.bucket_taken[i] or 0) / peak * (gh / 2)
+            local tk = (T.bucket_taken[i] or 0) / peak * (gh / 2)
             if d >= 1 then ui.rect(x + k * bw, gy + gh / 2 - d, math.max(1, bw - 1), d, ui.rgba(120, 220, 120, 220)) end
-            if t >= 1 then ui.rect(x + k * bw, gy + gh / 2, math.max(1, bw - 1), t, ui.rgba(240, 100, 100, 220)) end
+            if tk >= 1 then ui.rect(x + k * bw, gy + gh / 2, math.max(1, bw - 1), tk, ui.rgba(240, 100, 100, 220)) end
         end
     end
     ui.text('30 s, peak ' .. num(peak), x + gw + 6, gy, {color = DIM})
 
-    ui.label('l-top', 'Biggest targets', x, y + 266, {color = accent})
-    for i, e in ipairs(top(T.by_victim, 3)) do
-        row(x, y + 266 + i * 16, w, e.name, num(e.damage) .. ' (' .. num(e.hits) .. ')')
-    end
-    ui.label('l-src', 'Biggest damage sources', x, y + 330, {color = accent})
-    for i, e in ipairs(top(T.by_attacker, 2)) do
-        row(x, y + 330 + i * 16, w, e.name, num(e.damage) .. ' (' .. num(e.hits) .. ')')
-    end
+    local b, brow = kv_table('detail_top', x, gy + gh + 8, w, 16)
+    b:row(); b:label(1, 'Biggest targets', {id = 'l-top', color = accent, span = 2})
+    for _, e in ipairs(top(T.by_victim, 3)) do brow(e.name, num(e.damage) .. ' (' .. num(e.hits) .. ')') end
+    b:row(); b:label(1, 'Biggest damage sources', {id = 'l-src', color = accent, span = 2})
+    for _, e in ipairs(top(T.by_attacker, 2)) do brow(e.name, num(e.damage) .. ' (' .. num(e.hits) .. ')') end
 end
 
 -- Panel width (layout units) per view; the height is the content plus the title bar and the buttons.
