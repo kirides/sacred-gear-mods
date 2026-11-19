@@ -61,34 +61,59 @@ function M.new(env)
     end
 
     -- The game's health bar: its frame, the green beads, the lost part dimmed.
-    local function health_bar(x, y, frac, dead)
+    -- The game's bead bar: its frame, the green beads up to `frac` (experience toward the next level, as the game shows
+    -- its own heroes'), the rest dark.
+    local function bead_bar(x, y, frac)
         frac = math.min(1, math.max(0, frac))
         if not ui.image(IMG_BAR, x, y, BW, BH) then
-            return bar(x, y, BW, BH - 2, frac, dead and BAD or GOOD)
+            return bar(x, y, BW, BH - 2, frac, GOOD)
         end
-        if dead then return end
-        local ix, iw = x + 1, BW - 2
-        ui.image(IMG_BAR_FILL, ix, y + 1, iw, BH - 2, {color = frac < 0.3 and 0xFFFFC060 or 0xFFFFFFFF})
-        local lost = iw * (1 - frac)
-        if lost > 0.5 then ui.rect(ix + iw - lost, y + 1, lost, BH - 2, 0xD8101010) end
+        if frac > 0 then
+            ui.image(IMG_BAR_FILL, x + 1, y + 1, BW - 2, BH - 2, {crop = {0, 0, frac, 1}})
+        end
     end
+
+    -- Experience toward the next level: the game's levels (gear's experience_range), cached per hero and level.
+    local xp_cache = {}
+    local function xp_fraction(c)
+        if not c.experience_range then return 0 end
+        local lvl = c:level() or 0
+        local e = xp_cache[c.id]
+        if not e or e.level ~= lvl then
+            local _, from, to = c:experience_range()
+            e = {level = lvl, from = from, to = to}
+            xp_cache[c.id] = e
+        end
+        local now = c:experience() or 0
+        if not e.from or not e.to or e.to <= e.from then return 0 end
+        return (now - e.from) / (e.to - e.from)
+    end
+
+    -- The ring's circle within its image (the hanger above it, the ornament beside it): the health gauge fills it from
+    -- the bottom as the game's ring does.
+    local RING_TOP, RING_BOTTOM = 0.09, 0.95
 
     local function draw_portrait(c, x, y)
         local dead = c:is_dead()
         local r = ui.region('portrait' .. c.id, x, y + 6, RW - 8, BY + BH - 6, {
             tooltip = name_of(c) .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level())
                 .. ')\n' .. (dead and 'Fallen' or ('Click to play' .. key_hint('next')))})
-        -- as the game draws it: the ring (its hole is tinted glass), the portrait over it
-        local ring = dead and IMG_RING_GREY or (r.hover and IMG_RING_GREY or IMG_RING)
-        local tint = dead and 0xFF808080 or (r.hover and 0xFFFFD27A or 0xFFFFFFFF)
-        local drawn = ui.image(ring, x, y, RW, RH, {color = tint})
+        -- as the game draws it: the ring, grey where health is lost and red for what is left (gilded under the cursor),
+        -- the portrait over it, the experience beads below
+        local hp, max = c:hp() or 0, c:max_hp() or 1
+        local frac = dead and 0 or math.min(1, math.max(0, hp / math.max(1, max)))
+        local drawn = ui.image(IMG_RING_GREY, x, y, RW, RH, {color = dead and 0xFF808080 or (r.hover and 0xFFFFD27A or 0xFFFFFFFF)})
+        if drawn and frac > 0 then
+            local top = RING_TOP + (1 - frac) * (RING_BOTTOM - RING_TOP)
+            ui.image(IMG_RING, x, y, RW, RH, {crop = {0, frac >= 1 and 0 or top, 1, 1},
+                color = r.hover and 0xFFFFE0A0 or 0xFFFFFFFF})
+        end
         local img = c:portrait()
         if img then
             ui.image(img, x + PX, y + PY, PIW, PIH, {color = dead and 0xFF606060 or 0xFFFFFFFF})
         end
         if not drawn then ui.frame(x + 8, y + 12, RW - 18, RH - 18, r.hover and ACCENT or 0xFF6A5A3C, 1) end
-        local hp, max = c:hp() or 0, c:max_hp() or 1
-        health_bar(x + BX, y + BY, hp / math.max(1, max), dead)
+        bead_bar(x + BX, y + BY, xp_fraction(c))
         local lvl = tostring(c:level() or '')
         ui.text(lvl, x + 13, y + 79, {color = 0xFF000000, size = 12})
         ui.text(lvl, x + 12, y + 78, {color = ACCENT, size = 12})
