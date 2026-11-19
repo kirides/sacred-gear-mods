@@ -210,6 +210,46 @@ local function search(client, page)
 end
 M.search = search
 
+-- One row per listing of the result page: icon, name, level, seller, time left, price, and Buy.
+local function browse_rows(client, page, x, y, w)
+    local now = client.info and client.info.now and (client.info.now + (gear.time() - client.info_at)) or os.time()
+    local row_h = 36
+    local me = client:me().key
+    for n, r in ipairs(page.rows) do
+        local ry = y + (n - 1) * row_h
+        local reg = ui.region('ah-row' .. r.id, x, ry, w - 96, row_h - 2)
+        ui.rect(x, ry, w, row_h - 2, reg.hover and 0x70405070 or (n % 2 == 0 and 0x40202830 or 0x40101820))
+        icon(r.type, x + 2, ry + 1, 32, 32)
+        ui.text(r.name or '?', x + 40, ry + 1, {color = QUALITY_COLOR[r.quality] or 0xFFFFFFFF, size = 13, width = 230})
+        local classes = (r.classes and #r.classes > 0) and table.concat(r.classes, ', ') or 'all classes'
+        ui.text(('Lv %d  -  %s  -  %s  -  %s'):format(r.level or 0, r.seller or '?', left(r.ends, now), classes),
+            x + 40, ry + 18, {size = 11, color = DIM, width = w - 200})
+        ui.text(gold(r.price), x + w - 200, ry + 1, {size = 13, width = 100, align = 'right', color = 0xFFFFE080})
+        if r.median then
+            ui.text(('recent %s'):format(gold(r.median)), x + w - 200, ry + 18, {size = 11, width = 100, align = 'right', color = DIM})
+        end
+        local mine = r.seller_key == me
+        if ui.button('ah-buy' .. r.id, x + w - 90, ry + 6, 88, 22, mine and 'Yours' or 'Buy', {enabled = not mine and not view.busy,
+            tooltip = mine and 'Your own listing' or ('Buy for %s gold (taken from your wallet; what it lacks from the gold you carry)'):format(gold(r.price))}) then
+            view.busy = true
+            client:buy(r, function(ok, err)
+                view.busy = false
+                if ok then
+                    say(('Bought %s. It is in your mailbox.'):format(r.name or 'the item'))
+                    search(client, view.page)
+                    client:refresh_mail()
+                else
+                    say(err or 'not bought', false)
+                    search(client, view.page)
+                end
+            end)
+        end
+        if reg.hover then view.hover = {listing = r.id} end
+    end
+    if #page.rows == 0 then ui.text('Nothing for sale matches.', x, y, {color = DIM}) end
+end
+
+-- The search fields, filters, sort and pages of the Browse tab, then the rows of the result.
 local function browse(client, x, y, w, h)
     local q = view.q
     local changed = false
@@ -248,41 +288,7 @@ local function browse(client, x, y, w, h)
         ui.text(client:online() and 'Searching...' or 'Waiting for the market...', x, y, {color = DIM})
         return
     end
-    local now = client.info and client.info.now and (client.info.now + (gear.time() - client.info_at)) or os.time()
-    local row_h = 36
-    local me = client:me().key
-    for n, r in ipairs(page.rows) do
-        local ry = y + (n - 1) * row_h
-        local reg = ui.region('ah-row' .. r.id, x, ry, w - 96, row_h - 2)
-        ui.rect(x, ry, w, row_h - 2, reg.hover and 0x70405070 or (n % 2 == 0 and 0x40202830 or 0x40101820))
-        icon(r.type, x + 2, ry + 1, 32, 32)
-        ui.text(r.name or '?', x + 40, ry + 1, {color = QUALITY_COLOR[r.quality] or 0xFFFFFFFF, size = 13, width = 230})
-        local classes = (r.classes and #r.classes > 0) and table.concat(r.classes, ', ') or 'all classes'
-        ui.text(('Lv %d  -  %s  -  %s  -  %s'):format(r.level or 0, r.seller or '?', left(r.ends, now), classes),
-            x + 40, ry + 18, {size = 11, color = DIM, width = w - 200})
-        ui.text(gold(r.price), x + w - 200, ry + 1, {size = 13, width = 100, align = 'right', color = 0xFFFFE080})
-        if r.median then
-            ui.text(('recent %s'):format(gold(r.median)), x + w - 200, ry + 18, {size = 11, width = 100, align = 'right', color = DIM})
-        end
-        local mine = r.seller_key == me
-        if ui.button('ah-buy' .. r.id, x + w - 90, ry + 6, 88, 22, mine and 'Yours' or 'Buy', {enabled = not mine and not view.busy,
-            tooltip = mine and 'Your own listing' or ('Buy for %s gold (taken from your wallet; what it lacks from the gold you carry)'):format(gold(r.price))}) then
-            view.busy = true
-            client:buy(r, function(ok, err)
-                view.busy = false
-                if ok then
-                    say(('Bought %s. It is in your mailbox.'):format(r.name or 'the item'))
-                    search(client, view.page)
-                    client:refresh_mail()
-                else
-                    say(err or 'not bought', false)
-                    search(client, view.page)
-                end
-            end)
-        end
-        if reg.hover then view.hover = {listing = r.id} end
-    end
-    if #page.rows == 0 then ui.text('Nothing for sale matches.', x, y, {color = DIM}) end
+    browse_rows(client, page, x, y, w)
 end
 
 ---------------------------------------------------------------------------------------------------------------
@@ -365,7 +371,9 @@ local function pack(cells)
     return math.max(1, #pages)
 end
 
-local function sell(client, cfg, x, y, w, h)
+-- The item grid of the Sell tab: the backpack and the chest, a page at a time; a click picks the item to sell (and
+-- proposes the median of its recent sales as the price). Returns the y below it.
+local function sell_grid(client, cfg, x, y, w)
     local s = view.sell
     if not view.src_at or gear.time() - view.src_at > 0.3 then
         view.src_at = gear.time()
@@ -407,14 +415,12 @@ local function sell(client, cfg, x, y, w, h)
             if r.hover then view.hover = {item = c.src.item, why = c.why} end
         end
     end
-    y = y + ROWS * CELL + 8
+    return y + ROWS * CELL + 8
+end
 
-    local sel = s.sel
-    if sel and not inv.size(sel.id) then s.sel, sel = nil, nil end   -- gone (moved, sold)
-    if not sel then
-        ui.text('Pick the item to sell above.', x, y, {color = DIM})
-        return
-    end
+-- The picked item, its price (typed or stepped), the duration with its fee, and "Put up for sale".
+local function sell_form(client, sel, x, y, w)
+    local s = view.sell
     local it = sel.src.item
     s.meta = s.meta or M.meta_of(it)
     icon(it, x, y, 32, 32)
@@ -467,6 +473,18 @@ local function sell(client, cfg, x, y, w, h)
         s.sel, s.meta, s.price = nil, nil, ''
         view.src_at = nil
     end
+end
+
+local function sell(client, cfg, x, y, w, h)
+    y = sell_grid(client, cfg, x, y, w)
+    local s = view.sell
+    local sel = s.sel
+    if sel and not inv.size(sel.id) then s.sel, sel = nil, nil end   -- gone (moved, sold)
+    if not sel then
+        ui.text('Pick the item to sell above.', x, y, {color = DIM})
+        return
+    end
+    sell_form(client, sel, x, y, w)
 end
 
 ---------------------------------------------------------------------------------------------------------------
