@@ -18,7 +18,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Better SaveLoad**](src/better-saveload/README.md) | <img src="docs/images/better-saveload.jpg" width="220" alt="Better SaveLoad"> | A clearer savegame screen with the Save tab first. |
 | [**Enhanced Chat**](docs/mods/enhanced-chat.md) | <img src="docs/images/enhanced-chat.jpg" width="220" alt="Enhanced Chat"> | A chat window with scrollback, tabs for global, private and system messages, a player filter and item names in their rarity colour. |
 | [**Key bindings**](docs/mods/key-bindings.md) | <img src="docs/images/key-bindings.jpg" width="220" alt="Key bindings"> | Choose the keys and mouse buttons of the game's actions (two per action), and quick cast combat arts with one press. |
-| [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.jpg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, optional fair random numbers. |
+| [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.jpg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, creatures drop the gear you could otherwise only disarm from them, optional fair random numbers. |
 | [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.jpg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
 | [**Companions**](docs/mods/companions.md) | <img src="docs/images/companions.jpg" width="220" alt="Companions"> | A party of heroes in single player: recruit companions of any class with their own gear, skills and experience, play any of them (click a portrait, PageDown), the others follow and fight with their combat arts, spells and combos. Home. |
@@ -105,7 +105,7 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 |---|---|
 | [Install](docs/Install.md) | Installing Sacred Gear and the mods, the Mods screen, updating |
 | [Autosave](docs/Autosave.md) | Timer, slots, settings, loading an autosave |
-| [Drop tuning](docs/DropTuning.md) | Drop chance, rarity weights, the generator; the self test |
+| [Drop tuning](docs/DropTuning.md) | Drop chance, rarity weights, carried gear, the generator; the self test |
 | [Shared stash](docs/SharedStash.md) | Using the stash, LAN, limits, the file, savegame caveats |
 | [Server mods](docs/ServerMods.md) | The five clients of the remake server's scripts: install, hotkeys, settings |
 | [Mod events](docs/ModEvents.md) | Events mods publish for other mods (bounty, quests, world events) and how to subscribe |

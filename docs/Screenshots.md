@@ -20,7 +20,7 @@ pictures and leaves BMP files in `GearAutomation\shot-<name>\`. Convert them to 
 ## More pictures (`tools/readme-shots`, phases of `main.lua`)
 
 Run a phase with `-gear-mods=<mod>,shots` after writing `mods\shots\config.lua` (`return {phase = '...'}`):
-`lootfilter`, `modscreen` (Mods screen, `clicks = {{x, y}, ...}` open a mod's page), `fight` (zombies/spiders spawned next to
+`lootfilter`, `modscreen` (Mods screen, `clicks = {{x, y}, ...}` open a mod's page; `{x, y, wheel = n}` turns the mouse wheel there), `fight` (zombies/spiders spawned next to
 the hero: damage meter, session tracker), `twitch` (a `TWI_Raid` for the Twitch actions) and `server`
 (`which = 'achievements' | 'bounty' | 'buildsharer' | 'questhelper' | 'serverfeed'`). The bounty picture does not come from this phase any more: it is the bounty mod's single player board
 (`bounty_selftest` with `return {phase = 'shots'}`), the real panel and tracker, no server.

@@ -140,7 +140,11 @@ gear.task(function()
         if gear.config.realm then gear.realm.add(gear.config.realm) end
         A.press('f11')
         gear.wait(1)
-        for _, c in ipairs(gear.config.clicks or {}) do A.click(c[1], c[2]); gear.wait(1.2) end
+        -- {x, y} clicks; {x, y, wheel = n} moves there and turns the mouse wheel n notches (negative: down)
+        for _, c in ipairs(gear.config.clicks or {}) do
+            if c.wheel then A.move(c[1], c[2]); gear.wait(0.3); A.wheel(c.wheel) else A.click(c[1], c[2]) end
+            gear.wait(1.2)
+        end
         gear.wait(5)
         shot('modscreen')
     end
