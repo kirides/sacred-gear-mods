@@ -148,6 +148,34 @@ local function pick_ability(c, s, now, target, heroes, tactics, opts)
     return best, best_use
 end
 
+-- Ranged weapons by their type names (the game keeps no flag the mod can read): bows, crossbows, the dwarf's guns.
+local RANGED = {'bow', 'armbrust', 'musket', 'muskete', 'gun', 'rifle', 'pistol', 'cannon', 'kanone', 'sling'}
+function M.is_ranged(item)
+    local n = item and item.type_name and item.type_name:lower()
+    if not n then return false end
+    for _, k in ipairs(RANGED) do if n:find(k, 1, true) then return true end end
+    return false
+end
+
+-- Style 'ranged': take up the weapon slot that holds a ranged weapon (true when the hero holds one now).
+local function take_ranged(c, s, now)
+    if not c.weapon_slots then return false end
+    local w = c:weapon_slots()
+    if not w then return false end
+    local cur = w.slots[w.active]
+    if cur and M.is_ranged(cur.main) then return true end
+    if now - (s.weapon_at or -100) < 3 then return false end
+    for i, sl in ipairs(w.slots) do
+        if M.is_ranged(sl.main) then
+            s.weapon_at = now
+            local ok = c:use_weapon_slot(i)
+            if M.debug then print('ranged slot', c.id, i, ok) end
+            return ok and true or false
+        end
+    end
+    return false
+end
+
 -- A shape change to use now (into the form for a fight, out of it after), or nil.
 local function pick_form(c, s, now, fighting, tactics)
     local hp = hp_frac(c)
@@ -331,6 +359,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
         if action == 'ability' then return end
         s.fight_end = nil
         local style = tactics.style or 'balanced'
+        if style == 'ranged' then take_ranged(c, s, now) end
         -- weapon first: combat arts and spells only every 8 s
         local gap = style == 'weapon' and 8 or 2
         if opts.use_abilities and now - s.ability_at > gap then

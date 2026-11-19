@@ -189,11 +189,13 @@ function M.new(env)
 
     local USE_LABEL = {target = 'on the target', self = 'in a fight, on themselves', heal = 'when someone is hurt', form = 'when a fight starts (and to change back after it)'}
 
-    local STYLES = {'balanced', 'arts', 'weapon'}
-    local STYLE_LABEL = {balanced = 'Weapon and combat arts', arts = 'Combat arts only', weapon = 'Weapon first'}
+    local STYLES = {'balanced', 'arts', 'weapon', 'ranged'}
+    local STYLE_LABEL = {balanced = 'Weapon and combat arts', arts = 'Combat arts only', weapon = 'Weapon first',
+        ranged = 'Ranged weapon'}
     local STYLE_TIP = 'How they fight: combat arts and spells as soon as they are ready, the weapon in between (default); '
         .. 'combat arts and spells only, keeping back from the fight in between (a battle mage); or the weapon first, '
-        .. 'combat arts now and then'
+        .. 'combat arts now and then; or with the ranged weapon of their weapon slots (bow, crossbow, musket), taking it up '
+        .. 'when a fight starts'
 
     local function tactics_area(c, x, y, w)
         local r0 = record(c.id)

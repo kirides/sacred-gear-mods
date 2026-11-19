@@ -28,7 +28,8 @@ hero slots belong to the players).
    characters (`Save\HeroNN.pax`) are listed there too. The hero in the other savegame stays as they are.
 4. In the party window each hero has a **behaviour** for the time you play someone else (*Aggressive*: fights what
    comes near; *Defensive*: protects the hero you play; *Passive*: only follows), a **name**, and **tactics**: how they fight
-   (weapon and combat arts; combat arts only, keeping back in between, for a battle mage; or weapon first) and the
+   (weapon and combat arts; combat arts only, keeping back in between, for a battle mage; weapon first; or
+   ranged weapon: they take up the bow, crossbow or musket of their weapon slots when a fight starts) and the
    combat arts, spells and combos they may use on their own. *Dismiss* sends a companion away for good (empty their backpack first:
    what they wear is lost).
 
