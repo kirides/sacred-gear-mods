@@ -26,13 +26,18 @@ local NEVER = {
     [36] = true,    -- Verwandlung
     [46] = true, [57] = true,   -- Eingraben
     [1021] = true,  -- Flic-Flac
-    [1022] = true,  -- Vampirform
     [1023] = true,  -- Ritterform
     [1028] = true, [1029] = true,   -- Zeitbeherrschung
     [1034] = true,  -- Erweckung (needs a corpse)
 }
 -- Healing: used when a party hero is below half health.
 local HEALING = {[7] = true, [42] = true}
+
+-- Shape changes the AI handles: the Vampiress's vampire form (1022) makes her type 7 until she uses it again. She
+-- changes when a fight starts and she is above half health, and back once no enemy is near or below a third of her
+-- health (in daylight the form costs health).
+local FORMS = {[1022] = {type = 7}}
+M.FORMS = FORMS
 
 M.NEVER, M.HEALING = NEVER, HEALING
 
@@ -51,6 +56,7 @@ end
 -- How the AI would use an ability: 'target', 'self', 'heal' or nil (never).
 function M.use_of(id)
     if NEVER[id] then return nil end
+    if FORMS[id] then return 'form' end
     if HEALING[id] then return 'heal' end
     local mode = M.ability_info(id).mode
     if mode == 0 or mode == 1 or mode == 3 then return 'target' end
@@ -117,7 +123,7 @@ local function pick_ability(c, s, now, target, heroes, tactics)
     local best, best_use, best_score
     for _, a in ipairs(c:abilities() or {}) do
         local use = a.ready and M.use_of(a.id)
-        if use and tactics.abilities[a.id] ~= false then
+        if use and use ~= 'form' and tactics.abilities[a.id] ~= false then
             local ok = true
             if use == 'heal' then
                 ok = hurt
@@ -144,6 +150,20 @@ local function pick_ability(c, s, now, target, heroes, tactics)
         end
     end
     return best, best_use
+end
+
+-- A shape change to use now (into the form for a fight, out of it after), or nil.
+local function pick_form(c, s, now, fighting, tactics)
+    local hp = hp_frac(c)
+    local type_ = c:type()
+    for _, a in ipairs(c:abilities() or {}) do
+        local f = FORMS[a.id]
+        if f and a.ready and tactics.abilities[a.id] ~= false then
+            local shaped = type_ == f.type
+            if not shaped and fighting and hp > 0.5 then return a end
+            if shaped and (hp < 0.33 or not fighting and now - (s.fight_end or now) > 3) then return a end
+        end
+    end
 end
 
 -- A spot next to the leader for companion number `slot` of `count`, behind it in a fan.
@@ -187,7 +207,13 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
         -- An ability runs until the game is done with it; a new order would cut it off. Weapon attacks go on by
         -- themselves until the target falls, so they are ordered again only for a new target or an idle hero.
         if action == 'ability' then return end
+        s.fight_end = nil
         if opts.use_abilities and now - s.ability_at > 2 then
+            local form = pick_form(c, s, now, true, tactics)
+            if form and c:order_ability(form.id, c) then
+                s.ability_at, s.ordered = now, now
+                return
+            end
             local a, use = pick_ability(c, s, now, target, heroes, tactics)
             if a then
                 local ok, err = c:order_ability(a.id, use == 'target' and target or c)
@@ -210,6 +236,15 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
         return
     end
     s.fight_since = nil
+    s.fight_end = s.fight_end or now
+    -- After a fight: back out of a shape change.
+    if opts.use_abilities and action ~= 'ability' and now - s.ability_at > 2 then
+        local form = pick_form(c, s, now, false, tactics)
+        if form and c:order_ability(form.id, c) then
+            s.ability_at, s.ordered = now, now
+            return
+        end
+    end
     -- No fight: keep up with the leader.
     if s.target then
         s.target = nil

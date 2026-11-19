@@ -171,6 +171,7 @@ local function recruit(class)
     if not c then return toast('Cannot recruit: ' .. tostring(err)) end
     local r = record(c.id)
     r.name = nil
+    r.fallen = nil
     r.behaviour = nil
     r.abilities = {}
     r.name = default_name(c)
@@ -204,6 +205,7 @@ local function bring(f)
     if not c then return toast('Cannot bring ' .. f.name .. ': ' .. tostring(err)) end
     local r = record(c.id)
     r.behaviour = nil
+    r.fallen = nil
     r.abilities = {}
     r.name = (f.name ~= '' and f.name ~= 'Anonymous') and f.name:sub(1, 30) or default_name(c)
     store:changed()
@@ -228,7 +230,7 @@ local function dismiss(c)
     local now = os.clock()
     if confirm.id ~= c.id or now - confirm.at > 4 then
         confirm.id, confirm.at = c.id, now
-        toast('Dismiss ' .. name_of(c) .. '? Click again: the companion leaves for good, with what it wears.')
+        toast('Dismiss ' .. name_of(c) .. '? Click again: the companion leaves for good, with what they wear.')
         return
     end
     confirm.id = nil
@@ -254,6 +256,30 @@ end
 local clock, next_think, next_names = 0, {}, 0
 local fallen = {}   -- companion id -> when it fell
 
+-- Hardcore companions (setting): a companion that falls is out for good. The record (kept per savegame) says so, so a
+-- savegame written after the fall keeps it out, and one written before still has it.
+local function mark_fallen(c)
+    local r = record(c.id)
+    if r.fallen then return end
+    r.fallen = true
+    store:changed()
+    toast(name_of(c) .. ' has fallen for good (hardcore companions)')
+end
+
+-- Once the game has removed a fallen hero, its record goes too: the next hero in that place is a new one.
+local function forget_fallen()
+    local key = party_key()
+    local p = key and store.data.parties[key]
+    if not (p and p.heroes) then return end
+    for sid, r in pairs(p.heroes) do
+        local o = r.fallen and gear.world.object(tonumber(sid))
+        if r.fallen and not (o and o:is_hero()) then
+            p.heroes[sid] = nil
+            store:changed()
+        end
+    end
+end
+
 local function ai_opts()
     return {
         engage = setting('engage', 12) * TILE,
@@ -270,12 +296,23 @@ gear.on('frame', guard('frame', function(dt)
     clock = clock + (dt or 0)
     if not party.available() then return end
     local heroes = party.heroes()
+    if clock >= (next_think.fallen_check or 0) then
+        next_think.fallen_check = clock + 1
+        forget_fallen()
+    end
     if #heroes < 2 and #party.mercenaries() == 0 then return end
     if clock >= next_names then
         next_names = clock + 2
         apply_names()
     end
     local leader = heroes[1]
+    local hardcore = setting('hardcore', false)
+    if hardcore then
+        for i = 1, #heroes do
+            local c = heroes[i]
+            if c.id >= party.FIRST_ID and c:is_dead() then mark_fallen(c) end
+        end
+    end
     if leader:is_dead() then
         if setting('switch_on_death', true) then
             for i = 2, #heroes do
@@ -292,7 +329,7 @@ gear.on('frame', guard('frame', function(dt)
     if setting('revive', true) then
         for i = 2, #heroes do
             local c = heroes[i]
-            if c:is_dead() then
+            if c:is_dead() and not (c.id >= party.FIRST_ID and (hardcore or record(c.id).fallen)) then
                 fallen[c.id] = fallen[c.id] or clock
                 local x, y, l = leader:position()
                 local quiet = not ai.enemy_near(leader, setting('engage', 12) * TILE)
@@ -471,21 +508,21 @@ local function hero_row(c, x, y, w, leader)
         store:changed()
     end
     bx = bx + 116
-    if ui.button('tactics' .. c.id, bx, y + 8, 64, 22, 'Tactics', {tooltip = 'The combat arts and spells this hero uses on its own'}) then
+    if ui.button('tactics' .. c.id, bx, y + 8, 64, 22, 'Tactics', {tooltip = 'The combat arts and spells this hero uses on their own'}) then
         win.tactics = win.tactics == c.id and nil or c.id
     end
     bx = bx + 70
     if c.id >= party.FIRST_ID and not controlled then
-        if ui.button('dismiss' .. c.id, bx, y + 8, 64, 22, 'Dismiss', {tooltip = 'Leaves the party for good, with what it wears (empty its backpack first)'}) then
+        if ui.button('dismiss' .. c.id, bx, y + 8, 64, 22, 'Dismiss', {tooltip = 'Leaves the party for good, with what they wear (empty their backpack first)'}) then
             dismiss(c)
         end
     end
 end
 
-local USE_LABEL = {target = 'on the target', self = 'in a fight, on itself', heal = 'when someone is hurt'}
+local USE_LABEL = {target = 'on the target', self = 'in a fight, on themselves', heal = 'when someone is hurt', form = 'when a fight starts (and to change back after it)'}
 
 local function tactics_area(c, x, y, w)
-    ui.text('Tactics of ' .. name_of(c) .. ': the abilities it uses on its own', x, y, {color = ACCENT})
+    ui.text('Tactics of ' .. name_of(c) .. ': the abilities they use on their own', x, y, {color = ACCENT})
     local list = c:abilities() or {}
     for _, k in ipairs(c:combos() or {}) do
         local names = {}
@@ -493,7 +530,7 @@ local function tactics_area(c, x, y, w)
         list[#list + 1] = {id = k.id, level = 0, bonus = 0, combo = 'Combo ' .. (k.slot + 1) .. ': ' .. table.concat(names, ', ')}
     end
     if #list == 0 then
-        ui.text('It knows no combat arts or spells yet.', x, y + 22, {color = DIM})
+        ui.text('No combat arts or spells learned yet.', x, y + 22, {color = DIM})
         return 44
     end
     local r = record(c.id)
@@ -558,11 +595,11 @@ local function draw_window()
             {tooltip = 'Heroes kept from other savegames, and your network characters'})
         if fchanged then files.index = findex end
         if ui.button('bring', x + 380, yy + 30, 90, 22, 'Bring', {enabled = not full,
-            tooltip = 'A copy of this hero joins where you stand, with its level, skills, equipment and backpack'}) then
+            tooltip = 'A copy of this hero joins where you stand, with their level, skills, equipment and backpack'}) then
             bring(files.list[files.index])
         end
     else
-        ui.text('No kept heroes yet: play a savegame, then "Keep" its hero here.', x + 70, yy + 34, {color = DIM, size = 12})
+        ui.text('No kept heroes yet: play a savegame, then "Keep" your hero here.', x + 70, yy + 34, {color = DIM, size = 12})
     end
     if ui.button('keep', x + 70, yy + 60, 300, 22, 'Keep ' .. name_of(leader) .. ' for other savegames',
         {tooltip = 'Writes the hero you play to a hero file another savegame can bring into its party'}) then
