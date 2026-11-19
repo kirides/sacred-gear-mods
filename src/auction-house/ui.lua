@@ -148,12 +148,12 @@ local function draw_osk()
         end
         y = y + 28
     end
-    if ui.button('osk-space', x, y, 120, 24, 'Space', {enabled = not osk.digits}) and #osk.text < osk.max then
-        osk.text = osk.text .. ' '
-    end
-    if ui.button('osk-back', x + 128, y, 110, 24, 'Backspace') then osk.text = osk.text:sub(1, -2) end
-    if ui.button('osk-clear', x + 246, y, 80, 24, 'Clear') then osk.text = '' end
-    if ui.button('osk-done', x + 334, y, 100, 24, 'Done') then osk.result = osk.text end
+    local t = ui.table('osk-keys', x, y, p.content_w - 8, {columns = {120, 110, 80, 100}, spacing = {8, 0}, row_height = 24})
+    t:row()
+    if t:button(1, 'Space', {id = 'osk-space', enabled = not osk.digits}) and #osk.text < osk.max then osk.text = osk.text .. ' ' end
+    if t:button(2, 'Backspace', {id = 'osk-back'}) then osk.text = osk.text:sub(1, -2) end
+    if t:button(3, 'Clear', {id = 'osk-clear'}) then osk.text = '' end
+    if t:button(4, 'Done', {id = 'osk-done'}) then osk.result = osk.text end
     return true
 end
 
@@ -296,15 +296,6 @@ local function browse(client, x, y, w, h)
         if bar:button(3, '<', {id = 'ah-prev', enabled = page.page > 1}) then search(client, page.page - 1) end
         bar:label(4, ('%d / %d'):format(page.page, page.pages), {id = 'ah-pg', halign = 'center'})
         if bar:button(5, '>', {id = 'ah-next', enabled = page.page < page.pages}) then search(client, page.page + 1) end
-    end
-    y = y + 26
-    if not page then
-    local page = client.page
-    if page then
-        ui.label('ah-count', ('%d found'):format(page.total or 0), x + 100, y, {height = 20, valign = 'middle', color = DIM})
-        if ui.button('ah-prev', x + w - 104, y, 24, 20, '<', {enabled = page.page > 1}) then search(client, page.page - 1) end
-        ui.label('ah-pg', ('%d / %d'):format(page.page, page.pages), x + w - 76, y, {height = 20, valign = 'middle'})
-        if ui.button('ah-next', x + w - 24, y, 24, 20, '>', {enabled = page.page < page.pages}) then search(client, page.page + 1) end
     end
     y = y + 26
     if not page then
