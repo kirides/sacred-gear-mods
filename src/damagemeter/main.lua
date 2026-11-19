@@ -282,7 +282,9 @@ end
 
 local function type_name(id)
     if id == -1 then return 'environment' end
-    local ok, n = pcall(function() return gear.data.object_types:name(id) end)
+    local ok, n = pcall(function() return gear.data.object_types:display_name(id) end)    -- localized; the model name below
+    if ok and type(n) == 'string' and n ~= '' then return n end
+    ok, n = pcall(function() return gear.data.object_types:name(id) end)
     if ok and type(n) == 'string' and n ~= '' then return n end
     return 'type ' .. tostring(id)
 end

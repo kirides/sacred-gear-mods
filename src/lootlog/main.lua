@@ -125,7 +125,10 @@ end
 
 local function source_name()
     if last_roll and clock - last_roll.t <= ROLL_WINDOW then
-        local ok, n = pcall(function() return gear.data.object_types:name(last_roll.creature) end)
+        -- the localized creature name (Gear 0.x: display_name knows creatures); the model name where there is none
+        local ok, n = pcall(function() return gear.data.object_types:display_name(last_roll.creature) end)
+        if ok and type(n) == 'string' and n ~= '' then return n end
+        ok, n = pcall(function() return gear.data.object_types:name(last_roll.creature) end)
         if ok and type(n) == 'string' then return n end
     end
     return nil
