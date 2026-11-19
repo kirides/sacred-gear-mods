@@ -451,10 +451,16 @@ gear.on('draw', guard('draw', function(state)
     local sl, st, sr, sb = ui.screen()
     local dx, dy = last_dx, last_dy
     if follow and hover and hover.w and not edit then
-        dx = hover.x + hover.w + 6 + OVER
-        if dx + w + OVER > sr - 2 then dx = hover.x - w - 6 - OVER end
-        dx = math.max(sl + 2 + OVER, math.min(dx, sr - w - 2 - OVER))
-        dy = math.max(st + 2 + OVER, math.min(hover.y, sb - h - 2 - OVER))
+        if ui.tooltip_anchor then
+            -- flush against the game's tooltip, corner ornaments touching; on its left near the screen's edge
+            dx, dy = ui.tooltip_anchor(w, h)
+            dx, dy = dx or last_dx, dy or last_dy
+        else
+            dx = hover.x + hover.w + 6 + OVER
+            if dx + w + OVER > sr - 2 then dx = hover.x - w - 6 - OVER end
+            dx = math.max(sl + 2 + OVER, math.min(dx, sr - w - 2 - OVER))
+            dy = math.max(st + 2 + OVER, math.min(hover.y, sb - h - 2 - OVER))
+        end
     end
     local p = ui.panel('compare', 'Item comparison', dx, dy, w, h, {bare = true, min_width = w, min_height = h})
     if not p.open then return end
