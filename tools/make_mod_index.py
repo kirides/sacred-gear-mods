@@ -106,10 +106,10 @@ def main():
     a = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     for f in ('src', 'prefix', 'out', 'name', 'author', 'description', 'homepage', 'download-url', 'version', 'thumb-base'):
         a.add_argument('--' + f, default={'src': 'src', 'prefix': 'mods', 'out': 'mod-index.json'}.get(f))
-    a.add_argument('--exclude', action='append', help='folder glob to skip (repeatable); default *_selftest, *_bosstest and sector-tools')
+    a.add_argument('--exclude', action='append', help='folder glob to skip (repeatable); default: any folder whose name ends with "test" (case-insensitive) and sector-tools')
     a.add_argument('--check', action='store_true', help='write nothing; exit 1 when the file differs')
     o = a.parse_args()
-    excl = o.exclude or ['*_selftest', '*_bosstest', 'sector-tools']
+    excl = o.exclude or ['*test', 'sector-tools']
     old, old_text = {}, ''
     if os.path.exists(o.out):
         with open(o.out, encoding='utf-8-sig', newline='') as fh:
@@ -139,7 +139,7 @@ def main():
     mods = []
     for folder in sorted(os.listdir(o.src)):
         mp = os.path.join(o.src, folder, 'mod.lua')
-        if any(fnmatch.fnmatch(folder, g) for g in excl) or not os.path.isfile(mp):
+        if any(fnmatch.fnmatchcase(folder.lower(), g.lower()) for g in excl) or not os.path.isfile(mp):
             continue
         with open(mp, encoding='utf-8-sig') as fh:
             f = parse_manifest(fh.read())

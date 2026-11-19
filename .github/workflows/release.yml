@@ -29,7 +29,8 @@ jobs:
         run: |
           set -e
           for d in src/*/; do
-            case "$d" in *_selftest/|*_bosstest/) continue;; esac
+            lname=$(basename "$d" | tr '[:upper:]' '[:lower:]')
+            case "$lname" in *test) continue;; esac
             [ -f "${d}mod.lua" ] || { echo "::error::${d} has no mod.lua"; exit 1; }
             [ -f "${d}main.lua" ] || { echo "::error::${d} has no main.lua"; exit 1; }
           done
@@ -44,7 +45,8 @@ jobs:
           # every shipped mod folder (same rule as the assembly step) must be listed
           for d in src/*/; do
             name=$(basename "$d")
-            case "$name" in *_selftest|*_bosstest|sector-tools) continue;; esac
+            lname=$(echo "$name" | tr '[:upper:]' '[:lower:]')
+            case "$lname" in *test|sector-tools) continue;; esac
             [ -f "${d}mod.lua" ] || continue
             n=$(jq --arg p "mods/$name" '[(.mods // [])[] | select(.path == $p)] | length' mod-index.json)
             [ "$n" = "1" ] || fail "src/$name is shipped but listed $n times in the index"
@@ -71,8 +73,9 @@ jobs:
           rm -rf dist && mkdir -p dist/mods
           for d in src/*/; do
             name=$(basename "$d")
-            # The *_selftest and *_bosstest mods are automation tests (they overwrite saves etc.); sector-tools is for server admins.
-            case "$name" in *_selftest|*_bosstest|sector-tools) continue;; esac
+            # Every folder whose name ends in "test" (*_selftest, *_bosstest, ...) is an automation test (they overwrite saves etc.); sector-tools is for server admins.
+            lname=$(echo "$name" | tr '[:upper:]' '[:lower:]')
+            case "$lname" in *test|sector-tools) continue;; esac
             mkdir -p "dist/mods/$name"
             cp -r "$d". "dist/mods/$name/"
             # Developer-only material inside a mod.
