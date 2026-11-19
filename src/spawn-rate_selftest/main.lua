@@ -133,6 +133,21 @@ gear.task(function()
     if mine then mine:remove() end
     check('rate 1: no extras', stats().made == 0, stats().made)
 
+    -- A mod that spawns from inside its own creature.created handler must not loop: what it makes raises no event.
+    local loop_made, loop_ids, loop_events = 0, {}, 0
+    local h = gear.on('creature.created', function(ev)
+        if loop_made < 5 and not loop_ids[ev.id] then
+            local c = W.spawn(ev.type, ev.x + 80, ev.y + 80, {layer = ev.layer})
+            if c then loop_made = loop_made + 1; loop_ids[c.id] = true end
+        end
+        if loop_ids[ev.id] then loop_events = loop_events + 1 end
+    end)
+    sites = visit(x0, y0, layer, 3500)
+    gear.wait(1)
+    gear.off(h)
+    check('spawning inside a creature.created handler: made', loop_made == 5, loop_made)
+    check('spawning inside a creature.created handler: no event for them, no loop', loop_events == 0, loop_events)
+
     -- Phase 2: 5x
     configure({rate = 5, max_extra = 200, budget = 4})
     reset_frames()
