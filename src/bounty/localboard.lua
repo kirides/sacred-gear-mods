@@ -1,9 +1,9 @@
 -- The local bounty board for single player: no server, so this computer posts the bounties, counts the kills and pays.
 --
 -- Pure board logic (generation from the pool, progress, expiry, saving as a table); main.lua feeds it kills and time and
--- shows it, kills.lua finds the kills, rewards.lua pays. Nothing here touches the game, so it can be tested alone.
+-- shows it, localgame.lua finds the kills and pays. Nothing here touches the game, so it can be tested alone.
 --
--- A hero's board is saved in the mod folder (`board_<hero>.json`, see main.lua). Time runs only while the hero plays:
+-- A hero's board is saved with the savegame (`board.json`, see read_board in main.lua). Time runs only while the hero plays:
 -- a bounty's `left` counts down in game time, so being away (or loading an old save) does not use it up.
 
 local M = {}
