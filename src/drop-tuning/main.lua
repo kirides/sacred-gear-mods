@@ -65,20 +65,42 @@ end)
 
 -- The "More" tab: the game's rarity table now against what it loaded, and the counters.
 gear.mods.page(function(x, y, w, h)
-    local row = 0
-    local function line(text)
-        gear.ui.label('dt_row_' .. row, text, x, y + row * 20, {})
-        row = row + 1
+    local ui = gear.ui
+    local LH = 20
+    local text_opts = { color = ui.rgba(235, 235, 235, 255), shadow = true, layer = 'top' }
+    -- a solid panel behind the page: the dim game background made the text unreadable
+    local area = ui.scroll_begin('dt_more_scroll', x, y, w, h, { step = LH, layer = 'top' })
+    ui.rect(area.x, area.y, area.w, area.h, ui.rgba(18, 18, 22, 235), { layer = 'top' })
+    local inner = area.w - 16
+    local cy = 8
+    local n = 0
+    local function line(text, mono)
+        local lines = ui.text_wrap(text, inner, text_opts)
+        for _, l in ipairs(lines) do
+            ui.text(l, area.content_x + 8, area.content_y + cy, text_opts)
+            n = n + 1
+            cy = cy + LH
+        end
     end
     local t = drops.rarity_table()
     if #t == 0 then
         line('The rarity table is not loaded yet (start a game).')
     else
-        line('Quality   Weight (game)   Weight now')
+        -- columns instead of padded spaces (the UI font is proportional)
+        local c1, c2, c3 = 8, 8 + math.floor(inner * 0.33), 8 + math.floor(inner * 0.66)
+        local function row(a, b, c)
+            ui.text(a, area.content_x + c1, area.content_y + cy, text_opts)
+            ui.text(b, area.content_x + c2, area.content_y + cy, text_opts)
+            ui.text(c, area.content_x + c3, area.content_y + cy, text_opts)
+            n = n + 1
+            cy = cy + LH
+        end
+        row('Quality', 'Weight (game)', 'Weight now')
         for _, e in ipairs(t) do
-            line(('%7d   %13d   %10d'):format(e.quality, e.vanilla, e.weight))
+            row(tostring(e.quality), tostring(e.vanilla), tostring(e.weight))
         end
     end
+    cy = cy + 6
     local level = gear.world.hero() and gear.world.hero():level() or 1
     local p = icon_chance(level)
     line(('Icon Set at level %d: %.3f%% of equipment drops become a piece'):format(level, p * 100))
@@ -88,5 +110,6 @@ gear.mods.page(function(x, y, w, h)
     line('The game alone: set weight 9 (x10 of 10000), 60% take the set path, then one of up to 65 sets: roughly 0.01% or less')
     local s = drops.stats()
     line(('Loot rolls %d (%d authored), equipment picks %d, rarity draws %d'):format(s.rolls, s.forced, s.picks, s.rarity_draws))
-    return row * 20
+    ui.scroll_end(cy + 8)
+    return h
 end)
