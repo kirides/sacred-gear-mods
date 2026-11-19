@@ -75,6 +75,15 @@ local guard = gear.guard
 ---------------------------------------------------------------------------------------------------------------
 -- Counting
 ---------------------------------------------------------------------------------------------------------------
+-- Damage per second is kept in rings of BUCKETS one-second slots: slot i holds the damage of second stamps[i]. A slot
+-- still holding an older second is emptied before it is used again.
+local function slot_of(sec, values, stamps)
+    local i = sec % BUCKETS + 1
+    if stamps[i] ~= sec then stamps[i], values[i] = sec, 0 end
+    return i
+end
+
+-- The hero's slot of second `sec` (dealt and taken share one ring of stamps).
 local function bucket(sec)
     local i = sec % BUCKETS + 1
     if T.bucket_stamp[i] ~= sec then
@@ -126,9 +135,7 @@ local function record(damage, victim_type, attacker_type)
             if ally_att then
                 a.dealt, a.hits = a.dealt + damage, a.hits + 1
                 a.fdealt = a.fdealt + damage
-                local sec = math.floor(clock)
-                local i = sec % BUCKETS + 1
-                if a.stamp[i] ~= sec then a.stamp[i], a.bucket[i] = sec, 0 end
+                local i = slot_of(math.floor(clock), a.bucket, a.stamp)
                 a.bucket[i] = a.bucket[i] + damage
             else
                 a.taken = a.taken + damage
@@ -245,13 +252,15 @@ gear.on('session.start', guard('session.start', function() reset(); seen = {}; h
 -- Derived numbers
 ---------------------------------------------------------------------------------------------------------------
 -- Damage of the last `window` seconds, per second; while the fight is younger than the window the fight's age counts.
-local function rolling(buckets)
+-- `stamps` defaults to the hero's ring (an ally has its own).
+local function rolling(buckets, stamps)
+    stamps = stamps or T.bucket_stamp
     local window = math.min(BUCKETS, setting('window', 10))
     local now = math.floor(clock)
     local sum = 0
     for s = now - window + 1, now do
         local i = s % BUCKETS + 1
-        if T.bucket_stamp[i] == s then sum = sum + (buckets[i] or 0) end
+        if stamps[i] == s then sum = sum + (buckets[i] or 0) end
     end
     local f = T.fight
     local span = window
@@ -351,16 +360,8 @@ local function current_numbers()
     end
     local allies = {}
     for _, a in pairs(T.allies) do
-        local dps = a.last_dps
-        if f then
-            local window = math.min(BUCKETS, setting('window', 10))
-            local now, sum = math.floor(clock), 0
-            for sec = now - window + 1, now do
-                local i = sec % BUCKETS + 1
-                if a.stamp[i] == sec then sum = sum + (a.bucket[i] or 0) end
-            end
-            dps = sum / math.max(1, math.min(window, clock - f.start))
-        end
+        local dps = a.last_dps            -- between fights: the average of the last one
+        if f then dps = rolling(a.bucket, a.stamp) end
         allies[#allies + 1] = {name = a.name, dps = dps, tdps = 0, dealt = a.dealt, taken = a.taken, fighting = f ~= nil, ally = true}
     end
     table.sort(allies, function(x, y) if x.dealt ~= y.dealt then return x.dealt > y.dealt end return x.name < y.name end)
