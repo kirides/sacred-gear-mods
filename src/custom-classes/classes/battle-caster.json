@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "id": "battle-caster",
+  "name": { "en": "Battle Caster", "de": "Kampfzauberer" },
+  "description": { "en": "A Gladiator who casts: the Gladiator's strikes, plus Battle Mage spells played with the clips the body has.", "de": "Ein Gladiator, der zaubert: die Schläge des Gladiators und Zauber des Kampfmagiers, mit den Animationen, die der Körper hat." },
+  "body": "gladiator",
+  "arts": [
+    { "id": 1059, "learn": "start" },
+    { "id": 5, "learn": "start" },
+    { "id": 34, "learn": "level", "level": 8 },
+    { "id": 8, "learn": "rune" }
+  ],
+  "motion_remap": { "155": 146, "157": 147 }
+}
