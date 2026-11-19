@@ -39,8 +39,7 @@ end
 function M.pretty_name(it)
     local ok, t = pcall(gear.ui.item_tooltip_text, it.id)
     if ok and type(t) == 'string' then
-        local line = t:match('^[^
-]+')
+        local line = t:match('^[^\n]+')
         local plain = line and gear.fmt.plain(line):gsub('^%s+', ''):gsub('%s+$', '')
         if plain and plain ~= '' then return plain end
     end
