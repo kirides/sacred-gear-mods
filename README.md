@@ -116,3 +116,20 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 | [Controller](docs/Controller.md) | Using the mods with a gamepad |
 | [Screenshots](docs/Screenshots.md) | Re-taking the README's screenshots |
 | [Names and IDs](docs/NamesAndIds.md) | Mods save ids and show localized names; migrating saved names |
+| [Mod index](docs/ModIndex.md) | The `mod-index.json` format for mod managers |
+
+## Mod manager index
+
+[`mod-index.json`](mod-index.json) lists the mods of this repository for desktop mod managers; the Sacred Mod Manager
+reads it. Every release ships it next to `sacred-gear-mods.zip` (a fixed-name copy of the versioned zip), so a manager
+can always fetch `releases/latest/download/mod-index.json` and `.../sacred-gear-mods.zip`. A CI step fails when the index
+and the mods in `src` disagree. Other repositories can publish their own `mod-index.json` the same way, and an index can
+also point at other indexes. The full format is in [Mod index](docs/ModIndex.md).
+
+| Field | |
+|---|---|
+| `schema` | Format version, `1` |
+| `name`, `author`, `description`, `homepage` | Who publishes the index |
+| `download` | `url` of the zip and its `version` (the latest tag, or `latest`) |
+| `mods[]` | One entry per mod: `id` (the id of its `mod.lua`), `path` (the folder inside the zip, `mods/<name>`), `name`, `version`, `author`, `description`, optional `tags`, `thumbnail`, `requires`, `defaultEnabled`, `download` |
+| `indexes[]` | Optional: other indexes to follow, each `url` (absolute https, or relative to this index) and an optional `name` |

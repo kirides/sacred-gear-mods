@@ -1,13 +1,11 @@
 name: Build and release mods
 
-# Pushing a tag like v1.2.0 builds sacred-gear-mods-<tag>.zip and publishes it as a GitHub release.
+# Pushing a tag like v1.2.0 builds sacred-gear-mods-<tag>.zip (plus a fixed-name copy sacred-gear-mods.zip and mod-index.json) and publishes them as a GitHub release.
 # The zip holds a ready-to-use `mods` folder: extract it into the game folder (next to Sacred.exe).
 # Every other push / pull request / manual run builds the same zip as a workflow artifact only.
 
 on:
   push:
-    tags:
-      - 'v*'
     branches:
       - main
   pull_request:
@@ -17,7 +15,7 @@ on:
 jobs:
   package:
     permissions:
-      contents: write   # only used to publish the release on tags
+      contents: write   # only used to publish the release on main
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -32,6 +30,32 @@ jobs:
             [ -f "${d}mod.lua" ] || { echo "::error::${d} has no mod.lua"; exit 1; }
             [ -f "${d}main.lua" ] || { echo "::error::${d} has no main.lua"; exit 1; }
           done
+
+      - name: Check mod-index.json
+        shell: bash
+        run: |
+          set -e
+          fail() { echo "::error::mod-index.json: $1"; exit 1; }
+          jq empty mod-index.json || fail "not valid JSON"
+          [ "$(jq -r '.schema' mod-index.json)" = "1" ] || fail "schema must be 1"
+          # every shipped mod folder (same rule as the assembly step) must be listed
+          for d in src/*/; do
+            name=$(basename "$d")
+            case "$name" in *_selftest|sector-tools) continue;; esac
+            [ -f "${d}mod.lua" ] || continue
+            n=$(jq --arg p "mods/$name" '[(.mods // [])[] | select(.path == $p)] | length' mod-index.json)
+            [ "$n" = "1" ] || fail "src/$name is shipped but listed $n times in the index"
+          done
+          # every entry must point at a real mod whose mod.lua id matches
+          while read -r id path; do
+            name=${path#mods/}
+            [ "$path" = "mods/$name" ] && [ -n "$name" ] || fail "path '$path' must be mods/<folder>"
+            [ -d "src/$name" ] || fail "path '$path' has no folder src/$name"
+            [ -f "src/$name/mod.lua" ] || fail "src/$name has no mod.lua"
+            lua_id=$(grep -m1 -oE "^[[:space:]]*id[[:space:]]*=[[:space:]]*'[^']+'" "src/$name/mod.lua" | sed -E "s/.*'([^']+)'/\1/")
+            [ "$lua_id" = "$id" ] || fail "entry id '$id' differs from the mod.lua id '$lua_id' of src/$name"
+          done < <(jq -r '(.mods // [])[] | "\(.id) \(.path)"' mod-index.json | tr -d '\r')
+          echo "mod-index.json ok: $(jq '(.mods // []) | length' mod-index.json) mods"
 
       - name: Assemble the mods folder
         shell: bash
@@ -62,21 +86,25 @@ jobs:
         shell: bash
         run: |
           set -e
-          version="${GITHUB_REF_NAME//\//-}"
-          [ "$GITHUB_REF_TYPE" = "tag" ] || version="${GITHUB_SHA::7}"
-          echo "VERSION=$version" >> "$GITHUB_ENV"
-          (cd dist && zip -qr "../sacred-gear-mods-$version.zip" mods README.txt)
-          unzip -l "sacred-gear-mods-$version.zip" | tail -5
+          sha="${GITHUB_SHA::7}"
+          echo "RELEASE_NAME=$(date -u +'%Y-%m-%d %H%M') $sha" >> "$GITHUB_ENV"
+          echo "RELEASE_TAG=$(date -u +'%Y-%m-%d-%H%M')-$sha" >> "$GITHUB_ENV"
+          (cd dist && zip -qr "../mods.zip" mods README.txt)
+          unzip -l mods.zip | tail -5
 
       - name: Upload the zip as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sacred-gear-mods-${{ env.VERSION }}
-          path: sacred-gear-mods-${{ env.VERSION }}.zip
+          name: mods
+          path: mods.zip
 
       - name: Publish the release
-        if: github.ref_type == 'tag'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          files: sacred-gear-mods-${{ env.VERSION }}.zip
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          target_commitish: ${{ github.sha }}
+          files: mods.zip
           generate_release_notes: true
+          make_latest: true

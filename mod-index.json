@@ -1,0 +1,349 @@
+{
+  "schema": 1,
+  "name": "Sacred Gear Mods",
+  "author": "kirides",
+  "description": "Mods for Sacred Gold on the Sacred Gear mod kit of SacredBild: a better savegame screen, autosave, loot tools, a chat window, companions, custom classes, quests and clients of the SacredEngineRemake game server. Extract the zip into the game folder.",
+  "homepage": "https://github.com/kirides/sacred-gear-mods",
+  "download": {
+    "url": "https://github.com/kirides/sacred-gear-mods/releases/latest/download/sacred-gear-mods.zip",
+    "version": "latest"
+  },
+  "mods": [
+    {
+      "id": "achievements",
+      "path": "mods/achievements",
+      "name": "Achievements and login streak",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Toasts for the achievements and the daily login streak of the game server's achievements.lua (Sacred.GameServer scripts-examples), and a panel listing them with progress. Needs that server; the original GameServer.exe does not talk to mods.",
+      "tags": [
+        "quests",
+        "server"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/achievements.jpg"
+    },
+    {
+      "id": "art-bars",
+      "path": "mods/art-bars",
+      "name": "Art bars",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "More combat arts at hand than the game's skill bar holds: extra bars of slots for your hero's combat arts and spells (copies and chains of the Custom classes mod too), with keys, cooldowns and the controller. Single player.",
+      "tags": [
+        "ui",
+        "combat"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/art-bars.jpg"
+    },
+    {
+      "id": "auction-house",
+      "path": "mods/auction-house",
+      "name": "Auction house",
+      "version": "0.1.0",
+      "author": "kirides",
+      "description": "Buy and sell items with the other players of a game, from the chest window. The host keeps the market.",
+      "tags": [
+        "multiplayer",
+        "economy"
+      ]
+    },
+    {
+      "id": "autosave",
+      "path": "mods/autosave",
+      "name": "Autosave",
+      "version": "1.1.0",
+      "author": "kirides",
+      "description": "Saves the game every few minutes of play into its own slots.",
+      "tags": [
+        "saves"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/autosave.jpg"
+    },
+    {
+      "id": "better-saveload",
+      "path": "mods/better-saveload",
+      "name": "Better SaveLoad",
+      "version": "1.3.0",
+      "author": "kirides",
+      "description": "The savegame screen made new: hero, class, level and picture of every savegame, filters by character and class, a search, several orders, and room for thousands of savegames (the game stops at 100 on its own screen). Works with the mouse, the keyboard and the controller.",
+      "tags": [
+        "saves",
+        "ui"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/better-saveload.jpg"
+    },
+    {
+      "id": "bounty",
+      "path": "mods/bounty",
+      "name": "Bounty board",
+      "version": "0.4.0",
+      "author": "Sacred Gear",
+      "description": "Bounties to hunt, plus daily and weekly quests with streak rewards: in single player the mod posts, counts and pays them itself, in a network game it shows the board of a Sacred.GameServer with scripts-examples/bounty_board.lua. Panel and a small tracker.",
+      "tags": [
+        "quests"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/bounty.jpg"
+    },
+    {
+      "id": "buildsharer",
+      "path": "mods/buildsharer",
+      "name": "Build sharer",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Publish your hero build to the game server and browse the builds other players shared. Needs the Sacred.GameServer of the SacredEngineRemake with scripts-examples/build_sharer.lua; the server reads your skills and equipment itself, this mod only sends a title, a note, tags and the items you carry.",
+      "tags": [
+        "multiplayer",
+        "server"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/buildsharer.jpg"
+    },
+    {
+      "id": "companions",
+      "path": "mods/companions",
+      "name": "Companions",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "A party of heroes in single player: recruit companions of any class, each with their own inventory, equipment, attributes, skills, combat arts and experience. Click a portrait (or use the controller's mod menu) to play that hero; the others follow and fight on their own, with their combat arts and spells.",
+      "tags": [
+        "companions"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/companions.jpg"
+    },
+    {
+      "id": "custom-classes",
+      "path": "mods/custom-classes",
+      "name": "Custom classes",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Heroes with a class of your own: a Seraphim body with Battle Mage fire, a Gladiator that casts. A class is a profile on one of the eight hero bodies (skills, arts from any class, runes) made with the Sacred Class Editor or by hand. Needs the mod on every computer in a LAN game.",
+      "tags": [
+        "classes"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes.jpg"
+    },
+    {
+      "id": "damagemeter",
+      "path": "mods/damagemeter",
+      "name": "Damage meter",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Damage dealt and taken by the hero (from the engine's final damage of every hit), DPS over the fight and the last seconds (compact view by default: character name and DPS, the whole party in a network game), the biggest hit, damage by monster type, kills per minute.",
+      "tags": [
+        "ui",
+        "tools"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/damagemeter.jpg"
+    },
+    {
+      "id": "drop-tuning",
+      "path": "mods/drop-tuning",
+      "name": "Drop tuning",
+      "version": "1.3.0",
+      "author": "kirides",
+      "description": "Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, can swap the game's random numbers for a fair generator, can let the Icon Set pieces and the pieces of the X-MAS set of your class drop at any level, and can make creatures drop the gear you could otherwise only take with the Disarming skill.",
+      "tags": [
+        "loot"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/drop-tuning.jpg"
+    },
+    {
+      "id": "enhanced-chat",
+      "path": "mods/enhanced-chat",
+      "name": "Enhanced Chat",
+      "version": "1.0.0",
+      "author": "kirides",
+      "description": "A chat window in place of the lines at the top of the screen that fade and are gone: it keeps the last lines of the session to scroll back through, has tabs for global, private and system messages (and a filter by player in a network game) and shows item names in their rarity colour, also for the drops near your hero. Move and resize it with the layout editor. Mouse, keyboard and controller.",
+      "tags": [
+        "chat",
+        "ui"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/enhanced-chat.jpg"
+    },
+    {
+      "id": "item-compare",
+      "path": "mods/item-compare",
+      "name": "Item comparison",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Hover an item (backpack, chest, shop, the pad's cursor too) and a panel beside the game's tooltip shows what it changes compared with the item your hero wears in that slot: green for better, red for worse. Optionally for your companions too.",
+      "tags": [
+        "ui",
+        "loot"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/item-compare.jpg"
+    },
+    {
+      "id": "key-bindings",
+      "path": "mods/key-bindings",
+      "name": "Key bindings",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Choose the keys and mouse buttons of the game's actions (weapons, combat arts, potions, windows), two keys each, with an optional quick cast for combat arts.",
+      "tags": [
+        "ui",
+        "tools"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/key-bindings.jpg"
+    },
+    {
+      "id": "layout",
+      "path": "mods/layout",
+      "name": "Layout editor",
+      "version": "0.2.0",
+      "author": "Sacred Gear",
+      "description": "Move the game's windows and mod panels where you want them: an edit mode like an MMO's.",
+      "tags": [
+        "ui"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/layout.jpg"
+    },
+    {
+      "id": "lootfilter",
+      "path": "mods/lootfilter",
+      "name": "Loot filter",
+      "version": "0.2.0",
+      "author": "Sacred Gear",
+      "description": "Picks up only the items you want: by class, quality and category; dims the rest on the ground.",
+      "tags": [
+        "loot"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/lootfilter.jpg"
+    },
+    {
+      "id": "lootlog",
+      "path": "mods/lootlog",
+      "name": "Loot log",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "A log of the items that dropped near the hero and the items that ended up in the backpack, filterable by quality, category and kind; kept between sessions.",
+      "tags": [
+        "loot",
+        "tools"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/lootlog.jpg"
+    },
+    {
+      "id": "questhelper",
+      "path": "mods/questhelper",
+      "name": "Quest helper",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "A panel with the quest items in your backpack (read here) and the quest records of your hero, with hints, which the game server reports (Sacred.GameServer with scripts-examples/quest_helper.lua and hero data). Limits: neither Gear nor the server can read the game's quest journal.",
+      "tags": [
+        "quests",
+        "server"
+      ]
+    },
+    {
+      "id": "realms",
+      "path": "mods/realms",
+      "name": "Realm",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Choose the online play server (realm) for Closed / Open Internet: a page in the mod manager. Realms are kept in mods/gear_realms.json.",
+      "tags": [
+        "multiplayer",
+        "tools"
+      ]
+    },
+    {
+      "id": "region-counter",
+      "path": "mods/region-counter",
+      "name": "Region counter",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "The kills a region needs before its Region Boss quest comes: set your own number, and keep the progress when you leave the region, teleport, save or quit.",
+      "tags": [
+        "tools"
+      ]
+    },
+    {
+      "id": "serverfeed",
+      "path": "mods/serverfeed",
+      "name": "Server feed",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Shows the announcements of the SacredEngineRemake game server on screen: rare and unique drops (scripts-examples/rare_drops.lua) and hero deaths (graveyard.lua), and a list of the latest of both. Does nothing on a server without those scripts.",
+      "tags": [
+        "multiplayer",
+        "server"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/serverfeed.jpg"
+    },
+    {
+      "id": "sessiontracker",
+      "path": "mods/sessiontracker",
+      "name": "Session tracker",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Time played, kills, gold and experience gained this session, with per-hour rates; lifetime totals and the last sessions are kept.",
+      "tags": [
+        "tools",
+        "ui"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/sessiontracker.jpg"
+    },
+    {
+      "id": "shared-stash",
+      "path": "mods/shared-stash",
+      "name": "Shared stash",
+      "version": "0.2.0",
+      "author": "kirides",
+      "description": "A stash shared by all your heroes, in a panel beside the chest window.",
+      "tags": [
+        "loot",
+        "multiplayer"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/shared-stash.jpg"
+    },
+    {
+      "id": "twi_sacred",
+      "path": "mods/twi_sacred",
+      "name": "Twitch Integration: actions",
+      "version": "0.2.0",
+      "author": "Sacred Gear",
+      "description": "Twitch viewers spawn monsters, give gold, heal or teleport the hero.",
+      "tags": [
+        "twitch"
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/twi_sacred.jpg",
+      "requires": [
+        "twitch_integration"
+      ]
+    },
+    {
+      "id": "twitch_integration",
+      "path": "mods/twitch_integration",
+      "name": "Twitch Integration (base)",
+      "version": "0.1.0",
+      "tags": [
+        "twitch"
+      ]
+    },
+    {
+      "id": "world-events",
+      "path": "mods/world-events",
+      "name": "World events",
+      "version": "0.1.0",
+      "author": "kirides",
+      "description": "Shows the game server's world event (a realm-wide goal such as \"slay 1000 orcs in 2 hours\") as a small movable indicator (a pill with progress and time rings). Needs a Sacred Gear game server with the world_events script.",
+      "tags": [
+        "multiplayer",
+        "server"
+      ]
+    },
+    {
+      "id": "world-events_bosstest",
+      "path": "mods/world-events_bosstest",
+      "name": "World events boss self test",
+      "version": "1.0.0",
+      "tags": [
+        "tools",
+        "test"
+      ],
+      "requires": [
+        "world-events"
+      ]
+    }
+  ]
+}
