@@ -20,7 +20,7 @@ local TABS = {'Quest items', 'Records', 'About'}
 local DIM, OK, WARN, GOLD = ui.rgba(255, 255, 255, 150), ui.rgba(143, 206, 122), ui.rgba(255, 200, 120), ui.rgba(255, 215, 120)
 local NEAR_TILES = 40
 
-local S = {
+local view = {             -- what the panel shows and waits for
     tab = 1, state = nil, reason = nil, asked = 0, opened = false, show_unknown = true,
     near = {}, near_at = 0, status = '',
 }
@@ -32,7 +32,7 @@ gear.toast.options({seconds = 8, when = function(state) return state.mode == 'ga
 local function ask(watch)
     if not net.supported() then return false end
     local ok, err = ch:send({op = 'state', watch = watch and true or false}, 'server')
-    if not ok then S.status = fit(err, 80) else S.asked = gear.time() end
+    if not ok then view.status = fit(err, 80) else view.asked = gear.time() end
     return ok
 end
 
@@ -58,32 +58,32 @@ ch:on(function(from, p)
     if p.op == 'state' then
         if p.available == true and type(p.records) == 'table' then
             local new = {total = tonumber(p.total) or #p.records, known = tonumber(p.known) or 0, records = p.records, catalog = tonumber(p.catalog) or 0}
-            announce(S.state, new)
-            S.state, S.reason = new, nil
+            announce(view.state, new)
+            view.state, view.reason = new, nil
         else
-            S.state, S.reason = nil, fit(p.reason or 'the server has no quest data for you', 160)
+            view.state, view.reason = nil, fit(p.reason or 'the server has no quest data for you', 160)
         end
-        S.status = ''
+        view.status = ''
     elseif p.op == 'error' then
-        S.status = fit(p.error, 80)
+        view.status = fit(p.error, 80)
     end
 end)
 
 -- ---- quest items (read here) ----
 local function refresh_near()
-    S.near_at = gear.time()
+    view.near_at = gear.time()
     local hero = gear.world.hero()
-    S.near = {}
+    view.near = {}
     if not hero then return end
     local hx, hy, layer = hero:position()
     if not hx then return end
     for _, it in ipairs(gear.world.items_near(hx, hy, NEAR_TILES * gear.world.TILE, {layer = layer, limit = 64})) do
         if it.quest then
             local dist = math.sqrt((it.x - hx) ^ 2 + (it.y - hy) ^ 2) / gear.world.TILE
-            S.near[#S.near + 1] = {name = it.type_name or ('item ' .. tostring(it.type)), dist = dist, x = it.x, y = it.y}
+            view.near[#view.near + 1] = {name = it.type_name or ('item ' .. tostring(it.type)), dist = dist, x = it.x, y = it.y}
         end
     end
-    table.sort(S.near, function(a, b) return a.dist < b.dist end)
+    table.sort(view.near, function(a, b) return a.dist < b.dist end)
 end
 
 local function backpack_quest_items()
@@ -97,7 +97,7 @@ local function backpack_quest_items()
 end
 
 local function items_tab(x, y, w, h)
-    if gear.time() - S.near_at > 1 then refresh_near() end
+    if gear.time() - view.near_at > 1 then refresh_near() end
     ui.text('In your backpack', x, y, {color = ui.COLORS.accent})
     local cy = y + 18
     local bag = backpack_quest_items()
@@ -109,12 +109,12 @@ local function items_tab(x, y, w, h)
     cy = cy + 10
     ui.text(('On the ground within %d tiles'):format(NEAR_TILES), x, cy, {color = ui.COLORS.accent})
     cy = cy + 18
-    if #S.near == 0 then ui.text('no quest items in sight', x + 8, cy, {color = DIM}) end
+    if #view.near == 0 then ui.text('no quest items in sight', x + 8, cy, {color = DIM}) end
     local area = ui.scroll_begin('near', x, cy, w, math.max(40, y + h - cy), {step = 16})
-    for i, n in ipairs(S.near) do
+    for i, n in ipairs(view.near) do
         ui.text(('%s  -  %.0f tiles away, at %d, %d'):format(fit(n.name, 36), n.dist, n.x, n.y), x + 8, area.content_y + (i - 1) * 16, {})
     end
-    ui.scroll_end(#S.near * 16)
+    ui.scroll_end(#view.near * 16)
 end
 
 -- ---- records (from the server) ----
@@ -125,22 +125,22 @@ local function records_tab(x, y, w, h)
         for i, line in ipairs(lines) do ui.text(line, x, y + (i - 1) * 16, {color = WARN}) end
         return
     end
-    if not S.state then
-        local lines = ui.text_wrap(S.reason or 'Asking the server ...', w, {})
-        for i, line in ipairs(lines) do ui.text(line, x, y + (i - 1) * 16, {color = S.reason and WARN or DIM}) end
+    if not view.state then
+        local lines = ui.text_wrap(view.reason or 'Asking the server ...', w, {})
+        for i, line in ipairs(lines) do ui.text(line, x, y + (i - 1) * 16, {color = view.reason and WARN or DIM}) end
         if ui.button('ask', x, y + #lines * 16 + 8, 80, 20, 'Refresh') then ask(true) end
         return
     end
-    local st = S.state
+    local st = view.state
     ui.text(('%d record%s, %d with a catalog entry (the catalog has %d)'):format(st.total, st.total == 1 and '' or 's', st.known, st.catalog), x, y, {color = DIM})
     local _
-    _, S.show_unknown = ui.checkbox('unknown', x + w - 190, y - 2, 'Show unnamed records', S.show_unknown, {})
+    _, view.show_unknown = ui.checkbox('unknown', x + w - 190, y - 2, 'Show unnamed records', view.show_unknown, {})
     if ui.button('refresh', x + w - 70, y + 20, 70, 20, 'Refresh') then ask(true) end
     local area = ui.scroll_begin('records', x, y + 22, w - 76, h - 24, {step = 20})
     local cy = area.content_y
     local shown = 0
     for _, r in ipairs(st.records) do
-        if type(r) == 'table' and (r.known or S.show_unknown) then
+        if type(r) == 'table' and (r.known or view.show_unknown) then
             shown = shown + 1
             local label = (type(r.label) == 'string' and r.label ~= '') and (' - ' .. fit(r.label, 40)) or ''
             ui.text(('%s = %s%s'):format(fit(title_of(r), 50), tostring(r.value), label), x, cy, {color = r.known and GOLD or nil})
@@ -176,25 +176,25 @@ end
 local function panel()
     local p = ui.panel('main', 'Quest helper' .. key_hint('toggle'), 80, 60, 520, 400, {})
     if not p.open then
-        if S.opened then S.opened = false; if net.supported() then ch:send({op = 'unwatch'}, 'server') end end
+        if view.opened then view.opened = false; if net.supported() then ch:send({op = 'unwatch'}, 'server') end end
         return
     end
-    if not S.opened then S.opened = true; refresh_near(); ask(true) end
+    if not view.opened then view.opened = true; refresh_near(); ask(true) end
     local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
-    local _, tab = ui.radio_group('tabs', x, y, TABS, S.tab, {horizontal = true})
-    S.tab = tab
+    local _, tab = ui.radio_group('tabs', x, y, TABS, view.tab, {horizontal = true})
+    view.tab = tab
     local top, body_h = y + 28, h - 28 - 20
-    if S.tab == 1 then items_tab(x, top, w, body_h)
-    elseif S.tab == 2 then records_tab(x, top, w, body_h)
+    if view.tab == 1 then items_tab(x, top, w, body_h)
+    elseif view.tab == 2 then records_tab(x, top, w, body_h)
     else about_tab(x, top, w, body_h) end
-    if S.status ~= '' then ui.text(S.status, x, y + h - 16, {color = WARN}) end
+    if view.status ~= '' then ui.text(view.status, x, y + h - 16, {color = WARN}) end
 end
 
 gear.keys.on('toggle', function() ui.toggle_panel('main') end)
 
 -- Refresh while the panel is open (the server also pushes changes to a watching client).
 gear.every(5, function()
-    if ui.panel_open('main') and net.supported() and gear.time() - S.asked >= (tonumber(gear.settings.get('refresh')) or 30) then ask(true) end
+    if ui.panel_open('main') and net.supported() and gear.time() - view.asked >= (tonumber(gear.settings.get('refresh')) or 30) then ask(true) end
 end)
 
 gear.on('draw', function(state)
