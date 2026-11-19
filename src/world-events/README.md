@@ -115,6 +115,43 @@ the format and runs them; this mod's part:
              {"on": "success", "actions": [{"action": "gold", "amount": 5000}]}]}]}
 ```
 
+## World bosses
+
+A hook action **`boss`** turns a creature into a *world boss*: much more health, damage dealt multiplied, a share of the damage it takes
+deflected or reflected, optional regeneration, a **name** and a **health bar** on the screen, an announcement and a **reward** when it falls.
+
+```json
+{"at": 50, "actions": [{"action": "boss", "name": "Grakk the Ravager", "kinds": [{"type": "Orc Warrior"}], "radius": 500,
+   "health": 20, "damage": 3, "taken": 0.5, "reflect": 0.15, "deflect": 0.1, "regen": 0.005,
+   "reward": {"gold": 5000, "item": {"quality": 9, "category": "weapon"}, "text": "Grakk drops his axe."},
+   "text": "Grakk the Ravager has come for you!"}]}
+```
+
+* **Which creature:** `kinds` (a weighted list like a `spawn` wave: one is created around the hero, `radius` away) or `near` (`"near": "Orc"`: the
+  **nearest hostile creature** whose type name has those words within about twice the radius **becomes the boss**; `"*"` any monster;
+  `kinds` is the fallback when none is near). Spawned creatures are real monsters of the game's own type. Some animals the game spawns passive
+  (a spawned wolf did not move); use fighters like orcs or goblins, or `near` on creatures the map already placed.
+* **What it gets** (all optional): `health` x10 (1 to 1000, a multiple of the creature's own), `damage` x2 (0 to 50), `taken` x1 (0.05 to 10: 0.5 takes half),
+  `deflect` (0 to 0.9: the chance a hit does nothing), `reflect` (0 to 1: the share of the damage taken that the attacker takes back; it never kills), `regen`
+  (0 to 0.2: health per second as a share of the maximum). Level and size are not modifiable (see Gear's *Creature modifiers*); the numbers are clamped.
+* **The bar:** a name over a red bar with `1,000 / 1,000` inside, in a **movable panel** `world-events:boss` (hold **Alt** and press *Edit layout*, like the
+  pill; a sample shows while you edit), at most 3 bosses at once (+N more). It **takes no clicks** (the mouse goes on to the game); hover it or hold Alt for the details
+  (the event, the health, the announcement, the reward). A defeated boss shows *Defeated* for a few seconds. Setting *Show the boss health bar*; the controller's mod menu has
+  **World events: boss health bar on / off**.
+* **Reward:** when the boss falls, `reward.gold` is added to your gold and `reward.item` (a type name, or a quality / category / level rolled like an item hook) drops at your feet;
+  `reward.text` is shown as a message. A boss that leaves the world without dying (the creature is removed, you left the area for good) is reported `gone`, no reward.
+* **Events** for other mods: `worldevent.boss.spawned` and `worldevent.boss.defeated` (see [Mod events](../../docs/ModEvents.md)). Another mod (or a test) can make a boss with
+  `gear.emit('world-events.boss', {name = 'Grakk', near = 'Orc', health = 20, damage = 2, reward = {gold = 1000}})`.
+* **Savegames:** a boss lives in the running game (Gear's modifiers are not saved). The mod keeps its list in `local_bosses.json` **per savegame**
+  (`gear.store.game`, see the Gear docs): when you load a game that was saved while a boss was alive, the creature is in the world with the boosted health the save
+  wrote, and the mod puts the boss back (the bar returns, `worldevent.boss.spawned` fires with `initial = true`) a few seconds after the load. A boss that died
+  or is gone in that savegame is not brought back. Without Gear's creature modifiers (an older SacredGear.dll) a `boss` action is skipped with a log line.
+* **Online and the server:** Gear can only create creatures and change them in a game of its own (single player, a LAN game you host). In a
+  **dedicated-server game nothing can make the boss**: the server's `world_events.lua` (`boss` action, see the GameServer README) **announces** it on the channel
+  `worldevents:boss` and the bar shows its name (no health numbers: the server has no creature), the server calls it defeated when a hero kills a creature
+  of its kind, pays the reward and tells everybody. The same action also sends the target hero's game a `worldevents:spawn` message with the boss, which a game that can
+  create creatures will use.
+
 *Region boss / kill counters:* a hook's `kills` trigger counts creatures by name or type; a goal kind for the region boss kills can feed the
 same `Runner:kill` (`hooks.lua`) with the boss as the creature. Nothing in this mod depends on that mod.
 

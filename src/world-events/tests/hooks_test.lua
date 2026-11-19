@@ -200,5 +200,43 @@ check(localevents.counts(rdef, 'Orc', 38, nil, 4), 'a kill in the events region 
 check(not localevents.counts(rdef, 'Orc', 38, nil, 3), 'a kill in another region does not')
 check(not localevents.counts(rdef, 'Orc', 38, nil, nil), 'a kill outside any region does not')
 check(localevents.counts(localevents.clean_event({id = 'e', target = 5, duration = 60}), 'Orc', 38, nil, nil), 'an event without regions counts everywhere')
+-- ---- world bosses -------------------------------------------------------------------------------------------------
+local bl, brefused = hooks.clean({
+    {at = 30, actions = {{action = 'boss', name = 'Grakk the Test', kinds = {{type = 'Orc Warrior'}}, health = 99999, damage = -3, taken = 0, deflect = 5, reflect = 0.3,
+        regen = 0.01, radius = 5, reward = {gold = 777, item = {quality = 9, category = 'Weapon'}, text = 'Well done'}, text = 'Grakk comes'}}},
+    {at = 40, actions = {{action = 'boss', near = 'Orc'}}},
+    {at = 50, actions = {{action = 'boss', name = 'Nobody'}}},
+    {at = 60, actions = {{action = 'boss', kinds = {{type = 'Wolf'}}, reward = {}}}},
+})
+eq(#bl, 3, 'a boss needs a creature kind or something to promote')
+eq(#brefused, 2, 'the refusal is reported (the boss and its hook)')
+local boss1 = bl[1].actions[1]
+check(boss1.boss ~= nil and boss1.action == 'boss', 'a boss action carries a boss')
+eq(boss1.boss.name, 'Grakk the Test', 'the boss name')
+eq(boss1.boss.health, 1000, 'health is clamped to the highest allowed')
+eq(boss1.boss.damage, 0, 'damage is clamped to 0')
+eq(boss1.boss.taken, 0.05, 'taken has a floor (no immortal bosses)')
+eq(boss1.boss.deflect, 0.9, 'deflect is clamped')
+eq(boss1.boss.reflect, 0.3, 'reflect')
+eq(boss1.boss.radius, 50, 'radius is clamped')
+eq(boss1.boss.reward.gold, 777, 'the reward gold')
+eq(boss1.boss.reward.item.category, 'weapon', 'the reward item category')
+eq(boss1.boss.reward.text, 'Well done', 'the reward text')
+eq(boss1.text, 'Grakk comes', 'the announcement')
+eq(boss1.target, 'owner', 'default target')
+eq(bl[2].actions[1].boss.near, 'Orc', 'near promotes')
+eq(bl[2].actions[1].boss.name, 'Orc', 'the name defaults to the creature')
+eq(bl[2].actions[1].boss.health, 10, 'default health x10')
+eq(bl[2].actions[1].boss.damage, 2, 'default damage x2')
+eq(bl[3].actions[1].boss.reward, nil, 'an empty reward is none')
+check(hooks.action_text(boss1):find('Grakk the Test', 1, true) ~= nil and hooks.action_text(bl[2].actions[1]):find('nearest Orc', 1, true) ~= nil, 'action_text of a boss')
+eq(hooks.num_text(1.5), '1.5', 'num_text 1.5')
+eq(hooks.num_text(10), '10', 'num_text 10')
+
+local wave = hooks.parse_spawn({id = 'w1', event = 'E', boss = {name = 'Grakk', kinds = {{type = 'Orc'}}, health = 5}, text = 'x'})
+check(wave ~= nil and wave.boss ~= nil and wave.n == 1 and wave.boss.health == 5, 'the server asks for a boss')
+eq(hooks.parse_spawn({id = 'w2', n = 3, boss = {name = 'x'}}), nil, 'a boss without a creature is refused')
+check(hooks.parse_spawn({id = 'w3', n = 3, kinds = {{type = 'Orc'}}}).boss == nil, 'a plain wave has no boss')
+
 print(('hooks tests: %d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

@@ -7,7 +7,11 @@
 --   worldevent.failed     the time ran out
 --   worldevent.hook       a trigger of the event fired its actions (local mode, or a spawn wave the server asked for)
 -- The payload is one table: {id (the event's number), title, text, unit, area, count, target, percent, here, source = 'local'|'server'}.
--- worldevent.hook adds {action = 'spawn'|'item'|'message'|'gold', text?}.
+-- worldevent.hook adds {action = 'spawn'|'item'|'message'|'gold'|'boss', text?}.
+--   worldevent.boss.spawned    a world boss appeared (a hook's `boss` action; a server's announcement; initial = true when a boss from the savegame came back)
+--   worldevent.boss.defeated   it was defeated (gone = true: it left the world without dying as far as the mod can tell)
+-- Their payload is {id (a string), name, event (the event's title), type?, type_name?, creature (object id, local only), health (maximum), damage, taken,
+-- deflect, reflect, regen (the multipliers), reward (text), by? (the hero who defeated it, server), source}.
 local M = {}
 
 M.EVENTS = {
@@ -15,9 +19,21 @@ M.EVENTS = {
     {'worldevent.progress', 'The count of a running event went up (count, target, percent, previous).'},
     {'worldevent.completed', 'The goal of an event was reached.'},
     {'worldevent.failed', 'The time of an event ran out before the goal.'},
-    {'worldevent.hook', 'A trigger of an event fired its actions (action: spawn, item, message or gold).'},
+    {'worldevent.hook', 'A trigger of an event fired its actions (action: spawn, item, message, gold or boss).'},
+    {'worldevent.boss.spawned', "A world boss appeared (a boss action of an event, or a server's announcement).", 'id, name, event, type?, type_name?, creature?, health?, damage?, taken?, deflect?, reflect?, regen?, reward?, source = "local"|"server", initial?'},
+    {'worldevent.boss.defeated', 'A world boss was defeated (gone = true: it left the world without dying as far as can be told).', 'id, name, event, type?, type_name?, creature?, health?, reward?, by?, gone?, source = "local"|"server"'},
 }
 M.ARGS = 'id, title, text, unit, area, count, target, percent, here, source = "local"|"server", previous? (progress), initial? (started), action? (hook)'
+
+-- The payload of worldevent.boss.* for a boss record (what localgame.make_boss returns, or a server's boss record).
+function M.boss_payload(rec, source, extra)
+    local mods = rec.mods or {}
+    local p = {id = rec.key, name = rec.name, event = rec.event or '', type = rec.type, type_name = rec.type_name, creature = rec.creature,
+        health = rec.max_hp or rec.max, damage = mods.damage, taken = mods.taken, deflect = mods.deflect, reflect = mods.reflect, regen = mods.regen,
+        reward = rec.reward_text, by = rec.by, source = source}
+    for k, v in pairs(extra or {}) do p[k] = v end
+    return p
+end
 
 function M.payload(s, source)
     local percent = (s.target or 0) > 0 and math.min(100, math.floor((s.count or 0) * 100 / s.target)) or 0

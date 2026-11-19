@@ -136,7 +136,7 @@ draw(g, {mode = 'game', show_text = true})
 check(#g.panels == 1, 'alt mode: shown with Alt')
 g.edit = true
 draw(g, {mode = 'game', show_text = false})
-check(#g.panels == 1, 'the layout editor always shows the bar')
+check(#g.panels == 2 and g.panels[1].id == 'bar' and g.panels[2].id == 'boss', 'the layout editor always shows the bar (and a sample boss bar)')
 g.edit = false
 g.settings.visibility = 'always'
 -- the pulse at a quarter mark draws a second pill
@@ -214,6 +214,44 @@ load_mod(g3)
 g3.fire('session.start', {})
 draw(g3)
 check(#g3.panels == 0, 'no gear.net: no bar, no error')
+
+-- 4. the boss bar: what the server announces on 'worldevents:boss'
+local g4 = new_gear()
+load_mod(g4)
+g4.fire('session.start', {})
+local bch = g4.channels['worldevents:boss']
+check(bch ~= nil, 'the boss channel is opened')
+local function boss_panels(g) local n = 0 for _, p in ipairs(g.panels) do if p.id == 'boss' then n = n + 1 end end return n end
+draw(g4)
+check(boss_panels(g4) == 0, 'no boss: no boss bar')
+for _, fn in ipairs(bch.listeners) do fn({slot = 3}, {v = 1, id = 'e:h1:1', st = 'active', name = 'Grakk', event = 'Orc hunt'}) end
+draw(g4)
+check(boss_panels(g4) == 0, 'a boss message from another player is ignored')
+for _, fn in ipairs(bch.listeners) do fn({slot = 0}, {v = 1, id = 'e:h1:1', st = 'active', name = 'Grakk', event = 'Orc hunt', reward = '777 gold'}) end
+draw(g4)
+check(boss_panels(g4) == 1, 'the server announces a boss: the bar shows')
+check(has(g4, 'text:Grakk'), 'the boss name')
+local bp
+for _, p in ipairs(g4.panels) do if p.id == 'boss' then bp = p end end
+check(bp and bp.opts.bare == true and bp.opts.resizable == true, 'a bare, resizable panel (the layout editor moves it)')
+g4.settings.boss_bar = false
+draw(g4)
+check(boss_panels(g4) == 0, 'the setting hides the boss bar')
+g4.settings.boss_bar = true
+g4.menu.boss_bar.fn()
+draw(g4)
+check(boss_panels(g4) == 0, 'the controller menu entry switches the bar off')
+g4.menu.boss_bar.fn()
+for _, fn in ipairs(bch.listeners) do fn({slot = 0}, {v = 1, id = 'e:h1:1', st = 'defeated', name = 'Grakk', by = 'Bob'}) end
+draw(g4)
+check(boss_panels(g4) == 1 and has(g4, 'text:Defeated'), 'a defeated boss stays for a moment')
+g4.now = g4.now + 20
+g4.fire('frame', 0.1)
+draw(g4)
+check(boss_panels(g4) == 0, 'and then goes')
+for _, fn in ipairs(bch.listeners) do fn({slot = 0}, {v = 1, id = 'x', st = 'bogus', name = 'Y'}) end
+draw(g4)
+check(boss_panels(g4) == 0, 'a bad state is dropped')
 
 print(('world-events main: %d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

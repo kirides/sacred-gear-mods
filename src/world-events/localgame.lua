@@ -192,12 +192,127 @@ function G.item(spec, done)
     end)
 end
 
+---------------------------------------------------------------------------------------------------------------
+-- world bosses (a `boss` action): a creature with Gear's modifiers (gear.world creature:set_modifiers)
+---------------------------------------------------------------------------------------------------------------
+-- Does the creature type name have the words `near` ("Orc Warrior" matches ORC_WARRIOR.GRN)? "*" or "any" match every monster.
+local function name_has(type_name, near)
+    if near == '*' or near:lower() == 'any' then return true end
+    if type(type_name) ~= 'string' then return false end
+    return type_name:upper():find((near:upper():gsub('%s+', '_')), 1, true) ~= nil
+end
+
+-- The nearest living hostile monster within `radius` of the hero whose type name has the words `near`, that is no boss yet; nil if none.
+function G.find_creature(near, radius, skip)
+    local hero = W.hero()
+    if not hero then return nil end
+    local hx, hy, layer = hero:position()
+    if not hx then return nil end
+    local taken = {}
+    for _, m in ipairs(W.modified and W.modified() or {}) do taken[m.id] = true end
+    for _, c in ipairs(W.creatures_near(hx, hy, radius, {limit = 64, layer = layer}) or {}) do
+        if c.id > 16 and not taken[c.id] and not (skip and skip[c.id]) and not c:is_dead() then
+            local t = c:type()
+            if t and gear.data.object_types:kind(t) == KIND_MONSTER and name_has(c:type_name(), near) and hero:is_enemy(c) then return c end
+        end
+    end
+    return nil
+end
+
+local boss_counter = 0
+
+-- Whether saved bosses can be attached now (a game of its own, a hero).
+function G.can_attach() return W.can_change() and W.hero() ~= nil end
+
+-- Makes a boss next to the hero from a clean boss (hooks.clean_boss): promotes the nearest creature with the words `near`, or (else) creates
+-- one of the `kinds` around the hero. Returns the record {key, creature, type, type_name, name, base_hp, max_hp, mods, reward, text, promoted}
+-- (keep it: the mod saves it with the savegame) or nil and a reason. `rnd(k)` -> 1..k.
+function G.make_boss(boss, rnd, skip)
+    rnd = rnd or function(k) return math.random(k) end
+    local hero = W.hero()
+    if not hero then return nil, 'no hero' end
+    if not W.can_change() then return nil, 'the world cannot be changed here (not a single player game)' end
+    if not hero.set_hp or not hero.is_enemy then return nil, 'this Sacred Gear has no creature modifiers' end
+    local hx, hy, layer = hero:position()
+    if not hx then return nil, 'no hero position' end
+    local c, promoted
+    if boss.near then
+        c = G.find_creature(boss.near, math.max(boss.radius, 600) * 2, skip)
+        promoted = c ~= nil
+    end
+    if not c and #boss.kinds > 0 then
+        local kind = hooks.pick_kinds(boss.kinds, 1, rnd)[1]
+        local id = G.resolve(kind)
+        if not id then return nil, 'unknown creature ' .. tostring(kind) end
+        local place = hooks.offsets(1, boss.radius, rnd)[1]
+        local made, err = W.spawn(id, hx + place[1], hy + place[2], {layer = layer, label = 'world-events boss'})
+        if not made then return nil, tostring(err) end
+        c = made
+        waves_alive = waves_alive + 1
+    end
+    if not c then return nil, 'no suitable creature near the hero' end
+    local mods = {health = boss.health, damage = boss.damage, taken = boss.taken, deflect = boss.deflect, reflect = boss.reflect, regen = boss.regen}
+    local ok, err = c:set_modifiers(mods)
+    if not ok then
+        if not promoted then c:remove() end
+        return nil, tostring(err)
+    end
+    local stats = c:modifier_stats() or {}
+    boss_counter = boss_counter + 1
+    return {
+        key = ('local:%d:%d'):format(math.floor(gear.time()), boss_counter), creature = c.id, type = c:type(), type_name = c:type_name(), name = boss.name,
+        base_hp = stats.base_max_hp or c:max_hp(), max_hp = c:max_hp(), mods = mods, reward = boss.reward, text = boss.text, promoted = promoted,
+    }
+end
+
+-- A boss from the savegame (a record kept with it) is attached again: the creature is in the world with the boosted health the save wrote,
+-- the modifiers were forgotten by the load. Returns true, or false and a reason (the creature is gone, dead or another one).
+function G.attach_boss(rec)
+    local c = W.object(rec.creature)
+    if not c or not c:exists() then return false, 'gone' end
+    if c:type() ~= rec.type then return false, 'another creature' end
+    if c:is_dead() then return false, 'dead' end
+    local mods = {}
+    for k, v in pairs(rec.mods or {}) do mods[k] = v end
+    mods.base_hp = rec.base_hp
+    local ok, err = c:set_modifiers(mods)
+    if not ok then return false, tostring(err) end
+    return true
+end
+
+-- What a boss is doing: 'active' with its health and maximum, 'defeated' (dead; or gone while nearly dead), 'gone' (the creature left the world
+-- without dying as far as can be told). `rec.frac` is kept up to date for that guess.
+function G.boss_state(rec)
+    local c = W.object(rec.creature)
+    local alive = c and c:exists() and c:type() == rec.type
+    if alive then
+        local hp, max = c:hp(), c:max_hp()
+        if not hp or not max then alive = false
+        elseif c:is_dead() then return 'defeated', 0, max
+        else
+            rec.frac = max > 0 and hp / max or 1
+            return 'active', hp, max
+        end
+    end
+    if (rec.frac or 1) <= 0.15 then return 'defeated', 0, rec.max_hp end
+    return 'gone', 0, rec.max_hp
+end
+
+-- Takes the modifiers off a boss that is still in the world (the mod is switched off, the boss is dismissed).
+function G.release_boss(rec)
+    local c = W.object(rec.creature)
+    if c and c:exists() and c:type() == rec.type then pcall(c.set_modifiers, c, nil) end
+end
+
 -- Runs one hook action for the hero (single player: every target is the hero). `ctx` is unused here.
 function G.run_action(action, title)
     if action.action == 'spawn' then
         local made, why = G.spawn_wave(action)
         if made == 0 then gear.log('world-events: wave failed: ' .. tostring(why)) end
         if action.text then G.message(title, action.text) end
+    elseif action.action == 'boss' then
+        -- main.lua makes bosses (it keeps the record, the events and the bar): nothing to do here
+        gear.log('world-events: a boss action reached run_action without the boss manager')
     elseif action.action == 'item' then
         for _ = 1, action.n do G.item(action.spec) end
         if action.text then G.message(title, action.text) end
