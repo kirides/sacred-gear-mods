@@ -15,11 +15,13 @@ local GROUPS = {
 -- The six pieces of the Icon Set (set 23 of sets.bin: Dragon, Dark Elf, Royal and Seraphim statue, Grail, Shell).
 local ICON_PIECES = {5101, 5102, 5103, 5104, 5105, 5106}
 
--- The weight is out of 10000 equipment drops: the chance of one pick is weight / 10000.
-local function icon_chance(level)
-    local lowest = S.get('icon_min_level') or 1
+-- The chance of a set piece replacing one equipment pick, from the settings <prefix>_min_level, <prefix>_weight and <prefix>_per_level
+-- ('icon' or 'xmas'): nothing below the minimum level, then the weight plus the per-level step for every level above it. The weight is
+-- out of 10000 equipment drops: the chance of one pick is weight / 10000.
+local function piece_chance(prefix, level)
+    local lowest = S.get(prefix .. '_min_level') or 1
     if level < lowest then return 0 end
-    return math.min(1, ((S.get('icon_weight') or 0) + (S.get('icon_per_level') or 0) * (level - lowest)) / 10000)
+    return math.min(1, ((S.get(prefix .. '_weight') or 0) + (S.get(prefix .. '_per_level') or 0) * (level - lowest)) / 10000)
 end
 
 -- The X-MAS sets (sets 33 .. 38 of sets.bin, one per class; item types as Sacred Gear lists them with their class masks). The game
@@ -39,20 +41,15 @@ local function hero_class()
     return hero and hero:class()
 end
 
-local function xmas_chance(level)
-    local lowest = S.get('xmas_min_level') or 1
-    if level < lowest then return 0 end
-    return math.min(1, ((S.get('xmas_weight') or 0) + (S.get('xmas_per_level') or 0) * (level - lowest)) / 10000)
-end
 
 -- drops.select: a share of the equipment picks of creature loot becomes an Icon Set piece, or a piece of the hero's X-MAS set
 -- (nothing at weight 0).
 gear.on('drops.select', function(ev)
     if ev.type then return end          -- another mod already named the item
     local level = ev.level or 1
-    local p = icon_chance(level)
+    local p = piece_chance('icon', level)
     if p > 0 and math.random() < p then ev.type = ICON_PIECES[math.random(#ICON_PIECES)]; return end
-    p = xmas_chance(level)
+    p = piece_chance('xmas', level)
     if p > 0 and math.random() < p then
         local pieces = XMAS_PIECES[hero_class()]
         if pieces then ev.type = pieces[math.random(#pieces)] end
@@ -164,12 +161,10 @@ gear.mods.page(function(x, y, w, h)
     ui.rect(area.x, area.y, area.w, area.h, ui.rgba(18, 18, 22, 235), { layer = 'top' })
     local inner = area.w - 16
     local cy = 8
-    local n = 0
     local function line(text, mono)
         local lines = ui.text_wrap(text, inner, text_opts)
         for _, l in ipairs(lines) do
             ui.text(l, area.content_x + 8, area.content_y + cy, text_opts)
-            n = n + 1
             cy = cy + LH
         end
     end
@@ -183,7 +178,6 @@ gear.mods.page(function(x, y, w, h)
             ui.text(a, area.content_x + c1, area.content_y + cy, text_opts)
             ui.text(b, area.content_x + c2, area.content_y + cy, text_opts)
             ui.text(c, area.content_x + c3, area.content_y + cy, text_opts)
-            n = n + 1
             cy = cy + LH
         end
         row('Quality', 'Weight (game)', 'Weight now')
@@ -193,7 +187,7 @@ gear.mods.page(function(x, y, w, h)
     end
     cy = cy + 6
     local level = gear.world.hero() and gear.world.hero():level() or 1
-    local p = icon_chance(level)
+    local p = piece_chance('icon', level)
     line(('Icon Set at level %d: %.3f%% of equipment drops become a piece'):format(level, p * 100))
     if p > 0 then
         line(('about one piece in %d equipment drops (one given piece: one in %d)'):format(math.floor(1 / p + 0.5), math.floor(6 / p + 0.5)))
@@ -202,7 +196,7 @@ gear.mods.page(function(x, y, w, h)
     cy = cy + 6
     local class = hero_class()
     local pieces = XMAS_PIECES[class]
-    local xp = xmas_chance(level)
+    local xp = piece_chance('xmas', level)
     if xp > 0 and pieces then
         line(('X-MAS set (%s) at level %d: %.3f%% of equipment drops become a piece, about one in %d (one given piece: one in %d)'):format(
             tostring(class), level, xp * 100, math.floor(1 / xp + 0.5), math.floor(#pieces / xp + 0.5)))
