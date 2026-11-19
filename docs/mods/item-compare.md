@@ -40,12 +40,12 @@ Open the Mods screen with **F11** and pick the mod.
 
 ## How it works
 
-The numbers come from the tooltip text the player sees: the mod asks the game for the tooltip of both items (`gear.ui.item_tooltip_text`), splits each line into its words and numbers and subtracts the numbers of lines with the same words. That includes the bonuses of set and unique items and of socketed runes, and works in every game language (only the words are compared with each other; the lines for the price, the level and the requirements are recognised by the game's own text ids). The hovered item is read from the game through `gear.ui.hovered_item()`, the slot through `creature:equip_slot(item)`.
+The numbers come from the tooltip text the player sees: the mod asks the game for the tooltip of both items (`gear.ui.item_tooltip_text`), splits each line into its words and numbers and subtracts the numbers of lines that are the same stat. For the item's bonus slots (magic, rare and unique properties, socketed runes and gems) the item's own data decides which lines are the same stat (`gear.inv.values` gives each slot's bonus code, attribute and stored value, `gear.inv.bonus_text` the game's own line for it), so the match does not depend on the wording; the other lines (protection, damage, attack, movement speed, set bonuses, the hero's expected damage and protection, which the game derives) are matched by their words with the numbers cut out. The labels are always the game's own, in the game's language; the lines for the price, the level and the requirements are recognised by the game's own text ids. The hovered item is read from the game through `gear.ui.hovered_item()`, the slot through `creature:equip_slot(item)`.
 
 Limits: the game does not say whether an item can be used with your attributes and level (the requirement lines are not compared); two-handed weapons are not recognised as such (a bow is compared with the worn weapon and the shield stays); with two weapon slots only the main hand is compared.
 
 ## Development
 
 - **Files:** `src/item-compare/mod.lua` (manifest) and `main.lua`; the self test is `src/item-compare_selftest` (`Sacred.exe -gear-auto -gear-load=N -gear-mods=item-compare,item-compare_selftest`, needs a savegame whose hero wears gloves and a weapon; set `config.party` for the companion checks).
-- **Depends on:** `gear.ui.hovered_item`, `creature:equip_slot`, `gear.ui.item_tooltip_text`, `gear.party`, `gear.text`.
+- **Depends on:** `gear.ui.hovered_item`, `gear.ui.tooltip_anchor`, `gear.ui.native`, `creature:equip_slot`, `gear.ui.item_tooltip_text`, `gear.inv.values` and `gear.inv.bonus_text` (optional: without them every line is matched by its words), `gear.party`, `gear.text`.
 - **Event:** `itemcompare.compared` `(item id, number of blocks, blocks)` after a comparison is made.

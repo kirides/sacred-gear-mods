@@ -15,6 +15,8 @@ return {
             tooltip = 'Beside the game\'s tooltip, or in a panel you move with the layout editor (hold Alt)'},
         {id = 'max_blocks', type = 'number', label = 'Most items compared at once', min = 1, max = 6, step = 1, default = 4, section = 'General',
             tooltip = 'Rings and amulets have several slots, and every party member is a comparison of its own'},
+        {id = 'verify_data', type = 'bool', label = 'Check the item data against the tooltip text', default = false, section = 'General',
+            tooltip = 'For tests: compare every result with one made from the tooltip text alone'},
     },
     keys = {
         {id = 'toggle', label = 'Switch the comparison on / off', default = ''},

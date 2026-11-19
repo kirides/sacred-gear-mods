@@ -1,6 +1,13 @@
 -- The reading and comparing half of the item comparison (no drawing; main.lua shows the result): an item's tooltip text is cut into
 -- lines of words and numbers, two items are set against each other, and compare(item) returns the blocks to show for the hovered item:
 -- one per worn item it would replace, for each hero of the party that can wear it (see the header of main.lua for how it works).
+--
+-- Where the numbers come from: the tooltip text of both items gives the lines (labels and numbers as the game shows them). For the
+-- item's bonus slots the item's own data decides which lines are the same stat in two items (gear.inv.values: code, attribute and
+-- type of each slot; gear.inv.bonus_text: the game's own line for the slot, found among the tooltip's lines), so the match does not
+-- depend on the wording; the number of such a line is the stored value. Every other line (the protection icons, damage, attack, the
+-- movement speed, set bonuses, the "expected" lines of the controlled hero: values the game computes or derives) is matched by its
+-- words with the numbers cut out, as is every line on a Sacred Gear without the item data functions.
 
 local ui = gear.ui
 local W = gear.world
@@ -111,8 +118,42 @@ local function parse_line(raw, index)
     return L
 end
 
--- The comparable lines of an item's tooltip, the item's name (its first line) and the name's colour.
-local function read_item(item)
+-- Ties the tooltip lines that are bonus slots of the item to the item's data: such a line gets the key of its bonus (code, attribute,
+-- type: the same in every language) and, when its number is the stored value, that value. Returns how many were tied.
+local function attach_data(item, lines)
+    local inv = gear.inv
+    if not (inv and inv.values and inv.bonus_text) then return 0 end
+    local v = inv.values(item.id)
+    if not v then return 0 end
+    local all = {}
+    for _, b in ipairs(v.bonuses) do all[#all + 1] = b end
+    for _, e in ipairs(v.entries) do
+        if e.active then for _, b in ipairs(e.bonuses) do all[#all + 1] = b end end
+    end
+    local tied = 0
+    for _, b in ipairs(all) do
+        local t = inv.bonus_text(item.id, b.entry, b.slot)
+        t = t and trim(t)
+        if t and t ~= '' then
+            for _, L in ipairs(lines) do
+                if not L.data and trim(L.raw) == t then
+                    L.data = b
+                    L.key = ('bonus:%d:%d:%x'):format(b.code, b.attribute, b.flags)
+                    if #L.nums == 1 and math.abs(L.nums[1]) == math.abs(b.value) then
+                        L.nums[1] = b.value
+                        L.exact = true
+                    end
+                    tied = tied + 1
+                    break
+                end
+            end
+        end
+    end
+    return tied
+end
+
+-- The comparable lines of an item's tooltip, the item's name (its first line) and the name's colour. `text_only`: no item data.
+local function read_item(item, text_only)
     if not skip_labels then load_labels() end
     local text = ui.item_tooltip_text(item)
     if type(text) ~= 'string' then return nil end
@@ -129,7 +170,8 @@ local function read_item(item)
         end
         lines[#lines + 1] = L
     end
-    return {lines = lines, name = name ~= '' and name or tostring(item.type_name), color = color or TEXT, power = power}
+    local tied = text_only and 0 or attach_data(item, lines)
+    return {lines = lines, name = name ~= '' and name or tostring(item.type_name), color = color or TEXT, power = power, tied = tied}
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -247,22 +289,37 @@ end
 
 local tooltip_cache = {}
 
-local function read_cached(item)
-    local c = tooltip_cache[item.id]
+local function read_cached(item, text_only)
+    local k = text_only and -item.id or item.id
+    local c = tooltip_cache[k]
     if c == nil then
-        c = read_item(item) or false
-        tooltip_cache[item.id] = c
+        c = read_item(item, text_only) or false
+        tooltip_cache[k] = c
     end
     return c or nil
 end
 
--- The blocks to show for `item`: one per worn item it would replace: {hero, hero_name, worn, name, color, rows, same}.
-local function compare(item)
+-- The rows of a block as text, for comparing the two ways of reading.
+local function rows_text(rows)
+    local out = {}
+    for _, row in ipairs(rows) do
+        local parts = {}
+        for _, seg in ipairs(row.segs) do parts[#parts + 1] = seg[1] end
+        out[#out + 1] = table.concat(parts)
+    end
+    table.sort(out)
+    return table.concat(out, '|')
+end
+
+-- The blocks to show for `item`: one per worn item it would replace: {hero, hero_name, worn, name, color, rows, same}. With `verify`
+-- a second result: one report per compared worn item, {worn, same = the rows equal those made from the tooltip text alone,
+-- data_rows, text_rows, tied_new, tied_worn = lines tied to the item data}.
+local function compare(item, verify)
     tooltip_cache = {}
-    local blocks = {}
-    if not item or not EQUIPMENT[item.category] then return blocks end
+    local blocks, report = {}, {}
+    if not item or not EQUIPMENT[item.category] then return blocks, report end
     local new = read_cached(item)
-    if not new then return blocks end
+    if not new then return blocks, report end
     local heroes, lead = party_heroes()
     local many = #heroes > 1
     local limit = setting('max_blocks', 4)
@@ -295,13 +352,18 @@ local function compare(item)
                     if #blocks >= limit then break end
                     local c = cands[i]
                     local rows = diff(new, c.read, primary)
+                    if verify then
+                        local alt = diff(read_cached(item, true), read_cached(c.item, true), primary)
+                        report[#report + 1] = {worn = c.item.id, same = rows_text(rows) == rows_text(alt),
+                            data_rows = rows_text(rows), text_rows = rows_text(alt), tied_new = new.tied, tied_worn = c.read.tied}
+                    end
                     blocks[#blocks + 1] = {hero = hero.id, hero_name = hname, worn = c.item.id, name = c.read.name,
                         color = c.read.color, rows = rows}
                 end
             end
         end
     end
-    return blocks
+    return blocks, report
 end
 
 return {compare = compare}
