@@ -15,9 +15,10 @@ of the Mods screen (mouse or controller), and the **More** tab shows the game's 
 | Effect of magic find | How strongly the rarity bonus (magic find and the creature's own bonus) widens the odds of rarer equipment. |
 | Set and unique drops | The two rows of the rarity table that hand the roll to the set / unique selection. |
 | Qualities 1 to 4 / 5 to 9 / 10 to 14 | Multipliers of the weights of those equipment qualities (14 is the best). Setting the top group to 0 removes the best items; plain items are what is left over. The weights are read as a running sum against a roll of 1 to 10000, so large multipliers push the commoner qualities out of reach (see the Gear drops page). |
+| Icon Set weight | The six pieces of the Icon Set (Dragon, Dark Elf, Royal and Seraphim statue, Grail, Shell; the Flaming Feet set bonus) are level 1 set items; the game's set drops are rare and shared with about 65 other sets, so they are hardly ever seen at higher levels (roughly 0.01% of equipment drops or less). This is the number out of 10000 random equipment drops of a creature that become one of them instead (10 = 0.1%, one in a thousand; 0 = off). The **More** tab shows the percentage and "one in N" at your hero's level. Also *lowest creature level* and *extra weight per level*. Creature loot only, not chests, shops or quest rewards. Flaming Feet makes Split clone more and Fadalmar's Counsel cast more fireballs, does little damage and can cause lag in multiplayer. |
 | Random numbers | The game's own; a fair generator (no modulo bias: the game's rarity roll favours the first part of its range, which makes every rarer drop about 22% more likely than the table says); or the fair generator with a seed, which repeats the same numbers every run. |
 
-Other mods can steer it: `gear.emit('drop-tuning.configure', {chance = 2, high = 0, rng = 'fair'})` sets those settings.
+Other mods can steer it: `gear.emit('drop-tuning.configure', {chance = 2, high = 0, rng = 'fair', icon_weight = 10})` sets those settings.
 
 ## Self test
 

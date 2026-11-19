@@ -12,6 +12,23 @@ local GROUPS = {
     high = {10, 11, 12, 13, 14},
 }
 
+-- The six pieces of the Icon Set (set 23 of sets.bin: Dragon, Dark Elf, Royal and Seraphim statue, Grail, Shell).
+local ICON_PIECES = {5101, 5102, 5103, 5104, 5105, 5106}
+
+-- The weight is out of 10000 equipment drops: the chance of one pick is weight / 10000.
+local function icon_chance(level)
+    local lowest = S.get('icon_min_level') or 1
+    if level < lowest then return 0 end
+    return math.min(1, ((S.get('icon_weight') or 0) + (S.get('icon_per_level') or 0) * (level - lowest)) / 10000)
+end
+
+-- drops.select: a share of the equipment picks of creature loot becomes an Icon Set piece (nothing at weight 0).
+gear.on('drops.select', function(ev)
+    if ev.type then return end          -- another mod already named the item
+    local p = icon_chance(ev.level or 1)
+    if p > 0 and math.random() < p then ev.type = ICON_PIECES[math.random(#ICON_PIECES)] end
+end)
+
 local function apply()
     drops.chance_scale(S.get('chance'))
     drops.find_scale(S.get('find'))
@@ -62,6 +79,13 @@ gear.mods.page(function(x, y, w, h)
             line(('%7d   %13d   %10d'):format(e.quality, e.vanilla, e.weight))
         end
     end
+    local level = gear.world.hero() and gear.world.hero():level() or 1
+    local p = icon_chance(level)
+    line(('Icon Set at level %d: %.3f%% of equipment drops become a piece'):format(level, p * 100))
+    if p > 0 then
+        line(('about one piece in %d equipment drops (one given piece: one in %d)'):format(math.floor(1 / p + 0.5), math.floor(6 / p + 0.5)))
+    end
+    line('The game alone: set weight 9 (x10 of 10000), 60% take the set path, then one of up to 65 sets: roughly 0.01% or less')
     local s = drops.stats()
     line(('Loot rolls %d (%d authored), equipment picks %d, rarity draws %d'):format(s.rolls, s.forced, s.picks, s.rarity_draws))
     return row * 20

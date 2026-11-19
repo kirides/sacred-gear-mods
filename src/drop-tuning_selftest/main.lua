@@ -44,7 +44,8 @@ local function run(creature, n)
     return drops.stats()
 end
 
-local DEFAULTS = {chance = 1, find = 1, special = 1, low = 1, mid = 1, high = 1, rng = 'game', seed = 1}
+local DEFAULTS = {chance = 1, find = 1, special = 1, low = 1, mid = 1, high = 1, rng = 'game', seed = 1,
+                  icon_weight = 0, icon_min_level = 1, icon_per_level = 0}
 
 gear.task(function()
     A.wait_for_menu(cfg.timeout_menu)
@@ -93,6 +94,15 @@ gear.task(function()
     local high = 0
     for q = 10, 14 do high = high + tuned.quality[q] end
     check('settings: no quality 10 to 14 with their weight at 0', high == 0, high)
+
+    -- Icon Set: weight 1000 (10%) turns about a tenth of the picks into pieces, a lowest level above the creature's turns it off.
+    configure({icon_weight = 1000})
+    local icons = run(creature, cfg.rolls)
+    check('icon set: about a tenth of the picks become pieces', icons.picks > 20 and icons.overridden > icons.picks * 0.04 and icons.overridden < icons.picks * 0.2,
+          icons.overridden .. ' of ' .. icons.picks)
+    configure({icon_weight = 1000, icon_min_level = 200})
+    local none = run(creature, cfg.rolls)
+    check('icon set: nothing below the lowest level', none.overridden == 0, none.overridden)
 
     configure(DEFAULTS)
     local back = drops.rarity_table()

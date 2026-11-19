@@ -2,9 +2,9 @@
 return {
     id = 'drop-tuning',
     name = 'Drop tuning',
-    version = '1.0.0',
+    version = '1.1.0',
     author = 'kirides',
-    description = 'Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, and can swap the game\'s random numbers for a fair generator.',
+    description = 'Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, can swap the game\'s random numbers for a fair generator, and can let the Icon Set pieces drop at any level.',
     settings = {
         {id = 'chance', type = 'number', label = 'Drop chance (x)', min = 0, max = 5, step = 0.1, default = 1,
          section = 'How often',
@@ -24,5 +24,12 @@ return {
          tooltip = 'The game\'s rarity roll favours the first part of its range; the fair generator does not'},
         {id = 'seed', type = 'number', label = 'Seed', min = 0, max = 99999, step = 1, default = 1,
          tooltip = 'Used by "Fair, same drops every run"'},
+        {id = 'icon_weight', type = 'number', label = 'Icon Set weight (of 10000 equipment drops)', min = 0, max = 1000, step = 1, default = 0,
+         section = 'Icon Set',
+         tooltip = 'The six Icon Set pieces (Flaming Feet) are level 1 set items that hardly ever drop at higher levels. Out of 10000 random equipment drops of a creature this many become one of them (10 = 0.1%; 0 = off, the game as it is). The More tab shows the percentage at your hero\'s level'},
+        {id = 'icon_min_level', type = 'number', label = 'Icon Set: lowest creature level', min = 1, max = 200, step = 1, default = 1,
+         tooltip = 'Creatures below this level never drop a piece through this setting'},
+        {id = 'icon_per_level', type = 'number', label = 'Icon Set: extra weight per level', min = 0, max = 10, step = 0.1, default = 0,
+         tooltip = 'Added to the weight for every creature level above the lowest level'},
     },
 }
