@@ -46,8 +46,6 @@ local function field(id, x, y, w, text, tip)
     return text
 end
 
-local function row_label(text, x, y) ui.text(text, x, y + 3, {color = GREY, size = 12}) end
-
 -- The creature picker: the chosen creatures as buttons (click one to remove it), a dropdown to add one (a group or a single
 -- creature of the game) and a filter for the dropdown. `words` is the list being edited. Returns the height used.
 local picks = {}           -- per picker id: {filter, index}
@@ -95,7 +93,8 @@ local function picker(id, x, y, w, target)
     end
     ui.text('Filter', x + w - 124, cy + 3, {size = 11, color = GREY})
     st.filter = field(id .. ':filter', x + w - 84, cy, 84, st.filter, 'Type part of a creature name to shorten the list')
-    return cy + 24 - y
+    st.height = cy + 24 - y
+    return st.height
 end
 
 local function copy(list)
@@ -133,60 +132,73 @@ local function def_of(f)
     }
 end
 
-local function slider(id, x, y, w, lo, hi, value, step, fmt)
-    local _, v = ui.slider(id, x, y, w - 56, lo, hi, value, {step = step, format = fmt})
-    return v
-end
-
 local function draw_form(x, y, w, h)
     local f = form
-    local lx, fx = x, x + 150
-    local fw = w - 150 - 8
-    local cy = y
-    row_label('Title', lx, cy)
-    f.title = field('title', fx, cy, fw, f.title); cy = cy + 26
-    row_label('Creatures', lx, cy)
-    cy = cy + picker('names', fx, cy, fw, {words = f.words, types = f.types}) + 4
-    row_label('How many', lx, cy); f.target = slider('target', fx, cy, fw, 1, 1000, f.target, 1, '%d'); cy = cy + 24
-    row_label('Time limit (0 = none)', lx, cy); f.minutes = slider('minutes', fx, cy, fw, 0, 240, f.minutes, 5, '%d'); cy = cy + 24
-    row_label('Minimum level', lx, cy); f.min_level = slider('minlevel', fx, cy, fw, 1, 100, f.min_level, 1, '%d'); cy = cy + 24
-    row_label('Gold', lx, cy); f.gold = slider('gold', fx, cy, fw, 0, 100000, f.gold, 100, '%d'); cy = cy + 26
-    row_label('Item', lx, cy)
-    local _, mi = ui.dropdown('mode', fx, cy, 200, ITEM_MODES, f.mode)
+    -- Label column, then the fields; the item mode has a dropdown of 200 and the tier's of 100 beside it.
+    local t = ui.table('form', x, y, w - 8, {columns = {142, 200, 100, '*'}, row_height = 22})
+    local LABEL = {color = GREY, size = 12}
+    local function slider(id, label, lo, hi, value, step)
+        t:row()
+        t:label(1, label, LABEL)
+        local _, v = t:slider(2, lo, hi, value, {id = id, span = 3, step = step, format = '%d', value_width = 56})
+        return v
+    end
+    t:row()
+    t:label(1, 'Title', LABEL)
+    do
+        local fx, fy, fw = t:cell(2, 3)
+        f.title = field('title', fx, fy + 1, fw, f.title)
+    end
+    t:row((picks.names and picks.names.height) or 50)
+    t:label(1, 'Creatures', {color = GREY, size = 12, valign = 'top'})
+    do
+        local fx, fy, fw = t:cell(2, 3)
+        picker('names', fx, fy, fw, {words = f.words, types = f.types})
+    end
+    f.target = slider('target', 'How many', 1, 1000, f.target, 1)
+    f.minutes = slider('minutes', 'Time limit (0 = none)', 0, 240, f.minutes, 5)
+    f.min_level = slider('minlevel', 'Minimum level', 1, 100, f.min_level, 1)
+    f.gold = slider('gold', 'Gold', 0, 100000, f.gold, 100)
+    t:row()
+    t:label(1, 'Item', LABEL)
+    local _, mi = t:dropdown(2, ITEM_MODES, f.mode, {id = 'mode'})
     f.mode = mi
     if f.mode == 2 or f.mode == 3 then
-        local _, ti = ui.dropdown('tier', fx + 208, cy, 100, TIERS, f.tier)
+        local _, ti = t:dropdown(3, TIERS, f.tier, {id = 'tier'})
         f.tier = ti
     end
-    cy = cy + 26
     if f.mode == 4 then
-        row_label('Items', lx, cy)
-        if ui.button('finditem', fx, cy, 200, 20, 'Find an item...', {tooltip = 'Search by the name of the item in your language; typos are fine'}) then
-            gear.lookup.open('item', {title = 'Find an item', multi = true, select = function(t)
-                for _, c in ipairs(f.chosen) do if c.id == t.id then return false end end
-                if #f.chosen < 12 then f.chosen[#f.chosen + 1] = {id = t.id, name = t.name} end
+        t:row()
+        t:label(1, 'Items', LABEL)
+        if t:button(2, 'Find an item...', {id = 'finditem', tooltip = 'Search by the name of the item in your language; typos are fine'}) then
+            gear.lookup.open('item', {title = 'Find an item', multi = true, select = function(c)
+                for _, o in ipairs(f.chosen) do if o.id == c.id then return false end end
+                if #f.chosen < 12 then f.chosen[#f.chosen + 1] = {id = c.id, name = c.name} end
             end})
         end
-        cy = cy + 24
         local line = {}
-        for _, t in ipairs(f.chosen) do line[#line + 1] = t.name end
-        ui.text(#line > 0 and ('Drops one of: ' .. table.concat(line, ', ')) or 'No item chosen yet: search and press Add.',
-            fx, cy, {size = 11, color = #line > 0 and GOLD or RED, width = fw})
-        if #line > 0 and ui.button('clearpick', fx + fw - 60, cy - 2, 60, 18, 'Clear') then f.chosen = {} end
-        cy = cy + 20
+        for _, c in ipairs(f.chosen) do line[#line + 1] = c.name end
+        if #line > 0 and t:button(3, 'Clear', {id = 'clearpick'}) then f.chosen = {} end
+        t:row(18)
+        t:label(2, #line > 0 and ('Drops one of: ' .. table.concat(line, ', ')) or 'No item chosen yet: search and press Add.',
+            {span = 3, size = 11, color = #line > 0 and GOLD or RED})
     end
-    local _, on = ui.checkbox('trig', lx, cy, 'Start automatically after kills', f.trigger_on,
-        {tooltip = 'Counts kills of the creatures below; at the count the bounty starts, unless it is already running'})
+    t:row()
+    local _, on = t:checkbox(1, 'Start automatically after kills', f.trigger_on, {id = 'trig', span = 4,
+        tooltip = 'Counts kills of the creatures below; at the count the bounty starts, unless it is already running'})
     f.trigger_on = on
-    cy = cy + 24
     if f.trigger_on then
-        row_label('Trigger creatures', lx, cy)
-        ui.text('(empty: as the bounty)', lx, cy + 18, {size = 10, color = GREY})
-        cy = cy + picker('trig', fx, cy, fw, {words = f.trigger_words, types = f.trigger_types}) + 4
-        row_label('Kills to start', lx, cy); f.count = slider('count', fx, cy, fw, 1, 1000, f.count, 1, '%d'); cy = cy + 24
-        row_label('Cooldown (min)', lx, cy); f.cooldown = slider('cool', fx, cy, fw, 0, 240, f.cooldown, 5, '%d'); cy = cy + 26
+        t:row((picks.trig and picks.trig.height) or 50)
+        t:label(1, 'Trigger creatures', {color = GREY, size = 12, valign = 'top'})
+        do
+            local fx, fy, fw = t:cell(2, 3)
+            ui.text('(empty: as the bounty)', t:column(1), fy + 18, {size = 10, color = GREY})
+            picker('trig', fx, fy, fw, {words = f.trigger_words, types = f.trigger_types})
+        end
+        f.count = slider('count', 'Kills to start', 1, 1000, f.count, 1)
+        f.cooldown = slider('cool', 'Cooldown (min)', 0, 240, f.cooldown, 5)
     end
-    local by = math.max(cy + 4, y + h - 26)
+    local by = math.max(y + t:height() + 8, y + h - 26)
     local blocked = f.title:match('%S') == nil or (f.mode == 4 and #f.chosen == 0)
     if ui.button('save', x, by, 100, 22, 'Save', {enabled = not blocked}) then
         local saved = customs.put(def_of(f))
@@ -210,12 +222,16 @@ local function draw_list(x, y, w, h, hooks)
         return
     end
     local area = ui.scroll_begin('custom-list', x, cy, w, h - 34)
-    local ay = area.content_y
-    local ax, aw = area.content_x, area.w - 6
+    -- Title, summary and state on the left; Start / Stop, Edit and Delete in three columns on the right.
+    local t = ui.table('custom-list', area.content_x, area.content_y, area.w - 6, {
+        columns = {'*', 56, 64, 68}, row_height = 48,
+    })
     for _, d in ipairs(customs.defs) do
         local running = hooks.active(d.id)
-        ui.text(d.title, ax, ay, {color = running and GREEN or GOLD, size = 14, bold = true})
-        ui.text(customs.summary(d), ax, ay + 17, {color = 0xFFE0E0E0, size = 11, width = aw - 200})
+        t:row()
+        local ax, ay, aw = t:cell(1)
+        ui.text(d.title, ax, ay, {color = running and GREEN or GOLD, size = 14, bold = true, width = aw})
+        ui.text(customs.summary(d), ax, ay + 17, {color = 0xFFE0E0E0, size = 11, width = aw})
         local extra = {}
         if d.minutes > 0 then extra[#extra + 1] = d.minutes .. ' min' end
         if d.trigger.on then
@@ -224,16 +240,14 @@ local function draw_list(x, y, w, h, hooks)
                 or ('auto: ' .. n .. '/' .. d.trigger.count .. ' kills')
         end
         if running then extra[#extra + 1] = ('running %d/%d'):format(running.n, running.target) end
-        ui.text(table.concat(extra, ', '), ax, ay + 31, {color = GREY, size = 10, width = aw - 200})
-        local bx = ax + aw - 196
-        if ui.button('go:' .. d.id, bx, ay + 4, 56, 20, running and 'Stop' or 'Start') then
+        ui.text(table.concat(extra, ', '), ax, ay + 31, {color = GREY, size = 10, width = aw})
+        if t:button(2, running and 'Stop' or 'Start', {id = 'go:' .. d.id, height = 20, valign = 'top'}) then
             if running then hooks.stop(d.id) else hooks.start(d) end
         end
-        if ui.button('ed:' .. d.id, bx + 60, ay + 4, 64, 20, 'Edit') then form = new_form(d); focus = nil end
-        if ui.button('del:' .. d.id, bx + 128, ay + 4, 68, 20, 'Delete') then hooks.stop(d.id); customs.remove(d.id) end
-        ay = ay + 52
+        if t:button(3, 'Edit', {id = 'ed:' .. d.id, height = 20, valign = 'top'}) then form = new_form(d); focus = nil end
+        if t:button(4, 'Delete', {id = 'del:' .. d.id, height = 20, valign = 'top'}) then hooks.stop(d.id); customs.remove(d.id) end
     end
-    ui.scroll_end(ay - area.content_y)
+    ui.scroll_end(t:height())
 end
 
 -- hooks: active(def_id) -> bounty or nil, start(def), stop(def_id), trigger_state(def_id) -> cooldown, count
