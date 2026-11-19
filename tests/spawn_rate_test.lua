@@ -28,8 +28,8 @@ ok(q:push({type = 7, x = 1, y = 2, layer = 0, left = 2}), 'push 1')
 ok(q:push({type = 8, x = 3, y = 4, layer = 1, left = 1}), 'push 2')
 ok(not q:push({type = 9, x = 0, y = 0, layer = 0, left = 5}), 'bounded')
 ok(q.left == 3 and q:size() == 2, 'counts')
-local a, b, c, d = q:take(), q:take(), q:take(), q:take()
-ok(a.type == 7 and b.type == 7 and c.type == 8 and c.layer == 1 and d == nil, 'order and exhaustion')
+local a, b, c, d = q:take(0, 0), q:take(0, 0), q:take(0, 0), q:take(0, 0)
+ok(a.type == 7 and b.type == 8 and b.layer == 1 and c.type == 7 and d == nil, 'round robin, nearest first, exhaustion')
 ok(q.left == 0 and q:size() == 0, 'empty after work')
 q:push({type = 1, x = 0, y = 0, layer = 0, left = 4}); q:clear()
 ok(q.left == 0 and q:take() == nil, 'clear')
@@ -50,6 +50,18 @@ for _, n in ipairs({'gob_warrior.grn', 'ORC_WARRIOR.GRN', 'THIEF_MAL.GRN', 'GHOS
     ok(core.multipliable(n), n .. ' is multiplied')
 end
 ok(not core.multipliable(nil) and not core.multipliable(''), 'no name: not multiplied')
+
+-- fair: the nearest jobs are served first, every job gets one before any gets two, a far job waits its turn
+local f = core.queue(10)
+f:push({type = 1, x = 5000, y = 0, layer = 0, left = 3, origin = 1})
+f:push({type = 2, x = 100, y = 0, layer = 0, left = 3, origin = 2})
+f:push({type = 3, x = 900, y = 0, layer = 0, left = 3, origin = 3})
+local seq = {}
+for i = 1, 6 do seq[#seq + 1] = f:take(0, 0).type end
+ok(table.concat(seq) == '231231', 'nearest first, round robin: ' .. table.concat(seq))
+local dropped = f:drop_if(function(job) return job.x > 1000 end)
+ok(#dropped == 1 and dropped[1].origin == 1 and f.left == 2 and f:size() == 2, 'far jobs are dropped and returned')
+ok(f:take(0, 0).type == 2 and f:take(0, 0).type == 3, 'the rest keeps its order')
 
 -- a million creations at the worst rate cost a bounded queue, not memory
 local big = core.queue(1500)

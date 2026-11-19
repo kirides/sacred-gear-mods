@@ -300,9 +300,9 @@
       "id": "spawn-rate",
       "path": "mods/spawn-rate",
       "name": "Spawn rate",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": "kirides",
-      "description": "Multiplies the creatures the game spawns, from 1x (the game as it is) up to 100x. Every creature the world creates for you brings extra ones of its kind with it. Single player only; safeguards keep the frame rate up."
+      "description": "Multiplies the creatures the game spawns, from 1x (the game as it is) up to 100x. Every hostile creature around you, those the world creates and those already there, brings extra ones of its kind with it. Single player only; safeguards keep the frame rate up."
     },
     {
       "id": "twi_sacred",
