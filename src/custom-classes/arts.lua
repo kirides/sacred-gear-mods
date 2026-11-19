@@ -5,7 +5,8 @@
 --   { "format": 1, "id": "venom-strike", "kind": "copy", "art_id": 2001, "base": 1059,
 --     "name": {"en": "Venom Strike"}, "description": {"en": "..."},
 --     "icon": "GUI_MOVE_KICK.TGA",                                                    (optional: another icon, a texture of the game)
---     "values": {"effect_base": 12.5, "effect_per_level": 2, "regen_base": 6, ...} }  (any field of gear.data.abilities)
+--     "values": {"effect_base": 12.5, "effect_per_level": 2, "regen_base": 6, ...},  (any field of gear.data.abilities)
+--     "spell_values": {"param0_base": 30, ...} }  (arts linked to a spell record, gear.classes.linked_spell(base): fields of that spell)
 -- `art_id` is 2000..4999 and `base` a combat art (1000..1999; spells cannot be copied): Gear serves the copy's own record to the
 -- game's lookups and the base art's code runs it.
 --
@@ -78,7 +79,15 @@ local function make_copy(d, where)
     if not whole(d.art_id, 100, 4999) or not whole(base, 1, 1999) then return nil, 'art_id and base must be ability ids' end
     if not range_ok(d.art_id, base) then return nil, ('art_id %d does not fit a copy of %d (combat arts can be copied under 2000..4999)'):format(d.art_id, base) end
     if gear.data.abilities[d.art_id] and not ids[d.art_id] then return nil, 'the id ' .. d.art_id .. ' is a game ability' end
-    local rec, err = gear.classes.copy_ability(d.art_id, base, d.values)
+    local values = d.values
+    if type(d.spell_values) == 'table' and next(d.spell_values) ~= nil then
+        -- arts whose numbers live in a spell record (Poison Mist -> spell 12): the copy gets its own copy of that spell record
+        local merged = {}
+        for k, v in pairs(values or {}) do merged[k] = v end
+        merged.spell = d.spell_values
+        values = merged
+    end
+    local rec, err = gear.classes.copy_ability(d.art_id, base, values)
     if not rec then return nil, err end
     local name = text(d.name, nil)
     if name then rec.name_text = assert(gear.text.add(name)) end

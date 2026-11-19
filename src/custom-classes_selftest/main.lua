@@ -158,5 +158,63 @@ gear.task(function()
         r = use(gla, 5)
         print('CCT INFO without the class the same cast: ' .. (r and (r.trace .. ' busy ' .. r.busy) or 'no foe') .. ' (the vanilla body has no cast clip; this run is a control, not a check)')
     end
+    -- Linked-spell copy (Gear ability-fields): Poison Mist (1052) takes its numbers from spell 12; a copy with values.spell gets a spell
+    -- alias (100..199) of its own. The copy's cloud hits twice as hard, the original art and spell 12 stay as they are.
+    if gear.classes.linked_spell then
+        party.control(main) gear.wait(2)
+        local sp = gear.data.abilities[12]
+        local orig12 = {sp.value0_base, sp.value0_per_level, sp.value3_base, sp.value3_per_level, sp.param0_base}
+        local copy, why = gear.classes.copy_ability(2390, 1052, {spell = {value0_base = orig12[1] * 2, value0_per_level = orig12[2] * 2,
+            value3_base = orig12[3] * 2, value3_per_level = orig12[4] * 2}})
+        check('poison mist copy with a spell copy', copy ~= nil, why)
+        local alias = gear.classes.linked_spell(2390)
+        check('the copy is linked to a spell alias (100..199)', alias ~= nil and alias >= 100 and alias < 200, alias)
+        check('the original art is still linked to spell 12', gear.classes.linked_spell(1052) == 12)
+        local rec = alias and gear.data.abilities[alias]
+        check('the spell alias has the doubled numbers', rec and rec.value0_base == orig12[1] * 2 and rec.value3_per_level == orig12[4] * 2, rec and rec.value0_base)
+        check('spell 12 is unchanged', sp.value0_base == orig12[1] and sp.value3_base == orig12[3] and sp.param0_base == orig12[5])
+        local nolink = gear.classes.copy_ability(2391, 1059, {spell = {value0_base = 1}})
+        check('an art without a linked spell refuses values.spell', nolink == nil)
+        gear.classes.remove_ability(2391)
+        local home = gear.classes.homes(1052)[1]
+        local ticks = {}
+        local target
+        gear.on('ability.route', function(t, art) if art == 1052 or art == 2390 then return home end end)
+        gear.on('damage', function(hit)
+            if target and hit.victim == target.id and hit.attacker == main.id and hit.damage >= 40 then ticks[#ticks + 1] = hit.damage end
+        end)
+        local function cloud(art, dx)
+            ticks = {}
+            local x, y, layer = main:position()
+            local f
+            for _, c in ipairs(gear.world.creatures_near(x, y, 4000, {layer = layer})) do
+                if not c:is_dead() and main:is_enemy(c) and not c:is_hero() and not c.used then f = c break end
+            end
+            if not f then return nil end
+            f.used = true
+            f:set_modifiers({health = 100, damage = 0})
+            f:teleport(x + dx, y - 150)
+            gear.wait(1.5)
+            local cx, cy = f:position()
+            target = f
+            main:order_ability(art, f)
+            for _ = 1, 8 do gear.wait(0.5) if f:exists() and not f:is_dead() then f:teleport(cx, cy) end end
+            target = nil
+            table.sort(ticks)
+            return ticks[#ticks], #ticks
+        end
+        main:learn(1052, 5)
+        main:learn(2390, 5)
+        gear.wait(1)
+        local o_tick, o_n = cloud(1052, 150)
+        gear.wait(2)
+        local c_tick, c_n = cloud(2390, -150)
+        print('CCT INFO poison mist tick: original ' .. tostring(o_tick) .. ' (' .. tostring(o_n) .. ' ticks), copy ' .. tostring(c_tick) .. ' (' .. tostring(c_n) .. ' ticks)')
+        check('Poison Mist cloud ticks (original)', o_tick ~= nil and o_tick >= 40, o_tick)
+        check('copy with doubled spell numbers hits about twice as hard', o_tick and c_tick and c_tick >= o_tick * 1.7 and c_tick <= o_tick * 2.4, ('%s vs %s'):format(tostring(c_tick), tostring(o_tick)))
+        check('spell 12 still unchanged after the casts', sp.value0_base == orig12[1] and sp.value3_base == orig12[3])
+        gear.classes.remove_ability(2390)
+        check('removing the copy frees the spell alias', gear.data.abilities[alias] == nil or gear.classes.linked_spell(2390) == nil)
+    end
     finish()
 end)
