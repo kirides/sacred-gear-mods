@@ -105,6 +105,13 @@ handle = (store.game or store.file)(FILE, {}, {every = 0, migrate = true,
 -- other backslash codes remain, so unknown markup never ends up in the log.
 local plain = gear.fmt.plain
 
+-- What to show for an item whose tooltip gave no name: the localized type name, the internal one on an older Gear.
+local function type_label(it)
+    local ok, n = pcall(function() return gear.data.object_types:label(it.type) end)
+    if ok and type(n) == 'string' and n ~= '' then return n end
+    return it.type_name or ('item ' .. tostring(it.type))
+end
+
 -- A readable name: the first line of the game's tooltip (the localized name, without its markup), else the type name.
 local function item_name(item)
     local ok, text = pcall(ui.item_tooltip_text, item)
@@ -113,7 +120,7 @@ local function item_name(item)
         local name = line and plain(line)
         if name then return name end
     end
-    return item.type_name or ('type ' .. tostring(item.type))
+    return type_label(item)
 end
 
 local function worth_logging(item)

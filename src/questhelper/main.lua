@@ -70,6 +70,13 @@ ch:on(function(from, p)
 end)
 
 -- ---- quest items (read here) ----
+-- What to show for an item whose tooltip gave no name: the localized type name, the internal one on an older Gear.
+local function type_label(it)
+    local ok, n = pcall(function() return gear.data.object_types:label(it.type) end)
+    if ok and type(n) == 'string' and n ~= '' then return n end
+    return it.type_name or ('item ' .. tostring(it.type))
+end
+
 local function refresh_near()
     view.near_at = gear.time()
     local hero = gear.world.hero()
@@ -80,7 +87,7 @@ local function refresh_near()
     for _, it in ipairs(gear.world.items_near(hx, hy, NEAR_TILES * gear.world.TILE, {layer = layer, limit = 64})) do
         if it.quest then
             local dist = math.sqrt((it.x - hx) ^ 2 + (it.y - hy) ^ 2) / gear.world.TILE
-            view.near[#view.near + 1] = {name = it.type_name or ('item ' .. tostring(it.type)), dist = dist, x = it.x, y = it.y}
+            view.near[#view.near + 1] = {name = type_label(it), dist = dist, x = it.x, y = it.y}
         end
     end
     table.sort(view.near, function(a, b) return a.dist < b.dist end)
@@ -103,7 +110,7 @@ local function items_tab(x, y, w, h)
     local bag = backpack_quest_items()
     if #bag == 0 then ui.text('no quest items', x + 8, cy, {color = DIM}); cy = cy + 16 end
     for _, it in ipairs(bag) do
-        ui.text(('%s  (%d x %d cells)'):format(fit(it.type_name or ('item ' .. tostring(it.type)), 40), it.w or 1, it.h or 1), x + 8, cy, {})
+        ui.text(('%s  (%d x %d cells)'):format(fit(type_label(it), 40), it.w or 1, it.h or 1), x + 8, cy, {})
         cy = cy + 16
     end
     cy = cy + 10

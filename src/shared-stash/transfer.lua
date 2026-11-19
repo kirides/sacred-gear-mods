@@ -34,9 +34,19 @@ function M.transferable(it)
     return true
 end
 
+-- The name shown for an item: the first line of its game tooltip (localized, without the markup), else the localized type name,
+-- else the internal name made readable.
 function M.pretty_name(it)
-    local n = (it.type_name or ('type ' .. tostring(it.type))):gsub('%.%w+$', ''):gsub('_', ' ')
-    return n
+    local ok, t = pcall(gear.ui.item_tooltip_text, it.id)
+    if ok and type(t) == 'string' then
+        local line = t:match('^[^
+]+')
+        local plain = line and gear.fmt.plain(line):gsub('^%s+', ''):gsub('%s+$', '')
+        if plain and plain ~= '' then return plain end
+    end
+    local okl, label = pcall(function() return gear.data.object_types:label(it.type) end)
+    if okl and type(label) == 'string' and label ~= '' then return label end
+    return (it.type_name or ('type ' .. tostring(it.type))):gsub('%.%w+$', ''):gsub('_', ' ')
 end
 
 -- The fields the server keeps next to an item's data (Closed Net).

@@ -205,10 +205,16 @@ local function scan_allies(hero)
             alive[id] = true
             if not ally_types[t] then
                 local okn, name = pcall(c.type_name, c)
+                -- shown to the player: the localized name of the type, the prettified model name without it
+                local function shown()
+                    local okd, d = pcall(function() return gear.data.object_types:display_name(t) end)
+                    if okd and type(d) == 'string' and d ~= '' then return d end
+                    return okn and type(name) == 'string' and (name:gsub('%.GRN$', ''):gsub('_', ' ')) or ('type ' .. t)
+                end
                 if okn and matches_known(name) then
-                    ally_types[t] = tostring(name):gsub('%.GRN$', ''):gsub('_', ' ')
+                    ally_types[t] = shown()
                 elseif clock - rec.since >= FOLLOW_SECONDS and rec.moved >= FOLLOW_WALK * tile then
-                    ally_types[t] = okn and type(name) == 'string' and (name:gsub('%.GRN$', ''):gsub('_', ' ')) or ('type ' .. t)
+                    ally_types[t] = shown()
                 end
             end
         end

@@ -20,7 +20,7 @@ the "New session" button.
 
 ## lootlog (F3)
 
-Entries: time into the session, name, quality colour, kind (dropped, picked up, acquired), the creature when the
+Entries: time into the session, name, quality colour, kind (dropped, picked up, acquired), the creature (its name in the game's language) when the
 loot function ran in the last 3 seconds (`drops.roll`). Filters: lowest quality, category, kind. Kept in
 `lootlog.json` (at most `max_entries`).
 

@@ -1,8 +1,6 @@
 # Loot log
 
-![Loot log](../images/lootlog.svg)
-
-*Illustration with example values.*
+![Loot log](../images/lootlog.jpg)
 
 A list of the items that dropped near your hero and the items that ended up in your backpack. Filter it by quality, category and kind. It is kept between sessions, and equipment names are shown in the game's language.
 
