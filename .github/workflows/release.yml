@@ -1,13 +1,16 @@
 name: Build and release mods
 
-# Pushing a tag like v1.2.0 builds sacred-gear-mods-<tag>.zip (plus a fixed-name copy sacred-gear-mods.zip and mod-index.json) and publishes them as a GitHub release.
+# A push to main that changes something under src/ builds mods.zip and publishes it as a GitHub release named
+# "YYYY-MM-DD HHmm GIT_SHA" (UTC). Git tags cannot contain spaces, so the tag is "YYYY-MM-DD-HHmm-GIT_SHA".
 # The zip holds a ready-to-use `mods` folder: extract it into the game folder (next to Sacred.exe).
-# Every other push / pull request / manual run builds the same zip as a workflow artifact only.
+# Pull requests / manual runs build the same zip as a workflow artifact only.
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
   pull_request:
   workflow_dispatch:
 
