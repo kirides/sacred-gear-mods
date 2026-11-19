@@ -8,19 +8,27 @@ Sacred Gear with the `creature.created` event (SacredBild from the build that ad
 
 ## How to use it
 
-Open the Mods screen (**F11**), pick *Spawn rate* and set the rate with the slider. It takes effect at once, for creatures the game spawns from then on (sectors that fill when you arrive, scripted waves, respawns). Creatures that are already there stay as they are.
+Open the Mods screen (**F11**), pick *Spawn rate* and set the rate with the slider. It takes effect at once.
 
-At 10x, nine more creatures appear around each creature the game spawns. Only creatures hostile to your hero are multiplied: merchants, villagers, companions and the like are not. The extra creatures are not multiplied again.
+At 10x, nine more creatures appear around each hostile creature. That covers two kinds:
+
+- **Creatures the game spawns while you play:** sectors that fill when you arrive, scripted waves. Sacred Gear tells the mod about each one (`creature.created`).
+- **Creatures that are already there:** the game does not "spawn" these, it *reads* them: when a savegame loads, every creature of the sectors around you comes back from the file, and a sector you visited before is restored the same way. The game does nothing at all on load, so without this the rate would only act in sectors you enter for the first time. The mod therefore looks around the hero every 1.5 seconds (3500 world units, nearest first) and multiplies each hostile creature it has not seen yet. Each creature is multiplied **once**; the mod keeps its marks in the savegame (`multiplied.json`, per slot), so loading the same game later does not multiply it again, and the extras themselves are never multiplied. Switch *Creatures already there* off to get only the first kind.
+
+Only creatures hostile to your hero are multiplied: merchants, villagers, companions and harmless animals (rabbits, doves, birds, deer, farm animals and the like) are not.
+
+The extras come nearest first and fairly: all waiting originals take turns, one extra each per round, the ones next to you first, so a crowd far away never starves the creatures around you, and no single creature uses up the whole limit. Originals that are more than 7000 units away (or on another level) when their turn comes are given up and seen again when you return.
 
 Fighting 100 times as many creatures costs frame rate. The safeguards keep the game playable:
 
 | Setting | What it does |
 |---|---|
 | Spawn rate (x) | 1 to 100. 1 is the game as it is. |
+| Creatures already there | On (default): creatures a savegame or an already visited sector placed are multiplied too, once each. Off: only what the game spawns while you play. |
 | Most extra creatures at once | The extras alive at the same time never exceed this (default 200, 0 = no limit). Extras that die or vanish make room for new ones. |
 | Extra creatures per frame | How many extras are made in one frame at most (default 4). The rest waits in a queue, so entering a crowded sector does not freeze the game. When the frame rate drops below 30 fps the mod makes only one per frame, below 15 fps none. |
 
-The *More* page shows how the mod works in the game's language (English or German) and counters: extras alive, waiting, made, and not made.
+The *More* page shows how the mod works in the game's language (English or German) and counters: extras alive, waiting, made, multiplied from what was already there and from new spawns, not queued, given up and not made.
 
 Notes:
 
@@ -30,6 +38,6 @@ Notes:
 
 ## Development
 
-- **Files:** `src/spawn-rate/mod.lua` (manifest, settings), `core.lua` (the logic without the game: how many extras, the per-frame allowance, the bounded queue, the placement ring) and `main.lua` (the event, the frame loop, the More page).
+- **Files:** `src/spawn-rate/mod.lua` (manifest, settings), `core.lua` (the logic without the game: how many extras, the per-frame allowance, the fair nearest-first queue, the placement ring, the wildlife list) and `main.lua` (the event, the look around the hero, the per-savegame marks, the frame loop, the More page).
 - **Depends on:** the Gear API: the `creature.created` event (Sacred Gear hooks the engine's object create, `cObjectManager::create` 0x005FBA40; creations by Gear itself, by a savegame or network read and heroes send no event), `gear.world.spawn`, `gear.settings`, `gear.ui.table`.
-- **Test it:** `luajit tests/spawn_rate_test.lua` runs the logic outside the game.
+- **Test it:** `luajit tests/spawn_rate_test.lua` runs the logic outside the game. `src/spawn-rate_selftest` is the in-game test (`Sacred.exe -gear-auto -gear-instance=spawnrate -gear-load=1 -gear-mods=spawn-rate,spawn-rate_selftest`, in a copy of the game folder): it measures at 100x with the sliders at their maxima how many extras the creatures of a loaded savegame bring, that a reload does not multiply again, and the event path, the caps, the frame time and the wildlife filter in fresh sectors.
