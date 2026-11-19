@@ -79,7 +79,8 @@ function M.reset() state = {} end
 local function st(id)
     local s = state[id]
     if not s then
-        s = {target = nil, ordered = -100, ability_at = -100, self_at = {}, fight_since = nil, teleported = -100}
+        s = {target = nil, ordered = -100, ability_at = -100, self_at = {}, fight_since = nil, teleported = -100,
+            heal_amount = {}, heal_at = {}}
         state[id] = s
     end
     return s
@@ -115,26 +116,21 @@ function M.enemy_near(c, radius)
 end
 
 -- The ability to use now, and on whom ('target' or 'self'), or nil.
-local function pick_ability(c, s, now, target, heroes, tactics)
-    local hurt = false
-    for _, h in ipairs(heroes) do
-        if not h:is_dead() and hp_frac(h) < 0.5 then hurt = true end
-    end
+local function pick_ability(c, s, now, target, heroes, tactics, opts)
     local best, best_use, best_score
     for _, a in ipairs(c:abilities() or {}) do
         local use = a.ready and M.use_of(a.id)
-        if use and use ~= 'form' and tactics.abilities[a.id] ~= false then
+        if use and use ~= 'form' and use ~= 'heal' and tactics.abilities[a.id] ~= false then
             local ok = true
-            if use == 'heal' then
-                ok = hurt
-            elseif use == 'self' then
-                -- an aura or buff: once per fight and then when it ran out (its regeneration time, at least 20 s)
-                ok = target ~= nil and now - (s.self_at[a.id] or -1000) >= math.max(20, a.regen_max)
+            if use == 'self' then
+                -- an aura or buff: in a fight (or always, setting) once and then again when it ran out (its regeneration
+                -- time, at least 20 s)
+                ok = (target ~= nil or opts.buffs == 'always') and now - (s.self_at[a.id] or -1000) >= math.max(20, a.regen_max)
             else
                 ok = target ~= nil
             end
             if ok then
-                local score = (a.level + a.bonus) + (use == 'heal' and 1000 or use == 'self' and 500 or 0)
+                local score = (a.level + a.bonus) + (use == 'self' and 500 or 0)
                 if not best_score or score > best_score then best, best_use, best_score = a, use, score end
             end
         end
@@ -164,6 +160,73 @@ local function pick_form(c, s, now, fighting, tactics)
             if shaped and (hp < 0.33 or not fighting and now - (s.fight_end or now) > 3) then return a end
         end
     end
+end
+
+-- Healing. The game casts a companion's healing spell (Genesung, Spirituelle Heilkraft) only on the caster: its own AI
+-- does the same, and an order onto another hero is dropped. So a companion heals another hero by casting the spell on
+-- themselves (animation, mana, regeneration as usual) and the other hero gets the health the spell gives: what it
+-- gave the caster last time (seen when the caster was hurt), until then a third of the healed hero's health.
+local HEAL_RANGE = 10 * (W.TILE or 64)
+
+-- Who needs healing most, by the priority: 'hero' (the hero you play, then the caster, then the lowest), 'self' (the
+-- caster, then the hero you play, then the lowest) or 'lowest'. Only heroes below `below` and near the caster.
+local function heal_target(c, leader, heroes, priority, below)
+    local cx, cy = c:position()
+    local hurt = {}
+    for _, h in ipairs(heroes) do
+        local hx, hy = h:position()
+        if not h:is_dead() and hx and hp_frac(h) < below and dist(cx, cy, hx, hy) <= HEAL_RANGE then hurt[#hurt + 1] = h end
+    end
+    if #hurt == 0 then return nil end
+    local function has(x) for _, h in ipairs(hurt) do if h == x then return x end end end
+    if priority == 'hero' and has(leader) then return leader end
+    if priority ~= 'lowest' and has(c) then return c end
+    if priority == 'self' and has(leader) then return leader end
+    table.sort(hurt, function(a, b) return hp_frac(a) < hp_frac(b) end)
+    return hurt[1]
+end
+
+-- A heal in flight: once the caster had time to cast it, what it gave the caster is noted (when the caster was
+-- hurt enough to show it) and another hero it was meant for gets that health.
+local function finish_heal(c, s, now)
+    local t = s.transfer
+    if not t or now - t.at < 0.8 then return end
+    local hp, max = c:hp() or 0, c:max_hp() or 0
+    local gained = hp - t.hp0
+    if gained > 1 and hp < max then s.heal_amount[t.ability] = gained end
+    local to = t.to ~= c.id and W.object(t.to)
+    if to and not to:is_dead() then
+        local tmax = to:max_hp() or 0
+        local amount = s.heal_amount[t.ability] or math.floor(tmax / 3)
+        to:set_hp(math.min(tmax, (to:hp() or 0) + amount))
+        if M.debug then print('heal', c.id, '->', t.to, amount) end
+    end
+    s.transfer = nil
+end
+
+-- Casts a heal when a hero near the caster is below the setting's health. True when it did.
+local function heal_step(c, s, now, leader, heroes, opts, tactics)
+    if not opts.use_abilities or now - s.ability_at < 1.5 or s.transfer then return false end
+    local who = heal_target(c, leader, heroes, opts.heal_priority, opts.heal_below)
+    if not who then return false end
+    for _, a in ipairs(c:abilities() or {}) do
+        -- (the game reports a spell as ready while it regenerates: wait its regeneration time between two casts)
+        if HEALING[a.id] and a.ready and tactics.abilities[a.id] ~= false and now - (s.heal_at[a.id] or -1000) >= math.max(5, a.regen_max) then
+            local hp0, max = c:hp() or 0, c:max_hp() or 0
+            -- the game does not cast a heal on a caster at full health: one point less is enough
+            if who ~= c and max > 1 and hp0 >= max then
+                hp0 = max - 1
+                c:set_hp(hp0)
+            end
+            if c:order_ability(a.id, c) then
+                s.ability_at, s.ordered = now, now
+                s.heal_at[a.id] = now
+                s.transfer = {to = who.id, ability = a.id, hp0 = hp0, at = now}
+                return true
+            end
+        end
+    end
+    return false
 end
 
 -- A spot next to the leader for companion number `slot` of `count`, behind it in a fan.
@@ -196,6 +259,8 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     end
     local behaviour = tactics.behaviour or opts.behaviour
     local action = c:action() or 'idle'
+    finish_heal(c, s, now)
+    if action ~= 'ability' and heal_step(c, s, now, leader, heroes, opts, tactics) then return end
     local target
     if behaviour ~= 'passive' and d <= opts.leash then
         local engage = behaviour == 'defensive' and math.min(opts.engage, 450) or opts.engage
@@ -214,7 +279,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
                 s.ability_at, s.ordered = now, now
                 return
             end
-            local a, use = pick_ability(c, s, now, target, heroes, tactics)
+            local a, use = pick_ability(c, s, now, target, heroes, tactics, opts)
             if a then
                 local ok, err = c:order_ability(a.id, use == 'target' and target or c)
                 if M.debug then print('ability', a.id, use, ok, err) end
@@ -242,6 +307,15 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
         local form = pick_form(c, s, now, false, tactics)
         if form and c:order_ability(form.id, c) then
             s.ability_at, s.ordered = now, now
+            return
+        end
+    end
+    -- Buffs whenever they are ready (setting), also outside fights.
+    if opts.use_abilities and opts.buffs == 'always' and action ~= 'ability' and now - s.ability_at > 2 then
+        local a, use = pick_ability(c, s, now, nil, heroes, tactics, opts)
+        if a and use == 'self' and c:order_ability(a.id, c) then
+            s.ability_at, s.ordered = now, now
+            s.self_at[a.id] = now
             return
         end
     end

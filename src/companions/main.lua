@@ -278,6 +278,9 @@ local function ai_opts()
         behaviour = setting('behaviour', 'aggressive'),
         use_abilities = setting('use_abilities', true),
         potion_below = setting('potions', 30) / 100,
+        heal_priority = setting('heal_priority', 'hero'),
+        heal_below = setting('heal_below', 60) / 100,
+        buffs = setting('buffs', 'combat'),
     }
 end
 
