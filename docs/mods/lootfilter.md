@@ -38,7 +38,7 @@ Open the Mods screen with **F11** and pick the mod.
 
 ## Development
 
-- **Files:** `src/lootfilter/mod.lua` (manifest with all the settings), `config.lua` (defaults) and `main.lua` (about 650 lines: the rules, the overlay panel, the settings page).
+- **Files:** `src/lootfilter/mod.lua` (manifest with all the settings), `config.lua` (defaults) `main.lua` (about 380 lines: the rules, the overlay panel, the settings page) and `selftest.lua` (the self test, loaded only with `-gear-auto`).
 - **Depends on:** `gear.world.items_near` (the items around the hero, polled several times a second), `gear.world.pickup_rules` (the block list and dim list; pickups are refused natively), `gear.data.object_types`, `gear.ui` and Gear's saved settings. Rules are saved in `lootfilter.json`.
 - **Limits:** pickup rules hold in single player and for the host's own hero; a network client's pickups go through the host and are not filtered ([Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md)).
-- **Test it:** `gear-auto` self test (see the automation chapter of Gear) or by playing.
+- **Test it:** `Sacred.exe -gear-auto -gear-load=1 -gear-mods=lootfilter` runs the self test (see the automation chapter of Gear) or by playing.

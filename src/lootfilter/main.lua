@@ -1,13 +1,13 @@
 -- A loot filter: the hero picks up only the items the rules allow (config.lua, or the in-game settings panel: F5 or
--- the overlay's button, kept in the mod manager's gear_mods.json); the labels of the others are dimmed on the ground, and a small overlay
--- shows the rules in force. Gold is always picked up.
+-- the overlay's button, kept in the mod manager's gear_mods.json); the labels of the others are dimmed on the ground,
+-- and a small overlay shows the rules in force. Gold is always picked up.
 --
 -- How it works: every quarter second the mod looks at the items lying around the hero (gear.world.items_near),
 -- decides for each and hands the ones to refuse to Gear (gear.world.pickup_rules), which turns the game's pickup
 -- down for them, for clicks and for the automatic collecting alike. Single player (and the host of a network game);
 -- a network client's pickups go through the host and are not filtered.
 --
--- Self test (no player needed): Sacred.exe -gear-auto -gear-load=1 -gear-mods=lootfilter
+-- Self test (no player needed, selftest.lua): Sacred.exe -gear-auto -gear-load=1 -gear-mods=lootfilter
 
 local function key_hint(id)
     local k = gear.keys.label(id)
@@ -24,6 +24,7 @@ for i, q in ipairs(W.QUALITIES) do QUALITY_RANK[q] = i end
 local QUALITY_COLOR = {normal = 0xFFEFEFEF, magic = 0xFFA0A0FF, rare = 0xFFF0E040, set = 0xFF15FF25, unique = 0xFFC19A33}
 local CATEGORIES = {'weapon', 'armor', 'shield', 'jewelry', 'rune', 'scroll', 'special', 'other'}
 local POTIONS = {'health', 'mana', 'stamina', 'colored', 'other'}
+local POTION_COLORS = {'black', 'blue', 'green', 'red', 'yellow'}     -- the 'colored' potions, each with a rule of its own
 
 -- Checks the settings once; a bad value is logged and replaced by its default.
 local function check_config()
@@ -162,14 +163,14 @@ local function overlay(state)
         end
         ty = ty + 13
     end
-    local p = {}
+    local taken = {}        -- the potion kinds picked up, then the colours that are not
     for _, k in ipairs(POTIONS) do
-        if cfg.potions[k] ~= false then p[#p + 1] = k end
+        if cfg.potions[k] ~= false then taken[#taken + 1] = k end
     end
-    for _, color in ipairs({'black', 'blue', 'green', 'red', 'yellow'}) do
-        if cfg.potions[color] == false then p[#p + 1] = 'no ' .. color end
+    for _, color in ipairs(POTION_COLORS) do
+        if cfg.potions[color] == false then taken[#taken + 1] = 'no ' .. color end
     end
-    line('Potions: ' .. (#p > 0 and table.concat(p, ', ') or 'none'), x + 6, ty); ty = ty + 13
+    line('Potions: ' .. (#taken > 0 and table.concat(taken, ', ') or 'none'), x + 6, ty); ty = ty + 13
     line(('Set items: %s, quest: %s'):format(cfg.keep_set and 'always' or 'by rule', cfg.keep_quest and 'always' or 'by rule'), x + 6, ty); ty = ty + 13
     line(('Nearby: %d items, %d filtered'):format(stats.near, stats.blocked), x + 6, ty); ty = ty + 13
     line(('Refused pickups: %d'):format(W.pickup_refused()), x + 6, ty, 0xFFB0B0B0)
@@ -179,11 +180,11 @@ local function overlay(state)
 end
 
 ---------------------------------------------------------------------------------------------------------------
--- The settings panel: the same rules, changed in game and saved to settings.json in this folder (it overrides
--- config.lua; delete it to go back to config.lua).
+-- The settings panel: the same rules, changed in game.
 ---------------------------------------------------------------------------------------------------------------
--- The rules live in the mod manager's settings (declared in mod.lua); `cfg` is the working copy the rest of the mod
--- reads. pull() takes the player's settings into it, push() writes it back after the panel changed it.
+-- The rules live in the mod manager's settings (declared in mod.lua, kept in mods\gear_mods.json); `cfg` is the
+-- working copy the rest of the mod reads. pull() takes the player's settings into it, push() writes it back after the
+-- panel changed it. (An old settings.json of this folder is migrated once, below.)
 local S = gear.settings
 local SAVED_KEYS = {'enabled', 'classes', 'min_quality', 'categories', 'potions', 'keep_quest', 'keep_set', 'dim_alpha'}
 local pushing = false
@@ -236,7 +237,7 @@ local function push()
         S.set('cat_' .. cat, rule == false and 'never' or rule or '(minimum)')
     end
     for _, k in ipairs(POTIONS) do S.set('potion_' .. k, cfg.potions[k] ~= false) end
-    for _, color in ipairs({'black', 'blue', 'green', 'red', 'yellow'}) do
+    for _, color in ipairs(POTION_COLORS) do
         local rule = cfg.potions[color]
         S.set('potion_color_' .. color, rule == false and 'leave' or rule == true and 'take' or 'default')
     end
@@ -272,7 +273,7 @@ local function settings_panel()
     local p = ui.panel('settings', 'Loot filter settings', 240, 70, 540, 392)
     if not p.open then return end
     local x, y = p.content_x, p.content_y
-    local changed, _ = false, nil
+    local changed = false   -- any rule changed this frame: saved and applied at the end
     local c
     c, cfg.enabled = ui.checkbox('enabled', x, y, 'Filter on', cfg.enabled, {tooltip = 'Off: the hero picks up everything'})
     changed = changed or c
@@ -341,11 +342,9 @@ local function settings_panel()
     ui.text('Also in the Mods screen (F11)', x + 130, py + 56, {height = 22, valign = 'middle', size = 11, color = ui.COLORS.text_dim})
 
     -- The quality dropdowns, drawn last so an open list lies over the rows below it.
-    c, cfg.min_quality = (function()
-        local ch, i = ui.dropdown('min_quality', x + 140, y, 120, QUALITY_OPTIONS, index_of(QUALITY_OPTIONS, cfg.min_quality))
-        return ch, QUALITY_OPTIONS[i]
-    end)()
-    changed = changed or c
+    local qc, qi = ui.dropdown('min_quality', x + 140, y, 120, QUALITY_OPTIONS, index_of(QUALITY_OPTIONS, cfg.min_quality))
+    cfg.min_quality = QUALITY_OPTIONS[qi]
+    changed = changed or qc
     for i = #rows, 1, -1 do
         local r = rows[i]
         local rule = cfg.categories[r.cat]
@@ -371,185 +370,14 @@ gear.keys.on('panel', function()
 end)
 
 ---------------------------------------------------------------------------------------------------------------
--- Self test (-gear-auto): items spawned at the hero's feet, the rules applied to them, the labels shown, a click on
--- the spot (which picks up what lies there, nearest first), and a check of what is left.
+-- Self test (selftest.lua): only when the game runs with -gear-auto. It reads the filter's state through `probe`.
 ---------------------------------------------------------------------------------------------------------------
-if not gear.auto then return end
-local A = gear.auto
-local results = {passed = 0, failed = 0, items = {}}
-
-local function check(name, ok, detail)
-    if ok then results.passed = results.passed + 1 else results.failed = results.failed + 1 end
-    print(('%s %s%s'):format(ok and 'PASS' or 'FAIL', name, detail and (': ' .. tostring(detail)) or ''))
+if gear.auto then
+    require('selftest')({
+        CATEGORIES = CATEGORIES,
+        refresh = refresh,
+        stats = stats,
+        last_items = function() return last_items end,
+        overlay_shown = function() return overlay_shown end,
+    })
 end
-
-local function describe(it)
-    return ('%d %s kind 0x%x %s rarity %d classes [%s]%s%s keep %s %s'):format(it.id, tostring(it.type_name), it.kind,
-        it.category, it.rarity, table.concat(it.classes, ','), it.potion and (' potion ' .. it.potion) or '',
-        it.set and ' set' or '', tostring(it.keep), it.why or '')
-end
-
-local function first_type(text)
-    for _, r in ipairs(gear.data.object_types:search(text, 50)) do
-        if r.kind ~= 0 then return r.id, r.name end
-    end
-end
-
-gear.task(function()
-    check('main menu', A.wait_for_menu(120))
-    if not A.wait_for_game(180) then
-        check('game with a hero', false)
-        A.write('lootfilter.json', gear.json.encode(results))
-        return A.quit(1)
-    end
-    gear.wait(3)
-    local hero = W.hero()
-    local cls = hero:class()
-    check('hero class', cls ~= nil, cls)
-    results.class = cls
-
-    -- What lies around already.
-    refresh()
-    for _, it in ipairs(last_items) do results.items[#results.items + 1] = describe(it) end
-    print(('%d items around the hero, %d filtered'):format(stats.near, stats.blocked))
-    for i = 1, math.min(#last_items, 25) do print('  ' .. describe(last_items[i])) end
-
-    -- The potion types (kind 9), and a few weapons around the hero with their labels before any rule: their
-    -- colours against the rarity read.
-    local types = gear.data.object_types
-    local potions = {}
-    for id = 1, types:count() - 1 do
-        if types:kind(id) == 9 then potions[#potions + 1] = ('%d %s'):format(id, tostring(types:name(id))) end
-    end
-    results.potion_types = potions
-    print('potion types: ' .. table.concat(potions, '; '))
-    local x, y, layer = hero:position()
-    cfg.enabled = false
-    refresh()
-    local swords = {}
-    for i, r in ipairs(types:search('SWORD', 6)) do
-        local s = W.spawn(r.id, x + 60 * math.cos(i), y + 60 * math.sin(i), {layer = layer})
-        local it = s and W.item(s.id)
-        if it then swords[#swords + 1] = it; print('sample: ' .. describe(it)) end
-    end
-    check('no overlay without Alt', not overlay_shown)
-    A.screenshot('showtext-off')
-    A.key_down('alt')
-    gear.wait(0.5)
-    check('overlay with Alt', overlay_shown and ui.state().show_text)
-    A.screenshot('lootfilter-samples')
-    A.screenshot('showtext-on')
-    local function overlay_panel()
-        for _, q in ipairs(ui.panels()) do
-            if q.key == 'lootfilter:overlay' then return q end
-        end
-    end
-    local op = overlay_panel()
-    check('overlay is a layout panel', op ~= nil)
-    A.key_up('alt')
-    gear.wait(0.8)
-    -- The layout editor's edit mode shows it without Alt, and a moved place sticks (set_panel_rect is what the editor calls).
-    ui.set_edit_mode(true)
-    gear.wait(0.5)
-    check('overlay shown in the edit mode without Alt', overlay_shown)
-    if op then
-        check('moved by the layout editor', ui.set_panel_rect('lootfilter:overlay', op.x + 300, op.y + 100))
-        gear.wait(0.5)
-        local q = overlay_panel()
-        check('overlay at its new place', q and math.abs(q.x - (op.x + 300)) < 3 and math.abs(q.y - (op.y + 100)) < 3,
-            q and ('%d,%d -> %d,%d'):format(op.x, op.y, q.x, q.y))
-        A.screenshot('lootfilter-edit-moved')
-        ui.reset_panel('lootfilter:overlay')
-        gear.wait(0.3)
-    end
-    ui.set_edit_mode(false)
-    gear.wait(0.8)
-    check('overlay gone again after the edit mode', not overlay_shown)
-    -- "Show overlay" off in the mod's settings: not even with Alt.
-    S.set('overlay', false)
-    gear.wait(0.3)
-    A.key_down('alt')
-    gear.wait(0.5)
-    check('overlay off: not shown with Alt', not overlay_shown and ui.state().show_text)
-    A.screenshot('showtext-overlay-off')
-    A.key_up('alt')
-    S.set('overlay', true)
-    gear.wait(0.3)
-    cfg.enabled = true
-
-    -- Two items at the hero's feet: a health potion (kept) and a weapon, refused by a test rule.
-    local potion_type, potion_name = 0x13C0, types:name(0x13C0)   -- the small health potion
-    if not potion_type and potions[1] then
-        potion_type = tonumber(potions[1]:match('^%d+'))
-        potion_name = types:name(potion_type)
-    end
-    local weapon_type, weapon_name = first_type('SWORD')
-    results.types = {potion = potion_name, weapon = weapon_name}
-    print(('spawning %s and %s'):format(tostring(potion_name), tostring(weapon_name)))
-    local potion = potion_type and W.spawn(potion_type, x + 20, y + 20, {layer = layer})
-    local weapon = weapon_type and W.spawn(weapon_type, x - 20, y - 20, {layer = layer})
-    check('spawned a potion and a weapon', potion ~= nil and weapon ~= nil)
-    cfg.categories.weapon = false
-    refresh()
-    local pi, wi = potion and W.item(potion.id), weapon and W.item(weapon.id)
-    if pi then print('potion: ' .. describe(pi)) end
-    if wi then print('weapon: ' .. describe(wi)) end
-    check('the potion is an item', pi and pi.category == 'potion', pi and pi.category)
-    check('the weapon is an item', wi and wi.category == 'weapon', wi and wi.category)
-    local blocked_weapon = false
-    for _, it in ipairs(last_items) do
-        if wi and it.id == wi.id then blocked_weapon = it.keep == false end
-    end
-    check('the weapon is filtered', blocked_weapon)
-
-    -- Labels (Alt), then a click where the hero stands: the game walks to the nearest item there.
-    A.key_down('alt')
-    gear.wait(0.5)
-    A.screenshot('lootfilter-labels')
-    A.key_up('alt')
-    local s = A.state()
-    local before = W.pickup_refused()
-    for _ = 1, 4 do
-        A.click(math.floor(s.width / 2), math.floor(s.height / 2))
-        gear.wait(1.5)
-    end
-    A.screenshot('lootfilter-after')
-    local p2, w2 = pi and W.item(pi.id), wi and W.item(wi.id)
-    results.after = {potion = p2 and p2.on_ground, weapon = w2 and w2.on_ground, refused = W.pickup_refused() - before}
-    print(('after the clicks: potion on the ground %s, weapon on the ground %s, refused %d'):format(
-        tostring(p2 and p2.on_ground), tostring(w2 and w2.on_ground), W.pickup_refused() - before))
-    check('the weapon stays on the ground', w2 and w2.on_ground)
-
-    -- The settings panel: opened from the overlay's button, a quality picked, a potion unticked, saved.
-    local oh = 18 + (7 + #CATEGORIES) * 13
-    A.key_down('alt')                           -- the overlay and its button show with the labels
-    for _ = 1, 20 do
-        if overlay_shown then break end
-        gear.wait(0.1)
-    end
-    gear.wait(0.2)
-    A.ui_click(cfg.overlay_x + 90, cfg.overlay_y + oh + 14)
-    A.key_up('alt')
-    gear.wait(0.5)
-    check('settings panel opens', ui.panel_open('settings'))
-    check('it stays open without Alt', ui.panel_open('settings') and not overlay_shown)
-    A.screenshot('lootfilter-settings')
-    local px, py = 248, 98 + 26 + 90           -- content (248, 98); the quality row
-    A.ui_click(px + 190, py + 9)                -- the lowest quality dropdown
-    gear.wait(0.5)
-    A.screenshot('lootfilter-settings-dropdown')
-    A.ui_click(px + 190, py + 18 + 1 + 18 + 9)  -- its second entry: magic
-    gear.wait(0.5)
-    check('lowest quality from the dropdown', cfg.min_quality == 'magic', cfg.min_quality)
-    local potions_y = py + 30 + 4 * 24 + 8 + 18
-    A.ui_click(px + 200 + 7, potions_y + 8)     -- the stamina checkbox
-    gear.wait(0.5)
-    check('potion checkbox', cfg.potions.stamina == false, tostring(cfg.potions.stamina))
-    A.screenshot('lootfilter-settings-saved')
-    check('settings kept in the mod manager', S.get('min_quality') == 'magic' and S.get('potion_stamina') == false,
-        tostring(S.get('min_quality')) .. ' ' .. tostring(S.get('potion_stamina')))
-    S.reset()      -- leave the state as it was
-    A.write('lootfilter.json', gear.json.encode(results))
-    print(('%d passed, %d failed'):format(results.passed, results.failed))
-    if cfg.test_quit then A.quit(results.failed == 0 and 0 or 1) end
-end)
