@@ -206,9 +206,20 @@ gear.task(function()
         main:learn(1052, 5)
         main:learn(2390, 5)
         gear.wait(1)
-        local o_tick, o_n = cloud(1052, 150)
+        -- a cast can fail to start (the hero busy, the art still regenerating, a foe out of reach): wait until the art is ready and try
+        -- again with another foe, up to three times, so that the comparison does not depend on one attempt
+        local function cloud_retry(art, dx)
+            for _ = 1, 3 do
+                local ab = main:ability(art)
+                for _ = 1, 80 do if not ab or ab.ready then break end gear.wait(0.5) ab = main:ability(art) end
+                local t, n = cloud(art, dx)
+                if t then return t, n end
+                gear.wait(2)
+            end
+        end
+        local o_tick, o_n = cloud_retry(1052, 150)
         gear.wait(2)
-        local c_tick, c_n = cloud(2390, -150)
+        local c_tick, c_n = cloud_retry(2390, -150)
         print('CCT INFO poison mist tick: original ' .. tostring(o_tick) .. ' (' .. tostring(o_n) .. ' ticks), copy ' .. tostring(c_tick) .. ' (' .. tostring(c_n) .. ' ticks)')
         check('Poison Mist cloud ticks (original)', o_tick ~= nil and o_tick >= 40, o_tick)
         check('copy with doubled spell numbers hits about twice as hard', o_tick and c_tick and c_tick >= o_tick * 1.7 and c_tick <= o_tick * 2.4, ('%s vs %s'):format(tostring(c_tick), tostring(o_tick)))
