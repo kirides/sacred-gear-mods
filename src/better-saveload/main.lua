@@ -24,7 +24,6 @@ local CLASS_LABEL = {
 local CLASS_ORDER = {'seraphim', 'gladiator', 'battlemage', 'darkelf', 'woodelf', 'vampiress', 'dwarf', 'daemon'}
 local SORTS = {{id = 'newest', label = 'Newest first'}, {id = 'file', label = 'By file name'}}
 
-local osk, name_row     -- the on-screen keyboard and the name row (below the list's helpers)
 local view = {
     open = nil,         -- the replaced window that is open (WND_GAME / WND_MENUS), nil: closed
     mode = 'save',      -- 'load' | 'save' (in the menus always 'load')
@@ -458,7 +457,7 @@ end
 
 -- The name of the savegame to write: typed straight in (the keys go to it while the screen is open in save mode),
 -- or with the on-screen keyboard (for a controller).
-function name_row(x, y, w)
+local function name_row(x, y, w)
     sync_name()
     ui.text('Name', x, y, L({size = 13, height = 24, valign = 'middle', color = C.text_dim}))
     local fx, fw = x + 50, w - 50 - 130
@@ -480,8 +479,8 @@ local OSK_ROWS = {
 }
 local OSK_UPPER = {['ü'] = 'Ü', ['ö'] = 'Ö', ['ä'] = 'Ä', [','] = ';', ['.'] = ':', ['-'] = '_', ['!'] = '?'}
 
--- The on-screen keyboard, in place of the list.
-function osk(x, y, w, h)
+-- The on-screen keyboard, in place of the list (view.osk holds its state while it is open).
+local function draw_keyboard(x, y, w, h)
     local o = view.osk
     ui.rect(x, y, w, h, 0xC0101018, L())
     ui.text('On-screen keyboard: the name of the savegame', x + 8, y + 6, L({size = 13, color = C.accent}))
@@ -555,7 +554,7 @@ local function screen(preview)
         end
     end
     if view.osk then
-        osk(x, y, lw, lh)
+        draw_keyboard(x, y, lw, lh)
         details(x + lw + 14, y, pw, view.sel ~= 'new' and find(view.sel) or nil)
         name_row(x, y + lh + 8, w)
         buttons(x, y + lh + 40, w)
