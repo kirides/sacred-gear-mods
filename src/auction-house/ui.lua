@@ -302,6 +302,13 @@ local function sellable(it, allow_special)
 end
 M.sellable = sellable
 
+-- What to show for an item whose tooltip gave no name: the localized type name, the internal one on an older Gear.
+local function type_label(it)
+    local ok, n = pcall(function() return gear.data.object_types:label(it.type) end)
+    if ok and type(n) == 'string' and n ~= '' then return n end
+    return it.type_name or ('item ' .. tostring(it.type))
+end
+
 -- What the market lists about an item: its display name and level from the game's tooltip text.
 function M.meta_of(it, bytes)
     local text = ''
@@ -314,7 +321,7 @@ function M.meta_of(it, bytes)
         line = line:gsub('^%s+', ''):gsub('%s+$', '')
         if line ~= '' then name = line break end
     end
-    if not name then name = (it.type_name or ('item ' .. tostring(it.type))):gsub('%.%w+$', ''):gsub('_', ' ') end
+    if not name then name = type_label(it) end
     -- the item's level line ("Level: 9"; German "Stufe: 9", French "Niveau", Spanish "Nivel", Italian "Livello"),
     -- not "Minimum Level" / "Minimum Stufe"
     local level = 0

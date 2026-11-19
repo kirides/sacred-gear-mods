@@ -78,6 +78,13 @@ local function fetch_list()
     view.waiting = request('list', payload)
 end
 
+-- What to show for an item whose tooltip gave no name: the localized type name, the internal one on an older Gear.
+local function type_label(it)
+    local ok, n = pcall(function() return gear.data.object_types:label(it.type) end)
+    if ok and type(n) == 'string' and n ~= '' then return n end
+    return it.type_name or ('item ' .. tostring(it.type))
+end
+
 local function carried_names()
     if not gear.settings.get('share_carried') then return {} end
     local c = gear.inv.container('backpack')
@@ -85,7 +92,7 @@ local function carried_names()
     local items = c:items()
     table.sort(items, function(a, b) return (a.quality_rank or 0) > (b.quality_rank or 0) end)
     local names = {}
-    for i = 1, math.min(#items, 12) do names[#names + 1] = fit(items[i].type_name or ('item ' .. tostring(items[i].type)), 48) end
+    for i = 1, math.min(#items, 12) do names[#names + 1] = fit(type_label(items[i]), 48) end
     return names
 end
 

@@ -53,7 +53,6 @@ def line(text, x, y, color, anchor='start', opacity=1):
 M = {}
 M['auction-house'] = (panel(30, 24, 420, 222, 'Auction house', [('Item / seller / price', DIM), 'Ancient Sword of Fire - Ria - 12 400', 'Helm of the Warden - Kell - 3 150', 'Ring of Quickness - Tomm - 870'])
                       + button(44, 206, 90, 'Buy', True) + button(144, 206, 90, 'Sell'))
-M['lootlog'] = panel(50, 20, 380, 230, 'Loot log', [('Quality v   Category v   Kind v', DIM), ('Dropped: Ring of Quickness', BLUE), ('Picked up: Helm of the Warden', YEL), ('Dropped: Sword of Dawn (set)', GREEN), ('Picked up: Amulet of Stone', BLUE), ], 13, 28)
 M['questhelper'] = panel(50, 20, 380, 230, 'Quest helper', [('In your backpack', DIM), 'Old Key (quest item)', ('Quest records', DIM), 'The Lost Caravan: step 2', ('Hint: look near the east bridge', DIM)], 13, 30)
 M['realms'] = (panel(60, 40, 360, 150, 'Mods > Realm', [('Online play server (Closed / Open Internet)', DIM)])
                + f'<rect x="74" y="96" width="250" height="26" rx="3" fill="#2a2018" stroke="{GOLD}"/>' + line('Private realm (realm.example.com)', 86, 114, TEXT) + line('v', 308, 114, GOLD) + line('Host: realm.example.com:7066', 74, 150, DIM))

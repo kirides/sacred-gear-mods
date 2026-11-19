@@ -63,6 +63,13 @@ local function from_line(l)
     add_entry({kind = l.kind, sender = l.sender, runs = l.runs, plain = l.plain, stamp = stamp()})
 end
 
+-- What to show for an item whose tooltip gave no name: the localized type name, the internal one on an older Gear.
+local function type_label(it)
+    local ok, n = pcall(function() return gear.data.object_types:label(it.type) end)
+    if ok and type(n) == 'string' and n ~= '' then return n end
+    return it.type_name or ('item ' .. tostring(it.type))
+end
+
 -- The first line of the game's tooltip of an item, without its markup: its localized name.
 local function item_name(item)
     local ok, text = pcall(ui.item_tooltip_text, item)
@@ -74,7 +81,7 @@ local function item_name(item)
             if plain ~= '' and not plain:find('\\', 1, true) then return plain end
         end
     end
-    return item.type_name or ('item ' .. tostring(item.type))
+    return type_label(item)
 end
 
 local function item_color(item)

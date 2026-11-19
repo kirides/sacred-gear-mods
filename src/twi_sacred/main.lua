@@ -29,7 +29,7 @@ local function monsters()
     pool = {}
     for _, name in ipairs(cfg.monsters or {}) do
         local id = gear.data.object_types:find(name)
-        if id then pool[#pool + 1] = {id = id, name = pretty(name)} else print('no object type ' .. name) end
+        if id then pool[#pool + 1] = {id = id, name = (function() local ok, d = pcall(function() return gear.data.object_types:display_name(id) end) return ok and type(d) == 'string' and d ~= '' and d or pretty(name) end)()} else print('no object type ' .. name) end
     end
     return pool
 end

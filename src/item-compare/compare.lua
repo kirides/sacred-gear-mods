@@ -171,7 +171,7 @@ local function read_item(item, text_only)
         lines[#lines + 1] = L
     end
     local tied = text_only and 0 or attach_data(item, lines)
-    return {lines = lines, name = name ~= '' and name or tostring(item.type_name), color = color or TEXT, power = power, tied = tied}
+    return {lines = lines, name = name ~= '' and name or select(2, pcall(function() return gear.data.object_types:label(item.type) end)) or tostring(item.type_name), color = color or TEXT, power = power, tied = tied}
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------
