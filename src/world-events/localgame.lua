@@ -232,7 +232,7 @@ function G.make_boss(boss, rnd, skip)
     local hero = W.hero()
     if not hero then return nil, 'no hero' end
     if not W.can_change() then return nil, 'the world cannot be changed here (not a single player game)' end
-    if not hero.set_hp or not hero.is_enemy then return nil, 'this Sacred Gear has no creature modifiers' end
+    if not hero.set_modifiers or not hero.is_enemy then return nil, 'this Sacred Gear has no creature modifiers' end
     local hx, hy, layer = hero:position()
     if not hx then return nil, 'no hero position' end
     local c, promoted
