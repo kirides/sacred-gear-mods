@@ -57,7 +57,7 @@ needed when `mods` is present, unless every mod carries its own `download`.
 - `id` must equal the `id` in the mod's `mod.lua`; `name`, `version`, `author`, `description` and `requires` are copied
   from it. The CI step "Check mod-index.json" fails when a shipped mod folder is missing from the index, when a `path`
   has no folder in `src` or no `mod.lua`, when an id differs, or when the JSON is invalid.
-- Which folders are shipped follows the release workflow: every `src/*/` except `*_selftest` and `sector-tools`.
+- Which folders are shipped follows the release workflow: every `src/*/` except `*_selftest`, `*_bosstest` and `sector-tools`.
 - Indexes are followed recursively. Each distinct index URL (normalized) is visited only once, so cycles and duplicates
   are safe. A sub-index that fails to load is skipped with a warning. The manager caps the depth at 8 and the number of
   indexes at 64.

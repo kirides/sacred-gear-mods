@@ -331,19 +331,6 @@
         "multiplayer",
         "server"
       ]
-    },
-    {
-      "id": "world-events_bosstest",
-      "path": "mods/world-events_bosstest",
-      "name": "World events boss self test",
-      "version": "1.0.0",
-      "tags": [
-        "tools",
-        "test"
-      ],
-      "requires": [
-        "world-events"
-      ]
     }
   ]
 }
