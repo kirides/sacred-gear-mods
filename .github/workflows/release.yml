@@ -51,7 +51,7 @@ jobs:
             n=$(jq --arg p "mods/$name" '[(.mods // [])[] | select(.path == $p)] | length' mod-index.json)
             [ "$n" = "1" ] || fail "src/$name is shipped but listed $n times in the index"
           done
-          # every entry must point at a real mod whose mod.lua id matches
+          # every mod entry must point at a real mod whose mod.lua id matches (plugins and tools have no mod.lua here)
           while read -r id path; do
             name=${path#mods/}
             [ "$path" = "mods/$name" ] && [ -n "$name" ] || fail "path '$path' must be mods/<folder>"
@@ -59,7 +59,7 @@ jobs:
             [ -f "src/$name/mod.lua" ] || fail "src/$name has no mod.lua"
             lua_id=$(grep -m1 -oE "^[[:space:]]*id[[:space:]]*=[[:space:]]*'[^']+'" "src/$name/mod.lua" | sed -E "s/.*'([^']+)'/\1/")
             [ "$lua_id" = "$id" ] || fail "entry id '$id' differs from the mod.lua id '$lua_id' of src/$name"
-          done < <(jq -r '(.mods // [])[] | "\(.id) \(.path)"' mod-index.json | tr -d '\r')
+          done < <(jq -r '(.mods // [])[] | select((.kind // "mod") == "mod") | "\(.id) \(.path)"' mod-index.json | tr -d '\r')
           echo "mod-index.json ok: $(jq '(.mods // []) | length' mod-index.json) mods"
 
       - name: Check mod-index.json is up to date

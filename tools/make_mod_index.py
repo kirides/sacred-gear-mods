@@ -2,7 +2,8 @@
 """Generate or refresh a Gear Mod Manager index (mod-index.json, schema 1) from <src>/*/mod.lua.
 
 Lua is never executed: a small tolerant tokenizer reads the top-level fields of the table `mod.lua` returns.
-A re-run keeps hand-written top-level fields, `indexes`, and the tags/thumbnail/images/defaultEnabled of existing entries.
+A re-run keeps hand-written top-level fields, `indexes`, the tags/thumbnail/images/defaultEnabled of existing entries, and every entry whose `kind` is plugin or tool
+(those have no mod.lua and are written by hand).
 """
 import argparse, difflib, fnmatch, json, os, re, subprocess, sys
 
@@ -171,6 +172,14 @@ def main():
                     e['images'] = ['%s/%s/%s' % (zpath, sub, n) for n in pics[:24]]
                     break
         mods.append({k: e[k] for k in ORDER + [x for x in e if x not in ORDER] if k in e})
+    # plugins and tools (kind other than mod) have no mod.lua: they are written by hand and kept as they are
+    ids = {m['id'] for m in mods}
+    for m in old.get('mods', []):
+        if str(m.get('kind', 'mod')).strip().lower() != 'mod':
+            if m.get('id') in ids:
+                print('warning: %s is both a mod folder and a hand-written %s entry; the entry is dropped' % (m.get('id'), m.get('kind')), file=sys.stderr)
+            else:
+                mods.append(m)
     mods.sort(key=lambda m: m['id'])
     out = {'schema': 1}
     for k in ('name', 'author', 'description', 'homepage', 'download'):
