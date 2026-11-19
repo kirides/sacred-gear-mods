@@ -134,3 +134,16 @@ also point at other indexes. The full format is in [Mod index](docs/ModIndex.md)
 | `download` | `url` of the zip and its `version` (the latest tag, or `latest`) |
 | `mods[]` | One entry per mod: `id` (the id of its `mod.lua`), `path` (the folder inside the zip, `mods/<name>`), `name`, `version`, `author`, `description`, optional `tags`, `thumbnail`, `requires`, `defaultEnabled`, `download` |
 | `indexes[]` | Optional: other indexes to follow, each `url` (absolute https, or relative to this index) and an optional `name` |
+
+## Versioning
+
+`tools/bump_versions.py` raises the `version` of each mod from the git history, so nobody edits it by hand. Per mod it looks at the commits since
+the last version bump of that mod (the last commit that changed its `version = '...'` line): any change to a non-test file raises the **patch**
+number, a commit message with `feat(<mod>)` raises **minor**, one with `break(<mod>)` raises **major** (spaces and case do not matter,
+`feat(a, b)` counts for both mods). Test files (`tests`, `tools`, names ending in `test`) do not count.
+
+```
+python tools/bump_versions.py            # show the plan
+python tools/bump_versions.py --commit   # bump, one commit per mod, refresh mod-index.json
+python -m unittest tools/test_bump_versions.py
+```
