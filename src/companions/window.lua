@@ -177,7 +177,7 @@ function M.new(env)
         end
         bx = bx + 116
         if ui.button('tactics' .. c.id, bx, y + 8, 64, 22, 'Tactics', {tooltip = 'The combat arts and spells this hero uses on their own'}) then
-            win.tactics = win.tactics == c.id and nil or c.id
+            if win.tactics == c.id then win.tactics = nil else win.tactics = c.id end
         end
         bx = bx + 70
         if c.id >= party.FIRST_ID and not controlled then
@@ -235,7 +235,8 @@ function M.new(env)
                 local changed, checked = ui.checkbox('use' .. c.id .. '_' .. a.id, x + col, yy, label, on,
                     {tooltip = 'Used ' .. USE_LABEL[use]})
                 if changed then
-                    r.abilities[tostring(a.id)] = checked and nil or false
+                    -- (not `checked and nil or false`: that is always false)
+                    if checked then r.abilities[tostring(a.id)] = nil else r.abilities[tostring(a.id)] = false end
                     store:changed()
                 end
             else
