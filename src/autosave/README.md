@@ -37,7 +37,7 @@ them on its **Settings** page; they are saved at once in `mods\gear_mods.json`. 
 |---|---|---|
 | `enabled` | `true` | Autosave on / off. |
 | `interval_minutes` | `5` | Minutes of active play between autosaves (slider, whole minutes 1 to 60; `autosave.configure` takes 0.05 to 240). |
-| `slots` | `97, 98, 99` | The slots to rotate through (text: numbers 1 to 509 separated by commas, up to 8). Keep them clear of the numbers the game gives to manual saves. |
+| `slots` | `97, 98, 99` | The slots to rotate through (text: numbers 1 to 32766 separated by commas, up to 8). Keep them clear of the numbers the game gives to manual saves. |
 | `name` | `Autosave %H:%M` | The display name in the savegame list; `os.date` format, 60 characters at most. |
 | `show_confirmation` | `true` | The note after each autosave. |
 | key `save_now` | `f6` | Autosave right away, into the next slot. Rebind it on the Keys page (F5 is the loot filter, F11 the Mods screen; the layout edit mode is on Alt). |

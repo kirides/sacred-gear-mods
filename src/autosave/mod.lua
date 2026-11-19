@@ -24,9 +24,9 @@ return {
         {id = 'show_confirmation', type = 'bool', label = 'Show a note after each autosave', default = true},
         -- The slots the autosaves rotate through, oldest first: Save\GAME97.PAK, GAME98.PAK, GAME99.PAK. Slot 0 is the
         -- quicksave and the game's own savegame window fills the low numbers, so these stay out of their way.
-        -- 1 to 509, at most 8, separated by commas.
+        -- 1 to 32766, at most 8, separated by commas.
         {id = 'slots', type = 'text', label = 'Savegame slots (oldest is reused first)', default = '97, 98, 99',
-         max_length = 40, tooltip = 'Numbers 1 to 509 separated by commas (97 is GAME97.PAK)'},
+         max_length = 40, tooltip = 'Numbers 1 to 32766 separated by commas (97 is GAME97.PAK)'},
         {id = 'name', type = 'text', label = 'Savegame name', default = 'Autosave %H:%M', max_length = 40,
          tooltip = '%H:%M is replaced with the time'},
     },
