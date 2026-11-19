@@ -27,8 +27,9 @@ hero slots belong to the players).
    of that hero joins with their level, attributes, skills, combat arts, combos, equipment and backpack. Your network
    characters (`Save\HeroNN.pax`) are listed there too. The hero in the other savegame stays as they are.
 4. In the party window each hero has a **behaviour** for the time you play someone else (*Aggressive*: fights what
-   comes near; *Defensive*: protects the hero you play; *Passive*: only follows), a **name**, and **tactics**: the combat
-   arts, spells and combos they may use on their own. *Dismiss* sends a companion away for good (empty their backpack first:
+   comes near; *Defensive*: protects the hero you play; *Passive*: only follows), a **name**, and **tactics**: how they fight
+   (weapon and combat arts; combat arts only, keeping back in between, for a battle mage; or weapon first) and the
+   combat arts, spells and combos they may use on their own. *Dismiss* sends a companion away for good (empty their backpack first:
    what they wear is lost).
 
 **The game's own mercenaries** follow the hero you play. Under *Mercenaries* in the party window you choose what they

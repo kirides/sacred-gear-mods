@@ -189,8 +189,27 @@ function M.new(env)
 
     local USE_LABEL = {target = 'on the target', self = 'in a fight, on themselves', heal = 'when someone is hurt', form = 'when a fight starts (and to change back after it)'}
 
+    local STYLES = {'balanced', 'arts', 'weapon'}
+    local STYLE_LABEL = {balanced = 'Weapon and combat arts', arts = 'Combat arts only', weapon = 'Weapon first'}
+    local STYLE_TIP = 'How they fight: combat arts and spells as soon as they are ready, the weapon in between (default); '
+        .. 'combat arts and spells only, keeping back from the fight in between (a battle mage); or the weapon first, '
+        .. 'combat arts now and then'
+
     local function tactics_area(c, x, y, w)
-        ui.text('Tactics of ' .. name_of(c) .. ': the abilities they use on their own', x, y, {color = ACCENT})
+        local r0 = record(c.id)
+        ui.text('Tactics of ' .. name_of(c), x, y, {color = ACCENT})
+        local labels, index = {}, 1
+        for i, st in ipairs(STYLES) do
+            labels[i] = STYLE_LABEL[st]
+            if (r0.style or 'balanced') == st then index = i end
+        end
+        local schanged, snew = ui.dropdown('style' .. c.id, x + w - 230, y - 2, 220, labels, index, {tooltip = STYLE_TIP})
+        if schanged then
+            r0.style = STYLES[snew] ~= 'balanced' and STYLES[snew] or nil
+            store:changed()
+        end
+        y = y + 26
+        ui.text('The abilities they use on their own:', x, y, {color = DIM, size = 12})
         local list = c:abilities() or {}
         for _, k in ipairs(c:combos() or {}) do
             local names = {}
@@ -199,7 +218,7 @@ function M.new(env)
         end
         if #list == 0 then
             ui.text('No combat arts or spells learned yet.', x, y + 22, {color = DIM})
-            return 44
+            return 70
         end
         local r = record(c.id)
         local row = 0
@@ -222,7 +241,7 @@ function M.new(env)
             end
             row = row + 1
         end
-        return 22 + row * 22 + 4
+        return 48 + row * 22 + 4
     end
 
     local function draw_window()
@@ -231,7 +250,7 @@ function M.new(env)
         local leader = heroes[1]
         local tactics_hero
         for _, h in ipairs(heroes) do if h.id == win.tactics then tactics_hero = h end end
-        local tactics_h = tactics_hero and math.min(360, 44 + (#(tactics_hero:abilities() or {}) + #(tactics_hero:combos() or {})) * 22) or 0
+        local tactics_h = tactics_hero and math.min(386, 70 + (#(tactics_hero:abilities() or {}) + #(tactics_hero:combos() or {})) * 22) or 0
         local h = 40 + #heroes * 52 + 160 + tactics_h
         local p = ui.panel('party', 'Party' .. key_hint('window'), 212, 90, WIN_W, h, {})
         if not p.open then return end
