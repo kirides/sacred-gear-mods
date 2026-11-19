@@ -19,6 +19,7 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Enhanced Chat**](docs/mods/enhanced-chat.md) | <img src="docs/images/enhanced-chat.jpg" width="220" alt="Enhanced Chat"> | A chat window with scrollback, tabs for global, private and system messages, a player filter and item names in their rarity colour. |
 | [**Key bindings**](docs/mods/key-bindings.md) | <img src="docs/images/key-bindings.jpg" width="220" alt="Key bindings"> | Choose the keys and mouse buttons of the game's actions (two per action), and quick cast combat arts with one press. |
 | [**Drop tuning**](docs/DropTuning.md) | <img src="docs/images/drop-tuning.jpg" width="220" alt="Drop tuning"> | More or fewer drops, better rarity odds, optional fair random numbers. |
+| [**Icon Set drops**](docs/mods/icon-set.md) | | Lets the Icon Set (Flaming Feet) drop at any creature level, with a chance you set. |
 | [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.jpg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.svg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
 | [**Companions**](docs/mods/companions.md) | <img src="docs/images/companions.jpg" width="220" alt="Companions"> | A party of heroes in single player: recruit companions of any class with their own gear, skills and experience, play any of them (click a portrait, PageDown), the others follow and fight with their combat arts, spells and combos. Home. |
@@ -77,6 +78,8 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/enhanced-chat_selftest` | Automation self test of Enhanced Chat |
 | `src/drop-tuning` | Drop chance, rarity weights and drop random numbers on `gear.drops`. [Doc](docs/DropTuning.md) |
 | `src/drop-tuning_selftest` | Automation self test of the drop-tuning mod |
+| `src/icon-set` | Icon Set pieces as a share of equipment drops, on `gear.drops`. [Doc](docs/mods/icon-set.md) |
+| `src/icon-set_selftest` | Automation self test of the icon-set mod |
 | `src/world-events` | A movable progress bar for the game server's world event (needs the remake server's `world_events.lua`). [README](src/world-events/README.md) |
 | `src/world-events_selftest` | Automation self test of the world-events mod |
 | `src/sector-tools` | For server admins: the sector id and grid cell you stand in, boundaries on the ground, recording areas by walking, copy-to-clipboard of the config line for the server's `world_events.lua`. [README](src/sector-tools/README.md) |
