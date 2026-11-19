@@ -42,8 +42,11 @@ and attack arts and spells on the target as soon as they have regenerated, auras
 once a fight starts, healing spells when someone in the party is low on health (setting): first on the hero you play, then on
 themselves (or the lowest, setting). The game casts these spells (Genesung, Spirituelle Heilkraft) only on the caster,
 its own AI too: for you, the companion casts the spell and you get the health it gives (what it healed the companion
-last time, until then a third of your health). Buffs and auras (Steinhaut, Wieselflink ...) are the companion's own for
-the same reason: cast in fights and again when they run out, or whenever they are ready (setting). A Vampiress changes into her vampire form
+last time, until then a third of your health). Buffs and auras (Steinhaut, Wieselflink ...) are cast in fights and
+again when they run out, or whenever they are ready (setting). The ones the game meant for companions too (Steinhaut,
+Glaubensstärke, Katarakt der Wendigkeit, Reiki) reach the other heroes near the caster through Gear's buffs: at half
+strength by default (a setting per buff, 0: off), with the game's look (Steinhaut's stone), for as long as the
+caster's own lasts. A Vampiress changes into her vampire form
 (Vampirform) when a fight starts and back after it, or when she is low on health (in daylight the form costs health).
 Other shape changes (Ritterform ...), teleports and tricks are left to you.
 
@@ -87,6 +90,7 @@ Open the Mods screen with **F11** and pick the mod.
 | Healing spells first for | The hero you play, then themselves (default); whoever has the least health; or themselves first. |
 | Heal a hero below (% health) | Default 60. |
 | Buffs and auras | In fights and again when they run out (default), or whenever they are ready. |
+| Steinhaut / Glaubensstärke / Katarakt der Wendigkeit / Reiki on the others (%) | How strong the other heroes get it (default 50, 0: off). |
 | Follow distance / Fight enemies within | In tiles. |
 
 ## Limits
