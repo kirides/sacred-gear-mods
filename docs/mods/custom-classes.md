@@ -95,6 +95,8 @@ the game does not run a spell under an id of its own). `icon` is optional: a tex
 [GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md) lists them: `effect_base`, `effect_per_level`,
 `regen_base`, `regen_per_level`, `target_mode`, and the `unk_` fields). The editor shows the game's ranges.
 
+Every byte of the records has a name now (`approach_distance`, `param_a_base` ..., `flags`; what the numbers of each art mean is in the class editor's `docs/DataFormats.md`, "Ability field map"); the old `unk_<offset>` names still work. **`spell_values`** (optional) are fields of a spell record for arts whose numbers live in a spell (Poison Mist 1052 takes damage and duration from spell 12; also 1018, 1019, 1044, 1049-1053): the copy gets its own copy of that spell, so the original keeps its numbers: `"spell_values": { "value3_base": 12, "param0_base": 40 }`. Their own `effect_*` fields are ignored by such arts. Needs a Gear with `gear.classes.linked_spell`.
+
 ![A copied art in use](../images/custom-classes-copy.jpg)
 
 **A chain** is a named art that uses 2 to 8 arts or spells one after the other. It must start with a combat art.
