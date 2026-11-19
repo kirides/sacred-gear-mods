@@ -204,6 +204,62 @@ local function finish_heal(c, s, now)
     s.transfer = nil
 end
 
+-- Buffs the game meant for others too ("or a chosen companion": Steinhaut, Glaubensstaerke, Katarakt der Wendigkeit,
+-- Reiki) but casts only on the caster: Gear's buffs (gear.buffs) pass them on to the other heroes near the caster, at
+-- the setting's strength, for as long as the caster's own lasts. What a cast gave the caster (its values before and
+-- after) is what the others get.
+M.ALLY_BUFFS = {[2] = true, [21] = true, [27] = true, [32] = true}
+
+local function share_end(s)
+    local sh = s.share
+    if sh and sh.targets then
+        for _, id in ipairs(sh.targets) do gear.buffs.remove(id, sh.key) end
+    end
+    s.share = nil
+end
+
+local function share_start(c, s, a, now, opts)
+    if not (gear.buffs and M.ALLY_BUFFS[a.id] and (opts.buff_strength[a.id] or 0) > 0) then return end
+    share_end(s)
+    s.share = {ability = a.id, before = gear.buffs.fields(c), at = now}
+end
+
+-- After the cast: the others get it; once the caster's own has ended, theirs ends too.
+local function share_step(c, s, now, heroes, opts)
+    local sh = s.share
+    if not sh then return end
+    if not sh.targets then
+        if now - sh.at < 1.5 then return end
+        local after = gear.buffs.fields(c)
+        local stats, factors = gear.buffs.change(sh.before or {}, after or {})
+        local probe = next(stats) or next(factors)
+        if not probe then
+            if now - sh.at > 4 then s.share = nil end
+            return
+        end
+        local overlay, seconds = gear.buffs.overlay(c)
+        local def = {id = 'shared_' .. sh.ability, name = M.ability_info(sh.ability).name, stats = stats, factors = factors,
+            overlay = overlay or 0}
+        sh.key = 'companions:' .. c.id .. ':' .. sh.ability
+        sh.probe, sh.was, sh.now = probe, sh.before[probe], after[probe]
+        sh.targets = {}
+        local cx, cy = c:position()
+        for _, h in ipairs(heroes) do
+            local hx, hy = h:position()
+            if h ~= c and not h:is_dead() and hx and dist(cx, cy, hx, hy) <= HEAL_RANGE then
+                local ok = gear.buffs.apply(h, def, {key = sh.key, strength = opts.buff_strength[sh.ability] or 0.5,
+                    seconds = overlay and overlay > 0 and seconds or 0, source = c, ability = sh.ability})
+                if ok then sh.targets[#sh.targets + 1] = h.id end
+                if M.debug then print('share', c.id, '->', h.id, sh.ability, ok) end
+            end
+        end
+        return
+    end
+    local f = gear.buffs.fields(c)
+    local v = f and f[sh.probe]
+    if not v or c:is_dead() or math.abs(v - sh.now) > math.abs(v - sh.was) then share_end(s) end
+end
+
 -- Casts a heal when a hero near the caster is below the setting's health. True when it did.
 local function heal_step(c, s, now, leader, heroes, opts, tactics)
     if not opts.use_abilities or now - s.ability_at < 1.5 or s.transfer then return false end
@@ -260,6 +316,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     local behaviour = tactics.behaviour or opts.behaviour
     local action = c:action() or 'idle'
     finish_heal(c, s, now)
+    share_step(c, s, now, heroes, opts)
     if action ~= 'ability' and heal_step(c, s, now, leader, heroes, opts, tactics) then return end
     local target
     if behaviour ~= 'passive' and d <= opts.leash then
@@ -281,6 +338,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
             end
             local a, use = pick_ability(c, s, now, target, heroes, tactics, opts)
             if a then
+                if use == 'self' then share_start(c, s, a, now, opts) end
                 local ok, err = c:order_ability(a.id, use == 'target' and target or c)
                 if M.debug then print('ability', a.id, use, ok, err) end
                 if ok then
@@ -313,6 +371,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     -- Buffs whenever they are ready (setting), also outside fights.
     if opts.use_abilities and opts.buffs == 'always' and action ~= 'ability' and now - s.ability_at > 2 then
         local a, use = pick_ability(c, s, now, nil, heroes, tactics, opts)
+        if a and use == 'self' then share_start(c, s, a, now, opts) end
         if a and use == 'self' and c:order_ability(a.id, c) then
             s.ability_at, s.ordered = now, now
             s.self_at[a.id] = now

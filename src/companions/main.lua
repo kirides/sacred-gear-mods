@@ -281,6 +281,8 @@ local function ai_opts()
         heal_priority = setting('heal_priority', 'hero'),
         heal_below = setting('heal_below', 60) / 100,
         buffs = setting('buffs', 'combat'),
+        buff_strength = {[2] = setting('buff_2', 50) / 100, [21] = setting('buff_21', 50) / 100,
+            [27] = setting('buff_27', 50) / 100, [32] = setting('buff_32', 50) / 100},
     }
 end
 
