@@ -64,6 +64,25 @@ needed when `mods` is present, unless every mod carries its own `download`.
   release assets) and be listed in someone's `indexes`.
 - Unknown fields are ignored, so the format can grow without a new `schema`.
 
+## Generating the index
+
+`tools/make_mod_index.py` (Python 3.8+, standard library only) builds the `mods` array from the `mod.lua` files, so
+nobody has to copy versions by hand. It reads the top-level fields of the table `mod.lua` returns (it does not run
+Lua), keeps the top-level fields, `indexes` and the hand-edited `tags`, `thumbnail` and `defaultEnabled` of the existing
+file, and rewrites the rest:
+
+```
+python tools/make_mod_index.py            # update mod-index.json in place
+python tools/make_mod_index.py --check    # CI: exit 1 with a diff when the file is out of date
+```
+
+The defaults fit this repository (`--src src`, `--prefix mods`, `--out mod-index.json`, skipping `*_selftest` and
+`sector-tools`). For your own mods repository, pass for example `--name "My mods" --author me --homepage URL
+--download-url URL --version latest --thumb-base https://raw.githubusercontent.com/me/repo/main --exclude 'wip_*'`.
+The download URL defaults to the `releases/latest/download/sacred-gear-mods.zip` of the `origin` remote. A thumbnail is
+taken from `thumbnail.png|jpg|webp` inside the mod folder, or from `docs/images/<id>.png|jpg|webp` when `--thumb-base`
+is given.
+
 ## Example
 
 ```json
