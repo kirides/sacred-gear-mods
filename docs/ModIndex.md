@@ -18,7 +18,7 @@ The zip holds `mods/<name>/...` (one folder per mod, ready to extract into the g
 | `author` | string | yes | Author of the index |
 | `description` | string | no | One or two sentences |
 | `homepage` | string | no | https URL of the project |
-| `download` | object | no | The zip the `mods` come from: `url` (https, or relative to the index) and `version` (the latest tag, or `latest`) |
+| `download` | object | no | The zip the `mods` come from: `url` (https, or relative to the index), `version` (the latest tag, or `latest`) and optionally `sha256` (hex of the zip; the manager rejects a download that does not match) |
 | `mods` | array | no | The mods, see below |
 | `indexes` | array | no | Other indexes to follow, see below |
 
@@ -40,7 +40,7 @@ needed when `mods` is present, unless every mod carries its own `download`.
 | `thumbnail` | string | no | An image: a path relative to the zip root, or an absolute https URL |
 | `requires` | string[] | no | Ids of mods this one needs, copied from `mod.lua` |
 | `defaultEnabled` | boolean | no | `false` when `mod.lua` says `enabled = false`; leave out otherwise |
-| `download` | object | no | `{ "url": ..., "version": ... }`: overrides the index's `download` for this mod |
+| `download` | object | no | `{ "url": ..., "version": ..., "sha256": ... }`: overrides the index's `download` for this mod |
 
 ## Meta-index entry (`indexes[]`)
 
