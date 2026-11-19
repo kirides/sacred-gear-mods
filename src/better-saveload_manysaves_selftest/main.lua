@@ -2,7 +2,7 @@
 -- without a player. It needs a COPY of the game folder whose Save folder was filled by tools/make_test_saves.py:
 --
 --     python tools/make_test_saves.py "<copy>\Save" 300 100 509
---     Sacred.exe -gear-auto -gear-instance=manysaves -gear-mods=better-saveload,better-saveload_manysaves
+--     Sacred.exe -gear-auto -gear-instance=manysaves -gear-mods=better-saveload,better-saveload_manysaves_selftest
 --
 -- Checks the list (numbers up to 32766), the first free number and reserved numbers, the screen's search, orders and
 -- jumps, loads savegame 32766 and saves a new one beyond 509. Results: GearAutomation\<instance>\manysaves.json.

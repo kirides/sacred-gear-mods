@@ -6,7 +6,7 @@
   [release](https://github.com/kirides/sacred-bild/releases) of sacred-bild into the game folder. `SacredGear.dll` next to
   the game is loaded by SacredBild and runs the mods. It also works without SacredBild
   ([Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md)).
-- The mods: `sacred-gear-mods-<version>.zip` from the [latest release](https://github.com/kirides/sacred-gear-mods/releases/latest)
+- The mods: `mods.zip` from the [latest release](https://github.com/kirides/sacred-gear-mods/releases/latest)
   (or this repository: a zip of it from GitHub's *Code* button, or a `git clone`).
 
 ## Copy the mods

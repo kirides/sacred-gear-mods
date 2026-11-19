@@ -1,6 +1,6 @@
 ---@type GearModManifest
 return {
-    id = 'better-saveload_manysaves',
+    id = 'better-saveload_manysaves_selftest',
     name = 'Better SaveLoad many savegames test',
     version = '1.0.0',
     requires = {'better-saveload'},

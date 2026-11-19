@@ -42,7 +42,7 @@ the game's own ways (`gear.game.load`, `gear.game.save` with `window = true`, `g
 
 ## Self test
 
-`src/better-saveload_manysaves` is a second test for a long list (`tools/make_test_saves.py` fills a copy's Save folder with hundreds of savegames; it checks numbers up to 32766, the search, the orders, the jumps, loading and saving beyond 509). `src/better-saveload_selftest` (on a **copy** of the game folder: it saves and deletes a savegame):
+`src/better-saveload_manysaves_selftest` is a second test for a long list (`tools/make_test_saves.py` fills a copy's Save folder with hundreds of savegames; it checks numbers up to 32766, the search, the orders, the jumps, loading and saving beyond 509). `src/better-saveload_selftest` (on a **copy** of the game folder: it saves and deletes a savegame):
 
 ```
 Sacred.exe -gear-auto -gear-instance=saveload -gear-mods=better-saveload,better-saveload_selftest
