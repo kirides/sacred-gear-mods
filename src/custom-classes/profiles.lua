@@ -17,6 +17,15 @@
 
 local M = {}
 
+-- The installed mods that are switched on (data of a mod that is off is not read).
+local function active_mods()
+    local out = {}
+    for _, m in ipairs(gear.mods.list()) do
+        if m.state == 'on' then out[#out + 1] = m end
+    end
+    return out
+end
+
 local BODIES = {seraphim = 1, gladiator = 2, battlemage = 3, darkelf = 4, woodelf = 5, vampiress = 6, dwarf = 8, daemon = 9}
 M.BODIES = BODIES
 M.BODY_LABEL = {seraphim = 'Seraphim', gladiator = 'Gladiator', battlemage = 'Battle Mage', darkelf = 'Dark Elf',
@@ -87,7 +96,7 @@ end
 -- Every profile of every installed mod: {[id] = profile}, problems = {string, ...}
 function M.scan(art_ids)
     local profiles, problems = {}, {}
-    for _, m in ipairs(gear.mods.list()) do
+    for _, m in ipairs(active_mods()) do
         local files = gear.mods.files(m.id, 'classes')
         for _, name in ipairs(files or {}) do
             if name:lower():match('%.json$') then

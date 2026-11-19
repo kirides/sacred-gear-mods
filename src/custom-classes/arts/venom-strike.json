@@ -4,7 +4,17 @@
   "kind": "copy",
   "art_id": 2001,
   "base": 1059,
-  "name": { "en": "Venom Strike", "de": "Giftschlag" },
-  "description": { "en": "The Gladiator's attack, but stronger: it hits harder than the plain attack.", "de": "Der Angriff des Gladiators, nur stärker." },
-  "values": { "effect_base": 40, "effect_per_level": 6 }
+  "icon": "GUI_MOVE_HARDHIT.TGA",
+  "name": {
+    "en": "Venom Strike",
+    "de": "Giftschlag"
+  },
+  "description": {
+    "en": "The Gladiator's attack, but stronger: it hits harder than the plain attack.",
+    "de": "Der Angriff des Gladiators, nur stärker."
+  },
+  "values": {
+    "effect_base": 40,
+    "effect_per_level": 6
+  }
 }
