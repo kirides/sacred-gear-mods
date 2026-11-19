@@ -121,12 +121,23 @@ local function grid(id, x, y, cells, page)
     return clicked
 end
 
-local function pager(id, x, y, page, pages)
+-- A section header: the title at the left, [<]  n / m  [>] at the right (18 high). Returns the page.
+local function header(id, x, y, w, title, color, page, pages)
     page = math.max(0, math.min(page, pages - 1))
-    if ui.button(id .. '-prev', x, y, 22, 18, '<', {enabled = page > 0}) then page = page - 1 end
-    ui.label(id .. '-n', ('%d / %d'):format(page + 1, pages), x + 28, y, {height = 18, valign = 'middle'})
-    if ui.button(id .. '-next', x + 76, y, 22, 18, '>', {enabled = page < pages - 1}) then page = page + 1 end
+    local t = ui.table(id, x, y - 1, w, {columns = {'*', 22, 48, 22}, spacing = {6, 0}, row_height = 18})
+    t:row()
+    t:label(1, title, {id = id .. '-title', color = color})
+    if t:button(2, '<', {id = id .. '-prev', enabled = page > 0}) then page = page - 1 end
+    t:label(3, ('%d / %d'):format(page + 1, pages), {id = id .. '-n', halign = 'center'})
+    if t:button(4, '>', {id = id .. '-next', enabled = page < pages - 1}) then page = page + 1 end
     return page
+end
+
+-- One line of text (a status, a hint) across the width, cut with "..." when too long.
+local function note(id, x, y, w, text, color, size)
+    local t = ui.table(id, x, y, w, {columns = {'*'}, row_height = 18})
+    t:row()
+    t:label(1, text, {color = color, size = size})
 end
 
 local function entry_cells(list, hint)
@@ -149,27 +160,27 @@ local function check_ready(x, y, w)
         remote.refresh(false)
         local ok, why = remote.available()
         if not ok then
-            ui.text('The shared stash is not available on this server.', x, y, {width = w, color = 0xFFFF8080, size = 13})
-            ui.text(tostring(why), x, y + 22, {width = w, color = 0xFFC0C0C0, size = 12})
+            note('na1', x, y, w, 'The shared stash is not available on this server.', 0xFFFF8080, 13)
+            note('na2', x, y + 22, w, tostring(why), 0xFFC0C0C0, 12)
             return false
         end
     else
         -- a network game that is not (yet) known to be Closed Net: ask the server first (it may keep the stash), then the file
         if kind.mode() ~= 'single' and remote.probe() == 'wait' then
-            ui.text('Asking the server about the shared stash ...', x, y, {width = w, color = 0xFFC0C0C0, size = 12})
+            note('ask', x, y, w, 'Asking the server about the shared stash ...', 0xFFC0C0C0, 12)
             return false
         end
         if closed() then return false end                   -- the server said so meanwhile: the next frame draws the server's stash
         stash.ensure()
     end
     if not net and stash.problem then
-        ui.text(stash.problem, x, y, {width = w, color = 0xFFFF8080, size = 12})
+        note('problem', x, y, w, stash.problem, 0xFFFF8080, 12)
         return false
     end
     local can, network = gear.inv.can_change()
     view.net = network
     if not can then
-        ui.text('The shared stash cannot change your inventory right now.', x, y, {width = w, color = 0xFFFFC080, size = 12})
+        note('cannot', x, y, w, 'The shared stash cannot change your inventory right now.', 0xFFFFC080, 12)
         return false
     end
     return true, net
@@ -247,24 +258,24 @@ local function panel()
     local items = net and remote.entries or stash.items()
     local scells = entry_cells(items, 'Click: take it into the backpack')
     local spages = pack(scells)
-    ui.label('stash-title', ('In the stash: %d / %d'):format(#items, net and (remote.max or cfg.max_items) or cfg.max_items), x, y, {color = ui.COLORS.accent})
-    view.stash_page = pager('sp', x + w - 100, y - 1, view.stash_page, spages)
+    view.stash_page = header('sp', x, y, w,
+        ('In the stash: %d / %d'):format(#items, net and (remote.max or cfg.max_items) or cfg.max_items), ui.COLORS.accent,
+        view.stash_page, spages)
     y = y + 22
     local withdraw = grid('s', x, y, scells, view.stash_page)
     y = y + ROWS * CELL + 8
 
     local cells = source_cells()
     local pages = pack(cells)
-    ui.label('src-title', ('Backpack and chest: %d'):format(#cells), x, y, {color = ui.COLORS.accent})
-    view.source_page = pager('xp', x + w - 100, y - 1, view.source_page, pages)
+    view.source_page = header('xp', x, y, w, ('Backpack and chest: %d'):format(#cells), ui.COLORS.accent, view.source_page, pages)
     y = y + 22
     local deposit = grid('b', x, y, cells, view.source_page)
     y = y + ROWS * CELL
 
     if view.message and gear.time() < view.message_until then
-        ui.text(view.message, x, y + 6, {width = w, size = 12, color = view.message_ok and 0xFF80FF80 or 0xFFFF8080})
+        note('msg', x, y + 6, w, view.message, view.message_ok and 0xFF80FF80 or 0xFFFF8080, 12)
     elseif view.hover then
-        ui.text(view.hover.hint, x, y + 6, {width = w, size = 12, color = 0xFFC0C0C0})
+        note('hint', x, y + 6, w, view.hover.hint, 0xFFC0C0C0, 12)
     end
     if view.hover then hover_tooltip() end
 
