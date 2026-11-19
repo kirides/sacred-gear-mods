@@ -133,13 +133,6 @@ local function header(id, x, y, w, title, color, page, pages)
     return page
 end
 
--- One line of text (a status, a hint) across the width, cut with "..." when too long.
-local function note(id, x, y, w, text, color, size)
-    local t = ui.table(id, x, y, w, {columns = {'*'}, row_height = 18})
-    t:row()
-    t:label(1, text, {color = color, size = size})
-end
-
 local function entry_cells(list, hint)
     local cells = {}
     for _, e in ipairs(list) do
@@ -160,27 +153,27 @@ local function check_ready(x, y, w)
         remote.refresh(false)
         local ok, why = remote.available()
         if not ok then
-            note('na1', x, y, w, 'The shared stash is not available on this server.', 0xFFFF8080, 13)
-            note('na2', x, y + 22, w, tostring(why), 0xFFC0C0C0, 12)
+            ui.text('The shared stash is not available on this server.', x, y, {width = w, color = 0xFFFF8080, size = 13})
+            ui.text(tostring(why), x, y + 22, {width = w, color = 0xFFC0C0C0, size = 12})
             return false
         end
     else
         -- a network game that is not (yet) known to be Closed Net: ask the server first (it may keep the stash), then the file
         if kind.mode() ~= 'single' and remote.probe() == 'wait' then
-            note('ask', x, y, w, 'Asking the server about the shared stash ...', 0xFFC0C0C0, 12)
+            ui.text('Asking the server about the shared stash ...', x, y, {width = w, color = 0xFFC0C0C0, size = 12})
             return false
         end
         if closed() then return false end                   -- the server said so meanwhile: the next frame draws the server's stash
         stash.ensure()
     end
     if not net and stash.problem then
-        note('problem', x, y, w, stash.problem, 0xFFFF8080, 12)
+        ui.text(stash.problem, x, y, {width = w, color = 0xFFFF8080, size = 12})
         return false
     end
     local can, network = gear.inv.can_change()
     view.net = network
     if not can then
-        note('cannot', x, y, w, 'The shared stash cannot change your inventory right now.', 0xFFFFC080, 12)
+        ui.text('The shared stash cannot change your inventory right now.', x, y, {width = w, color = 0xFFFFC080, size = 12})
         return false
     end
     return true, net
@@ -273,9 +266,9 @@ local function panel()
     y = y + ROWS * CELL
 
     if view.message and gear.time() < view.message_until then
-        note('msg', x, y + 6, w, view.message, view.message_ok and 0xFF80FF80 or 0xFFFF8080, 12)
+        ui.text(view.message, x, y + 6, {width = w, size = 12, color = view.message_ok and 0xFF80FF80 or 0xFFFF8080})
     elseif view.hover then
-        note('hint', x, y + 6, w, view.hover.hint, 0xFFC0C0C0, 12)
+        ui.text(view.hover.hint, x, y + 6, {width = w, size = 12, color = 0xFFC0C0C0})
     end
     if view.hover then hover_tooltip() end
 

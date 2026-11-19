@@ -447,63 +447,71 @@ local function row(id, x, y, w, s, selected)
         ui.rect(x, y, w, ROW_H - 4, 0x40FFD780, L())
         ui.frame(x, y, w, ROW_H - 4, C.accent, 2, L())
     end
-    local tx = x + 6
     if s then
         picture(x + 4, y + 1, THUMB_W, THUMB_H, s)
-        tx = x + THUMB_W + 12
-        local tw = w - (tx - x) - 6
-        local title = hero_label(s)
+        -- the thumbnail's room | the title (cut to fit) | level, class (as wide as they are, at most 40%)
+        -- and, under both, the date and name
+        local tw = w - (THUMB_W + 12) - 6
+        local t = ui.table(id .. '#t', x, y, w - 6, {
+            columns = {THUMB_W + 12, '*', {width = 'auto', max = math.floor(tw * 0.4)}},
+            spacing = {0, 0}, row_heights = {26, 18}, layer = LAYER,
+        })
         local sub = {}
         if s.level > 0 then sub[#sub + 1] = 'Level ' .. s.level end
         if class_label(s) then sub[#sub + 1] = class_label(s) end
         if s.slot == 0 then sub[#sub + 1] = 'Quicksave' end
-        ui.text(fit(title, tw * 0.6, 15), tx, y + 4, L({size = 15, bold = true, color = s.compatible and C.accent or C.text_dim}))
-        ui.text(fit(table.concat(sub, ' - '), tw * 0.4, 12), tx, y + 6, L({size = 12, width = tw, align = 'right',
-            color = C.text}))
+        t:row()
+        t:label(2, hero_label(s), {size = 15, bold = true, color = s.compatible and C.accent or C.text_dim})
+        t:label(3, table.concat(sub, ' - '), {size = 12, halign = 'right', color = C.text})
         local line2 = when(s)
         if s.name ~= '' and s.name ~= 'QUICKSAVE' then line2 = line2 .. '   ' .. s.name end
         if not s.compatible then line2 = 'another version of the game - ' .. line2 end
-        ui.text(fit(line2, tw, 12), tx, y + 28, L({size = 12, color = C.text_dim}))
+        t:row()
+        t:label(2, line2, {span = 2, size = 12, color = C.text_dim})
     else
-        ui.text('New savegame', tx + 4, y, L({size = 15, bold = true, height = ROW_H - 4, valign = 'middle',
-            color = C.accent}))
-        ui.text('Saves into the first free number', tx + 160, y, L({size = 12, height = ROW_H - 4, valign = 'middle',
-            color = C.text_dim}))
+        local t = ui.table(id .. '#t', x, y, w, {columns = {10, 156, '*'}, spacing = {0, 0}, row_height = ROW_H - 4,
+            layer = LAYER})
+        t:row()
+        t:label(2, 'New savegame', {size = 15, bold = true, color = C.accent})
+        t:label(3, 'Saves into the first free number', {size = 12, color = C.text_dim})
     end
     return clicked
 end
 
 local function details(x, y, w, s)
     local ph = math.floor(w * 3 / 4)
+    picture(x, y, w, ph, s)
+    y = y + ph + 10
+    -- hero, level and class, then "label  value" lines
+    local t = ui.table('details', x, y, w, {columns = {70, '*'}, spacing = {0, 0}, row_height = 17, layer = LAYER})
     if not s then
-        picture(x, y, w, ph, nil)
-        y = y + ph + 10
         if view.mode == 'save' then
             local h = current_hero()
             if h then
-                ui.text(fit(h.name or '', w, 16), x, y, L({size = 16, bold = true, color = C.accent}))
-                ui.text(('Level %d %s'):format(h.level or 0, CLASS_LABEL[h.class or ''] or ''), x, y + 22, L({size = 13}))
+                t:row(22)
+                t:label(1, h.name or '', {span = 2, size = 16, bold = true, color = C.accent})
+                t:row(24)
+                t:label(1, ('Level %d %s'):format(h.level or 0, CLASS_LABEL[h.class or ''] or ''), {span = 2, size = 13})
             end
-            ui.text('A new savegame of the game as it is now.', x, y + 46, L({size = 12, color = C.text_dim, width = w}))
+            t:row()
+            t:label(1, 'A new savegame of the game as it is now.', {span = 2, size = 12, color = C.text_dim})
         end
         return
     end
-    picture(x, y, w, ph, s)
-    y = y + ph + 10
-    ui.text(fit(hero_label(s), w, 16), x, y, L({size = 16, bold = true, color = C.accent}))
-    y = y + 22
+    t:row(22)
+    t:label(1, hero_label(s), {span = 2, size = 16, bold = true, color = C.accent})
     local line = {}
     if s.level > 0 then line[#line + 1] = 'Level ' .. s.level end
     if class_label(s) then line[#line + 1] = class_label(s) end
     if #line > 0 then
-        ui.text(table.concat(line, ' '), x, y, L({size = 13}))
-        y = y + 20
+        t:row(20)
+        t:label(1, table.concat(line, ' '), {span = 2, size = 13})
     end
     local function field(label, value)
         if not value or value == '' then return end
-        ui.text(label, x, y, L({size = 12, color = C.text_dim}))
-        ui.text(fit(value, w - 70, 12), x + 70, y, L({size = 12}))
-        y = y + 17
+        t:row()
+        t:label(1, label, {size = 12, color = C.text_dim})
+        t:label(2, value, {size = 12})
     end
     field('Saved', when(s))
     field('In game', s.world_date)
@@ -513,11 +521,17 @@ local function details(x, y, w, s)
 end
 
 local function toolbar(x, y, w)
-    -- In game: the Load / Save tabs. Filters and the order on the same line.
-    local fx = x
-    if view.open == WND_GAME then
+    -- In game: the Load / Save tabs; then the hero, class and order dropdowns, sharing what is left.
+    local in_game = view.open == WND_GAME
+    local share = {width = '*', min = 120, max = 200}
+    local cols = in_game and {132, share, share, share} or {share, share, share}
+    local t = ui.table('toolbar', x, y, w, {columns = cols, spacing = {8, 0}, row_height = 24, layer = LAYER})
+    t:row()
+    local c = 0
+    if in_game then
         local idx = view.mode == 'load' and 1 or 2
-        local changed, i = ui.radio_group('mode', x, y + 3, {'Load', 'Save'}, idx, L({horizontal = true, spacing = 14}))
+        local rx, ry = t:cell(1)
+        local changed, i = ui.radio_group('mode', rx, ry + 3, {'Load', 'Save'}, idx, L({horizontal = true, spacing = 14}))
         if changed then
             view.mode = i == 1 and 'load' or 'save'
             view.confirm = nil
@@ -525,64 +539,70 @@ local function toolbar(x, y, w)
             if view.mode == 'save' then view.sel = 'new' end
             apply_filters()
         end
-        fx = x + 140
+        c = 1
     end
     local labels = {}
-    for i, c in ipairs(view.classes) do labels[i] = i == 1 and 'All classes' or CLASS_LABEL[c] end
+    for i, cl in ipairs(view.classes) do labels[i] = i == 1 and 'All classes' or CLASS_LABEL[cl] end
     local sorts = {}
     for i, s in ipairs(SORTS) do sorts[i] = s.label end
-    local dw = math.max(120, math.min(200, (w - (fx - x) - 24) / 3))
-    local changed, i = ui.dropdown('hero', fx, y, dw, view.heroes, view.hero_i, L({tooltip = 'Character'}))
+    local changed, i = t:dropdown(c + 1, view.heroes, view.hero_i, {id = 'hero', tooltip = 'Character'})
     if changed then view.hero_i = i apply_filters() end
-    changed, i = ui.dropdown('class', fx + dw + 8, y, dw, labels, view.class_i, L({tooltip = 'Class'}))
+    changed, i = t:dropdown(c + 2, labels, view.class_i, {id = 'class', tooltip = 'Class'})
     if changed then view.class_i = i apply_filters() end
-    changed, i = ui.dropdown('sort', fx + 2 * (dw + 8), y, dw, sorts, view.sort_i, L({tooltip = 'Order'}))
+    changed, i = t:dropdown(c + 3, sorts, view.sort_i, {id = 'sort', tooltip = 'Order'})
     if changed then view.sort_i = i apply_filters() end
 end
 
 local function buttons(x, y, w)
     local bh = 26
     if view.confirm then
-        ui.text(fit(view.confirm.text, w - 220, 13), x, y, L({size = 13, height = bh, valign = 'middle', color = C.accent}))
-        if ui.button('yes', x + w - 210, y, 100, bh, 'Yes', L()) then
+        -- the question, Yes, No
+        local t = ui.table('confirm', x, y, w, {columns = {'*', 100, 100}, spacing = {6, 0}, row_height = bh, layer = LAYER})
+        t:row()
+        t:label(1, view.confirm.text, {size = 13, color = C.accent})
+        if t:button(2, 'Yes', {id = 'yes'}) then
             local yes = view.confirm.yes
             view.confirm = nil
             yes()
         end
-        if ui.button('no', x + w - 104, y, 100, bh, 'No', L()) then view.confirm = nil end
+        if t:button(3, 'No', {id = 'no'}) then view.confirm = nil end
         return
     end
     local s = view.sel ~= 'new' and find(view.sel) or nil
-    local bx = x
+    -- Save / Load, Delete, the message, Back
+    local t = ui.table('buttons', x, y, w, {columns = {120, 100, '*', 100}, spacing = {8, 0}, row_height = bh, layer = LAYER})
+    t:row()
     if view.mode == 'save' then
         local label = view.sel == 'new' and 'Save' or 'Overwrite'
-        if ui.button('save', bx, y, 120, bh, label, L({enabled = view.sel ~= nil})) then save_selected() end
+        if t:button(1, label, {id = 'save', enabled = view.sel ~= nil}) then save_selected() end
     else
-        if ui.button('load', bx, y, 120, bh, 'Load', L({enabled = s ~= nil and s.compatible})) then load_selected() end
+        if t:button(1, 'Load', {id = 'load', enabled = s ~= nil and s.compatible}) then load_selected() end
     end
-    bx = bx + 128
-    if ui.button('delete', bx, y, 100, bh, 'Delete', L({enabled = s ~= nil, tooltip = 'Deletes the savegame file'})) then
+    if t:button(2, 'Delete', {id = 'delete', enabled = s ~= nil, tooltip = 'Deletes the savegame file'}) then
         delete_selected()
     end
-    if ui.button('close', x + w - 100, y, 100, bh, 'Back', L()) then close() end
     if view.message and gear.time() < view.message_until then
-        ui.text(fit(view.message, w - 340, 12), bx + 112, y, L({size = 12, height = bh, valign = 'middle',
-            color = view.message_ok and 0xFF80FF80 or 0xFFFF8080}))
+        t:label(3, view.message, {size = 12, color = view.message_ok and 0xFF80FF80 or 0xFFFF8080})
     end
+    if t:button(4, 'Back', {id = 'close'}) then close() end
 end
 
 -- The name of the savegame to write: typed straight in (the keys go to it while the screen is open in save mode),
 -- or with the on-screen keyboard (for a controller).
 local function name_row(x, y, w)
     sync_name()
-    ui.text('Name', x, y, L({size = 13, height = 24, valign = 'middle', color = C.text_dim}))
-    local fx, fw = x + 50, w - 50 - 130
-    ui.rect(fx, y, fw, 24, 0xF0202030, L())
-    ui.frame(fx, y, fw, 24, C.edge, 1, L())
+    -- "Name" | the field (over two columns: its text sits 6 in) | the keyboard button
+    local t = ui.table('name', x, y, w, {columns = {50, 6, '*', 10, 120}, spacing = {0, 0}, row_height = 24, layer = LAYER})
+    t:row()
+    t:label(1, 'Name', {size = 13, color = C.text_dim})
+    local fx, fy, fw, fh = t:cell(2, 2)
+    ui.rect(fx, fy, fw, fh, 0xF0202030, L())
+    ui.frame(fx, fy, fw, fh, C.edge, 1, L())
     local caret = (not view.confirm and math.floor(gear.time() * 2) % 2 == 0) and '|' or ''
-    ui.text(fit(view.name, fw - 16, 13) .. caret, fx + 6, y, L({size = 13, height = 24, valign = 'middle'}))
-    if ui.button('kbd', x + w - 120, y, 120, 24, (view.osk and view.osk.target == 'name') and 'Close keyboard' or 'Keyboard',
-        L({tooltip = 'Type the name with an on-screen keyboard (for a controller)'})) then
+    -- the caret follows the text: cut the text, not the caret
+    t:label(3, view.name .. caret, {id = 'name-text', size = 13, ellipsis = false})
+    if t:button(5, (view.osk and view.osk.target == 'name') and 'Close keyboard' or 'Keyboard',
+        {id = 'kbd', tooltip = 'Type the name with an on-screen keyboard (for a controller)'}) then
         view.osk = not (view.osk and view.osk.target == 'name') and {shift = false, target = 'name'} or nil
         view.focus = 'name'
     end
@@ -592,40 +612,38 @@ end
 -- keyboard for it, and the jumps through the list (page, start, end) that a controller needs for a long one.
 local function search_row(x, y, w)
     local bh = 26
-    local jw = {44, 74, 74, 44}
     local jt = {'Top', 'Page up', 'Page down', 'End'}
-    local kw = 80
-    local fw = w - kw - 8 - (jw[1] + jw[2] + jw[3] + jw[4]) - 4 * 6 - 8
+    local t = ui.table('search', x, y, w, {columns = {'*', 80, 44, 74, 74, 44}, spacing = {6, 0}, row_height = bh,
+        layer = LAYER})
+    t:row()
     local active = typing_target() == 'search'
-    ui.rect(x, y, fw, bh, 0xF0202030, L())
-    ui.frame(x, y, fw, bh, active and C.accent or C.edge, 1, L())
-    if ui.button('search_field', x, y, fw, bh, '', L({tooltip = 'Search: hero, class, name, date, number'})) then
+    local fx, fy, fw = t:cell(1)
+    ui.rect(fx, fy, fw, bh, 0xF0202030, L())
+    ui.frame(fx, fy, fw, bh, active and C.accent or C.edge, 1, L())
+    if t:button(1, '', {id = 'search_field', tooltip = 'Search: hero, class, name, date, number'}) then
         view.focus = 'search'
     end
-    local count = ('%d of %d'):format(#view.shown, #view.all)
-    local cw = 96
+    -- over the field: the text (or what to type) and the count at its right end
+    local inner = ui.table('search_in', fx + 8, fy, fw - 14, {columns = {'*', 96}, spacing = {0, 0}, row_height = bh,
+        layer = LAYER})
+    inner:row()
     local caret = (active and math.floor(gear.time() * 2) % 2 == 0) and '|' or ''
     if view.search == '' then
-        ui.text(fit(active and '   Type to search' or 'Search', fw - cw - 14, 13), x + 8, y,
-            L({size = 13, height = bh, valign = 'middle', color = C.text_dim}))
-        if active then ui.text(caret, x + 8, y, L({size = 13, height = bh, valign = 'middle'})) end
+        inner:label(1, active and '   Type to search' or 'Search', {id = 'search-hint', size = 13, color = C.text_dim})
+        if active then inner:label(1, caret, {id = 'search-caret', size = 13, ellipsis = false}) end
     else
-        ui.text(fit(view.search, fw - cw - 14, 13) .. caret, x + 8, y, L({size = 13, height = bh, valign = 'middle'}))
+        inner:label(1, view.search .. caret, {id = 'search-text', size = 13, ellipsis = false})
     end
-    ui.text(count, x + fw - cw - 6, y, L({size = 12, width = cw, align = 'right', height = bh, valign = 'middle',
-        color = C.text_dim}))
-    local bx = x + fw + 6
-    if ui.button('search_kbd', bx, y, kw, bh, (view.osk and view.osk.target == 'search') and 'Close' or 'Keyboard',
-        L({tooltip = 'Type the search with an on-screen keyboard (for a controller)'})) then
+    inner:label(2, ('%d of %d'):format(#view.shown, #view.all), {size = 12, halign = 'right', color = C.text_dim})
+    if t:button(2, (view.osk and view.osk.target == 'search') and 'Close' or 'Keyboard',
+        {id = 'search_kbd', tooltip = 'Type the search with an on-screen keyboard (for a controller)'}) then
         view.focus = 'search'
         view.osk = not (view.osk and view.osk.target == 'search') and {shift = false, target = 'search'} or nil
     end
-    bx = bx + kw + 8
     for i = 1, 4 do
-        if ui.button('jump' .. i, bx, y, jw[i], bh, jt[i], L({enabled = #view.shown > 0})) then
+        if t:button(2 + i, jt[i], {id = 'jump' .. i, enabled = #view.shown > 0}) then
             move(i == 1 and 'first' or i == 4 and 'last' or (i == 2 and -view.page or view.page))
         end
-        bx = bx + jw[i] + 6
     end
 end
 
@@ -655,25 +673,27 @@ local function draw_keyboard(x, y, w, h)
     local o = view.osk
     ui.rect(x, y, w, h, 0xC0101018, L())
     ui.text(view.osk.target == 'search' and 'On-screen keyboard: search' or 'On-screen keyboard: the name of the savegame', x + 8, y + 6, L({size = 13, color = C.accent}))
-    local cols, gap = 11, 4
-    local kw = math.floor((w - 16 - (cols - 1) * gap) / cols)
-    local ky = y + 32
-    for r, keys in ipairs(OSK_ROWS) do
-        for i, k in ipairs(keys) do
+    -- eleven equal keys a row, then Shift / Space / Backspace / Done in four equal ones
+    local keys = ui.table('osk', x + 8, y + 32, w - 16, {columns = {'*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*'},
+        spacing = {4, 6}, row_height = 30, layer = LAYER})
+    for r, rowkeys in ipairs(OSK_ROWS) do
+        keys:row()
+        for i, k in ipairs(rowkeys) do
             local label = k
             if o.shift then label = OSK_UPPER[k] or k:upper() end
-            if ui.button(('osk%d_%d'):format(r, i), x + 8 + (i - 1) * (kw + gap), ky, kw, 30, label, L()) then
+            if keys:button(i, label, {id = ('osk%d_%d'):format(r, i)}) then
                 osk_type(label)
                 o.shift = false
             end
         end
-        ky = ky + 36
     end
-    local bw = math.floor((w - 16 - 3 * gap) / 4)
-    if ui.button('osk_shift', x + 8, ky, bw, 30, o.shift and 'SHIFT' or 'Shift', L()) then o.shift = not o.shift end
-    if ui.button('osk_space', x + 8 + (bw + gap), ky, bw, 30, 'Space', L()) then osk_type(' ') end
-    if ui.button('osk_back', x + 8 + 2 * (bw + gap), ky, bw, 30, 'Backspace', L()) then osk_back() end
-    if ui.button('osk_done', x + 8 + 3 * (bw + gap), ky, bw, 30, 'Done', L()) then view.osk = nil end
+    local t = ui.table('osk_keys', x + 8, y + 32 + keys:height() + 6, w - 16, {columns = {'*', '*', '*', '*'},
+        spacing = {4, 6}, row_height = 30, layer = LAYER})
+    t:row()
+    if t:button(1, o.shift and 'SHIFT' or 'Shift', {id = 'osk_shift'}) then o.shift = not o.shift end
+    if t:button(2, 'Space', {id = 'osk_space'}) then osk_type(' ') end
+    if t:button(3, 'Backspace', {id = 'osk_back'}) then osk_back() end
+    if t:button(4, 'Done', {id = 'osk_done'}) then view.osk = nil end
 end
 
 local function screen(preview)

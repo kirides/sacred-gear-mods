@@ -163,6 +163,14 @@ local function row_text(b)
         (b.title and b.title ~= '') and ('  - ' .. fit(b.title, 30)) or '')
 end
 
+local function lines_of(items, fmt, x, y, w)
+    for _, item in ipairs(items or {}) do
+        ui.text(fit(fmt(item), math.floor(w / 6.5)), x, y, {})
+        y = y + 16
+    end
+    return y
+end
+
 local function browse(x, y, w, h)
     -- Class | dropdown | Sort | the sort radios | Refresh | prev | next
     local bar = ui.table('bar', x, y, w, {columns = {36, 100, 30, '*', 70, 34, 34}, spacing = {4, 0}, row_height = 20})
@@ -186,105 +194,76 @@ local function browse(x, y, w, h)
         ui.text('No build matches. Publish yours on the "My build" tab.', x, top, {color = DIM})
     else
         local area = ui.scroll_begin('browse', x, top, w, h - 54, {step = 22})
-        local t = ui.table('builds', area.content_x, area.content_y, area.w - 2, {columns = {'*'}, spacing = {0, 2}, row_height = 20})
         for i, b in ipairs(view.list.builds) do
             if type(b) == 'table' and type(b.id) == 'string' then
-                t:row()
-                if t:button(1, row_text(b), {id = 'b' .. i, tooltip = 'Fetch this build'}) then request('get', {id = b.id}) end
+                if ui.button('b' .. i, x, area.content_y + (i - 1) * 22, area.w - 2, 20, row_text(b), {tooltip = 'Fetch this build'}) then
+                    request('get', {id = b.id})
+                end
             end
         end
-        ui.scroll_end(t:height() + 2)
-        local foot = ui.table('count', x, y + h - 20, w, {columns = {'*'}, row_height = 16})
-        foot:row()
-        foot:label(1, ('%d build%s, page %d of %d'):format(view.list.total, view.list.total == 1 and '' or 's', view.page, view.list.pages),
-            {color = DIM})
+        ui.scroll_end(#view.list.builds * 22)
+        ui.text(('%d build%s, page %d of %d'):format(view.list.total, view.list.total == 1 and '' or 's', view.page, view.list.pages), x, y + h - 20, {color = DIM})
     end
 end
 
 local function my_build(x, y, w, h)
     local hero = gear.world.hero()
+    ui.text('What you publish', x, y, {color = ui.COLORS.accent})
     local cls = hero and hero:class() or '?'
+    ui.text(('%s, %s, level %s'):format(hero and hero:name() or '(no hero)', cls, hero and tostring(hero:level()) or '?'), x, y + 18, {})
+    ui.text('The server reads your skills and equipment itself.', x, y + 36, {color = DIM})
+    ui.text('Title: ' .. fit(gear.settings.get('title'), 40), x, y + 58, {})
+    ui.text('Note: ' .. fit(gear.settings.get('note'), 70), x, y + 74, {})
+    ui.text('Tags: ' .. table.concat(my_tags(), ', '), x, y + 90, {})
+    ui.text('(change these in the Mods screen, F11, under Build sharer)', x, y + 106, {color = DIM})
     local carried = carried_names()
-    -- lines of text across the width, the three buttons in a row of 24
-    local t = ui.table('mine', x, y, w, {columns = {120, 120, 120, '*'}, spacing = {8, 0}, row_height = 18})
-    local function line(text, opts, height)
-        t:row(height)
-        opts = opts or {}
-        opts.span = 4
-        t:label(1, text, opts)
-    end
-    line('What you publish', {color = ui.COLORS.accent})
-    line(('%s, %s, level %s'):format(hero and hero:name() or '(no hero)', cls, hero and tostring(hero:level()) or '?'))
-    line('The server reads your skills and equipment itself.', {color = DIM})
-    t:row(4)
-    line('Title: ' .. fit(gear.settings.get('title'), 40), nil, 16)
-    line('Note: ' .. fit(gear.settings.get('note'), 70), nil, 16)
-    line('Tags: ' .. table.concat(my_tags(), ', '), nil, 16)
-    line('(change these in the Mods screen, F11, under Build sharer)', {color = DIM}, 22)
-    line(('Carried items sent: %d%s'):format(#carried, gear.settings.get('share_carried') and '' or ' (off)'), nil, 24)
-    t:row(24)
-    if t:button(1, 'Publish', {id = 'publish', tooltip = 'Share (or update) your build on this server'}) then publish() end
-    if t:button(2, 'Remove mine', {id = 'unpublish', enabled = view.mine ~= nil and view.mine ~= false, tooltip = 'Take your build off the server'}) then
+    ui.text(('Carried items sent: %d%s'):format(#carried, gear.settings.get('share_carried') and '' or ' (off)'), x, y + 128, {})
+    if ui.button('publish', x, y + 152, 120, 24, 'Publish', {tooltip = 'Share (or update) your build on this server'}) then publish() end
+    if ui.button('unpublish', x + 128, y + 152, 120, 24, 'Remove mine', {enabled = view.mine ~= nil and view.mine ~= false, tooltip = 'Take your build off the server'}) then
         request('unpublish')
     end
-    if t:button(3, 'Check server', {id = 'mine', tooltip = 'What the server holds of yours'}) then request('mine') end
-    t:row(14)
+    if ui.button('mine', x + 256, y + 152, 120, 24, 'Check server', {tooltip = 'What the server holds of yours'}) then request('mine') end
+    local ty = y + 190
     if view.mine == false then
-        line('The server has no build of yours.', {color = DIM}, 16)
+        ui.text('The server has no build of yours.', x, ty, {color = DIM})
     elseif view.mine then
         local b = view.mine
-        line(('On the server: %s, level %s, %s'):format(fit(b.class_name, 14), tostring(b.level), b.verified and 'server-verified' or 'reported only'),
+        ui.text(('On the server: %s, level %s, %s'):format(fit(b.class_name, 14), tostring(b.level), b.verified and 'server-verified' or 'reported only'), x, ty,
             {color = b.verified and OK or DIM})
-        line(('%d skills, %d equipped items, %d combat arts'):format(#(b.skills or {}), #(b.equipment or {}), #(b.arts or {})), {color = DIM})
+        ui.text(('%d skills, %d equipped items, %d combat arts'):format(#(b.skills or {}), #(b.equipment or {}), #(b.arts or {})), x, ty + 16, {color = DIM})
     end
     if view.hero_data == false then
-        t:row(8)
-        line('This server keeps no hero data of you yet: your build will only have class and level.', {color = WARN})
+        ui.text('This server keeps no hero data of you yet: your build will only have class and level.', x, ty + 40, {color = WARN})
     end
 end
 
 local function detail(x, y, w, h)
     local b = view.detail
     if not b then ui.text('Pick a build on the Browse or Saved tab.', x, y, {color = DIM}); return end
+    ui.text(('%s - %s, level %s'):format(fit(b.name, 24), fit(b.class_name, 14), tostring(b.level)), x, y, {color = GOLD})
+    ui.text(b.verified and 'server-verified' or 'reported by the player', x + w - 150, y, {color = b.verified and OK or DIM})
     local text = {}
     if b.title and b.title ~= '' then text[#text + 1] = fit(b.title, 60) end
     if b.note and b.note ~= '' then text[#text + 1] = fit(b.note, 240) end
     local lines, th = ui.text_wrap(table.concat(text, '\n'), w - 8, {})
+    for i, line in ipairs(lines) do ui.text(line, x, y + 20 + (i - 1) * (th / math.max(1, #lines)), {}) end
+    local top = y + 24 + th
     local at = saved_index(b)
-    -- name and class | server-verified; the note's lines; the Save button at the right
-    local t = ui.table('head', x, y, w, {columns = {'*', 150}, spacing = {8, 0}, row_height = 20})
-    t:row()
-    t:label(1, ('%s - %s, level %s'):format(fit(b.name, 24), fit(b.class_name, 14), tostring(b.level)), {color = GOLD})
-    t:label(2, b.verified and 'server-verified' or 'reported by the player', {color = b.verified and OK or DIM, halign = 'right'})
-    local lh = th / math.max(1, #lines)
-    for i, ln in ipairs(lines) do
-        t:row(lh)
-        t:label(1, ln, {id = 'note' .. i, span = 2})
-    end
-    t:row(24)
-    if t:button(2, at and 'Remove from Saved' or 'Save to Saved', {id = 'save', width = 126, halign = 'right',
-        tooltip = 'Keep this build in a file on this computer'}) then
+    if ui.button('save', x + w - 130, top - 4, 126, 20, at and 'Remove from Saved' or 'Save to Saved', {tooltip = 'Keep this build in a file on this computer'}) then
         if at then table.remove(view.saved, at) else
             if #view.saved >= MAX_SAVED then table.remove(view.saved, 1) end
             view.saved[#view.saved + 1] = b
         end
         store_saved()
     end
-    local top = y + t:height() + 4
-    local area = ui.scroll_begin('detail', x, top, w, h - (top - y) - 4, {step = 16})
-    -- section titles over their lines (indented): one table for the whole scroll content
-    local s = ui.table('sections', area.content_x, area.content_y, area.w, {columns = {8, '*'}, spacing = {0, 0}, row_height = 16})
+    local area = ui.scroll_begin('detail', x, top + 20, w, h - (top + 20 - y) - 4, {step = 16})
+    local cy = area.content_y
     local function section(title, items, fmt)
         if type(items) ~= 'table' or #items == 0 then return end
-        s:row(18)
-        s:label(1, title, {span = 2, color = ui.COLORS.accent})
-        for _, item in ipairs(items) do
-            s:row()
-            s:label(2, fmt(item))
-        end
-        s:row(4)
+        ui.text(title, x, cy, {color = ui.COLORS.accent}); cy = cy + 18
+        cy = lines_of(items, fmt, x + 8, cy, area.w - 16) + 4
     end
-    section('Skills', b.skills, function(k) return ('%s  %s%s'):format(fit(k.name, 30), tostring(k.level), (k.bonus or 0) > 0 and (' (+' .. tostring(k.bonus) .. ')') or '') end)
+    section('Skills', b.skills, function(s) return ('%s  %s%s'):format(fit(s.name, 30), tostring(s.level), (s.bonus or 0) > 0 and (' (+' .. tostring(s.bonus) .. ')') or '') end)
     section('Combat arts', b.arts, function(a) return fit(a.name, 40) end)
     section('Equipment', b.equipment, function(e)
         return ('%s  [%s, item level %s%s]'):format(fit(e.name, 36), fit(e.tier, 8), tostring(e.level), (e.sockets or 0) > 0 and (', ' .. tostring(e.sockets) .. ' socketed') or '')
@@ -292,24 +271,21 @@ local function detail(x, y, w, h)
     section('Carried (reported)', b.carried, function(c) return fit(c, 48) end)
     if type(b.tags) == 'table' and #b.tags > 0 then
         local tags = {}
-        for _, tg in ipairs(b.tags) do tags[#tags + 1] = fit(tg, 16) end
-        s:row(18)
-        s:label(1, 'Tags: ' .. table.concat(tags, ', '), {span = 2, color = DIM})
+        for _, t in ipairs(b.tags) do tags[#tags + 1] = fit(t, 16) end
+        ui.text('Tags: ' .. table.concat(tags, ', '), x, cy, {color = DIM}); cy = cy + 18
     end
-    ui.scroll_end(s:height())
+    ui.scroll_end(cy - area.content_y)
 end
 
 local function saved_tab(x, y, w, h)
     if #view.saved == 0 then ui.text('Nothing saved yet. Open a build and use "Save to Saved".', x, y, {color = DIM}); return end
     local area = ui.scroll_begin('saved', x, y, w, h, {step = 22})
-    local t = ui.table('saved', area.content_x, area.content_y, area.w - 2, {columns = {'*'}, spacing = {0, 2}, row_height = 20})
     for i, b in ipairs(view.saved) do
-        t:row()
-        if t:button(1, row_text(b), {id = 's' .. i, tooltip = 'Show this build'}) then
+        if ui.button('s' .. i, x, area.content_y + (i - 1) * 22, area.w - 2, 20, row_text(b), {tooltip = 'Show this build'}) then
             view.detail = b; view.tab = 4
         end
     end
-    ui.scroll_end(t:height() + 2)
+    ui.scroll_end(#view.saved * 22)
 end
 
 local function panel()
@@ -327,11 +303,7 @@ local function panel()
     elseif view.tab == 2 then my_build(x, top, w, body_h)
     elseif view.tab == 3 then saved_tab(x, top, w, body_h)
     else detail(x, top, w, body_h) end
-    if view.status ~= '' then
-        local foot = ui.table('status', x, y + h - 16, w, {columns = {'*'}, row_height = 16})
-        foot:row()
-        foot:label(1, view.status, {color = WARN})
-    end
+    if view.status ~= '' then ui.text(fit(view.status, 90), x, y + h - 16, {color = WARN}) end
 end
 
 gear.keys.on('toggle', function() ui.toggle_panel('main') end)
