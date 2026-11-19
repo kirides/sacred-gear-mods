@@ -2,9 +2,9 @@
 return {
     id = 'drop-tuning',
     name = 'Drop tuning',
-    version = '1.1.0',
+    version = '1.2.0',
     author = 'kirides',
-    description = 'Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, can swap the game\'s random numbers for a fair generator, and can let the Icon Set pieces drop at any level.',
+    description = 'Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, can swap the game\'s random numbers for a fair generator, can let the Icon Set pieces drop at any level, and can make creatures drop the gear you could otherwise only take with the Disarming skill.',
     settings = {
         {id = 'chance', type = 'number', label = 'Drop chance (x)', min = 0, max = 5, step = 0.1, default = 1,
          section = 'How often',
@@ -31,5 +31,11 @@ return {
          tooltip = 'Creatures below this level never drop a piece through this setting'},
         {id = 'icon_per_level', type = 'number', label = 'Icon Set: extra weight per level', min = 0, max = 10, step = 0.1, default = 0,
          tooltip = 'Added to the weight for every creature level above the lowest level'},
+        {id = 'carry_chance', type = 'number', label = 'Carried gear: chance (%)', min = 0, max = 100, step = 1, default = 0,
+         section = 'Carried gear',
+         tooltip = 'Creatures carry the items the Disarming skill takes from them (Khrag\'s armor, the X-MAS sword, shields of the ice elves ...). This is the chance that each such item drops when the creature dies, so the skill is not needed. 0 = off, the game as it is. Single player only (the game server cannot create the items)'},
+        {id = 'carry_filter', type = 'choice', label = 'Carried gear: which items', default = 'special',
+         choices = {{value = 'special', label = 'Set and unique items (what can be disarmed)'}, {value = 'all', label = 'All equipment creatures carry'}},
+         tooltip = 'Only the special items, or also the plain weapons and armour that orcs, goblins and the like hold. The drop is a new item of the same type at the corpse, as disarming gives it: its own fixed level and lowest tier, not the creature\'s level'},
     },
 }

@@ -29,7 +29,60 @@ gear.on('drops.select', function(ev)
     if p > 0 and math.random() < p then ev.type = ICON_PIECES[math.random(#ICON_PIECES)] end
 end)
 
+-- Carried gear: monsters hold the items the Disarming skill takes from them in their equipment slots; only the Disarming skill gets them.
+-- With a chance above 0 a dying creature drops (a share of) them instead, so no hero needs the skill. The drop is a fresh item of the same
+-- type at the corpse, which is what disarming gives too: the item's own record decides its level and quality (the same fixed, lowest tier
+-- of a unique or set item every time), not the level of the creature.
+local carry = {handler = nil, done = {}, count = 0, dropped = 0, seen = 0}
+
+-- Which carried items the filter admits: 'special' = set and unique items only (what can be disarmed), 'all' = any equipment.
+local function carry_wanted(item, filter)
+    if item.gold or item.quest or item.potion then return false end
+    if filter == 'all' then return true end
+    return item.set == true or item.rarity >= 15 or item.category == 'special'
+end
+
+local function carry_roll(ev)
+    if ev.network or not ev.id or ev.id <= 16 then return end       -- heroes and network games: nothing
+    local p = (S.get('carry_chance') or 0) / 100
+    if p <= 0 then return end
+    local c = gear.world.object(ev.id)
+    local items = c and c:carried()
+    if not items or #items == 0 then return end
+    local filter = S.get('carry_filter') or 'special'
+    local x, y, layer = c:position()
+    for _, e in ipairs(items) do
+        local item = e.item
+        if not carry.done[item.id] and carry_wanted(item, filter) then
+            carry.done[item.id] = true          -- the loot function runs once per authored drop: roll each item once
+            carry.count = carry.count + 1
+            carry.seen = carry.seen + 1
+            if carry.count > 4000 then carry.done, carry.count = {}, 0 end
+            if math.random() < p then
+                local type = item.type
+                gear.after(0.05, function()
+                    local ax, ay = gear.world.around(x, y, 20, 90)
+                    local made = gear.world.spawn(type, ax, ay, {layer = layer})
+                    if made then carry.dropped = carry.dropped + 1 end
+                end)
+            end
+        end
+    end
+end
+
+-- Switched on only while the chance is above 0: with the setting off the loot function does not call into Lua for this mod at all.
+local function carry_apply()
+    local on = (S.get('carry_chance') or 0) > 0
+    if on and not carry.handler then
+        carry.handler = gear.on('drops.roll', carry_roll)
+    elseif not on and carry.handler then
+        gear.off(carry.handler)
+        carry.handler = nil
+    end
+end
+
 local function apply()
+    carry_apply()
     drops.chance_scale(S.get('chance'))
     drops.find_scale(S.get('find'))
     local weights = {special0 = S.get('special'), special1 = S.get('special')}
@@ -56,7 +109,12 @@ gear.on('drop-tuning.configure', function(values)
     for id, value in pairs(values or {}) do S.set(id, value) end
 end)
 
+-- For the self test: the filter, and the counters of the carried gear.
+gear.on('drop-tuning.carry_filter', function(item, filter, answer) answer(carry_wanted(item, filter)) end)
+gear.on('drop-tuning.carry_stats', function(answer) answer({seen = carry.seen, dropped = carry.dropped}) end)
+
 gear.on('unload', function()
+    if carry.handler then gear.off(carry.handler); carry.handler = nil end
     drops.chance_scale(nil)
     drops.find_scale(nil)
     drops.rarity_weights(nil)
@@ -108,6 +166,12 @@ gear.mods.page(function(x, y, w, h)
         line(('about one piece in %d equipment drops (one given piece: one in %d)'):format(math.floor(1 / p + 0.5), math.floor(6 / p + 0.5)))
     end
     line('The game alone: set weight 9 (x10 of 10000), 60% take the set path, then one of up to 65 sets: roughly 0.01% or less')
+    if (S.get('carry_chance') or 0) > 0 then
+        line(('Carried gear: %d%% chance (%s); %d items seen on dying creatures, %d dropped'):format(
+            S.get('carry_chance') or 0, S.get('carry_filter') == 'all' and 'all equipment' or 'set and unique items', carry.seen, carry.dropped))
+    else
+        line('Carried gear: off (give it a chance to let creatures drop the items you could disarm)')
+    end
     local s = drops.stats()
     line(('Loot rolls %d (%d authored), equipment picks %d, rarity draws %d'):format(s.rolls, s.forced, s.picks, s.rarity_draws))
     ui.scroll_end(cy + 8)

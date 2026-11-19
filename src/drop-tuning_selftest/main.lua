@@ -45,7 +45,7 @@ local function run(creature, n)
 end
 
 local DEFAULTS = {chance = 1, find = 1, special = 1, low = 1, mid = 1, high = 1, rng = 'game', seed = 1,
-                  icon_weight = 0, icon_min_level = 1, icon_per_level = 0}
+                  icon_weight = 0, icon_min_level = 1, icon_per_level = 0, carry_chance = 0, carry_filter = 'special'}
 
 gear.task(function()
     A.wait_for_menu(cfg.timeout_menu)
@@ -103,6 +103,49 @@ gear.task(function()
     configure({icon_weight = 1000, icon_min_level = 200})
     local none = run(creature, cfg.rolls)
     check('icon set: nothing below the lowest level', none.overridden == 0, none.overridden)
+
+    -- Carried gear: a creature that holds items (an orc's weapons) drops them at the chance, set and unique ones only by default.
+    configure(DEFAULTS)
+    local holder, held
+    for _, c in ipairs(gear.world.creatures_near(x, y, 30000, {layer = layer})) do
+        local ca = c.id > 16 and c:carried()
+        if ca and #ca > 0 then holder, held = c, ca; break end
+    end
+    check('carried gear: a creature that carries items', holder ~= nil)
+    if holder then
+        local special = gear.world.spawn(5102, x + 100, y + 100, {layer = layer})       -- a set item (Icon Set)
+        local sitem = special and gear.world.item(special.id)
+        local function wanted(item, filter)
+            local r
+            gear.emit('drop-tuning.carry_filter', item, filter, function(v) r = v end)
+            return r
+        end
+        check('carried gear: the filter admits a set item and not a plain weapon', sitem and wanted(sitem, 'special') == true and wanted(held[1].item, 'special') == false and wanted(held[1].item, 'all') == true)
+        if special then special:remove() end
+        local function stats() local r; gear.emit('drop-tuning.carry_stats', function(v) r = v end); return r end
+        local hx, hy, hl = holder:position()
+        configure({carry_chance = 100, carry_filter = 'special'})
+        run(holder.id, 3)
+        local st = stats()
+        check('carried gear: plain gear does not drop with the special filter', st.dropped == 0 and st.seen == 0, st.seen .. ' seen, ' .. st.dropped .. ' dropped')
+        configure({carry_chance = 0, carry_filter = 'all'})
+        run(holder.id, 3)
+        check('carried gear: off at chance 0', stats().seen == 0)
+        configure({carry_chance = 100, carry_filter = 'all'})
+        local before = #gear.world.items_near(hx, hy, 300, {layer = hl, limit = 2000})
+        run(holder.id, 3)
+        gear.wait(0.5)
+        st = stats()
+        check('carried gear: every carried item drops at 100% (all equipment)', st.dropped == #held, st.dropped .. ' of ' .. #held)
+        local found = 0
+        local near = gear.world.items_near(hx, hy, 300, {layer = hl, limit = 2000})
+        for _, e in ipairs(held) do
+            for _, it in ipairs(near) do if it.type == e.item.type then found = found + 1; break end end
+        end
+        check('carried gear: the items lie by the creature', found == #held, found .. ' of ' .. #held .. ', ' .. before .. ' -> ' .. #near .. ' items')
+        run(holder.id, 3)
+        check('carried gear: each item drops once per creature', stats().dropped == #held, stats().dropped)
+    end
 
     configure(DEFAULTS)
     local back = drops.rarity_table()
