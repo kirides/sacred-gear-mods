@@ -197,16 +197,35 @@ local function chosen_classes()
     return list
 end
 
+-- Lua's `c and false or x` always yields x, so false values are chosen with explicit ifs.
+local function category_rule(v)
+    if v == 'never' then return false end
+    if v == '(minimum)' then return nil end
+    return v
+end
+
+local function potion_rule(v)
+    if v == 'leave' then return false end
+    if v == 'take' then return true end
+    return nil
+end
+
+local function classes_rule(v)
+    if v == 'own' then return 'own' end
+    if v == 'any' then return false end
+    return chosen_classes()
+end
+
 -- One setting into cfg.
 local function apply_setting(id, v)
     if id == 'classes_mode' then
-        cfg.classes = v == 'own' and 'own' or v == 'any' and false or chosen_classes()
+        cfg.classes = classes_rule(v)
     elseif id:sub(1, 6) == 'class_' then
         if type(cfg.classes) == 'table' then cfg.classes = chosen_classes() end
     elseif id:sub(1, 4) == 'cat_' then
-        cfg.categories[id:sub(5)] = v == 'never' and false or v ~= '(minimum)' and v or nil
+        cfg.categories[id:sub(5)] = category_rule(v)
     elseif id:sub(1, 13) == 'potion_color_' then
-        cfg.potions[id:sub(14)] = v == 'leave' and false or v == 'take' and true or nil
+        cfg.potions[id:sub(14)] = potion_rule(v)
     elseif id:sub(1, 7) == 'potion_' then
         cfg.potions[id:sub(8)] = v
     else
@@ -352,7 +371,7 @@ local function settings_panel()
         local ch, idx = ui.dropdown('cat-' .. r.cat, r.x + 80, r.y, 120, CATEGORY_OPTIONS, index_of(CATEGORY_OPTIONS, cur))
         if ch then
             local v = CATEGORY_OPTIONS[idx]
-            cfg.categories[r.cat] = v == 'never' and false or v ~= '(minimum)' and v or nil
+            cfg.categories[r.cat] = category_rule(v)
             changed = true
         end
     end
