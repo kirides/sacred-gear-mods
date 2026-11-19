@@ -19,7 +19,9 @@ Sacred Gear and the mod. In a LAN game **every computer needs the mod and the sa
 
 1. Press **Ctrl+Shift+C** (or *Class window* in the controller's mod menu, **LT + LB**). A hero at level 1 without a class gets the
    window by itself when the game starts (setting *Offer a class to a new hero*).
-2. Pick a class on the left (those for your hero's body first, the others under *Other bodies*), read what it gives, press
+2. Pick a class card on the left (those for your hero's body first, the others under *Other bodies*). On the right you see its skills
+   (the game's names; hover for the description) and its arts as cards: the game's own icon, name, how the hero gets the art and a
+   coloured chip with its portability tier (hover for the explanation and the art's description). Press
    **Take this class**. The hero gets the class's starting arts at once, and the arts that come with a level as soon as they reach it.
    The window's buttons are normal window widgets: the controller's D-pad reaches them.
 3. **Skills:** the skill window shows the class's skills while you play that hero.
@@ -83,13 +85,13 @@ The copy runs the original's code (so it works wherever the original does); the 
 savegames use the copy's own id and texts.
 
 ```json
-{ "format": 1, "id": "venom-strike", "kind": "copy", "art_id": 2001, "base": 1059,
+{ "format": 1, "id": "venom-strike", "kind": "copy", "art_id": 2001, "base": 1059, "icon": "GUI_MOVE_HARDHIT.TGA",
   "name": { "en": "Venom Strike" }, "description": { "en": "..." },
   "values": { "effect_base": 40, "effect_per_level": 6, "regen_base": 8 } }
 ```
 
 `art_id` is 2000 to 4999 (the game refuses art ids above 5000), `base` a combat art (1000 to 1999; spells cannot be copied:
-the game does not run a spell under an id of its own). `values` are the fields of `gear.data.abilities` (the
+the game does not run a spell under an id of its own). `icon` is optional: a texture of the game (the copy uses its base's icon without it). `values` are the fields of `gear.data.abilities` (the
 [GearApi](https://github.com/kirides/sacred-bild/blob/main/docs/GearApi.md) lists them: `effect_base`, `effect_per_level`,
 `regen_base`, `regen_per_level`, `target_mode`, and the `unk_` fields). The editor shows the game's ranges.
 

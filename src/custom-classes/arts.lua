@@ -4,7 +4,8 @@
 -- A **copy** is the same art with its own id, name, description and numbers ("Venom Strike" = Poison Dart, stronger):
 --   { "format": 1, "id": "venom-strike", "kind": "copy", "art_id": 2001, "base": 1059,
 --     "name": {"en": "Venom Strike"}, "description": {"en": "..."},
---     "values": {"effect_base": 12.5, "effect_per_level": 2, "unk_40": 6, ...} }        (any field of gear.data.abilities)
+--     "icon": "GUI_MOVE_KICK.TGA",                                                    (optional: another icon, a texture of the game)
+--     "values": {"effect_base": 12.5, "effect_per_level": 2, "regen_base": 6, ...} }  (any field of gear.data.abilities)
 -- `art_id` is 2000..4999 and `base` a combat art (1000..1999; spells cannot be copied): Gear serves the copy's own record to the
 -- game's lookups and the base art's code runs it.
 --
@@ -16,6 +17,15 @@
 -- regeneration seconds, whole seconds for spells), so it can never be cheaper than the parts. The steps are learned with the chain.
 
 local M = {}
+
+-- The installed mods that are switched on (data of a mod that is off is not read).
+local function active_mods()
+    local out = {}
+    for _, m in ipairs(gear.mods.list()) do
+        if m.state == 'on' then out[#out + 1] = m end
+    end
+    return out
+end
 local ids, chains = {}, {}
 M.chains = chains
 
@@ -27,6 +37,21 @@ local function text(value, fallback)
     local lang = tostring(gear.game.config('LANGUAGE') or 'EN'):lower()
     if lang == 'us' then lang = 'en' end
     return value[lang] or value.en or select(2, next(value)) or fallback
+end
+
+-- Writes an icon texture name (the game's file name, e.g. GUI_MOVE_KICK.TGA) into a copy's record (char[0x24] at +0x0C).
+function M.set_icon(rec, name)
+    if type(name) ~= 'string' or #name == 0 or #name > 0x23 then return nil, 'icon must be a texture file name of at most 35 characters' end
+    if not gear.ui.texture_image(name) then return nil, 'the game has no texture ' .. name end
+    local bytes = {name:byte(1, -1)}
+    for i = #bytes + 1, 0x24 do bytes[i] = 0 end
+    for w = 0, 8 do
+        local v = 0
+        for b = 3, 0, -1 do v = v * 256 + (bytes[w * 4 + b + 1] or 0) end
+        local ok = pcall(function() rec[('unk_%02x'):format(0x0C + w * 4)] = v end)
+        if not ok then return nil, 'cannot write the icon' end
+    end
+    return true
 end
 
 local function is_art(id) return id >= 1000 and id < 2000 end
@@ -58,6 +83,10 @@ local function make_copy(d, where)
     if name then rec.name_text = assert(gear.text.add(name)) end
     local desc = text(d.description, nil)
     if desc then rec.description_text = assert(gear.text.add(desc)) end
+    if d.icon ~= nil then
+        local ok, why = M.set_icon(rec, d.icon)
+        if not ok then return nil, why end
+    end
     return true
 end
 
@@ -105,7 +134,7 @@ function M.load()
     for id in pairs(chains) do chains[id] = nil end
     local problems = {}
     local pending = {}
-    for _, m in ipairs(gear.mods.list()) do
+    for _, m in ipairs(active_mods()) do
         for _, name in ipairs(gear.mods.files(m.id, 'arts') or {}) do
             if name:lower():match('%.json$') then
                 local where = m.id .. '/arts/' .. name
