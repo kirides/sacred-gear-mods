@@ -109,19 +109,30 @@ local function items_tab(x, y, w, h)
     local cy = y + 18
     local bag = backpack_quest_items()
     if #bag == 0 then ui.text('no quest items', x + 8, cy, {color = DIM}); cy = cy + 16 end
-    for _, it in ipairs(bag) do
-        ui.text(('%s  (%d x %d cells)'):format(fit(type_label(it), 40), it.w or 1, it.h or 1), x + 8, cy, {})
-        cy = cy + 16
+    if #bag > 0 then
+        local t = ui.table('bag', x + 8, cy, w - 8, {columns = {'*', 110}, row_height = 16, spacing = {8, 0}})
+        for _, it in ipairs(bag) do
+            t:row()
+            t:label(1, type_label(it))
+            t:label(2, ('%d x %d cells'):format(it.w or 1, it.h or 1), {color = DIM})
+        end
+        cy = cy + t:height()
     end
     cy = cy + 10
     ui.text(('On the ground within %d tiles'):format(NEAR_TILES), x, cy, {color = ui.COLORS.accent})
     cy = cy + 18
     if #view.near == 0 then ui.text('no quest items in sight', x + 8, cy, {color = DIM}) end
     local area = ui.scroll_begin('near', x, cy, w, math.max(40, y + h - cy), {step = 16})
-    for i, n in ipairs(view.near) do
-        ui.text(('%s  -  %.0f tiles away, at %d, %d'):format(fit(n.name, 36), n.dist, n.x, n.y), x + 8, area.content_y + (i - 1) * 16, {})
+    local t = ui.table('near', area.content_x + 8, area.content_y, area.w - 8, {
+        columns = {'*', {width = 90, align = 'right'}, 110}, row_height = 16, spacing = {8, 0},
+    })
+    for _, n in ipairs(view.near) do
+        t:row()
+        t:label(1, n.name)
+        t:label(2, ('%.0f tiles away'):format(n.dist))
+        t:label(3, ('%d, %d'):format(n.x, n.y), {color = DIM})
     end
-    ui.scroll_end(#view.near * 16)
+    ui.scroll_end(t:height())
 end
 
 -- ---- records (from the server) ----
