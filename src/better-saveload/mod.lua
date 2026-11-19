@@ -2,17 +2,20 @@
 return {
     id = 'better-saveload',
     name = 'Better SaveLoad',
-    version = '1.2.0',
+    version = '1.3.0',
     author = 'kirides',
     description = 'The savegame screen made new: hero, class, level and picture of every savegame, filters by '
-        .. 'character and class, newest first or by file name. Works with the mouse, the keyboard and the controller.',
+        .. 'character and class, a search, several orders, and room for thousands of savegames (the game stops at '
+        .. '100 on its own screen). Works with the mouse, the keyboard and the controller.',
     settings = {
         {id = 'in_game', type = 'bool', label = 'Replace the savegame window in game', default = true,
          tooltip = 'Off: the game\'s own savegame window'},
         {id = 'in_menus', type = 'bool', label = 'Replace the Load game screen of the start menu', default = true,
          tooltip = 'Off: the game\'s own Load game screen'},
         {id = 'sort', type = 'choice', label = 'Order', default = 'newest',
-         choices = {{value = 'newest', label = 'Newest first'}, {value = 'file', label = 'By file name (as the game)'}}},
+         choices = {{value = 'newest', label = 'Newest first'}, {value = 'oldest', label = 'Oldest first'},
+                    {value = 'hero', label = 'By character'}, {value = 'level', label = 'Highest level first'},
+                    {value = 'number', label = 'By number'}, {value = 'file', label = 'By file name (as the game)'}}},
         {id = 'current_hero', type = 'bool', label = 'In game, show the current hero\'s savegames first', default = false,
          tooltip = 'The character filter starts on the hero you play'},
         {id = 'confirm_load', type = 'bool', label = 'Ask before loading in game', default = true,

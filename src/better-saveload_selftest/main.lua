@@ -19,8 +19,8 @@ local cfg = gear.config
 local results = {checks = {}, passed = 0, failed = 0}
 local WND_GAME, WND_MENUS = 'UI_WND_SAVEGAME', 'UI_MENU_LOADGAME'
 local LOAD_ENTRY = {512, 413}       -- the start menu's 5th entry (Load game), 1024x768 layout
-local BACK_BUTTON = {854, 673}      -- the screen's Back button at the panel's default place and size
-local NEW_ROW = {420, 159}          -- the first row of the list (in save mode: New savegame)
+local BACK_BUTTON = {854, 697}      -- the screen's Back button at the panel's default place and size
+local NEW_ROW = {420, 169}          -- the first row of the list (in save mode: New savegame)
 
 local function check(name, ok, detail)
     results.checks[#results.checks + 1] = {name = name, ok = ok and true or false, detail = detail}
@@ -124,7 +124,7 @@ gear.task(function()
         if stamp(set[q.order[i - 1]]) < stamp(set[q.order[i]]) then newest_ok = false end
     end
     check('newest first', newest_ok and q.sort == 'newest')
-    gear.emit('better-saveload.set', {sort_i = 2})
+    gear.emit('better-saveload.set', {sort_i = 6})
     q = query()
     local file_ok = #q.order == #before
     for i, s in ipairs(before) do

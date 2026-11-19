@@ -33,7 +33,7 @@ local function clean_slots(slots)
     local out, seen = {}, {}
     if type(slots) == 'table' then
         for _, s in ipairs(slots) do
-            if type(s) == 'number' and s == math.floor(s) and s >= 1 and s <= 509 and not seen[s]
+            if type(s) == 'number' and s == math.floor(s) and s >= 1 and s <= 32766 and not seen[s]
                 and #out < MAX_SLOTS then
                 seen[s] = true
                 out[#out + 1] = s
@@ -53,6 +53,9 @@ local function check_config()
     cfg.slots = clean_slots(cfg.slots)
     if type(cfg.name) ~= 'string' or cfg.name == '' then cfg.name = 'Autosave %H:%M' end
     cfg.show_confirmation = cfg.show_confirmation ~= false
+    -- A manual save (the game's own "new savegame", Better SaveLoad's) never takes one of these numbers first, however
+    -- many savegames there are.
+    if game.reserve_slots then game.reserve_slots(cfg.slots) end
 end
 
 -- The settings are kept by the mod manager (gear.settings, saved in mods\gear_mods.json, changed in its Mods screen);

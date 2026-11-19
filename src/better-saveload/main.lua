@@ -15,6 +15,7 @@ local WND_GAME, WND_MENUS = 'UI_WND_SAVEGAME', 'UI_MENU_LOADGAME'
 local LAYER = 'top'
 local ROW_H, THUMB_W, THUMB_H = 54, 64, 48
 local DOUBLE_CLICK = 0.4    -- seconds between the two clicks of a double click
+local SEARCH_MAX = 40
 local NAME_MAX = 60     -- the engine keeps 60 characters of a savegame's name (Windows-1252: umlauts and the like)
 
 local CLASS_LABEL = {
@@ -22,7 +23,11 @@ local CLASS_LABEL = {
     woodelf = 'Wood Elf', vampiress = 'Vampiress', dwarf = 'Dwarf', daemon = 'Daemon',
 }
 local CLASS_ORDER = {'seraphim', 'gladiator', 'battlemage', 'darkelf', 'woodelf', 'vampiress', 'dwarf', 'daemon'}
-local SORTS = {{id = 'newest', label = 'Newest first'}, {id = 'file', label = 'By file name'}}
+local SORTS = {
+    {id = 'newest', label = 'Newest first'}, {id = 'oldest', label = 'Oldest first'},
+    {id = 'hero', label = 'By character'}, {id = 'level', label = 'Highest level first'},
+    {id = 'number', label = 'By number'}, {id = 'file', label = 'By file name'},
+}
 
 local view = {
     open = nil,         -- the replaced window that is open (WND_GAME / WND_MENUS), nil: closed
@@ -36,9 +41,12 @@ local view = {
     confirm = nil,      -- {text, yes = fn}: the question shown in place of the buttons
     message = nil, message_ok = false, message_until = 0,
     follow = false,     -- scroll the selection into view on the next draw
+    search = '',        -- the search text: every word has to be somewhere in a savegame's text
+    focus = 'name',     -- where typing goes in save mode: 'name' | 'search' (in load mode always the search)
+    page = 8,           -- rows per page (set while drawing)
     name = '',          -- the name the next save gets (save mode); the player may type it
     name_edited = false, name_for = nil,  -- typed by the player / the selection the default name was made for
-    osk = nil,          -- the on-screen keyboard is open: {shift = bool}
+    osk = nil,          -- the on-screen keyboard is open: {shift = bool, target = 'name' | 'search'}
 }
 
 -- UTF-8: the number of characters, and the text without its last one.
@@ -105,20 +113,68 @@ local function find(slot)
     end
 end
 
+-- The words of the search, lower case.
+local function search_words()
+    local words = {}
+    for w in view.search:lower():gmatch('%S+') do words[#words + 1] = w end
+    return words
+end
+
+-- What a search looks through: hero, class, level, name, file, the date saved.
+local function haystack(s)
+    if not s.hay then
+        s.hay = table.concat({s.hero or '', class_label(s) or '', 'level ' .. s.level, s.name, s.file, when(s),
+            s.slot == 0 and 'quicksave' or ''}, '\n'):lower()
+    end
+    return s.hay
+end
+
+local SORT_LESS = {
+    newest = function(a, b)
+        local ta, tb = stamp(a), stamp(b)
+        if ta ~= tb then return ta > tb end
+        return a.slot < b.slot
+    end,
+    oldest = function(a, b)
+        local ta, tb = stamp(a), stamp(b)
+        if ta ~= tb then return ta < tb end
+        return a.slot < b.slot
+    end,
+    hero = function(a, b)
+        local ha, hb = (a.hero or ''):lower(), (b.hero or ''):lower()
+        if ha ~= hb then return ha < hb end
+        local ta, tb = stamp(a), stamp(b)
+        if ta ~= tb then return ta > tb end
+        return a.slot < b.slot
+    end,
+    level = function(a, b)
+        if a.level ~= b.level then return a.level > b.level end
+        local ta, tb = stamp(a), stamp(b)
+        if ta ~= tb then return ta > tb end
+        return a.slot < b.slot
+    end,
+    number = function(a, b) return a.slot < b.slot end,
+}
+
 local function apply_filters()
     local hero = view.hero_i > 1 and view.heroes[view.hero_i] or nil
     local class = view.class_i > 1 and view.classes[view.class_i] or nil
+    local words = search_words()
     local out = {}
     for _, s in ipairs(view.all) do
-        if (not hero or s.hero == hero) and (not class or s.class == class) then out[#out + 1] = s end
+        if (not hero or s.hero == hero) and (not class or s.class == class) then
+            local ok = true
+            if #words > 0 then
+                local hay = haystack(s)
+                for _, w in ipairs(words) do
+                    if not hay:find(w, 1, true) then ok = false break end
+                end
+            end
+            if ok then out[#out + 1] = s end
+        end
     end
-    if sort_id() == 'newest' then
-        table.sort(out, function(a, b)
-            local ta, tb = stamp(a), stamp(b)
-            if ta ~= tb then return ta > tb end
-            return a.slot < b.slot
-        end)
-    end   -- else: by file name, as gear.game.saves() returns them (the game's own order)
+    local less = SORT_LESS[sort_id()]
+    if less then table.sort(out, less) end   -- else: by file name, as gear.game.saves() returns them (the game's own order)
     view.shown = out
     -- Keep the selection if it is still listed, else the first.
     if view.sel ~= 'new' then
@@ -177,6 +233,7 @@ end
 
 -- The first slot no savegame uses (1 up; 0 is the quicksave), as the game's own "new savegame" picks.
 local function free_slot()
+    if game.free_slot then return game.free_slot() end     -- no limit at 509, skips the slots mods reserved
     local used = {}
     for _, s in ipairs(view.all) do used[s.slot] = true end
     for slot = 1, 509 do
@@ -210,10 +267,50 @@ local function sync_name()
     view.name = real_name(s) or default_name()
 end
 
+-- Where typing goes now: 'name' (save mode), 'search', or nil (a question is open).
+local function typing_target()
+    if view.confirm then return nil end
+    if view.mode == 'load' then return 'search' end
+    return view.focus
+end
+
 local function add_to_name(text)
     for ch in text:gmatch('[%z\1-\127\194-\244][\128-\191]*') do
         if utf8_len(view.name) >= NAME_MAX then break end
         view.name = view.name .. ch
+        view.name_edited = true
+    end
+end
+
+-- Typing into the search: the list follows.
+local function add_to_search(text)
+    local before = view.search
+    for ch in text:gmatch('[%z\1-\127\194-\244][\128-\191]*') do
+        if utf8_len(view.search) >= SEARCH_MAX then break end
+        view.search = view.search .. ch
+    end
+    if view.search ~= before then apply_filters() end
+end
+
+local function set_search(text)
+    if view.search ~= text then
+        view.search = text
+        apply_filters()
+    end
+end
+
+-- Typed text into whichever field has the keys.
+local function add_text(text)
+    local target = typing_target()
+    if target == 'search' then add_to_search(text) elseif target == 'name' then add_to_name(text) end
+end
+
+local function pop_text()
+    local target = typing_target()
+    if target == 'search' then
+        set_search(utf8_pop(view.search))
+    elseif target == 'name' then
+        view.name = utf8_pop(view.name)
         view.name_edited = true
     end
 end
@@ -304,7 +401,8 @@ local function move(d)
     for i, r in ipairs(rows) do
         if r == view.sel then at = i break end
     end
-    at = math.max(1, math.min(#rows, at + d))
+    if d == 'first' then at = 1 elseif d == 'last' then at = #rows else at = at + d end
+    at = math.max(1, math.min(#rows, at))
     view.sel = rows[at]
     view.follow = true
 end
@@ -465,9 +563,51 @@ local function name_row(x, y, w)
     ui.frame(fx, y, fw, 24, C.edge, 1, L())
     local caret = (not view.confirm and math.floor(gear.time() * 2) % 2 == 0) and '|' or ''
     ui.text(fit(view.name, fw - 16, 13) .. caret, fx + 6, y, L({size = 13, height = 24, valign = 'middle'}))
-    if ui.button('kbd', x + w - 120, y, 120, 24, view.osk and 'Close keyboard' or 'Keyboard',
+    if ui.button('kbd', x + w - 120, y, 120, 24, (view.osk and view.osk.target == 'name') and 'Close keyboard' or 'Keyboard',
         L({tooltip = 'Type the name with an on-screen keyboard (for a controller)'})) then
-        view.osk = not view.osk and {shift = false} or nil
+        view.osk = not (view.osk and view.osk.target == 'name') and {shift = false, target = 'name'} or nil
+        view.focus = 'name'
+    end
+end
+
+-- The search: a field (a click gives it the keys in save mode; in load mode it always has them), the on-screen
+-- keyboard for it, and the jumps through the list (page, start, end) that a controller needs for a long one.
+local function search_row(x, y, w)
+    local bh = 26
+    local jw = {44, 74, 74, 44}
+    local jt = {'Top', 'Page up', 'Page down', 'End'}
+    local kw = 80
+    local fw = w - kw - 8 - (jw[1] + jw[2] + jw[3] + jw[4]) - 4 * 6 - 8
+    local active = typing_target() == 'search'
+    ui.rect(x, y, fw, bh, 0xF0202030, L())
+    ui.frame(x, y, fw, bh, active and C.accent or C.edge, 1, L())
+    if ui.button('search_field', x, y, fw, bh, '', L({tooltip = 'Search: hero, class, name, date, number'})) then
+        view.focus = 'search'
+    end
+    local count = ('%d of %d'):format(#view.shown, #view.all)
+    local cw = 96
+    local caret = (active and math.floor(gear.time() * 2) % 2 == 0) and '|' or ''
+    if view.search == '' then
+        ui.text(fit(active and '   Type to search' or 'Search', fw - cw - 14, 13), x + 8, y,
+            L({size = 13, height = bh, valign = 'middle', color = C.text_dim}))
+        if active then ui.text(caret, x + 8, y, L({size = 13, height = bh, valign = 'middle'})) end
+    else
+        ui.text(fit(view.search, fw - cw - 14, 13) .. caret, x + 8, y, L({size = 13, height = bh, valign = 'middle'}))
+    end
+    ui.text(count, x + fw - cw - 6, y, L({size = 12, width = cw, align = 'right', height = bh, valign = 'middle',
+        color = C.text_dim}))
+    local bx = x + fw + 6
+    if ui.button('search_kbd', bx, y, kw, bh, (view.osk and view.osk.target == 'search') and 'Close' or 'Keyboard',
+        L({tooltip = 'Type the search with an on-screen keyboard (for a controller)'})) then
+        view.focus = 'search'
+        view.osk = not (view.osk and view.osk.target == 'search') and {shift = false, target = 'search'} or nil
+    end
+    bx = bx + kw + 8
+    for i = 1, 4 do
+        if ui.button('jump' .. i, bx, y, jw[i], bh, jt[i], L({enabled = #view.shown > 0})) then
+            move(i == 1 and 'first' or i == 4 and 'last' or (i == 2 and -view.page or view.page))
+        end
+        bx = bx + jw[i] + 6
     end
 end
 
@@ -479,11 +619,24 @@ local OSK_ROWS = {
 }
 local OSK_UPPER = {['ü'] = 'Ü', ['ö'] = 'Ö', ['ä'] = 'Ä', [','] = ';', ['.'] = ':', ['-'] = '_', ['!'] = '?'}
 
+local function osk_type(text)
+    if view.osk.target == 'search' then add_to_search(text) else add_to_name(text) end
+end
+
+local function osk_back()
+    if view.osk.target == 'search' then
+        set_search(utf8_pop(view.search))
+    else
+        view.name = utf8_pop(view.name)
+        view.name_edited = true
+    end
+end
+
 -- The on-screen keyboard, in place of the list (view.osk holds its state while it is open).
 local function draw_keyboard(x, y, w, h)
     local o = view.osk
     ui.rect(x, y, w, h, 0xC0101018, L())
-    ui.text('On-screen keyboard: the name of the savegame', x + 8, y + 6, L({size = 13, color = C.accent}))
+    ui.text(view.osk.target == 'search' and 'On-screen keyboard: search' or 'On-screen keyboard: the name of the savegame', x + 8, y + 6, L({size = 13, color = C.accent}))
     local cols, gap = 11, 4
     local kw = math.floor((w - 16 - (cols - 1) * gap) / cols)
     local ky = y + 32
@@ -492,7 +645,7 @@ local function draw_keyboard(x, y, w, h)
             local label = k
             if o.shift then label = OSK_UPPER[k] or k:upper() end
             if ui.button(('osk%d_%d'):format(r, i), x + 8 + (i - 1) * (kw + gap), ky, kw, 30, label, L()) then
-                add_to_name(label)
+                osk_type(label)
                 o.shift = false
             end
         end
@@ -500,11 +653,8 @@ local function draw_keyboard(x, y, w, h)
     end
     local bw = math.floor((w - 16 - 3 * gap) / 4)
     if ui.button('osk_shift', x + 8, ky, bw, 30, o.shift and 'SHIFT' or 'Shift', L()) then o.shift = not o.shift end
-    if ui.button('osk_space', x + 8 + (bw + gap), ky, bw, 30, 'Space', L()) then add_to_name(' ') end
-    if ui.button('osk_back', x + 8 + 2 * (bw + gap), ky, bw, 30, 'Backspace', L()) then
-        view.name = utf8_pop(view.name)
-        view.name_edited = true
-    end
+    if ui.button('osk_space', x + 8 + (bw + gap), ky, bw, 30, 'Space', L()) then osk_type(' ') end
+    if ui.button('osk_back', x + 8 + 2 * (bw + gap), ky, bw, 30, 'Backspace', L()) then osk_back() end
     if ui.button('osk_done', x + 8 + 3 * (bw + gap), ky, bw, 30, 'Done', L()) then view.osk = nil end
 end
 
@@ -517,7 +667,7 @@ local function screen(preview)
     end
     local title = view.open == WND_MENUS and 'Load game' or 'Savegames'
     if preview then title = 'Savegames (Better SaveLoad)' end
-    local p = ui.panel('screen', title, 112, 74, 800, 620, L({resizable = true, min_width = 640, min_height = 440,
+    local p = ui.panel('screen', title, 112, 50, 800, 668, L({resizable = true, min_width = 640, min_height = 470,
         back = false}))
     if not p.open then
         ui.show_panel('screen', true)
@@ -532,11 +682,14 @@ local function screen(preview)
     local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
     toolbar(x, y, w)
     y = y + 32
+    search_row(x, y, w)
+    y = y + 34
     local bottom = 34
     local pw = math.floor(math.max(200, math.min(300, w * 0.36)))
     local lw = w - pw - 14
     if view.mode == 'save' then bottom = bottom + 32 end     -- the name row
-    local lh = h - 32 - bottom
+    local lh = h - 66 - bottom
+    view.page = math.max(1, math.floor(lh / ROW_H) - 1)
     -- The list.
     local rows = {}
     if view.mode == 'save' then rows[1] = false end   -- the "new savegame" row
@@ -561,22 +714,25 @@ local function screen(preview)
         return
     end
     local area = ui.scroll_begin('list', x, y, lw, lh, L({step = ROW_H}))
-    local cy = area.content_y
     local activate = false      -- a double click: the tab's action on the row (after drawing)
-    for i, s in ipairs(rows) do
+    -- Only the rows in view are drawn (the list may hold thousands).
+    local first = math.max(1, math.floor((ui.scroll_offset('list')) / ROW_H))
+    local last = math.min(#rows, first + math.ceil(lh / ROW_H) + 2)
+    for i = first, last do
+        local s = rows[i]
         local key = s and s.slot or 'new'
+        local cy = area.content_y + (i - 1) * ROW_H
         if cy + ROW_H >= area.y and cy <= area.y + area.h then
             if row('row' .. tostring(key), area.content_x, cy, area.w - 2, s or nil, key == view.sel) then
                 -- A second click on the same row soon after the first: Load / Save, as its button.
                 local now = gear.time()
-                local last = view.last_click
-                activate = last ~= nil and last.key == key and now - last.at <= DOUBLE_CLICK
+                local last_click = view.last_click
+                activate = last_click ~= nil and last_click.key == key and now - last_click.at <= DOUBLE_CLICK
                 view.last_click = not activate and {key = key, at = now} or nil
                 view.sel = key
                 view.confirm = nil
             end
         end
-        cy = cy + ROW_H
     end
     if #rows == 0 then
         ui.text(#view.all == 0 and 'No savegames yet.' or 'No savegame matches the filters.', area.content_x + 8,
@@ -608,6 +764,7 @@ local function opened(name)
     end
     view.sel = nil
     view.name, view.name_edited, view.name_for, view.osk = '', false, nil, nil
+    view.search, view.focus = '', 'name'
     refresh()
     if name == WND_GAME and S.get('current_hero') then
         local h = current_hero()
@@ -632,20 +789,22 @@ end
 local function input()
     local back = ui.back_pressed() or ui.key_pressed('escape')
     if back then
-        if view.confirm then view.confirm = nil elseif view.osk then view.osk = nil else close() end
+        if view.confirm then view.confirm = nil
+        elseif view.osk then view.osk = nil
+        elseif view.search ~= '' then set_search('') view.focus = 'name'      -- the first Back clears the search
+        else close() end
         return
     end
     -- Typing goes into the name (save mode).
     local typed = ui.typed()
-    if view.mode == 'save' and not view.confirm then
-        sync_name()
-        if typed ~= '' then add_to_name(typed) end
+    if typing_target() then
+        if view.mode == 'save' then sync_name() end
+        if typed ~= '' then add_text(typed) end
         if ui.key_down('backspace') then
             local now = gear.time()
             if not view.back_since or now - view.back_since > 0.45 then
                 view.back_since = view.back_since and now - 0.4 or now
-                view.name = utf8_pop(view.name)
-                view.name_edited = true
+                pop_text()
             end
         else
             view.back_since = nil
@@ -661,9 +820,13 @@ local function input()
     end
     if ui.key_pressed('up') then move(-1) end
     if ui.key_pressed('down') then move(1) end
-    if ui.key_pressed('pageup') then move(-5) end
-    if ui.key_pressed('pagedown') then move(5) end
-    if ui.key_pressed('enter') then primary() end
+    if ui.key_pressed('pageup') then move(-view.page) end
+    if ui.key_pressed('pagedown') then move(view.page) end
+    if ui.key_pressed('home') then move('first') end
+    if ui.key_pressed('end') then move('last') end
+    if ui.key_pressed('enter') then
+        if view.mode == 'save' and view.focus == 'search' then view.focus = 'name' else primary() end
+    end
     if ui.key_pressed('delete') then delete_selected() end
 end
 
@@ -692,6 +855,8 @@ gear.on('better-saveload.query', function(out)
     out.heroes, out.classes, out.hero_i, out.class_i, out.sort = view.heroes, view.classes, view.hero_i, view.class_i, sort_id()
     out.message = view.message
     out.name, out.osk = view.name, view.osk ~= nil
+    out.search, out.focus, out.page = view.search, view.focus, view.page
+    out.osk_target = view.osk and view.osk.target or nil
     out.order = {}
     for i, s in ipairs(view.shown) do out.order[i] = s.slot end
 end)
@@ -703,6 +868,7 @@ gear.on('better-saveload.set', function(t)
     if t.mode then view.mode = t.mode end
     if t.sel then view.sel = t.sel end
     if t.name then view.name, view.name_edited = t.name, true end
+    if t.search then view.search = t.search end
     apply_filters()
 end)
 

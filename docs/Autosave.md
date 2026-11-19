@@ -31,7 +31,7 @@ for good, copy `Save\GAME97.PAK` to a free number.
 | Autosave on | on | |
 | Minutes of play between autosaves | 5 | 1 to 60 |
 | Show a note after each autosave | on | |
-| Savegame slots | `97, 98, 99` | up to 8 numbers from 1 to 509; keep them away from the numbers of your manual saves |
+| Savegame slots | `97, 98, 99` | up to 8 numbers from 1 to 32766; keep them away from the numbers of your manual saves |
 | Savegame name | `Autosave %H:%M` | the name in the savegame list |
 | Key *Autosave now* | `F6` | re-bind on the *Keys* page |
 
