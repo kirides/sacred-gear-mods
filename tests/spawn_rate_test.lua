@@ -1,0 +1,51 @@
+-- Logic test of the spawn-rate mod outside the game (src/spawn-rate/core.lua). From the repository root:
+--     luajit tests/spawn_rate_test.lua
+local failures = 0
+local function ok(c, name) if not c then failures = failures + 1; print('FAIL ' .. name) end end
+
+package.path = 'src/spawn-rate/?.lua;' .. package.path
+local core = require('core')
+
+-- extras: rate - 1, fractions as a chance
+ok(core.extras(1, math.random) == 0, '1x makes none')
+ok(core.extras(0.5, math.random) == 0, 'below 1x makes none')
+ok(core.extras(10, math.random) == 9, '10x makes nine')
+ok(core.extras(100, math.random) == 99, '100x makes 99')
+ok(core.extras(1000, math.random) == 99, 'capped at 100x')
+ok(core.extras(2.5, function() return 0.2 end) == 2 and core.extras(2.5, function() return 0.7 end) == 1, 'fraction = chance of one more')
+
+-- allowance: budget, slow frames, cap
+ok(core.allowance(4, 0.016, 0, 200) == 4, 'full budget at 60 fps')
+ok(core.allowance(4, 0.05, 0, 200) == 1, 'one per frame below 30 fps')
+ok(core.allowance(4, 0.1, 0, 200) == 0, 'none below 15 fps')
+ok(core.allowance(4, 0.016, 198, 200) == 2, 'room under the cap')
+ok(core.allowance(4, 0.016, 200, 200) == 0, 'at the cap')
+ok(core.allowance(4, 0.016, 5000, 0) == 4, 'cap 0 = no limit')
+
+-- queue: one creature per take, jobs leave when done, bounded
+local q = core.queue(2)
+ok(q:push({type = 7, x = 1, y = 2, layer = 0, left = 2}), 'push 1')
+ok(q:push({type = 8, x = 3, y = 4, layer = 1, left = 1}), 'push 2')
+ok(not q:push({type = 9, x = 0, y = 0, layer = 0, left = 5}), 'bounded')
+ok(q.left == 3 and q:size() == 2, 'counts')
+local a, b, c, d = q:take(), q:take(), q:take(), q:take()
+ok(a.type == 7 and b.type == 7 and c.type == 8 and c.layer == 1 and d == nil, 'order and exhaustion')
+ok(q.left == 0 and q:size() == 0, 'empty after work')
+q:push({type = 1, x = 0, y = 0, layer = 0, left = 4}); q:clear()
+ok(q.left == 0 and q:take() == nil, 'clear')
+
+-- scatter: inside the ring
+math.randomseed(1)
+for _ = 1, 200 do
+    local x, y = core.scatter(1000, 1000, 80, 270, math.random)
+    local dist = math.sqrt((x - 1000) ^ 2 + (y - 1000) ^ 2)
+    if dist < 79 or dist > 271 then ok(false, 'scatter ring ' .. dist); break end
+end
+
+-- a million creations at the worst rate cost a bounded queue, not memory
+local big = core.queue(1500)
+local refused = 0
+for i = 1, 100000 do if not big:push({type = 1, x = i, y = i, layer = 0, left = core.extras(100, math.random)}) then refused = refused + 1 end end
+ok(big:size() == 1500 and refused == 98500, 'queue stays bounded')
+
+if failures == 0 then print('spawn-rate: all tests passed') else print(failures .. ' failed'); os.exit(1) end
