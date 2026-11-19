@@ -172,14 +172,21 @@ local function lines_of(items, fmt, x, y, w)
 end
 
 local function browse(x, y, w, h)
-    ui.label('l-class', 'Class', x, y + 3, {})
-    ui.label('l-sort', 'Sort', x + 150, y + 3, {})
+    -- Class | dropdown | Sort | the sort radios | Refresh | prev | next
+    local bar = ui.table('bar', x, y, w, {columns = {36, 100, 30, '*', 70, 34, 34}, spacing = {4, 0}, row_height = 20})
+    bar:row()
+    bar:label(1, 'Class', {id = 'l-class'})
+    local class_changed
+    class_changed, view.class = bar:dropdown(2, class_choices(), view.class, {id = 'class', tooltip = 'Only this class'})
+    if class_changed then view.page = 1; fetch_list() end
+    bar:label(3, 'Sort', {id = 'l-sort'})
+    local rx, ry = bar:cell(4)
     local sort_changed
-    sort_changed, view.sort = ui.radio_group('sort', x + 186, y + 3, SORTS, view.sort, {horizontal = true})
+    sort_changed, view.sort = ui.radio_group('sort', rx + 6, ry + 3, SORTS, view.sort, {horizontal = true})
     if sort_changed then view.page = 1; fetch_list() end
-    if ui.button('refresh', x + w - 150, y, 70, 20, 'Refresh', {tooltip = 'Ask the server again'}) then fetch_list() end
-    if ui.button('prev', x + w - 76, y, 34, 20, '<', {enabled = view.page > 1}) then view.page = view.page - 1; fetch_list() end
-    if ui.button('next', x + w - 38, y, 34, 20, '>', {enabled = view.list ~= nil and view.page < view.list.pages}) then view.page = view.page + 1; fetch_list() end
+    if bar:button(5, 'Refresh', {id = 'refresh', tooltip = 'Ask the server again'}) then fetch_list() end
+    if bar:button(6, '<', {id = 'prev', enabled = view.page > 1}) then view.page = view.page - 1; fetch_list() end
+    if bar:button(7, '>', {id = 'next', enabled = view.list ~= nil and view.page < view.list.pages}) then view.page = view.page + 1; fetch_list() end
     local top = y + 28
     if not view.list then
         ui.text(view.waiting and 'Asking the server ...' or 'Press Refresh to list the shared builds.', x, top, {color = DIM})
@@ -197,10 +204,6 @@ local function browse(x, y, w, h)
         ui.scroll_end(#view.list.builds * 22)
         ui.text(('%d build%s, page %d of %d'):format(view.list.total, view.list.total == 1 and '' or 's', view.page, view.list.pages), x, y + h - 20, {color = DIM})
     end
-    -- drawn last: the open list covers what is under it
-    local class_changed
-    class_changed, view.class = ui.dropdown('class', x + 40, y, 100, class_choices(), view.class, {tooltip = 'Only this class'})
-    if class_changed then view.page = 1; fetch_list() end
 end
 
 local function my_build(x, y, w, h)

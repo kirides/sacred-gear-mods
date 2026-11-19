@@ -121,11 +121,15 @@ local function grid(id, x, y, cells, page)
     return clicked
 end
 
-local function pager(id, x, y, page, pages)
+-- A section header: the title at the left, [<]  n / m  [>] at the right (18 high). Returns the page.
+local function header(id, x, y, w, title, color, page, pages)
     page = math.max(0, math.min(page, pages - 1))
-    if ui.button(id .. '-prev', x, y, 22, 18, '<', {enabled = page > 0}) then page = page - 1 end
-    ui.label(id .. '-n', ('%d / %d'):format(page + 1, pages), x + 28, y, {height = 18, valign = 'middle'})
-    if ui.button(id .. '-next', x + 76, y, 22, 18, '>', {enabled = page < pages - 1}) then page = page + 1 end
+    local t = ui.table(id, x, y - 1, w, {columns = {'*', 22, 48, 22}, spacing = {6, 0}, row_height = 18})
+    t:row()
+    t:label(1, title, {id = id .. '-title', color = color})
+    if t:button(2, '<', {id = id .. '-prev', enabled = page > 0}) then page = page - 1 end
+    t:label(3, ('%d / %d'):format(page + 1, pages), {id = id .. '-n', halign = 'center'})
+    if t:button(4, '>', {id = id .. '-next', enabled = page < pages - 1}) then page = page + 1 end
     return page
 end
 
@@ -247,16 +251,16 @@ local function panel()
     local items = net and remote.entries or stash.items()
     local scells = entry_cells(items, 'Click: take it into the backpack')
     local spages = pack(scells)
-    ui.label('stash-title', ('In the stash: %d / %d'):format(#items, net and (remote.max or cfg.max_items) or cfg.max_items), x, y, {color = ui.COLORS.accent})
-    view.stash_page = pager('sp', x + w - 100, y - 1, view.stash_page, spages)
+    view.stash_page = header('sp', x, y, w,
+        ('In the stash: %d / %d'):format(#items, net and (remote.max or cfg.max_items) or cfg.max_items), ui.COLORS.accent,
+        view.stash_page, spages)
     y = y + 22
     local withdraw = grid('s', x, y, scells, view.stash_page)
     y = y + ROWS * CELL + 8
 
     local cells = source_cells()
     local pages = pack(cells)
-    ui.label('src-title', ('Backpack and chest: %d'):format(#cells), x, y, {color = ui.COLORS.accent})
-    view.source_page = pager('xp', x + w - 100, y - 1, view.source_page, pages)
+    view.source_page = header('xp', x, y, w, ('Backpack and chest: %d'):format(#cells), ui.COLORS.accent, view.source_page, pages)
     y = y + 22
     local deposit = grid('b', x, y, cells, view.source_page)
     y = y + ROWS * CELL
