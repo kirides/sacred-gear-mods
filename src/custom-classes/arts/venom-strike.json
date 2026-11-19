@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "venom-strike",
   "kind": "copy",
   "art_id": 2001,
@@ -16,5 +16,30 @@
   "values": {
     "effect_base": 40,
     "effect_per_level": 6
-  }
+  },
+  "buffs": [
+    {
+      "when": "hit",
+      "buff": "venom",
+      "strength": {
+        "base": 1,
+        "per_level": 0.0
+      },
+      "seconds": {
+        "base": 8,
+        "per_level": 0.5
+      },
+      "chance": 100
+    },
+    {
+      "when": "use",
+      "buff": "battle-focus",
+      "strength": 1,
+      "seconds": {
+        "base": 10,
+        "per_level": 0
+      },
+      "radius": 0
+    }
+  ]
 }

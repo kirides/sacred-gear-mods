@@ -11,6 +11,7 @@
 
 local profiles_lib = require('profiles')
 local arts = require('arts')
+local buffs = require('buffs')
 local window = require('window')
 local ui = gear.ui
 local guard = gear.guard
@@ -35,13 +36,16 @@ local state = {profiles = {}, problems = {}, loaded = false}
 
 local function load_data()
     local art_problems = arts.load()
+    for _, p in ipairs(buffs.load_definitions()) do art_problems[#art_problems + 1] = p end
     state.profiles, state.problems = profiles_lib.scan(arts.ids())
     for _, p in ipairs(art_problems) do state.problems[#state.problems + 1] = p end
     for _, p in ipairs(state.problems) do print('[custom-classes] ' .. p) end
     state.loaded = true
     local n = 0
     for _ in pairs(state.profiles) do n = n + 1 end
-    print(('[custom-classes] %d class profiles'):format(n))
+    local nb = 0
+    for _ in pairs(buffs.rules) do nb = nb + 1 end
+    print(('[custom-classes] %d class profiles, %d arts with buffs, %d buff definitions'):format(n, nb, (function() local c = 0 for _ in pairs(buffs.defined) do c = c + 1 end return c end)()))
 end
 
 ---------------------------------------------------------------------------------------------------------------
@@ -195,6 +199,10 @@ end
 local route_cache = {}
 gear.on('ability.route', guard('route', function(type_id, art, vanilla, action, id)
     if arts.chains[art] then start_chain(id, art) end
+    if buffs.rules[art] then
+        local who = gear.world.object(id)
+        if who then buffs.used(who, art) end
+    end
     local p = profile_of_id(id)
     if not p then return nil end
     local a = gear.data.abilities[art]
@@ -212,6 +220,11 @@ gear.on('ability.route', guard('route', function(type_id, art, vanilla, action, 
     end
     if answer then log('route %d (base %d) of body %d to class %d', art, base, type_id, answer) end
     return answer or nil
+end))
+
+-- ability.hit: the art hit a creature: its buff rules
+gear.on('ability.hit', guard('hit', function(attacker, victim, art)
+    if buffs.rules[art] then buffs.hit(attacker, victim, art) end
 end))
 
 -- motion.select: a body without a clip for a slot plays one of its own.

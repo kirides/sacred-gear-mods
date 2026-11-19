@@ -16,6 +16,7 @@
 -- action ends, on the enemy nearest to the hero. Its regeneration is the sum of the steps' (`regen_base` and `regen_per_level` of the ability records, the game's
 -- regeneration seconds, whole seconds for spells), so it can never be cheaper than the parts. The steps are learned with the chain.
 
+local buffs = require('buffs')
 local M = {}
 
 -- The installed mods that are switched on (data of a mod that is off is not read).
@@ -132,6 +133,7 @@ function M.load()
     for id in pairs(ids) do gear.classes.remove_ability(id) end
     ids = {}
     for id in pairs(chains) do chains[id] = nil end
+    for id in pairs(buffs.rules) do buffs.rules[id] = nil end
     local problems = {}
     local pending = {}
     for _, m in ipairs(active_mods()) do
@@ -139,8 +141,8 @@ function M.load()
             if name:lower():match('%.json$') then
                 local where = m.id .. '/arts/' .. name
                 local ok, d = pcall(gear.json.decode, gear.mods.read(m.id, 'arts/' .. name) or '')
-                if not ok or type(d) ~= 'table' or d.format ~= 1 or (d.kind ~= 'copy' and d.kind ~= 'chain') then
-                    problems[#problems + 1] = where .. ': not an art file of format 1 (kind copy or chain)'
+                if not ok or type(d) ~= 'table' or (d.format ~= 1 and d.format ~= 2) or (d.kind ~= 'copy' and d.kind ~= 'chain') then
+                    problems[#problems + 1] = where .. ': not an art file of format 1 or 2 (kind copy or chain)'
                 else
                     pending[#pending + 1] = {d = d, where = where}
                 end
@@ -156,7 +158,14 @@ function M.load()
                     if p.d.kind == 'copy' then made, why = make_copy(p.d, p.where) else made, why = make_chain(p.d, p.where) end
                 end)
                 if not ok then made, why = nil, tostring(e) end
-                if made then ids[p.d.art_id] = {id = p.d.id, kind = p.d.kind, name = text(p.d.name, p.d.id)}
+                local rules
+                if made then
+                    local list, why_not = buffs.check(p.d.buffs, p.where)
+                    if list then rules = list else made = nil; why = table.concat(why_not, '; ') end
+                end
+                if made then
+                    if rules and #rules > 0 then buffs.rules[p.d.art_id] = rules end
+                    ids[p.d.art_id] = {id = p.d.id, kind = p.d.kind, name = text(p.d.name, p.d.id)}
                 else problems[#problems + 1] = p.where .. ': ' .. tostring(why) end
             end
         end
