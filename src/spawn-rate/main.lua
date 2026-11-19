@@ -76,12 +76,12 @@ local function prune()
 end
 
 gear.on('frame', gear.guard('frame', function(dt)
+    prune_t = prune_t + dt
+    if alive_count > 0 and prune_t >= PRUNE_EVERY then prune_t = 0; prune() end   -- also at 1x: the status page counts what is alive
     if rate() <= 1 then
         if queue.left > 0 then queue:clear() end
         return
     end
-    prune_t = prune_t + dt
-    if prune_t >= PRUNE_EVERY then prune_t = 0; prune() end
     if queue:size() == 0 or not W.can_change() then return end
     local cap = tonumber(S.get('max_extra', 200)) or 200
     local n = core.allowance(tonumber(S.get('budget', 4)) or 4, dt, alive_count, cap)
@@ -111,7 +111,17 @@ gear.on('unload', forget_all)
 gear.on('settings.changed', function(id) if id == 'rate' and rate() <= 1 then queue:clear() end end)
 
 -- For the self test and tools: the counters.
-gear.on('spawn-rate.stats', function(answer) answer({made = stats.made, refused = stats.refused, failed = stats.failed, alive = alive_count, queued = queue.left}) end)
+gear.on('spawn-rate.stats', function(answer)
+    local ids = {}
+    for id in pairs(alive) do ids[#ids + 1] = id end
+    answer({made = stats.made, refused = stats.refused, failed = stats.failed, alive = alive_count, queued = queue.left, ids = ids})
+end)
+-- For the self test: sets the numbers without the Mods screen ({rate, max_extra, budget}); the queue and counters can be reset.
+gear.on('spawn-rate.configure', function(values)
+    for _, id in ipairs({'rate', 'max_extra', 'budget'}) do
+        if values[id] ~= nil then S.set(id, values[id]) end
+    end
+end)
 
 gear.mods.page(function(x, y, w, h)
     local ui = gear.ui
