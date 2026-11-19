@@ -72,8 +72,8 @@ gear.task(function()
         local nodes = {}
         -- the Recruit button is drawn at content (220, rows + 6): find it from the panel and click its middle
         local heroes = #party.heroes()
-        local cx = p.x + 10 + 220 + 45
-        local cy = p.y + 30 + heroes * 52 + 6 + 11
+        local cx = p.x + 10 + 402 + 50      -- the button column of the window's grid
+        local cy = p.y + 30 + heroes * 52 + 8 + 11
         A.ui_click(cx, cy)
         gear.wait(1.5)
         nodes = party.companions()
@@ -185,13 +185,13 @@ gear.task(function()
     check('party window again', w ~= nil)
     if w then
         local cx0, cy0 = w.x + 10, w.y + 30
-        local yy = cy0 + #party.heroes() * 52 + 6
+        local yy = cy0 + #party.heroes() * 52 + 8
         -- (the hero files a mod sees are its own: the kept file lands in the companions mod's heroes folder)
-        A.ui_click(cx0 + 70 + 150, yy + 60 + 11)
+        A.ui_click(cx0 + 96 + 150, yy + 60 + 11)   -- Keep (the field column, third line)
         gear.wait(1)
         local first = party.hero_files()[1]
         local n0 = #party.companions()
-        A.ui_click(cx0 + 380 + 45, yy + 30 + 11)
+        A.ui_click(cx0 + 402 + 50, yy + 30 + 11)   -- Bring (the button column, second line)
         gear.wait(1.5)
         local cs = party.companions()
         check('Bring adds a companion from the file', #cs == n0 + 1, #cs)
