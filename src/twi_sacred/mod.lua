@@ -2,7 +2,7 @@
 return {
     id = 'twi_sacred',
     name = 'Twitch Integration: actions',
-    version = '0.2.0',
+    version = '0.2.1',
     author = 'Sacred Gear',
     description = 'Twitch viewers spawn monsters, give gold, heal or teleport the hero.',
     requires = {'twitch_integration'},

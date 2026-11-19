@@ -2,7 +2,7 @@
 return {
     id = 'drop-tuning',
     name = 'Drop tuning',
-    version = '1.3.0',
+    version = '1.3.1',
     author = 'kirides',
     description = 'Makes creature drops more or less frequent, tilts the rarity of the equipment they drop, can swap the game\'s random numbers for a fair generator, can let the Icon Set pieces and the pieces of the X-MAS set of your class drop at any level, and can make creatures drop the gear you could otherwise only take with the Disarming skill.',
     settings = {

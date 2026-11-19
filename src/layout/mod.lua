@@ -2,7 +2,7 @@
 return {
     id = 'layout',
     name = 'Layout editor',
-    version = '0.2.0',
+    version = '0.2.1',
     author = 'Sacred Gear',
     description = "Move the game's windows and mod panels where you want them: an edit mode like an MMO's.",
     priority = 100,         -- loads last: its handles lie over the other mods' panels

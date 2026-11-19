@@ -2,7 +2,7 @@
 return {
     id = 'questhelper',
     name = 'Quest helper',
-    version = '0.1.0',
+    version = '0.1.1',
     author = 'Sacred Gear',
     description = 'A panel with the quest items in your backpack (read here) and the quest records of your hero, with hints, '
         .. 'which the game server reports (Sacred.GameServer with scripts-examples/quest_helper.lua and hero data). '

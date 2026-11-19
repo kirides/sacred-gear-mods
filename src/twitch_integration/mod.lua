@@ -2,7 +2,7 @@
 return {
     id = 'twitch_integration',
     name = 'Twitch Integration (base)',
-    version = '0.1.0',
+    version = '0.1.1',
     -- The connector program (the one of the Gothic II / Risen versions) hosts this pipe; the game is its client.
     pipes = {'__TwitchIntegration_Kirides_Conn'},
     -- Defaults; config.lua next to this file overrides them.

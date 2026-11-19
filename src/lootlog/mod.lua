@@ -2,7 +2,7 @@
 return {
     id = 'lootlog',
     name = 'Loot log',
-    version = '0.1.0',
+    version = '0.1.1',
     author = 'Sacred Gear',
     description = 'A log of the items that dropped near the hero and the items that ended up in the backpack, filterable by quality, category and kind; kept between sessions.',
     settings = {

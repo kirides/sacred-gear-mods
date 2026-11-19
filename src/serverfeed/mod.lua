@@ -2,7 +2,7 @@
 return {
     id = 'serverfeed',
     name = 'Server feed',
-    version = '0.1.0',
+    version = '0.1.1',
     author = 'Sacred Gear',
     description = 'Shows the announcements of the SacredEngineRemake game server on screen: rare and unique drops '
         .. '(scripts-examples/rare_drops.lua) and hero deaths (graveyard.lua), and a list of the latest of both. '

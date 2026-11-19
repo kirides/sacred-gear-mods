@@ -20,7 +20,7 @@ end
 return {
     id = 'art-bars',
     name = 'Art bars',
-    version = '0.1.0',
+    version = '0.1.1',
     author = 'Sacred Gear',
     description = 'More combat arts at hand than the game\'s skill bar holds: extra bars of slots for your hero\'s combat arts and spells '
         .. '(copies and chains of the Custom classes mod too), with keys, cooldowns and the controller. Single player.',

@@ -2,7 +2,7 @@
 return {
     id = 'region-counter',
     name = 'Region counter',
-    version = '0.1.0',
+    version = '0.1.1',
     author = 'Sacred Gear',
     description = 'The kills a region needs before its Region Boss quest comes: set your own number, and keep the progress when you leave the region, teleport, save or quit.',
     settings = {

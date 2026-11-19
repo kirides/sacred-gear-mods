@@ -37,7 +37,7 @@ end
 return {
     id = 'key-bindings',
     name = 'Key bindings',
-    version = '0.1.0',
+    version = '0.1.1',
     author = 'Sacred Gear',
     description = "Choose the keys and mouse buttons of the game's actions (weapons, combat arts, potions, windows), two keys each, with an optional quick cast for combat arts.",
     automation = true,      -- only for its self test (-gear-auto)
