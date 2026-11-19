@@ -22,6 +22,6 @@ Open the Mods screen with **F11** and pick the mod.
 
 ## Development
 
-- **Files:** `src/layout/mod.lua` (manifest; `priority = 100` so it loads last and its handles lie over the other panels) and `main.lua` (about 650 lines). Self test: it only runs with `-gear-auto`.
+- **Files:** `src/layout/mod.lua` (manifest; `priority = 100` so it loads last and its handles lie over the other panels), `main.lua` (the editor, about 400 lines) and `selftest.lua` (the self test, loaded only with `-gear-auto`).
 - **Depends on:** the edit-mode functions of `gear.ui` (`edit_mode()`, `set_edit_mode()`, panel registration, moving the game's own windows). The positions are saved by Gear (see [Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md)). Other mods only need to register their panels with Gear to be movable; they do not need to know this mod.
-- **Test it:** `gear-auto` run with the self test, see the automation chapter of [Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md).
+- **Test it:** run `Sacred.exe -gear-auto -gear-load=1 -gear-mods=layout -gear-shared-input` twice (the first run moves things, the second checks they stayed), see the automation chapter of [Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md).
