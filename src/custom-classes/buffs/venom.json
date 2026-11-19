@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "id": "venom",
+  "name": { "en": "Venom", "de": "Gift" },
+  "description": { "en": "Poison resistance is lowered.", "de": "Die Giftresistenz ist gesenkt." },
+  "stats": { "resist_poison": -30 },
+  "seconds": 8,
+  "debuff": true
+}

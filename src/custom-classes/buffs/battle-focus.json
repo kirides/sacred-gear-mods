@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "id": "battle-focus",
+  "name": { "en": "Battle focus", "de": "Kampffokus" },
+  "description": { "en": "A little more armour for a short time.", "de": "Etwas mehr Rüstung für kurze Zeit." },
+  "factors": { "armor_factor": 1.25 },
+  "overlay": "stone",
+  "seconds": 10
+}

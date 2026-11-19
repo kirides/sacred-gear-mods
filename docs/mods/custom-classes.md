@@ -111,6 +111,40 @@ the chain ends. (The game's own combos hold four arts at most and cannot have a 
 
 ![A chain](../images/custom-classes-chain.jpg)
 
+## Buffs on arts
+
+An art copy or chain can put **buffs** on creatures (the `gear.buffs` of Sacred Gear: changed resistances, damage, armour, attack, speed or
+regeneration factors for some seconds, with one of the game's spell overlays if you like). Art files with buffs are **format 2** (format 1
+files still load).
+
+```json
+{ "format": 2, "id": "venom-strike", "kind": "copy", "art_id": 2001, "base": 1059,
+  "buffs": [
+    { "when": "hit", "buff": "venom", "strength": 1, "seconds": { "base": 8, "per_level": 0.5 }, "chance": 100 },
+    { "when": "use", "buff": "battle-focus", "seconds": 10, "radius": 0 }
+  ] }
+```
+
+| Field | Meaning |
+|---|---|
+| `when` | `use`: the hero who uses the art (with `radius` above 0 also the party heroes within that many tiles); `hit`: every creature the art hits. |
+| `buff` | The id of a buff of this mod (`buffs/<id>.json`), a buff of another mod (`mod_id:name`), or an inline definition. |
+| `strength` | A number, or `{ "base": 1, "per_level": 0.02 }`: how much of the buff's values (1 as defined, 0.5 half, factors halfway to 1), `base + per_level * art level`. |
+| `seconds` | Optional, the same way: how long it lasts (else the buff's own). |
+| `chance` | 0 to 100 percent per hit or use (default 100). |
+
+Buff files `buffs/<id>.json` (this mod or any installed mod that is on):
+
+```json
+{ "format": 1, "id": "venom", "name": { "en": "Venom" }, "description": { "en": "Poison resistance is lowered." },
+  "icon": "GUI_MOVE_KICK.TGA", "stats": { "resist_poison": -30 }, "factors": { "speed_factor": 0.9 },
+  "overlay": "flame", "seconds": 8, "debuff": true }
+```
+
+`stats` adds (`resist_physical/fire/magic/poison`, `damage_min_*` and `damage_max_*`), `factors` multiplies (`attack_factor`, `speed_factor`,
+`armor_factor`, `regen_factor`, `art_regen_factor`), `overlay` is `stone`, `flame` or `light`. They are registered as `custom-classes:<id>`.
+The hit rule rests on Gear's event `ability.hit` (a hit of a creature that has the art in flight); buffs end when a savegame is loaded.
+
 ## Settings and keys
 
 | Setting | What it does |

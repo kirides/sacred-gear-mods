@@ -40,7 +40,7 @@ local function use(h, ability, shot)
     local hp1 = foe:is_dead() and 0 or foe:hp()
     h:order_move(x, y)
     gear.wait(0.5)
-    return {ok = ok, trace = table.concat(trace, ' '), busy = busy, hp0 = hp0, hp1 = hp1}
+    return {ok = ok, trace = table.concat(trace, ' '), busy = busy, hp0 = hp0, hp1 = hp1, foe = foe}
 end
 
 local function finish()
@@ -111,7 +111,9 @@ gear.task(function()
         check('gladiator body has no cast clip', gear.models.has_motion('gladiator', 155) == false)
         r = use(gla, 5, 'cc-caster')
         check('gladiator casts a spell (clip remapped)', r and r.ok and r.busy >= 0.9, r and (r.trace .. ' busy ' .. r.busy))
-        -- art copies and chains
+        -- art copies and chains (the Gladiator is played now: a hero the game's AI runs attacks on its own and overrides the orders)
+        party.control(gla)
+        gear.wait(2)
         local copy = gear.data.abilities[2001]
         check('copy exists with the base code', copy ~= nil and copy.base == 1059 and copy.kind == 'combat_art', copy and copy.base)
         check('copy has its own numbers', copy and copy.effect_base == 40 and gear.data.abilities[1059].effect_base ~= 40, copy and copy.effect_base)
@@ -124,11 +126,18 @@ gear.task(function()
             ('%.2f/%.2f vs %.2f/%.2f'):format(chain.regen_base, chain.regen_per_level, base0, base1))
         r = use(gla, 2001, 'cc-copy')
         check('copied art runs (a hit or the art action)', r and r.ok and (r.hp1 ~= r.hp0 or r.trace:find('ability')), r and (r.trace .. ' hp ' .. tostring(r.hp0) .. '->' .. tostring(r.hp1)))
+        -- buffs of the copy: the hit puts the venom debuff on the foe, the use gives the hero the self buff
+        local function has(c, key) for _, b in ipairs(c:buffs() or {}) do if b.key == key then return b end end end
+        local venom, focus = r and r.foe and has(r.foe, 'cc:2001:1'), has(gla, 'cc:2001:2')
+        check('hit buff: the foe has the venom debuff', venom ~= nil, venom and (('%s %.1fs'):format(venom.id, venom.left)) or 'none')
+        check('use buff: the hero has the battle focus', focus ~= nil, focus and (('%s %.1fs'):format(focus.id, focus.left)) or 'none')
         seen = {}
         gear.wait(1)
         for attempt = 1, 4 do
-            local ab = gla:ability(2100)
-            for _ = 1, 40 do if ab and ab.ready then break end gear.wait(0.5) ab = gla:ability(2100) end
+            for _, id in ipairs({2100, 1058, 1059}) do
+                local ab = gla:ability(id)
+                for _ = 1, 60 do if not ab or ab.ready then break end gear.wait(0.5) ab = gla:ability(id) end
+            end
             r = use(gla, 2100, attempt == 1 and 'cc-chain' or nil)
             if (seen[2100] or 0) > 0 and (seen[1059] or 0) > 0 then break end
         end
