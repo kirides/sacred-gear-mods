@@ -39,7 +39,11 @@ never teleports them or changes what they are.
 What the companions do on their own: they keep up with you (a companion left far behind or on another level joins
 you), pick the enemy nearest to you, attack it with their weapon, and use their abilities like a player would: combos
 and attack arts and spells on the target as soon as they have regenerated, auras and buffs (Steinhaut, Ehrfurcht ...)
-once a fight starts, healing spells when someone in the party is below half health. A Vampiress changes into her vampire form
+once a fight starts, healing spells when someone in the party is low on health (setting): first on the hero you play, then on
+themselves (or the lowest, setting). The game casts these spells (Genesung, Spirituelle Heilkraft) only on the caster,
+its own AI too: for you, the companion casts the spell and you get the health it gives (what it healed the companion
+last time, until then a third of your health). Buffs and auras (Steinhaut, Wieselflink ...) are the companion's own for
+the same reason: cast in fights and again when they run out, or whenever they are ready (setting). A Vampiress changes into her vampire form
 (Vampirform) when a fight starts and back after it, or when she is low on health (in daylight the form costs health).
 Other shape changes (Ritterform ...), teleports and tricks are left to you.
 
@@ -80,6 +84,9 @@ Open the Mods screen with **F11** and pick the mod.
 | Companions act on their own | Off: the companions stand where they are. |
 | Default behaviour | Aggressive, defensive or passive, for companions without their own. |
 | Use combat arts and spells | Off: companions fight with their weapons only. |
+| Healing spells first for | The hero you play, then themselves (default); whoever has the least health; or themselves first. |
+| Heal a hero below (% health) | Default 60. |
+| Buffs and auras | In fights and again when they run out (default), or whenever they are ready. |
 | Follow distance / Fight enemies within | In tiles. |
 
 ## Limits
