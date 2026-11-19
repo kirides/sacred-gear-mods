@@ -104,8 +104,8 @@ def git_remote():
 
 def main():
     a = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    for f in ('src', 'prefix', 'out', 'name', 'author', 'description', 'homepage', 'download-url', 'version', 'thumb-base'):
-        a.add_argument('--' + f, default={'src': 'src', 'prefix': 'mods', 'out': 'mod-index.json'}.get(f))
+    for f in ('src', 'prefix', 'out', 'name', 'author', 'description', 'homepage', 'download-url', 'version', 'thumb-base', 'asset'):
+        a.add_argument('--' + f, default={'src': 'src', 'prefix': 'mods', 'out': 'mod-index.json', 'asset': 'mods.zip'}.get(f))
     a.add_argument('--exclude', action='append', help='folder glob to skip (repeatable); default: any folder whose name ends with "test" (case-insensitive) and sector-tools')
     a.add_argument('--check', action='store_true', help='write nothing; exit 1 when the file differs')
     o = a.parse_args()
@@ -127,9 +127,9 @@ def main():
         dl['version'] = o.version
     if 'url' not in dl:
         if remote:
-            dl['url'] = 'https://github.com/%s/%s/releases/latest/download/sacred-gear-mods.zip' % remote
+            dl['url'] = 'https://github.com/%s/%s/releases/latest/download/%s' % (remote + (o.asset,))
         else:
-            dl['url'] = 'https://example.com/CHANGE-ME/sacred-gear-mods.zip'
+            dl['url'] = 'https://example.com/CHANGE-ME/' + o.asset
             print('warning: no git remote; download.url is a placeholder, pass --download-url', file=sys.stderr)
     dl.setdefault('version', 'latest')
     idx['download'] = dl

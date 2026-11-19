@@ -121,9 +121,8 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 ## Mod manager index
 
 [`mod-index.json`](mod-index.json) lists the mods of this repository for desktop mod managers; the Gear Mod Manager
-reads it. Every release ships it next to `sacred-gear-mods.zip` (a fixed-name copy of the versioned zip), so a manager
-can always fetch `releases/latest/download/mod-index.json` and `.../sacred-gear-mods.zip`. A CI step fails when the index
-and the mods in `src` disagree. Other repositories can publish their own `mod-index.json` the same way, and an index can
+reads it from the branch. Every release has one asset, `mods.zip`, so the index points to `releases/latest/download/mods.zip`
+(the newest non-pre-release). A CI step fails when the index and the mods in `src` disagree. Other repositories can publish their own `mod-index.json` the same way, and an index can
 also point at other indexes. The full format is in [Mod index](docs/ModIndex.md).
 `python tools/make_mod_index.py` regenerates the `mods` array from the `mod.lua` files (`--check` for CI); see [Generating the index](docs/ModIndex.md#generating-the-index).
 

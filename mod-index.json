@@ -5,7 +5,7 @@
   "description": "Mods for Sacred Gold on the Sacred Gear mod kit of SacredBild: a better savegame screen, autosave, loot tools, a chat window, companions, custom classes, quests and clients of the SacredEngineRemake game server. Extract the zip into the game folder.",
   "homepage": "https://github.com/kirides/sacred-gear-mods",
   "download": {
-    "url": "https://github.com/kirides/sacred-gear-mods/releases/latest/download/sacred-gear-mods.zip",
+    "url": "https://github.com/kirides/sacred-gear-mods/releases/latest/download/mods.zip",
     "version": "latest"
   },
   "mods": [

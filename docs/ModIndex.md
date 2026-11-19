@@ -1,11 +1,11 @@
 # Mod index
 
-`mod-index.json` in the root of this repository lists the mods of a release for desktop mod managers (the Sacred Mod
-Manager reads it). It is plain JSON, UTF-8 without BOM. The release workflow publishes it as a release asset next to
-`sacred-gear-mods.zip`, so the stable URLs are:
+`mod-index.json` in the root of this repository lists the mods of the latest release for desktop mod managers (the Gear Mod
+Manager reads it). It is plain JSON, UTF-8 without BOM. The manager reads the file from the branch
+(`https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/mod-index.json`, or just the repository address). Every push
+to `main` that changes `src/` publishes a release (tag `YYYY-MM-DD-HHmm-sha7`) with one asset, `mods.zip`, so the stable download URL is:
 
-- `https://github.com/kirides/sacred-gear-mods/releases/latest/download/mod-index.json`
-- `https://github.com/kirides/sacred-gear-mods/releases/latest/download/sacred-gear-mods.zip`
+- `https://github.com/kirides/sacred-gear-mods/releases/latest/download/mods.zip` (GitHub's "latest release": the newest release that is neither draft nor pre-release)
 
 The zip holds `mods/<name>/...` (one folder per mod, ready to extract into the game folder) and `README.txt`.
 
@@ -80,7 +80,7 @@ python tools/make_mod_index.py --check    # CI: exit 1 with a diff when the file
 The defaults fit this repository (`--src src`, `--prefix mods`, `--out mod-index.json`, skipping `*_selftest` and
 `sector-tools`). For your own mods repository, pass for example `--name "My mods" --author me --homepage URL
 --download-url URL --version latest --thumb-base https://raw.githubusercontent.com/me/repo/main --exclude 'wip_*'`.
-The download URL defaults to the `releases/latest/download/sacred-gear-mods.zip` of the `origin` remote. A thumbnail is
+The download URL defaults to the `releases/latest/download/mods.zip` of the `origin` remote (`--asset` changes the file name). A thumbnail is
 taken from `thumbnail.png|jpg|webp` inside the mod folder, or from `docs/images/<id>.png|jpg|webp` when `--thumb-base`
 is given.
 
@@ -94,7 +94,7 @@ is given.
   "description": "...",
   "homepage": "https://github.com/kirides/sacred-gear-mods",
   "download": {
-    "url": "https://github.com/kirides/sacred-gear-mods/releases/latest/download/sacred-gear-mods.zip",
+    "url": "https://github.com/kirides/sacred-gear-mods/releases/latest/download/mods.zip",
     "version": "latest"
   },
   "mods": [
