@@ -8,10 +8,11 @@
 --     Something must be worn there; with several worn rings or amulets the two weakest are compared.
 --   * The numbers: the TOOLTIP TEXT of both items (`ui.item_tooltip_text`), the words the player sees. Every line is cut into the
 --     words and the numbers in it ("Physical resistance: +14%" -> words + [14]); a line of the new item and a line of the worn item
---     with the same words are one stat, and the panel shows the difference of the numbers, in the line's own shape
---     ("Physical resistance: +4%"). A line only one of them has counts the other as 0. This needs no knowledge of the item
---     records, works in every language (the words are only compared with each other; the few labels it skips, such as the price
---     and the level, are the game's own texts by id) and includes set, unique and rune bonuses, because the tooltip does.
+--     that are the same stat are one row, and the panel shows the difference of the numbers, in the line's own shape
+--     ("Physical resistance: +4%"). A line only one of them has counts the other as 0. The labels are the game's own (its words in
+--     the game's language); the few lines it skips, such as the price and the level, are found by the game's text ids.
+--   * Which lines are the same stat: for the item's bonus slots (magic, rare and unique properties, rune and socket bonuses) the
+--     item's own data decides (`gear.inv.values`, `gear.inv.bonus_text`), the rest is matched by words: see compare.lua.
 --   * Party: with companions (gear.party) the same is done for every hero that can wear the item.
 --
 -- Limits: the game's "expected damage / protection" lines are computed for the hero the player controls, so for the other
@@ -35,6 +36,12 @@ local NATIVE = ui.native ~= nil
 local PAD = NATIVE and 12 or 7
 local OVER = 12
 
+gear.events.declare('itemcompare.verify_on', {
+    description = 'Asks the mod to check each comparison against one made from the tooltip text alone and to emit itemcompare.verify (for tests).',
+})
+gear.events.declare('itemcompare.verify', {
+    description = 'After a comparison, when itemcompare.verify_on was emitted or the setting verify_data is on: (item id, report): one entry per compared worn item {worn, same = the rows equal those made from the tooltip text alone, data_rows, text_rows, tied_new, tied_worn = lines tied to the item data}.',
+})
 gear.events.declare('itemcompare.compared', {
     description = 'The comparison of the hovered item was made: (item id, number of blocks, blocks): blocks are {hero = hero id, hero_name, worn = item id, name, rows} (a hero with nothing worn there: empty = true).',
 })
@@ -127,6 +134,9 @@ end
 -- Frames
 ---------------------------------------------------------------------------------------------------------------------------------
 
+local force_verify = false     -- a test asked for the check (itemcompare.verify_on)
+gear.on('itemcompare.verify_on', function() force_verify = true end)
+
 local hover = nil           -- {id, x, y, w, h, blocks, at}
 local clock = 0
 local last_dx, last_dy = 330, 120
@@ -140,9 +150,13 @@ gear.on('frame', guard('frame', function(dt)
     if not item then hover = nil return end
     if not hover or hover.id ~= item.id or clock - hover.at > 0.5 then
         local keep = hover and hover.id == item.id
-        local blocks = compare(item)
+        local verify = force_verify or setting('verify_data', false)
+        local blocks, report = compare(item, verify)
         hover = {id = item.id, blocks = blocks, at = clock}
-        if not keep then gear.emit('itemcompare.compared', item.id, #blocks, blocks) end
+        if not keep then
+            gear.emit('itemcompare.compared', item.id, #blocks, blocks)
+            if verify then gear.emit('itemcompare.verify', item.id, report) end
+        end
     end
     hover.x, hover.y, hover.w, hover.h = x, y, w, h
 end))
