@@ -141,7 +141,7 @@ gear.task(function()
     local pr = panel_rect('companions:portraits')
     check('portraits shown', pr ~= nil)
     if pr then
-        A.ui_click(pr.x + 2 + 46, pr.y + 2 + 46)
+        A.ui_click(pr.x + 2 + 41, pr.y + 2 + 50)
         gear.wait(1.5)
         check('portrait click plays the companion', party.leader() == comp)
     end

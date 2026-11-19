@@ -343,10 +343,12 @@ apply_share()
 -- The portraits look like the game's own (its mercenaries' at the top right): the portrait ring of GUI_main_02 (red;
 -- grey when fallen, gilded under the cursor) with the round portrait inside, the game's health bar under it.
 local IMG_RING, IMG_RING_GREY, IMG_BAR, IMG_BAR_FILL = 41, 42, 66, 67
-local RW, RH = 92, 104              -- the ring (96x108) at the width of the game's portrait column (UI_WND_MERC, 92)
-local PX, PY, PS = 13, 13, 65       -- the portrait inside it (the ring's hole)
-local BX, BW, BH = 11, 70, 10       -- the health bar under the ring's hole
-local PW, ROW = RW, 128             -- the game's portraits are 128 apart
+-- Measured against the game's own portraits: the ring at its own size, the portrait over its hole (stretched as the
+-- game does), the health bar under it, the rows 128 apart from the top of the game's column.
+local RW, RH = 96, 108              -- the ring
+local PX, PY, PIW, PIH = 8, 20, 66, 72  -- the portrait
+local BX, BY, BW, BH = 7, 105, 73, 9    -- the health bar
+local PW, ROW = RW, 132
 
 local function bar(x, y, w, h, frac, color)
     ui.rect(x, y, w, h, 0xC0000000)
@@ -368,25 +370,23 @@ end
 
 local function draw_portrait(c, x, y)
     local dead = c:is_dead()
-    local r = ui.region('portrait' .. c.id, x, y, RW, RH + BH + 2, {
+    local r = ui.region('portrait' .. c.id, x, y + 6, RW - 8, BY + BH - 6, {
         tooltip = name_of(c) .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level())
             .. ')\n' .. (dead and 'Fallen' or ('Click to play' .. key_hint('next')))})
-    local img = c:portrait()
-    -- the hole first (dark behind a portrait with transparent corners), then the ring over its edge
-    ui.rect(x + PX + 4, y + PY + 4, PS - 8, PS - 8, 0xFF101010)
-    if img then
-        ui.image(img, x + PX, y + PY, PS, PS, {fit = 'contain', color = dead and 0xFF505050 or (r.hover and 0xFFFFFFFF or 0xFFE8E8E8)})
-    end
+    -- as the game draws it: the ring (its hole is tinted glass), the portrait over it
     local ring = dead and IMG_RING_GREY or (r.hover and IMG_RING_GREY or IMG_RING)
     local tint = dead and 0xFF808080 or (r.hover and 0xFFFFD27A or 0xFFFFFFFF)
-    if not ui.image(ring, x, y, RW, RH, {color = tint}) then
-        ui.frame(x + PX, y + PY, PS, PS, r.hover and ACCENT or 0xFF6A5A3C, 1)
+    local drawn = ui.image(ring, x, y, RW, RH, {color = tint})
+    local img = c:portrait()
+    if img then
+        ui.image(img, x + PX, y + PY, PIW, PIH, {color = dead and 0xFF606060 or 0xFFFFFFFF})
     end
+    if not drawn then ui.frame(x + 8, y + 12, RW - 18, RH - 18, r.hover and ACCENT or 0xFF6A5A3C, 1) end
     local hp, max = c:hp() or 0, c:max_hp() or 1
-    health_bar(x + BX, y + RH + 1, hp / math.max(1, max), dead)
+    health_bar(x + BX, y + BY, hp / math.max(1, max), dead)
     local lvl = tostring(c:level() or '')
-    ui.text(lvl, x + PX - 1, y + PY + PS - 13, {color = 0xFF000000, size = 12})
-    ui.text(lvl, x + PX - 2, y + PY + PS - 14, {color = ACCENT, size = 12})
+    ui.text(lvl, x + 13, y + 79, {color = 0xFF000000, size = 12})
+    ui.text(lvl, x + 12, y + 78, {color = ACCENT, size = 12})
     if r.clicked and not dead then play(c) end
 end
 
@@ -398,8 +398,8 @@ local function column_place()
     local b = w and w.drawn and w.bounds
     local x, y
     if b and b.w and b.w > 0 then
-        -- its rows: 120 high in its bounds, the rings 128 apart from 10 under the top
-        x, y = b.x + (b.w - PW) / 2, b.y + 10 + math.floor(b.h / 120 + 0.5) * ROW
+        -- its rows: 120 high in its bounds, the rings 132 apart
+        x, y = b.x, b.y + 2 + math.floor(b.h / 120 + 0.5) * ROW
     elseif w then
         local st = ui.state()
         x, y = (st.screen_right or 1024) - PW, 16
