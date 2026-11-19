@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "id": "double-strike",
+  "kind": "chain",
+  "art_id": 2100,
+  "steps": [1058, 1059],
+  "delay": 0.1,
+  "name": { "en": "Double Strike", "de": "Doppelschlag" },
+  "description": { "en": "A heavy blow, then an attack.", "de": "Ein harter Schlag, dann ein Angriff." }
+}
