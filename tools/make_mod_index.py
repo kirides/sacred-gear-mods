@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate or refresh a Sacred Mod Manager index (mod-index.json, schema 1) from <src>/*/mod.lua.
+"""Generate or refresh a Gear Mod Manager index (mod-index.json, schema 1) from <src>/*/mod.lua.
 
 Lua is never executed: a small tolerant tokenizer reads the top-level fields of the table `mod.lua` returns.
 A re-run keeps hand-written top-level fields, `indexes`, and the tags/thumbnail/images/defaultEnabled of existing entries.

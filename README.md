@@ -120,7 +120,7 @@ The self tests run the real game without a player (`-gear-auto`); see each mod's
 
 ## Mod manager index
 
-[`mod-index.json`](mod-index.json) lists the mods of this repository for desktop mod managers; the Sacred Mod Manager
+[`mod-index.json`](mod-index.json) lists the mods of this repository for desktop mod managers; the Gear Mod Manager
 reads it. Every release ships it next to `sacred-gear-mods.zip` (a fixed-name copy of the versioned zip), so a manager
 can always fetch `releases/latest/download/mod-index.json` and `.../sacred-gear-mods.zip`. A CI step fails when the index
 and the mods in `src` disagree. Other repositories can publish their own `mod-index.json` the same way, and an index can
