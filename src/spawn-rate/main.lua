@@ -14,7 +14,7 @@ local PRUNE_EVERY = 2                                                       -- s
 local TEXT = {
     en = {
         title_how = 'How it works',
-        how = 'Every creature the game spawns for you (sectors that fill when you arrive, scripted waves) brings extra ones of its kind: at 10x, nine more appear around it. Only creatures hostile to your hero are multiplied, only in single player. Extra creatures are never multiplied again. A higher rate means a fuller world and more to fight, but also a higher load: the safeguards below keep the frame rate up.',
+        how = 'Every creature the game spawns for you (sectors that fill when you arrive, scripted waves) brings extra ones of its kind: at 10x, nine more appear around it. Only creatures hostile to your hero are multiplied (not rabbits, doves, birds and other harmless animals), only in single player. Extra creatures are never multiplied again. A higher rate means a fuller world and more to fight, but also a higher load: the safeguards below keep the frame rate up.',
         off = 'The rate is 1x: the mod does nothing.',
         net = 'Not available in a network game: the mod does nothing there.',
         title_status = 'Status',
@@ -25,7 +25,7 @@ local TEXT = {
     },
     de = {
         title_how = 'So funktioniert es',
-        how = 'Jede Kreatur, die das Spiel für dich erzeugt (Sektoren, die sich bei deiner Ankunft füllen, Wellen aus Skripten), bringt weitere ihrer Art mit: bei 10x erscheinen neun zusätzliche um sie herum. Vervielfacht werden nur Kreaturen, die deinem Helden feindlich sind, und nur im Einzelspielermodus. Zusätzliche Kreaturen werden nicht noch einmal vervielfacht. Eine höhere Rate bedeutet eine vollere Welt und mehr Kämpfe, aber auch mehr Last: die Schutzgrenzen unten halten die Bildrate hoch.',
+        how = 'Jede Kreatur, die das Spiel für dich erzeugt (Sektoren, die sich bei deiner Ankunft füllen, Wellen aus Skripten), bringt weitere ihrer Art mit: bei 10x erscheinen neun zusätzliche um sie herum. Vervielfacht werden nur Kreaturen, die deinem Helden feindlich sind (keine Kaninchen, Tauben, Vögel und andere harmlose Tiere), und nur im Einzelspielermodus. Zusätzliche Kreaturen werden nicht noch einmal vervielfacht. Eine höhere Rate bedeutet eine vollere Welt und mehr Kämpfe, aber auch mehr Last: die Schutzgrenzen unten halten die Bildrate hoch.',
         off = 'Die Rate ist 1x: Die Mod tut nichts.',
         net = 'Im Netzwerkspiel nicht verfügbar: Die Mod tut dort nichts.',
         title_status = 'Status',
@@ -59,6 +59,7 @@ gear.on('creature.created', gear.guard('creature.created', function(ev)
     local hero = W.hero()
     local c = ev.creature
     if not hero or not c or c:is_hero() or not c:is_enemy(hero) or c:is_dead() then return end
+    if not core.multipliable(c:type_name()) then return end   -- bunnies, doves, birds and the like stay as they are
     local n = core.extras(r, math.random)
     if n > 0 and not queue:push({type = ev.type, x = ev.x, y = ev.y, layer = ev.layer, left = n}) then
         stats.refused = stats.refused + n

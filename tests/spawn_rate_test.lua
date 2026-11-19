@@ -42,6 +42,15 @@ for _ = 1, 200 do
     if dist < 79 or dist > 271 then ok(false, 'scatter ring ' .. dist); break end
 end
 
+-- harmless wildlife is not multiplied
+for _, n in ipairs({'RABBIT.GRN', 'dove_white.grn', 'CROW.GRN', 'BIRD_SMALL.GRN', 'Pigeon.grn', 'chicken.grn', 'SEAGULL.GRN'}) do
+    ok(not core.multipliable(n), n .. ' is not multiplied')
+end
+for _, n in ipairs({'gob_warrior.grn', 'ORC_WARRIOR.GRN', 'THIEF_MAL.GRN', 'GHOST.GRN', 'SKEL_WARRIOR.GRN', 'BIRDMAN_SHAMAN.GRN'}) do
+    ok(core.multipliable(n), n .. ' is multiplied')
+end
+ok(not core.multipliable(nil) and not core.multipliable(''), 'no name: not multiplied')
+
 -- a million creations at the worst rate cost a bounded queue, not memory
 local big = core.queue(1500)
 local refused = 0

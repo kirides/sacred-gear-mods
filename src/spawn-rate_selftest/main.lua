@@ -116,6 +116,17 @@ gear.task(function()
     local first = #created
     local sites = visit(x0, y0, layer, 2500)
     local seen = #created - first
+    local kinds = {}
+    for i = first + 1, #created do
+        local e = created[i]
+        local c = W.object(e.id)
+        local nm = (c and c:exists() and c:type_name()) or ('type ' .. e.type)
+        local k = kinds[nm] or {n = 0, hostile = 0, hp = c and c:exists() and c:max_hp() or nil, level = c and c:exists() and c:level() or nil}
+        k.n = k.n + 1
+        if e.hostile then k.hostile = k.hostile + 1 end
+        kinds[nm] = k
+    end
+    note('kinds', kinds)
     note('phase1', {sites = sites, created = seen, hostile = hostile_since(first + 1)})
     check('creature.created: fires for the creatures the engine spawns', seen > 0, ('%d events at %d sites'):format(seen, sites))
     if seen == 0 then
@@ -164,6 +175,13 @@ gear.task(function()
     check('5x: at most rate-1 extras per original', s.made <= hostile * 4, ('%d <= %d'):format(s.made, hostile * 4))
     local re_event = 0
     for _, e in ipairs(created) do if e.extra then re_event = re_event + 1 end end
+    local ambient = 0
+    for _, id in ipairs(s.ids) do
+        local c = W.object(id)
+        local n = c and c:exists() and (c:type_name() or ''):lower() or ''
+        if n:find('rabbit') or n:find('crow') or n:find('dove') or n:find('bird') then ambient = ambient + 1 end
+    end
+    check('5x: no rabbits, crows, doves or birds among the extras', ambient == 0, ambient)
     check('5x: no creature.created for the extras (they are not multiplied again)', re_event == 0, re_event)
     local near, far = 0, 0
     for _, id in ipairs(s.ids) do
