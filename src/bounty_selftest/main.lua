@@ -13,9 +13,39 @@ local function check(name, ok, detail)
 end
 local function query() local ctx = {op = 'query'} gear.emit('bounty.test', ctx) return ctx end
 
-local function bounty(id, def, title, names, target, n, gold, item, left)
-    return {id = id, def = def, title = title, names = names, target = target, min_level = 1, gold = gold, item = item,
+local function bounty(id, def, title, names, target, n, gold, item, left, types)
+    return {id = id, def = def, title = title, names = names, types = types or {}, target = target, min_level = 1, gold = gold, item = item,
         left = left, n = n, done = false, text = 'Defeat ' .. target .. ' ' .. table.concat(names, '/') .. ' creatures'}
+end
+
+-- Fights the spawned zombies until `done()` is true (true) or `rounds` pass (false). The hero is ordered to attack the nearest one
+-- (the order of a click on it): a click at a fixed screen position only hit when a zombie happened to stand there, so some runs
+-- killed one zombie in a minute and failed the kill and gold checks. When the order is refused the old click is the fallback.
+-- New zombies come when none is left.
+local function fight(done, rounds)
+    for i = 1, rounds do
+        local h = W.hero()
+        if h then
+            h:set_hp(99999)
+            local px, py, layer = h:position()
+            local best, best_d
+            for _, c in ipairs(W.creatures_near(px, py, 1200, {limit = 64, layer = layer}) or {}) do
+                if c.id > 16 and not c:is_dead() and c:label() == 'bounty' and c:type_name() == 'ZOMBIE.GRN' then
+                    local x, y = c:position()
+                    local d = x and ((x - px) ^ 2 + (y - py) ^ 2) or nil
+                    if d and (not best_d or d < best_d) then best, best_d = c, d end
+                end
+            end
+            if not best then
+                for k = 1, 2 do W.spawn('ZOMBIE.GRN', px + 50 * k, py + 40, {label = 'bounty', layer = layer}) end
+            elseif not h:order_attack(best) then
+                A.click(830, 475)
+            end
+        end
+        gear.wait(0.6)
+        if done() then return true end
+    end
+    return false
 end
 
 gear.task(function()
@@ -33,6 +63,8 @@ gear.task(function()
         bounty(901, 'undead', 'Grave watch', {'zombie'}, 2, 0, 500, 1, 7200),
         bounty(902, 'beasts', 'Beast hunter', {'wolf', 'bear'}, 20, 8, 700, nil, 4800),
         bounty(903, 'spiders', 'Web cleaner', {'spider'}, 15, 5, 800, 1, 9000),
+        -- the same kills by type id (no words): what a bounty picked by name is saved as
+        bounty(904, 'zombies-by-id', 'Zombie by id', {}, 2, 0, 0, nil, 7200, {gear.data.object_types:find('ZOMBIE.GRN')}),
     }})
     if gear.config.phase == 'shots' then
         -- the README picture: the real panel and tracker with a board in progress (the numbers are examples)
@@ -105,18 +137,7 @@ gear.task(function()
         local hx, hy = hero:position()
         for i = 1, 4 do W.spawn('ZOMBIE.GRN', hx + 60 * i, hy + 40, {label = 'bounty'}) end
         gear.wait(2)
-        for i = 1, 200 do
-            local h = W.hero()
-            if h then h:set_hp(99999) end
-            A.click(830, 475)
-            gear.wait(0.6)
-            if i % 20 == 0 then
-                local px, py = h:position()
-                for k = 1, 2 do W.spawn('ZOMBIE.GRN', px + 50 * k, py + 40, {label = 'bounty'}) end
-            end
-            ctx = query()
-            if ctx.payload.bounties[1].done then break end
-        end
+        fight(function() ctx = query() return ctx.payload.bounties[1].done end, 200)
         A.screenshot('after-fight')
         ctx = query()
         check('custom bounty done', ctx.payload.bounties[1].done, ctx.payload.bounties[1].n)
@@ -163,17 +184,12 @@ gear.task(function()
     local hx, hy = hero:position()
     for i = 1, 4 do W.spawn('ZOMBIE.GRN', hx + 60 * i, hy + 40, {label = 'bounty'}) end
     gear.wait(2)
-    for _ = 1, 160 do
-        local h = W.hero()
-        if h then h:set_hp(99999) end
-        A.click(830, 475)
-        gear.wait(0.6)
-        ctx = query()
-        if ctx.payload.bounties[1].done then break end
-    end
+    fight(function() ctx = query() return ctx.payload.bounties[1].done and ctx.payload.bounties[4].done end, 160)
     ctx = query()
     local z = ctx.payload.bounties[1]
     check('zombie kills counted', z and z.n >= 2 and z.done, z and (z.n .. '/' .. z.target))
+    local zi = ctx.payload.bounties[4]
+    check('kills counted for a bounty by type id', zi and zi.n >= 2 and zi.done, zi and (zi.n .. '/' .. zi.target))
     check('other bounties untouched', ctx.payload.bounties[2].n == 8 and ctx.payload.bounties[3].n == 5)
     gear.wait(3)
     check('gold paid', W.hero():gold() >= gold0 + 500, W.hero():gold() - gold0)
