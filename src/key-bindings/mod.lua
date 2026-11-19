@@ -33,6 +33,7 @@ for i = 1, #actions do
     keys[#keys + 1] = {id = a[1] .. '_2', label = a[2] .. ' (second key)', default = '', section = a[4]}
 end
 
+---@type GearModManifest
 return {
     id = 'key-bindings',
     name = 'Key bindings',

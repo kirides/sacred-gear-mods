@@ -1,3 +1,4 @@
+---@type GearModManifest
 return {
     id = 'twi_sacred',
     name = 'Twitch Integration: actions',

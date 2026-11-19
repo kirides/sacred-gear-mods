@@ -1,3 +1,4 @@
+---@type GearModManifest
 return {
     id = 'twitch_integration',
     name = 'Twitch Integration (base)',

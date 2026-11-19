@@ -1,3 +1,4 @@
+---@type GearModManifest
 return {
     id = 'key-bindings_selftest',
     name = 'Key bindings self test',

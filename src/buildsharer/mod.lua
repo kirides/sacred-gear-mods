@@ -1,3 +1,4 @@
+---@type GearModManifest
 return {
     id = 'buildsharer',
     name = 'Build sharer',

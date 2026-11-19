@@ -1,3 +1,4 @@
+---@type GearModManifest
 return {
     id = 'bounty',
     name = 'Bounty board',

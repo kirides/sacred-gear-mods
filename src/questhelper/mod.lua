@@ -1,3 +1,4 @@
+---@type GearModManifest
 return {
     id = 'questhelper',
     name = 'Quest helper',
