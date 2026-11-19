@@ -2,12 +2,12 @@
 """Generate or refresh a Sacred Mod Manager index (mod-index.json, schema 1) from <src>/*/mod.lua.
 
 Lua is never executed: a small tolerant tokenizer reads the top-level fields of the table `mod.lua` returns.
-A re-run keeps hand-written top-level fields, `indexes`, and the tags/thumbnail/defaultEnabled of existing entries.
+A re-run keeps hand-written top-level fields, `indexes`, and the tags/thumbnail/images/defaultEnabled of existing entries.
 """
 import argparse, difflib, fnmatch, json, os, re, subprocess, sys
 
 ESC = {'n': '\n', 't': '\t', 'r': '\r', 'a': '\a', 'b': '\b', 'f': '\f', 'v': '\v'}
-ORDER = ['id', 'path', 'name', 'version', 'author', 'description', 'tags', 'thumbnail', 'requires', 'defaultEnabled']
+ORDER = ['id', 'path', 'name', 'version', 'author', 'description', 'tags', 'thumbnail', 'images', 'requires', 'defaultEnabled']
 LONG = re.compile(r'\[(=*)\[')
 
 
@@ -163,6 +163,13 @@ def main():
                 e['thumbnail'] = '%s/%s' % (zpath, local[0])
             elif doc and o.thumb_base:
                 e['thumbnail'] = o.thumb_base.rstrip('/') + '/' + doc[0]
+        if not e.get('images'):  # pictures for the viewer: <mod>/images/ or <mod>/screenshots/ (png, jpg, webp), in name order
+            for sub in ('images', 'screenshots'):
+                d = os.path.join(o.src, folder, sub)
+                pics = sorted(n for n in os.listdir(d) if n.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))) if os.path.isdir(d) else []
+                if pics:
+                    e['images'] = ['%s/%s/%s' % (zpath, sub, n) for n in pics[:24]]
+                    break
         mods.append({k: e[k] for k in ORDER + [x for x in e if x not in ORDER] if k in e})
     mods.sort(key=lambda m: m['id'])
     out = {'schema': 1}
