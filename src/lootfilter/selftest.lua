@@ -163,15 +163,16 @@ return function(probe)
         check('settings panel opens', ui.panel_open('settings'))
         check('it stays open without Alt', ui.panel_open('settings') and not probe.overlay_shown())
         A.screenshot('lootfilter-settings')
-        local px, py = 248, 98 + 26 + 90           -- content (248, 98); the quality row
-        A.ui_click(px + 190, py + 9)                -- the lowest quality dropdown
+        local q = probe.rects.min_quality
+        check('quality dropdown rect known', q ~= nil)
+        A.ui_click(q[1] + q[3] / 2, q[2] + q[4] / 2)    -- the lowest quality dropdown
         gear.wait(0.5)
         A.screenshot('lootfilter-settings-dropdown')
-        A.ui_click(px + 190, py + 18 + 1 + 18 + 9)  -- its second entry: magic
+        A.ui_click(q[1] + q[3] / 2, q[2] + q[4] + 1 + 18 + 9)  -- its second entry: magic
         gear.wait(0.5)
         check('lowest quality from the dropdown', cfg.min_quality == 'magic', cfg.min_quality)
-        local potions_y = py + 30 + 4 * 24 + 8 + 18
-        A.ui_click(px + 200 + 7, potions_y + 8)     -- the stamina checkbox
+        local sc = probe.rects.potion_stamina
+        A.ui_click(sc[1] + 7, sc[2] + sc[4] / 2)    -- the stamina checkbox
         gear.wait(0.5)
         check('potion checkbox', cfg.potions.stamina == false, tostring(cfg.potions.stamina))
         A.screenshot('lootfilter-settings-saved')

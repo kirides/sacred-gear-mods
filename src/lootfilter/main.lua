@@ -288,21 +288,31 @@ local function index_of(list, v)
     return 1
 end
 
+-- Where the self test finds the controls it clicks (set by the panel while it is drawn).
+local rects = {}
+
+-- The settings form: stacked tables (a table per block), so the labels, checkboxes and dropdowns of a block share their
+-- columns and rows; the radio group is the only widget placed by hand, in the cell the table reserves for it.
 local function settings_panel()
-    local p = ui.panel('settings', 'Loot filter settings', 240, 70, 540, 392)
+    local p = ui.panel('settings', 'Loot filter settings', 240, 70, 540, 440)
     if not p.open then return end
-    local x, y = p.content_x, p.content_y
+    local x, y, w = p.content_x, p.content_y, p.content_w
+    local accent = ui.COLORS.accent
     local changed = false   -- any rule changed this frame: saved and applied at the end
-    local c
+    local c, t
+
     c, cfg.enabled = ui.checkbox('enabled', x, y, 'Filter on', cfg.enabled, {tooltip = 'Off: the hero picks up everything'})
     changed = changed or c
+    y = y + 28
 
     -- Classes
-    y = y + 26
-    ui.label('l-classes', 'Pick up items for', x, y, {color = ui.COLORS.accent})
     local mode = cfg.classes == 'own' and 1 or cfg.classes == false and 2 or 3
-    c, mode = ui.radio_group('classmode', x, y + 18, {'my class', 'any class', 'these classes:'}, mode,
-        {horizontal = true, tooltips = {'The hero\'s own class', 'Every item, whatever its class',
+    t = ui.table('classes', x, y, w, {columns = {'*', '*', '*', '*'}, spacing = {8, 2}, row_height = 20})
+    t:row(); t:label(1, 'Pick up items for', {id = 'l-classes', color = accent, span = 4})
+    t:row()
+    local rx, ry = t:cell(1, 4)
+    c, mode = ui.radio_group('classmode', rx, ry, {'my class', 'any class', 'these classes:'}, mode,
+        {horizontal = true, tooltips = {"The hero's own class", 'Every item, whatever its class',
             'The classes ticked below (for your other heroes too)'}})
     if c then
         changed = true
@@ -316,10 +326,9 @@ local function settings_panel()
     local picked = {}
     if type(cfg.classes) == 'table' then for _, n in ipairs(cfg.classes) do picked[n] = true end end
     for i, cls in ipairs(W.CLASSES) do
-        local cx = x + ((i - 1) % 4) * 128
-        local cy = y + 40 + math.floor((i - 1) / 4) * 20
-        local cc, on = ui.checkbox('class-' .. cls.name, cx, cy, cls.name, picked[cls.name] == true,
-            {enabled = mode == 3})
+        if (i - 1) % 4 == 0 then t:row() end
+        local cc, on = t:checkbox((i - 1) % 4 + 1, cls.name, picked[cls.name] == true,
+            {id = 'class-' .. cls.name, enabled = mode == 3})
         if cc then
             changed = true
             picked[cls.name] = on
@@ -328,53 +337,58 @@ local function settings_panel()
             cfg.classes = list
         end
     end
+    y = y + t:height() + 12
 
-    -- Qualities (dropdowns last in each row so their lists cover what follows)
-    y = y + 90
-    ui.label('l-quality', 'Lowest quality', x, y, {height = 18, valign = 'middle', color = ui.COLORS.accent,
+    -- Qualities
+    ui.label('l-quality', 'Lowest quality', x, y, {height = 22, valign = 'middle', color = accent,
         tooltip = 'Items below it are left on the ground'})
-    local rows = {}
-    for i, cat in ipairs(CATEGORIES) do
-        rows[i] = {cat = cat, x = x + ((i - 1) % 2) * 260, y = y + 30 + math.floor((i - 1) / 2) * 24}
-        ui.text(cat, rows[i].x, rows[i].y, {height = 18, valign = 'middle'})
-    end
-
-    -- Potions and the rest
-    local py = y + 30 + 4 * 24 + 8
-    ui.label('l-potions', 'Potions', x, py, {color = ui.COLORS.accent})
-    for i, k in ipairs(POTIONS) do
-        local pc, on = ui.checkbox('potion-' .. k, x + (i - 1) * 100, py + 18, k, cfg.potions[k] ~= false,
-            {tooltip = k == 'colored' and 'The black, blue, green, red and yellow potions' or nil})
-        if pc then cfg.potions[k] = on; changed = true end
-    end
-    py = py + 46
-    c, cfg.keep_set = ui.checkbox('keep_set', x, py, 'Set items always', cfg.keep_set == true)
-    changed = changed or c
-    c, cfg.keep_quest = ui.checkbox('keep_quest', x + 180, py, 'Quest items always', cfg.keep_quest ~= false)
-    changed = changed or c
-    ui.text('Dim filtered labels', x, py + 26, {height = 16, valign = 'middle'})
-    c, cfg.dim_alpha = ui.slider('dim', x + 140, py + 26, 200, 0, 255, cfg.dim_alpha, {step = 5,
-        tooltip = 'Alpha of the labels of filtered items (255: not dimmed)'})
-    changed = changed or c
-
-    if ui.button('close', x, py + 56, 120, 22, 'Close') then ui.show_panel('settings', false) end
-    ui.text('Also in the Mods screen (F11)', x + 130, py + 56, {height = 22, valign = 'middle', size = 11, color = ui.COLORS.text_dim})
-
-    -- The quality dropdowns, drawn last so an open list lies over the rows below it.
     local qc, qi = ui.dropdown('min_quality', x + 140, y, 120, QUALITY_OPTIONS, index_of(QUALITY_OPTIONS, cfg.min_quality))
+    rects.min_quality = {x + 140, y, 120, 22}
     cfg.min_quality = QUALITY_OPTIONS[qi]
     changed = changed or qc
-    for i = #rows, 1, -1 do
-        local r = rows[i]
-        local rule = cfg.categories[r.cat]
+    y = y + 30
+
+    t = ui.table('categories', x, y, w, {columns = {72, 120, 40, 72, 120}, spacing = {8, 3}})
+    for i, cat in ipairs(CATEGORIES) do
+        local col = (i - 1) % 2 * 3 + 1
+        if col == 1 then t:row() end
+        t:label(col, cat)
+        local rule = cfg.categories[cat]
         local cur = rule == false and 'never' or rule or '(minimum)'
-        local ch, idx = ui.dropdown('cat-' .. r.cat, r.x + 80, r.y, 120, CATEGORY_OPTIONS, index_of(CATEGORY_OPTIONS, cur))
+        local ch, idx = t:dropdown(col + 1, CATEGORY_OPTIONS, index_of(CATEGORY_OPTIONS, cur), {id = 'cat-' .. cat})
         if ch then
-            local v = CATEGORY_OPTIONS[idx]
-            cfg.categories[r.cat] = category_rule(v)
+            cfg.categories[cat] = category_rule(CATEGORY_OPTIONS[idx])
             changed = true
         end
     end
+    y = y + t:height() + 12
+
+    -- Potions and the rest
+    t = ui.table('potions', x, y, w, {columns = {'*', '*', '*', '*', '*'}, spacing = {8, 2}, row_height = 20})
+    t:row(); t:label(1, 'Potions', {id = 'l-potions', color = accent, span = 5})
+    t:row()
+    for i, k in ipairs(POTIONS) do
+        local pc, on = t:checkbox(i, k, cfg.potions[k] ~= false,
+            {id = 'potion-' .. k, tooltip = k == 'colored' and 'The black, blue, green, red and yellow potions' or nil})
+        if k == 'stamina' then rects.potion_stamina = {t:cell(i)} end
+        if pc then cfg.potions[k] = on; changed = true end
+    end
+    y = y + t:height() + 10
+
+    t = ui.table('rest', x, y, w, {columns = {180, 220, '*'}, spacing = {8, 6}})
+    t:row()
+    c, cfg.keep_set = t:checkbox(1, 'Set items always', cfg.keep_set == true, {id = 'keep_set'})
+    changed = changed or c
+    c, cfg.keep_quest = t:checkbox(2, 'Quest items always', cfg.keep_quest ~= false, {id = 'keep_quest'})
+    changed = changed or c
+    t:row()
+    t:label(1, 'Dim filtered labels')
+    c, cfg.dim_alpha = t:slider(2, 0, 255, cfg.dim_alpha, {id = 'dim', step = 5,
+        tooltip = 'Alpha of the labels of filtered items (255: not dimmed)'})
+    changed = changed or c
+    t:row(28)
+    if t:button(1, 'Close', {id = 'close', width = 120, halign = 'left'}) then ui.show_panel('settings', false) end
+    t:label(2, 'Also in the Mods screen (F11)', {size = 11, color = ui.COLORS.text_dim, span = 2})
     if changed then push(); refresh() end
 end
 
@@ -398,5 +412,6 @@ if gear.auto then
         stats = stats,
         last_items = function() return last_items end,
         overlay_shown = function() return overlay_shown end,
+        rects = rects,
     })
 end
