@@ -98,8 +98,8 @@ Open the Mods screen with **F11** and pick the mod.
 
 ## Development
 
-- **Files:** `src/companions/mod.lua` (manifest), `main.lua` (party window, portraits, switching, names, shared
-  experience), `ai.lua` (what a companion does each think, four times a second).
+- **Files:** `src/companions/mod.lua` (manifest), `main.lua` (switching, names, recruiting, shared
+  experience), `window.lua` (the portraits and the party window: drawing only, actions come from main.lua), `ai.lua` (what a companion does each think, four times a second).
 - **Depends on:** `gear.party` (sacred-bild: recruit, control, orders, abilities, combos, shared experience),
   `gear.world`, `gear.data.abilities` (how the game aims an ability), `gear.ui`, `gear.store`.
 - **Self test:** `src/companions_selftest` (`Sacred.exe -gear-auto -gear-load=N -gear-mods=companions,companions_selftest
