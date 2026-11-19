@@ -54,6 +54,10 @@ On a server the same events come from the state the server pushes (`source = 'se
 | `worldevent.progress` | the count went up | same, plus `previous` |
 | `worldevent.completed` | the goal was reached | same |
 | `worldevent.failed` | the time ran out | same |
-| `worldevent.hook` | a trigger fired its actions (spawn, item, message, gold) | `title, id?, action, text?, source` |
+| `worldevent.hook` | a trigger fired its actions (spawn, item, message, gold, boss) | `title, id?, action, text?, source` |
+| `worldevent.boss.spawned` | a world boss appeared (a `boss` action of an event, or the server announced one; `initial = true` when a boss from the savegame came back after a load) | `id, name, event, type?, type_name?, creature?, health?, damage?, taken?, deflect?, reflect?, regen?, reward?, source, initial?` |
+| `worldevent.boss.defeated` | it was defeated (`gone = true`: it left the world without dying as far as the mod can tell, or the server's time for it ran out) | `id, name, event, type?, type_name?, creature?, health?, reward?, by?, gone?, source` |
+
+`id` of a boss is a string (`local:<time>:<n>` in your game, `<event>:<hook>:<action>` from a server); `creature` is the object id in your own game (local bosses only), `health` the boss's maximum health, `damage`, `taken`, `deflect`, `reflect` and `regen` the multipliers it was made with.
 
 The Gear MDK has an example mod that uses these (`examples/hooks`).

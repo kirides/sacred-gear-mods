@@ -19,6 +19,8 @@ return {
         {id = 'local_mode', type = 'choice', label = 'Without a server', default = 'auto', section = 'Single player',
          choices = {{value = 'auto', label = 'Run the events here (events.json)'}, {value = 'off', label = 'Do nothing'}},
          tooltip = 'In single player or a LAN game without a world_events server the mod runs the events itself from its events.json (a first run writes a small one to edit; a server export writes the same format): it counts your kills, shows the bar and fires the hooks (waves, items, gold, messages) for you.'},
+        {id = 'boss_bar', type = 'bool', label = 'Show the boss health bar', default = true, section = 'World bosses',
+         tooltip = 'A name and a health bar for each world boss (a boss action of an event: a creature with much more health, damage and some armour; or what the server announces). Move it with the layout editor. It takes no clicks.'},
         {id = 'results', type = 'bool', label = 'Show the result for a while', default = true,
          tooltip = 'After an event ends, one short line says whether the realm made it, then fades out (the server sets how long, 2 minutes by default)'},
     },

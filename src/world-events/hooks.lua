@@ -8,13 +8,17 @@
 --   actions   {action = 'spawn', n, per_player, kinds = {{type = 'Orc Warrior', weight = 3}, ...}, radius, target, text}
 --             {action = 'item', spec = {type | quality, category, level}, n, target}   {action = 'message', text, target}
 --             {action = 'gold', amount, target}
+--             {action = 'boss', name, kinds = {{type, weight}} | near = 'Orc', radius, health, damage, taken, deflect, reflect, regen, reward = {gold, item = spec, text}, text, target}
 --   targets   killer, host, random, owner, players, global  (alone in a single player game they are all the hero)
 local M = {}
 
 M.LIMITS = {hooks = 12, actions = 6, kinds = 8, spawn_n = 40, item_n = 10}
-M.ACTIONS = {spawn = true, item = true, message = true, gold = true}
+M.ACTIONS = {spawn = true, item = true, message = true, gold = true, boss = true}
 M.TARGETS = {killer = true, host = true, random = true, owner = true, players = true, global = true}
-M.DEFAULT_TARGET = {spawn = 'owner', item = 'killer', message = 'global', gold = 'killer'}
+M.DEFAULT_TARGET = {spawn = 'owner', item = 'killer', message = 'global', gold = 'killer', boss = 'owner'}
+
+-- What a boss may be made of (the same limits as the server's world_events.lua): name = {lowest, highest, default}.
+M.BOSS = {health = {1, 1000, 10}, damage = {0, 50, 2}, taken = {0.05, 10, 1}, deflect = {0, 0.9, 0}, reflect = {0, 1, 0}, regen = {0, 0.2, 0}}
 
 local function int_in(v, low, high)
     v = tonumber(v)
@@ -51,6 +55,48 @@ local function clean_kind(raw)
     return {type = t, weight = int_in(raw.weight, 1, 1000) or 1}
 end
 
+-- A number brought into low..high, `default` for something that is no number.
+local function clamp_num(v, low, high, default)
+    v = tonumber(v)
+    if not v or v ~= v then return default end
+    return math.max(low, math.min(high, v))
+end
+
+-- The boss part of a `boss` action or of the server's spawn message (a table): name, what it is made of (`kinds` to spawn, or `near`: the
+-- nearest creature whose name has these words is promoted), the multipliers, the reward and the announcement. Returns the clean boss or nil and a reason.
+function M.clean_boss(raw, limits)
+    limits = limits or M.LIMITS
+    if type(raw) ~= 'table' then return nil, 'not an object' end
+    local b = {kinds = {}}
+    for _, k in ipairs(type(raw.kinds) == 'table' and raw.kinds or {}) do
+        local entry = clean_kind(k)
+        if entry and #b.kinds < limits.kinds then b.kinds[#b.kinds + 1] = entry end
+    end
+    if type(raw.near) == 'string' and raw.near:match('%S') then b.near = trim(text_of(raw.near, 48)) end
+    if #b.kinds == 0 and not b.near then return nil, 'a boss needs a creature kind (kinds) or creatures to promote (near)' end
+    local first = b.kinds[1] and tostring(b.kinds[1].type) or b.near
+    b.name = trim(text_of(raw.name ~= nil and raw.name or first, 40))
+    if b.name == '' then b.name = trim(text_of(first, 40)) end
+    b.radius = clamp_int(raw.radius, 50, 3000, 400)
+    for key, range in pairs(M.BOSS) do b[key] = clamp_num(raw[key], range[1], range[2], range[3]) end
+    if type(raw.reward) == 'table' then
+        local r = {}
+        r.gold = int_in(raw.reward.gold, 1, 2000000000)
+        if type(raw.reward.item) == 'table' then
+            local spec, item = raw.reward.item, {}
+            if type(spec.type) == 'string' and spec.type:match('%S') then item.type = text_of(spec.type, 48)
+            elseif type(spec.type) == 'number' then item.type = int_in(spec.type, 1, 4294967295) end
+            if spec.quality ~= nil then item.quality = int_in(spec.quality, 0, 14) end
+            if type(spec.category) == 'string' and spec.category ~= '' then item.category = text_of(spec.category, 20):lower() end
+            if spec.level ~= nil then item.level = int_in(spec.level, 1, 200) end
+            if next(item) ~= nil then r.item = item end
+        end
+        if raw.reward.text ~= nil and tostring(raw.reward.text):match('%S') then r.text = text_of(raw.reward.text, 120) end
+        if r.gold or r.item then b.reward = r end
+    end
+    return b
+end
+
 local function clean_action(raw, limits)
     if type(raw) ~= 'table' then return nil, 'not an object' end
     local kind = raw.action
@@ -66,6 +112,11 @@ local function clean_action(raw, limits)
             if entry and #a.kinds < limits.kinds then a.kinds[#a.kinds + 1] = entry end
         end
         if #a.kinds == 0 then return nil, 'a spawn needs at least one creature kind' end
+    elseif kind == 'boss' then
+        local boss, why = M.clean_boss(raw, limits)
+        if not boss then return nil, why end
+        a.boss = boss
+        a.n = 1
     elseif kind == 'item' then
         local spec = type(raw.spec) == 'table' and raw.spec or {}
         a.spec = {}
@@ -161,9 +212,19 @@ local function kind_text(kinds)
     return table.concat(parts, ' / ')
 end
 
+-- 2, 1.5 (no trailing zeros)
+function M.num_text(v)
+    local t = ('%.2f'):format(v):gsub('0+$', ''):gsub('%.$', '')
+    return t
+end
+
 function M.action_text(a)
     if a.action == 'spawn' then
         return ('%d of %s appear around you'):format(a.n, kind_text(a.kinds))
+    elseif a.action == 'boss' then
+        local b = a.boss
+        return ('the boss %s (%s health, %s damage) %s'):format(b.name, 'x' .. M.num_text(b.health), 'x' .. M.num_text(b.damage),
+            b.near and ('rises from the nearest ' .. b.near) or 'appears around you')
     elseif a.action == 'item' then
         local s = a.spec
         local what = s.type and tostring(s.type) or ('an item' .. (s.quality and (' of quality ' .. s.quality) or '')
@@ -266,15 +327,21 @@ function M.parse_spawn(payload, limits)
     local id = type(payload.id) == 'string' and payload.id or nil
     if not id or id == '' or #id > 64 then return nil, 'no wave id' end
     local n = int_in(payload.n, 1, limits.spawn_n)
-    if not n then return nil, 'bad creature count' end
+    if not n and payload.boss == nil then return nil, 'bad creature count' end
     local kinds = {}
     for _, k in ipairs(type(payload.kinds) == 'table' and payload.kinds or {}) do
         local entry = clean_kind(k)
         if entry and #kinds < limits.kinds then kinds[#kinds + 1] = entry end
     end
-    if #kinds == 0 then return nil, 'no creature kinds' end
+    if #kinds == 0 and payload.boss == nil then return nil, 'no creature kinds' end
     local text = payload.text ~= nil and tostring(payload.text):match('%S') and text_of(payload.text, 160) or nil
-    return {id = id, n = n, radius = int_in(payload.radius, 50, 3000) or 400, kinds = kinds, text = text, event = text_of(payload.event or '', 60)}
+    local boss = nil
+    if payload.boss ~= nil then
+        boss = M.clean_boss(payload.boss, limits)
+        if not boss then return nil, 'bad boss' end
+        n = 1
+    end
+    return {boss = boss, id = id, n = n, radius = int_in(payload.radius, 50, 3000) or 400, kinds = kinds, text = text, event = text_of(payload.event or '', 60)}
 end
 
 -- `n` kinds drawn by weight (`rnd(k)` returns an integer 1..k).
