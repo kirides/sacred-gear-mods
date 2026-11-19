@@ -52,7 +52,7 @@ local function new_gear()
 end
 
 local function load_mod(g)
-    package.loaded['core'] = nil
+    package.loaded['core'], package.loaded['draw'] = nil, nil      -- modules that hold state or the fake gear's ui
     _G.gear = g.gear
     local chunk = assert(loadfile('main.lua'))
     chunk()

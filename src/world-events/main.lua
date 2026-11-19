@@ -10,6 +10,7 @@ local wevents = require('events')
 local localevents = require('localevents')
 local bosses = require('bosses')
 local regions = require('regions')
+local draw = require('draw')          -- the pills and the boss bar: drawing only
 local ui, S = gear.ui, gear.settings
 
 local CHANNEL = 'worldevents:state'
@@ -22,8 +23,6 @@ local channel
 local last_hello = -1e9
 local pulse_until = 0       -- gear.time() until which the pill pulses (a 25 / 50 / 75 % mark was crossed)
 local pinned = false        -- the details stay up (the controller's mod menu)
-
-local PULSE = 1.6
 
 local last_server = -1e9    -- gear.time() of the last state a server pushed
 
@@ -42,7 +41,7 @@ local function feed(payload, source)
         local good, err = pcall(wevents.diff, before, after, emit_hook, source or 'server')
         if not good then gear.log('world-events: hooks: ' .. tostring(err)) end
     end
-    if ok and crossed and S.get('pulse') ~= false then pulse_until = gear.time() + PULSE end
+    if ok and crossed and S.get('pulse') ~= false then pulse_until = gear.time() + draw.PULSE end
 end
 
 local function ensure_channel()
@@ -101,7 +100,7 @@ if gear.world and FILES then
     if ok then G = mod else gear.log('world-events: no game binding (' .. tostring(mod) .. ')') end
 end
 local seen = hooks.seen(200)
-local M_spawn_boss              -- the boss manager, below
+local spawn_boss                -- makes a world boss; defined with the boss manager below (the waves need it first)
 local spawn_channel
 local waves = {}             -- the outcome of the last waves: {id, made, why}
 
@@ -111,7 +110,7 @@ local function on_spawn(wave)
     if not seen:add(wave.id) then return end
     if not G then waves[#waves + 1] = {id = wave.id, made = 0, why = 'no world API'}; return end
     if wave.boss then
-        local ok, why2 = M_spawn_boss(wave.boss, wave.event ~= '' and wave.event or 'World event', wave.text, 'server')
+        local ok, why2 = spawn_boss(wave.boss, wave.event ~= '' and wave.event or 'World event', wave.text, 'server')
         waves[#waves + 1] = {id = wave.id, made = ok and 1 or 0, why = why2}
         if #waves > 20 then table.remove(waves, 1) end
         if not ok then gear.log('world-events: the boss ' .. wave.id .. ' was not made: ' .. tostring(why2)) end
@@ -203,7 +202,7 @@ local function start_local()
         defs = defs, store = local_file.data, log = function(t) gear.log('world-events: ' .. t) end,
         act = function(action, ctx, key, index, def)
             if action.action == 'boss' then
-                local ok, why = M_spawn_boss(action.boss, def and def.title or 'World event', action.text, 'local')
+                local ok, why = spawn_boss(action.boss, def and def.title or 'World event', action.text, 'local')
                 if not ok then gear.log('world-events: boss failed: ' .. tostring(why)) end
             else
                 G.run_action(action, def and def.title or 'World event')
@@ -252,175 +251,9 @@ gear.on('kill', function(kill)
 end)
 
 ---------------------------------------------------------------------------------------------------------------
--- the pill
+-- the pill (drawn by draw.lua)
 ---------------------------------------------------------------------------------------------------------------
-local W, H = 220, 46                -- the panel's default size (layout units); the layout editor can change both
-local X, Y = 402, 40                -- top centre, clear of the minimap and the action bar
-
-local COLOR = {
-    pill = 0x59101014,              -- about 35 % opaque
-    glow = 0x55E3B341,
-    ring = 0xFFE3B341, ring_off = 0x30E3B341,
-    time = 0xFF86C3F2, time_off = 0x2886C3F2, time_late = 0xFFE88A68,
-    won = 0xFF63C269, failed = 0xFFB86060,
-    title = 0xFFF2D58A, count = 0xFFD2CCBE, timer = 0xFF9CCBF5, percent = 0xFFFFF2D0,
-    region = 0xFF6FC2B8, region_off = 0x306FC2B8, region_title = 0xFFA9E3DC, region_glow = 0x556FC2B8,     -- the region boss pill: teal, not the events' gold
-    tip_back = 0xE60E0E14, tip_edge = 0xFF5A4A36, tip_text = 0xFFE6DFD0, tip_title = 0xFFF2D58A,
-}
-
--- A color with its opacity multiplied by `factor` (0..1).
-local function with_alpha(color, factor)
-    if factor >= 1 then return color end
-    local a = math.floor(math.floor(color / 0x1000000) % 256 * factor + 0.5)
-    return a * 0x1000000 + color % 0x1000000
-end
-
--- A rounded pill from one-pixel rows (rectangles are all gear.ui has).
-local function draw_pill(x, y, w, h, color)
-    local r = h / 2
-    for i = 0, math.floor(h) - 1 do
-        local dy = i + 0.5 - r
-        local inset = r - math.sqrt(math.max(0, r * r - dy * dy))
-        ui.rect(x + inset, y + i, w - 2 * inset, 1, color)
-    end
-end
-
-local SIN, COS = {}, {}
-local function unit_circle(n)
-    if not SIN[n] then
-        SIN[n], COS[n] = {}, {}
-        for i = 0, n - 1 do
-            local a = -math.pi / 2 + 2 * math.pi * i / n
-            SIN[n][i], COS[n][i] = math.sin(a), math.cos(a)
-        end
-    end
-    return SIN[n], COS[n]
-end
-
--- A ring of dots from the top, clockwise: the first `lit` (0..1) of the circle in `on`, the rest in `off`.
-local function draw_ring(cx, cy, radius, n, dot, lit, on, off)
-    local sin, cos = unit_circle(n)
-    local half = dot / 2
-    for i = 0, n - 1 do
-        ui.rect(cx + radius * cos[i] - half, cy + radius * sin[i] - half, dot, dot, ((i + 0.5) / n <= lit) and on or off)
-    end
-end
-
-local function text_width(text, font)
-    local w = ui.text_size(text, font)
-    return w or (#text * (font.size or 12) * 0.55)
-end
-
--- The details: next to the cursor on hover, else under the pill (above it at the bottom of the screen).
-local function draw_tooltip(view, x, y, h, hover, state)
-    local lines = view.tip or {}
-    if #lines == 0 then return end
-    local tw, th = 0, 0
-    for i, line in ipairs(lines) do
-        tw = math.max(tw, text_width(line, i == 1 and {size = 13, bold = true} or {size = 12}))
-        th = th + (i == 1 and 18 or 16)
-    end
-    local bw, bh = tw + 16, th + 12
-    local bx, by
-    if hover then
-        bx, by = ui.tooltip_rect(bw, bh)
-    else
-        bx, by = x, y + h + 4
-        if by + bh > (state.screen_bottom or 768) then by = y - bh - 4 end
-        bx = math.max(state.screen_left or 0, math.min(bx, (state.screen_right or 1024) - bw))
-    end
-    ui.rect(bx, by, bw, bh, COLOR.tip_back)
-    ui.frame(bx, by, bw, bh, COLOR.tip_edge, 1)
-    local ty = by + 6
-    for i, line in ipairs(lines) do
-        ui.text(line, bx + 8, ty, i == 1 and {size = 13, bold = true, color = COLOR.tip_title, shadow = true}
-            or {size = 12, color = COLOR.tip_text, shadow = true})
-        ty = ty + (i == 1 and 18 or 16)
-    end
-end
-
--- One pill in the rectangle (x, y, w, h). A region pill is teal, has a single ring and no time.
-local function draw_one(view, state, x, y, w, h, first)
-    local k = math.max(0.65, math.min(h / H, 1.8))          -- the contents follow the pill's height
-    local fade = view.alpha or 1
-    local now = gear.time()
-    local region = view.kind == 'region'
-
-    -- the pill; a pulse warms it for a moment (events only)
-    draw_pill(x, y, w, h, with_alpha(COLOR.pill, fade))
-    if not region and now < pulse_until then
-        local t = (pulse_until - now) / PULSE
-        draw_pill(x, y, w, h, with_alpha(COLOR.glow, math.sin(t * math.pi) * fade))
-    end
-
-    -- the double ring: gold = progress, blue = the time left; the percent in the middle
-    local d = math.min(42 * k, h - 2)
-    local cx, cy = x + 2 + d / 2, y + h / 2
-    local outer_on = region and COLOR.region or view.kind == 'won' and COLOR.won or view.kind == 'failed' and COLOR.failed or COLOR.ring
-    draw_ring(cx, cy, d / 2 - 2.5 * k, math.floor(86 * k), 3 * k, view.frac, with_alpha(outer_on, fade), with_alpha(region and COLOR.region_off or COLOR.ring_off, fade))
-    if view.kind == 'active' then
-        draw_ring(cx, cy, d / 2 - 7 * k, math.floor(58 * k), 2 * k, view.time_frac,
-            with_alpha(view.late and COLOR.time_late or COLOR.time, fade), with_alpha(COLOR.time_off, fade))
-    end
-    ui.text(view.percent .. '%', cx - d / 2, cy - d / 2, {
-        size = 11 * k, bold = true, color = with_alpha(COLOR.percent, fade), shadow = true, width = d, height = d,
-        align = 'center', valign = 'middle'})
-
-    -- two lines: the title, then the count and the time left (blue)
-    local tx = x + d + 10
-    local tw = math.max(20, w - (tx - x) - 10)
-    ui.text(view.title, tx, y + h / 2 - 15 * k, {size = 12.5 * k, bold = true, color = with_alpha(region and COLOR.region_title or COLOR.title, fade),
-        shadow = true, width = tw, height = 15 * k})
-    if view.area and view.area ~= '' then
-        -- "Orc hunt · Silver Creek": the area name after the title, dimmer, as far as there is room
-        local title_w = text_width(view.title .. '  ', {size = 12.5 * k, bold = true})
-        if title_w < tw - 30 * k then
-            ui.text('\194\183 ' .. view.area, tx + title_w, y + h / 2 - 14 * k, {size = 11 * k, color = with_alpha(COLOR.count, fade),
-                shadow = true, width = tw - title_w, height = 14 * k})
-        end
-    end
-    local f2 = {size = 11.5 * k}
-    ui.text(view.line2, tx, y + h / 2 + 1 * k, {size = f2.size, color = with_alpha(COLOR.count, fade), shadow = true, height = 14 * k})
-    if view.time_text ~= '' then
-        local lw = text_width(view.line2 .. ' ', f2)
-        ui.text('\194\183 ' .. view.time_text, tx + lw, y + h / 2 + 1 * k, {size = f2.size, color = with_alpha(COLOR.timer, fade),
-            shadow = true, height = 14 * k})
-    end
-
-    -- the details: on hover, with Alt (the game's "show text", for the first pill) or pinned from the controller's mod menu
-    local mx, my = ui.mouse()
-    local hover = mx >= x and mx < x + w and my >= y and my < y + h
-    if hover or ((state.show_text or pinned) and first and not state.tip_drawn) then
-        state.tip_drawn = true
-        draw_tooltip(view, x, y, h, hover, state)
-    end
-end
-
--- All the pills in ONE movable panel, one below the other (the first stays where the panel is): the events first (least time left first), then
--- the region boss pill, at most MAX_PILLS and a line "+N more". The panel's WIDTH sets the size of the pills (resize it in the layout editor),
--- its height is made from that and the number of pills, so it grows and shrinks by itself and keeps its place.
-local GAP, MORE_H, MAX_PILLS = 4, 14, 4
-
-local function draw_stack(views, more, state)
-    local n = #views
-    local extra = more > 0 and MORE_H or 0
-    local p = ui.panel('bar', 'World events', X, Y, W, n * H + (n - 1) * GAP + extra, {bare = true, resizable = true, min_width = 150, min_height = 30})
-    if not p or not p.open then return end
-    local x, y, w, h = p.content_x or X, p.content_y or Y, p.content_w or W, p.content_h or H
-    local unit = H * math.max(0.68, math.min(w / W, 1.8))
-    local want_h = n * unit + (n - 1) * GAP + extra
-    if math.abs(h - want_h) > 1 and ui.set_panel_rect then
-        ui.set_panel_rect(p.key or 'world-events:bar', x, y, w, want_h)
-    end
-    state.tip_drawn = false
-    for i, v in ipairs(views) do
-        draw_one(v, state, x, y + (i - 1) * (unit + GAP), w, unit, i == 1)
-    end
-    if more > 0 then
-        ui.text('+' .. more .. ' more', x + 12, y + n * (unit + GAP) - GAP + 1, {size = 11, color = COLOR.count, shadow = true, height = 13})
-    end
-end
-
+local pill_flags = {}       -- what draw.stack needs to know of this file's state, refilled every frame
 ui.show_panel('bar', true)
 
 if gear.text and gear.text.get then regions.set_text(gear.text.get) end      -- region names: the texts of the install's language
@@ -453,10 +286,11 @@ gear.on('draw', function(state)
     local views = model:views(gear.time(), {area = S.get('area'), results = S.get('results'), preview = editing})
     local rviews = region_views
     if editing and #rviews == 0 and S.get('region_pill') ~= false then rviews = {regions.view(regions.sample(gear.data and gear.data.regions))} end
-    local stacked, more = regions.stack(views, rviews, MAX_PILLS)
+    local stacked, more = regions.stack(views, rviews, draw.MAX_PILLS)
     if #stacked == 0 then return end
     if not editing and S.get('visibility') == 'alt' and not state.show_text then return end
-    draw_stack(stacked, more, state)
+    pill_flags.pulse_until, pill_flags.pinned = pulse_until, pinned
+    draw.stack(stacked, more, state, pill_flags)
 end)
 
 ---------------------------------------------------------------------------------------------------------------
@@ -501,7 +335,7 @@ end
 
 -- Makes a boss (a clean boss of hooks.clean_boss) for this game. Returns true, or false and a reason. `source` 'local' (an event of this game)
 -- or 'server' (a spawn message that asks this game to make it).
-function M_spawn_boss(boss, title, text, source)
+function spawn_boss(boss, title, text, source)
     if not G then return false, 'no world API' end
     local rec, why = G.make_boss(boss)
     if not rec then return false, why end
@@ -629,68 +463,9 @@ gear.on('session.stop', function() btracker:clear(); boss_recs = {} end)
 gear.on('world-events.boss', function(payload)
     local boss, why = hooks.clean_boss(payload)
     if not boss then gear.log('world-events: bad boss (' .. tostring(why) .. ')'); return end
-    local ok, err = M_spawn_boss(boss, type(payload) == 'table' and payload.event or 'World event', type(payload) == 'table' and payload.text or nil, 'local')
+    local ok, err = spawn_boss(boss, type(payload) == 'table' and payload.event or 'World event', type(payload) == 'table' and payload.text or nil, 'local')
     if not ok then gear.log('world-events: boss failed: ' .. tostring(err)) end
 end)
-
--- The bar: one panel 'boss' (movable in the layout editor like the pill's), a name over a health bar for each boss, at most MAX_BARS.
-local BW_, BH_ = 420, 40            -- the panel's default width, and one boss block's height at that width
-local BX, BY = 302, 170             -- top centre, under the event pill and the toasts
-
-local BCOLOR = {
-    back = 0xC00C0C10, edge = 0xFF4A3A2A, fill = 0xFFC0392B, fill_low = 0xFFE5532F, fill_dead = 0xFF6B6F63,
-    name = 0xFFF2D58A, text = 0xFFF4EEDF, tip_title = 0xFFF2D58A,
-}
-
-local function boss_tip(v)
-    local lines = {v.name}
-    if v.event and v.event ~= '' then lines[#lines + 1] = v.event end
-    lines[#lines + 1] = (v.st == 'defeated') and 'Defeated' .. ((v.by and v.by ~= '') and (' by ' .. v.by) or '') or ('Health: ' .. v.hp_text)
-    if v.text and v.text ~= '' then lines[#lines + 1] = v.text end
-    if v.reward and v.reward ~= '' then lines[#lines + 1] = 'Reward: ' .. v.reward end
-    if v.area and v.area ~= '' then lines[#lines + 1] = v.area end
-    return lines
-end
-
-local function draw_boss_bar(v, state, x, y, w, h, first)
-    local k = math.max(0.7, math.min(h / BH_, 1.8))
-    local fade = v.alpha or 1
-    local name_h = 17 * k
-    local bar_y, bar_h = y + name_h + 2 * k, h - name_h - 2 * k
-    ui.text(v.name, x, y, {size = 14 * k, bold = true, color = with_alpha(BCOLOR.name, fade), shadow = true, width = w, height = name_h, align = 'center'})
-    ui.rect(x, bar_y, w, bar_h, with_alpha(BCOLOR.back, fade))
-    local fill_w = math.floor((w - 2) * v.frac)
-    if fill_w > 0 then
-        local low = v.frac < 0.25 and (math.floor(gear.time() * 3) % 2 == 0)
-        ui.rect(x + 1, bar_y + 1, fill_w, bar_h - 2, with_alpha(low and BCOLOR.fill_low or BCOLOR.fill, fade))
-    elseif v.st == 'defeated' then
-        ui.rect(x + 1, bar_y + 1, w - 2, bar_h - 2, with_alpha(BCOLOR.fill_dead, fade * 0.6))
-    end
-    ui.frame(x, bar_y, w, bar_h, with_alpha(BCOLOR.edge, fade), 1)
-    ui.text(v.hp_text, x, bar_y, {size = 11.5 * k, bold = true, color = with_alpha(BCOLOR.text, fade), shadow = true, width = w, height = bar_h,
-        align = 'center', valign = 'middle'})
-    local mx, my = ui.mouse()
-    local hover = mx >= x and mx < x + w and my >= y and my < y + h
-    if hover or (state.show_text and first and not state.boss_tip_drawn) then
-        state.boss_tip_drawn = true
-        v.tip = boss_tip(v)
-        draw_tooltip(v, x, y, h, hover, state)
-    end
-end
-
-local function draw_boss_stack(views, more, state)
-    local n = #views
-    local extra = more > 0 and MORE_H or 0
-    local p = ui.panel('boss', 'World boss', BX, BY, BW_, n * BH_ + (n - 1) * GAP + extra, {bare = true, resizable = true, min_width = 240, min_height = 30})
-    if not p or not p.open then return end
-    local x, y, w, h = p.content_x or BX, p.content_y or BY, p.content_w or BW_, p.content_h or BH_
-    local unit = BH_ * math.max(0.7, math.min(w / BW_, 1.8))
-    local want_h = n * unit + (n - 1) * GAP + extra
-    if math.abs(h - want_h) > 1 and ui.set_panel_rect then ui.set_panel_rect(p.key or 'world-events:boss', x, y, w, want_h) end
-    state.boss_tip_drawn = false
-    for i, v in ipairs(views) do draw_boss_bar(v, state, x, y + (i - 1) * (unit + GAP), w, unit, i == 1) end
-    if more > 0 then ui.text('+' .. more .. ' more', x + 12, y + n * (unit + GAP) - GAP + 1, {size = 11, color = COLOR.count, shadow = true, height = 13}) end
-end
 
 ui.show_panel('boss', true)
 
@@ -702,7 +477,7 @@ gear.on('draw', function(state)
         views = {bosses.view({key = 'sample', name = 'Boss name', hp = 6000, max = 10000, st = 'active', source = 'local'}, gear.time())}
     end
     if #views == 0 then return end
-    draw_boss_stack(views, more, state)
+    draw.boss_stack(views, more, state)
 end)
 
 
@@ -716,6 +491,6 @@ if ui.menu_item then
     ui.menu_item('boss_bar', 'World events: boss health bar on / off', function() S.set('boss_bar', S.get('boss_bar') == false) end)
 end
 
-local M = {bosses = btracker, boss_recs = function() return boss_recs end, spawn_boss = function(...) return M_spawn_boss(...) end,
+local M = {bosses = btracker, boss_recs = function() return boss_recs end, spawn_boss = function(...) return spawn_boss(...) end,
     region_views = function() return region_views end, model = model, waves = waves, hooks = hooks, local_events = function() return localmode end, seen = seen}
 return M

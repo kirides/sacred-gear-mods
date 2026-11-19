@@ -180,5 +180,5 @@ The mod publishes `worldevent.*` events (started, progress, completed; failed, a
 
 ## Development
 
-- **Files:** `mod.lua`; `core.lua` (progress and reward odds, pure Lua); `hooks.lua` (hook checking, the engine, waves; pure); `localevents.lua` (the single player events; pure); `localgame.lua` (kills, spawning, items, gold); `regions.lua` (the region boss pill and the stack order; pure); `main.lua` (the bar, the server messages). `tests/` needs no game. Self test: `src/world-events_selftest`.
+- **Files:** `mod.lua`; `core.lua` (progress and reward odds, pure Lua); `hooks.lua` (hook checking, the engine, waves; pure); `localevents.lua` (the single player events; pure); `localgame.lua` (kills, spawning, items, gold); `regions.lua` (the region boss pill and the stack order; pure); `bosses.lua` (the world boss list; pure); `events.lua` (the hooks for other mods); `draw.lua` (drawing the pills and the boss bar); `main.lua` (the server messages, the single player mode, the boss manager, what is shown when). `tests/` needs no game. Self test: `src/world-events_selftest`.
 - **Depends on:** `gear.net` (the channel of the server's `world_events.lua`, see the section above), `gear.ui` (a bar that the layout editor can move), `gear.settings`, `gear.emit`.
