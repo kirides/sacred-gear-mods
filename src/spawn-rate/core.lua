@@ -23,6 +23,21 @@ function M.allowance(budget, dt, alive, cap)
     return math.max(0, n)
 end
 
+-- Harmless wildlife and farm animals are never multiplied, whatever the game thinks of them: a name (RABBIT.GRN, dove_white.grn)
+-- is split into words and each is compared to this list.
+local AMBIENT = {}
+for word in ([[rabbit bunny hare dove pigeon bird crow raven seagull gull sparrow chicken hen rooster chick duck goose swan parrot
+    butterfly firefly dragonfly bee frog toad fish squirrel deer cow pig sheep goat horse donkey cat dog]]):gmatch('%a+') do AMBIENT[word] = true end
+
+-- Whether a creature of this type name may be multiplied: not harmless wildlife; an unknown name (nil) is not multiplied either.
+function M.multipliable(name)
+    if type(name) ~= 'string' or name == '' then return false end
+    for word in name:lower():gmatch('%a+') do
+        if AMBIENT[word] then return false end
+    end
+    return true
+end
+
 -- A queue of waiting jobs {type, x, y, layer, left}: `left` more creatures of that type near (x, y). A job is worked off one
 -- creature at a time; the queue holds `limit` jobs at most, a new job beyond that is refused (counted by the caller).
 local Queue = {}
