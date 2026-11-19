@@ -141,11 +141,9 @@ local function entry_cells(list, hint)
     return cells
 end
 
-local function panel()
-    local p = ui.panel('stash', 'Shared stash', 646, 6, 372, 500, {closable = true})
-    if not p.open then return end
-    view.hover = nil
-    local x, y, w = p.content_x + 4, p.content_y + 2, p.w - 16
+-- Whether the stash can be shown now; if not, a line that says why is drawn instead. In Closed Net the stash is the
+-- server's (remote.lua), otherwise the file's (stash.lua). Returns ready, closed_net.
+local function check_ready(x, y, w)
     local net = closed()
     if net then
         remote.refresh(false)
@@ -153,27 +151,98 @@ local function panel()
         if not ok then
             ui.text('The shared stash is not available on this server.', x, y, {width = w, color = 0xFFFF8080, size = 13})
             ui.text(tostring(why), x, y + 22, {width = w, color = 0xFFC0C0C0, size = 12})
-            return
+            return false
         end
     else
         -- a network game that is not (yet) known to be Closed Net: ask the server first (it may keep the stash), then the file
         if kind.mode() ~= 'single' and remote.probe() == 'wait' then
             ui.text('Asking the server about the shared stash ...', x, y, {width = w, color = 0xFFC0C0C0, size = 12})
-            return
+            return false
         end
-        if closed() then return end                         -- the server said so meanwhile: the next frame draws the server's stash
+        if closed() then return false end                   -- the server said so meanwhile: the next frame draws the server's stash
         stash.ensure()
     end
     if not net and stash.problem then
         ui.text(stash.problem, x, y, {width = w, color = 0xFFFF8080, size = 12})
-        return
+        return false
     end
     local can, network = gear.inv.can_change()
     view.net = network
     if not can then
         ui.text('The shared stash cannot change your inventory right now.', x, y, {width = w, color = 0xFFFFC080, size = 12})
-        return
+        return false
     end
+    return true, net
+end
+
+-- The cells of the backpack and chest grid (from refresh_sources).
+local function source_cells()
+    refresh_sources(false)
+    local cells = {}
+    for _, s in ipairs(view.sources) do
+        local it = s.item
+        cells[#cells + 1] = {
+            id = 'b' .. it.id, src = s, w = it.w, h = it.h, icon = it, color = QUALITY_COLOR[it.quality],
+            enabled = s.ok,
+            tipsrc = it, hint = s.ok and ('Click: put it into the stash (from the ' .. s.where .. ')') or s.why,
+        }
+    end
+    return cells
+end
+
+-- The game's own item tooltip for the item under the cursor, beside the panel (never under the cursor).
+local function hover_tooltip()
+    local src = view.hover.tipsrc
+    if src.data then
+        local e = src
+        if not e.bytes then e.bytes = gear.inv.unhex(e.data) end
+        src = e.bytes
+    end
+    if src then
+        -- The popup's x / y are its top-left corner and its size is known from the tooltip shown before (a first
+        -- guess at first); Sacred Gear places it clear of the cursor and inside the screen.
+        local tx, ty = ui.tooltip_rect(view.tip_w or 340, view.tip_h or 200)
+        local ok, a, b = ui.item_tooltip(src, tx, ty)
+        view.tip_ok, view.tip_err = ok, (not ok) and a or nil
+        if ok and a > 0 then view.tip_w, view.tip_h = a, b end
+    end
+end
+
+-- A click on a stash cell takes the item out, a click on a backpack / chest cell puts it in.
+local function withdraw_entry(e, net)
+    if net then
+        local ok, err = remote.withdraw(e)
+        if ok then say('Asking the server ...') else say(err, false) end
+    else
+        local ok, where = transfer.withdraw(e)
+        if ok then say(('%s taken into the %s'):format(e.name, where)) else say(where, false) end
+    end
+    refresh_sources(true)
+end
+
+local function deposit_source(s, net)
+    if net then
+        local ok, err = transfer.transferable(s.item)
+        if ok then
+            if not transfer.chest_open() then ok, err = nil, 'open a chest first'
+            else ok, err = remote.deposit(s.container, s.item, transfer.entry_fields(s.item)) end
+        end
+        if ok then say('Asking the server ...') else say(err, false) end
+    else
+        local ok, err = transfer.deposit(s.container, s.item)
+        if ok then say(('%s put into the stash'):format(transfer.pretty_name(s.item))) else say(err, false) end
+    end
+    refresh_sources(true)
+end
+
+-- The stash panel: the stash's grid on top, the backpack and chest below, a status line, the hovered item's tooltip.
+local function panel()
+    local p = ui.panel('stash', 'Shared stash', 646, 6, 372, 500, {closable = true})
+    if not p.open then return end
+    view.hover = nil
+    local x, y, w = p.content_x + 4, p.content_y + 2, p.w - 16
+    local ready, net = check_ready(x, y, w)
+    if not ready then return end
 
     local items = net and remote.entries or stash.items()
     local scells = entry_cells(items, 'Click: take it into the backpack')
@@ -184,75 +253,26 @@ local function panel()
     local withdraw = grid('s', x, y, scells, view.stash_page)
     y = y + ROWS * CELL + 8
 
-    local deposit
-    do
-        refresh_sources(false)
-        local cells = {}
-        for _, s in ipairs(view.sources) do
-            local it = s.item
-            cells[#cells + 1] = {
-                id = 'b' .. it.id, src = s, w = it.w, h = it.h, icon = it, color = QUALITY_COLOR[it.quality],
-                enabled = s.ok,
-                tipsrc = it, hint = s.ok and ('Click: put it into the stash (from the ' .. s.where .. ')') or s.why,
-            }
-        end
-        local pages = pack(cells)
-        ui.label('src-title', ('Backpack and chest: %d'):format(#cells), x, y, {color = ui.COLORS.accent})
-        view.source_page = pager('xp', x + w - 100, y - 1, view.source_page, pages)
-        y = y + 22
-        deposit = grid('b', x, y, cells, view.source_page)
-        y = y + ROWS * CELL
-    end
+    local cells = source_cells()
+    local pages = pack(cells)
+    ui.label('src-title', ('Backpack and chest: %d'):format(#cells), x, y, {color = ui.COLORS.accent})
+    view.source_page = pager('xp', x + w - 100, y - 1, view.source_page, pages)
+    y = y + 22
+    local deposit = grid('b', x, y, cells, view.source_page)
+    y = y + ROWS * CELL
 
     if view.message and gear.time() < view.message_until then
         ui.text(view.message, x, y + 6, {width = w, size = 12, color = view.message_ok and 0xFF80FF80 or 0xFFFF8080})
     elseif view.hover then
         ui.text(view.hover.hint, x, y + 6, {width = w, size = 12, color = 0xFFC0C0C0})
     end
-
-    -- The game's own item tooltip for the item under the cursor, beside the panel (never under the cursor).
-    if view.hover then
-        local src = view.hover.tipsrc
-        if src.data then
-            local e = src
-            if not e.bytes then e.bytes = gear.inv.unhex(e.data) end
-            src = e.bytes
-        end
-        if src then
-            -- The popup's x / y are its top-left corner and its size is known from the tooltip shown before (a first
-            -- guess at first); Sacred Gear places it clear of the cursor and inside the screen.
-            local tx, ty = ui.tooltip_rect(view.tip_w or 340, view.tip_h or 200)
-            local ok, a, b = ui.item_tooltip(src, tx, ty)
-            view.tip_ok, view.tip_err = ok, (not ok) and a or nil
-            if ok and a > 0 then view.tip_w, view.tip_h = a, b end
-        end
-    end
+    if view.hover then hover_tooltip() end
 
     -- Changes after drawing, so the grids above were consistent for the frame.
     if withdraw then
-        local e = withdraw.entry
-        if net then
-            local ok, err = remote.withdraw(e)
-            if ok then say('Asking the server ...') else say(err, false) end
-        else
-            local ok, where = transfer.withdraw(e)
-            if ok then say(('%s taken into the %s'):format(e.name, where)) else say(where, false) end
-        end
-        refresh_sources(true)
+        withdraw_entry(withdraw.entry, net)
     elseif deposit then
-        local s = deposit.src
-        if net then
-            local ok, err = transfer.transferable(s.item)
-            if ok then
-                if not transfer.chest_open() then ok, err = nil, 'open a chest first'
-                else ok, err = remote.deposit(s.container, s.item, transfer.entry_fields(s.item)) end
-            end
-            if ok then say('Asking the server ...') else say(err, false) end
-        else
-            local ok, err = transfer.deposit(s.container, s.item)
-            if ok then say(('%s put into the stash'):format(transfer.pretty_name(s.item))) else say(err, false) end
-        end
-        refresh_sources(true)
+        deposit_source(deposit.src, net)
     end
 end
 
