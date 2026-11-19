@@ -80,7 +80,11 @@ local function make_gear(mod_dir, opts)
         if not list then return nil end
         return {items = function() return list end}
     end}
-    gear.data = {object_types = {name = function(_, id) return 'creature' .. tostring(id) end}}
+    -- display_name: the localized creature name (Gear's creature-capable call); nil for a type without a name text
+    gear.data = {object_types = {
+        name = function(_, id) return 'creature' .. tostring(id) .. '.grn' end,
+        display_name = function(_, id) if id == 12 then return 'Goblin-Krieger' end return nil end,
+    }}
     local ui = {COLORS = {accent = 1}}
     function ui.rgba() return 0 end
     function ui.text(text) G.texts[#G.texts + 1] = tostring(text) end
@@ -236,7 +240,8 @@ do
     ok(data and #data.entries == 2, 'loot: two worthwhile drops logged (plain and baseline skipped): ' .. tostring(data and #data.entries))
     local names = {}
     for _, e in ipairs(data and data.entries or {}) do names[e.name] = e end
-    ok(names['Blade of Haste'] and names['Blade of Haste'].src == 'creature12' and names['Blade of Haste'].kind == 'drop', 'loot: name from tooltip, source from drops.roll')
+    ok(names['Blade of Haste'] and names['Blade of Haste'].src == 'Goblin-Krieger' and names['Blade of Haste'].kind == 'drop', 'loot: name from tooltip, source from drops.roll')
+    ok(names['Blade of Haste'] and not names['Blade of Haste'].src:lower():find('%.grn$'), 'loot: the drop source is the localized creature name, not a model name')
     ok(names['Excalibur'] and names['Excalibur'].quality == 'unique', 'loot: falls back to the type name')
     -- pickup: the sword moves into the backpack
     fire(G, 'session.start')
