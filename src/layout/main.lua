@@ -239,14 +239,13 @@ local function popup(f, sl, st, sr, sb)
     y = y + 38
     if f.resizable then
         local l, t, r, b = sl, st, sr, sb
-        ui.text('Width', px + 8, y, {layer = 'top'})
-        local cw, nw = ui.slider('popup-w', px + 58, y, 120, f.min_w, math.floor(r - l), math.floor(f.w + 0.5),
-            {layer = 'top'})
-        ui.text('Height', px + 8, y + 22, {layer = 'top'})
-        local ch, nh = ui.slider('popup-h', px + 58, y + 22, 120, f.min_h, math.floor(b - t), math.floor(f.h + 0.5),
-            {layer = 'top'})
+        local g = ui.table('popup-size', px + 8, y, 44 + 6 + 170, {columns = {44, 170}, spacing = {6, 2}, row_height = 22, layer = 'top'})
+        g:row(); g:label(1, 'Width')
+        local cw, nw = g:slider(2, f.min_w, math.floor(r - l), math.floor(f.w + 0.5), {id = 'popup-w', width = 120})
+        g:row(); g:label(1, 'Height')
+        local ch, nh = g:slider(2, f.min_h, math.floor(b - t), math.floor(f.h + 0.5), {id = 'popup-h', width = 120})
         if cw or ch then move(f, f.x, f.y, nw, nh) end
-        y = y + 46
+        y = y + g:height() + 2
     end
     if ui.button('popup-reset', px + 8, y, 120, 22, 'Reset position', {layer = 'top',
         tooltip = f.resizable and 'Its own place and size again' or 'Its own place again'}) then
@@ -336,17 +335,21 @@ local function toolbar(state)
         ui.text('Game windows need SacredBild.', x, y, {color = 0xFFFF8080, layer = 'top'})
     end
     ui.text('Arrows nudge it (Shift: 10).', x, y + 15, {color = C.text_dim, layer = 'top'})
-    done_rect = {x = x, y = y + 36, w = 112, h = 22}
-    if ui.button('done', x, y + 36, 112, 22, 'Done', {layer = 'top'}) then ui.set_edit_mode(false) end
-    if ui.button('reset-game', x + 122, y + 36, 112, 22, 'Reset windows', {layer = 'top',
-        tooltip = 'The game windows back to their places'}) then
+    -- Done and Reset windows side by side, Reset everything and the checkbox across both columns.
+    local t = ui.table('buttons', x, y + 36, 234, {columns = {112, 112}, spacing = {10, 6}, row_height = 22, layer = 'top'})
+    t:row()
+    local dx, dy, dw, dh = t:cell(1)
+    done_rect = {x = dx, y = dy, w = dw, h = dh}
+    if t:button(1, 'Done', {id = 'done'}) then ui.set_edit_mode(false) end
+    if t:button(2, 'Reset windows', {id = 'reset-game', tooltip = 'The game windows back to their places'}) then
         ui.reset_layout('game:')
     end
-    if ui.button('reset-all', x, y + 64, 234, 22, 'Reset everything', {layer = 'top',
-        tooltip = 'Game windows and every mod panel'}) then
+    t:row()
+    if t:button(1, 'Reset everything', {id = 'reset-all', span = 2, tooltip = 'Game windows and every mod panel'}) then
         ui.reset_layout()
     end
-    local changed, on = ui.checkbox('snap', x, y + 94, 'Snap to edges and frames', snapping, {layer = 'top',
+    t:row()
+    local changed, on = t:checkbox(1, 'Snap to edges and frames', snapping, {id = 'snap', span = 2,
         tooltip = 'Hold Shift while dragging to place freely'})
     if changed then snapping = on; gear.settings.set('snap', on) end
 end

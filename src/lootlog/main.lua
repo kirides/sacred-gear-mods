@@ -283,40 +283,42 @@ local function draw_panel()
     local x, y = p.content_x or 0, p.content_y or 0
     local w = p.content_w or 400
     local h = p.content_h or 320
+    -- The filters (three dropdowns across) and, under them, the count and the Clear button.
+    local head = ui.table('head', x, y, w, {columns = {'*', '*', '*'}, spacing = {6, 4}, row_height = 22})
+    head:row()
     local _
-    _, filter.q = ui.dropdown('f-quality', x, y, 126, Q_OPTIONS, filter.q, {tooltip = 'Lowest quality shown'})
-    _, filter.c = ui.dropdown('f-category', x + 132, y, 126, C_OPTIONS, filter.c, {tooltip = 'Category shown'})
-    _, filter.k = ui.dropdown('f-kind', x + 264, y, 126, K_OPTIONS, filter.k, {tooltip = 'Dropped on the ground, picked up into the backpack, or acquired otherwise'})
+    _, filter.q = head:dropdown(1, Q_OPTIONS, filter.q, {id = 'f-quality', tooltip = 'Lowest quality shown'})
+    _, filter.c = head:dropdown(2, C_OPTIONS, filter.c, {id = 'f-category', tooltip = 'Category shown'})
+    _, filter.k = head:dropdown(3, K_OPTIONS, filter.k, {id = 'f-kind', tooltip = 'Dropped on the ground, picked up into the backpack, or acquired otherwise'})
 
     -- newest first
     local shown = {}
     for i = #entries, 1, -1 do
         if passes(entries[i]) then shown[#shown + 1] = entries[i] end
     end
-    ui.text(('%d of %d entries'):format(#shown, #entries), x, y + 28, {color = 0xFFB0B0B0})
-    if ui.button('clear', x + w - 70, y + 24, 70, 20, 'Clear', {tooltip = 'Empties the log (also the file)'}) then
+    head:row()
+    head:label(1, ('%d of %d entries'):format(#shown, #entries), {color = 0xFFB0B0B0, span = 2})
+    if head:button(3, 'Clear', {id = 'clear', width = 70, height = 20, halign = 'right', tooltip = 'Empties the log (also the file)'}) then
         entries = {}
         dirty = true
         save_file()
     end
 
-    local top = y + 50
-    local area = ui.scroll_begin('rows', x, top, w, math.max(40, h - 50), {step = 18})
-    local cy = area.content_y or top
-    local ax = area.content_x or x
-    local shown_n = math.min(#shown, 300)
-    for i = 1, shown_n do
+    local top = y + head:height() + 6
+    local area = ui.scroll_begin('rows', x, top, w, math.max(40, h - (top - y)), {step = 18})
+    local rows = ui.table('entries', area.content_x or x, area.content_y or top, (area.w or w) - 6,
+        {columns = {{width = 'auto'}, '*', {width = 'auto', align = 'right'}}, spacing = {8, 0}, row_height = 18})
+    for i = 1, math.min(#shown, 300) do
         local e = shown[i]
-        local ry = cy + (i - 1) * 18
-        local color = QUALITY_COLOR[e.quality] or 0xFFFFFFFF
-        ui.text(('#%d %s'):format(e.s, clock_text(e.t)), ax, ry, {color = 0xFF808080})
-        ui.text(e.name, ax + 62, ry, {color = color})
+        rows:row()
+        rows:label(1, ('#%d %s'):format(e.s, clock_text(e.t)), {color = 0xFF808080, ellipsis = false})
+        rows:label(2, e.name, {color = QUALITY_COLOR[e.quality] or 0xFFFFFFFF})
         local tail = KIND_LABEL[e.kind] or e.kind
         local src = e.st and creature_label(e.st) or e.src
         if src then tail = tail .. ' (' .. src .. ')' end
-        ui.text(tail, ax, ry, {width = (area.w or w) - 6, align = 'right', color = 0xFFA0A0A0})
+        rows:label(3, tail, {color = 0xFFA0A0A0})
     end
-    ui.scroll_end(shown_n * 18)
+    ui.scroll_end(rows:height())
 end
 
 gear.on('draw', guard('draw', function(state)

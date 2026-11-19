@@ -219,39 +219,46 @@ end))
 local GOLD = 0xFFFFD778
 local DIM = 0xFFB0B0B0
 
-local function row(x, y, w, label, value, color)
-    ui.text(label, x, y, {color = DIM})
-    ui.text(value, x, y, {width = w, align = 'right', color = color})
-end
-
 local function draw_panel()
-    local p = ui.panel('tracker', 'Session' .. key_hint('panel'), 16, 200, 270, 330, {})
+    local p = ui.panel('tracker', 'Session' .. key_hint('panel'), 16, 200, 270, 340, {})
     if not p.open then return end
     local x, y = p.content_x or 0, p.content_y or 0
     local w = p.content_w or 250
     local s = session or new_stats()
     local accent = ui.COLORS and ui.COLORS.accent
-    row(x, y, w, 'Time played', fmt_time(s.played), 0xFFFFFFFF)
-    row(x, y + 18, w, 'Kills', fmt_num(s.kills) .. '  (' .. fmt_rate(s.kills, s.played) .. ')', 0xFFFFFFFF)
-    row(x, y + 36, w, 'Gold gained', fmt_num(s.gold_gained) .. '  (' .. fmt_rate(s.gold_gained, s.played) .. ')', GOLD)
-    row(x, y + 54, w, 'Gold spent', fmt_num(s.gold_spent), DIM)
-    row(x, y + 72, w, 'Experience', fmt_num(s.xp_gained) .. '  (' .. fmt_rate(s.xp_gained, s.played) .. ')', 0xFF9CD0FF)
-    row(x, y + 90, w, 'Levels gained', fmt_num(s.levels), 0xFFFFFFFF)
-    ui.label('l-life', 'Lifetime (with this session)', x, y + 116, {color = accent})
+    -- Labels left, values right (the value column is as wide as its widest value); the section headings span both.
+    local t = ui.table('stats', x, y, w, {columns = {'*', {width = 'auto', align = 'right'}}, spacing = {8, 0}, row_height = 18})
+    local function row(label, value, color)
+        t:row()
+        t:label(1, label, {color = DIM})
+        t:label(2, value, {color = color})
+    end
+    local function heading(id, text)
+        t:row(26)
+        t:label(1, text, {id = id, color = accent, span = 2, valign = 'bottom'})
+    end
+    row('Time played', fmt_time(s.played), 0xFFFFFFFF)
+    row('Kills', fmt_num(s.kills) .. '  (' .. fmt_rate(s.kills, s.played) .. ')', 0xFFFFFFFF)
+    row('Gold gained', fmt_num(s.gold_gained) .. '  (' .. fmt_rate(s.gold_gained, s.played) .. ')', GOLD)
+    row('Gold spent', fmt_num(s.gold_spent), DIM)
+    row('Experience', fmt_num(s.xp_gained) .. '  (' .. fmt_rate(s.xp_gained, s.played) .. ')', 0xFF9CD0FF)
+    row('Levels gained', fmt_num(s.levels), 0xFFFFFFFF)
+    heading('l-life', 'Lifetime (with this session)')
     local function life(f) return lifetime[f] + (s[f] or 0) end
-    row(x, y + 134, w, 'Time', fmt_time(life('played')), 0xFFFFFFFF)
-    row(x, y + 152, w, 'Kills', fmt_num(life('kills')), 0xFFFFFFFF)
-    row(x, y + 170, w, 'Gold gained', fmt_num(life('gold_gained')), GOLD)
-    row(x, y + 188, w, 'Experience', fmt_num(life('xp_gained')), 0xFF9CD0FF)
-    ui.label('l-hist', 'Last sessions', x, y + 214, {color = accent})
+    row('Time', fmt_time(life('played')), 0xFFFFFFFF)
+    row('Kills', fmt_num(life('kills')), 0xFFFFFFFF)
+    row('Gold gained', fmt_num(life('gold_gained')), GOLD)
+    row('Experience', fmt_num(life('xp_gained')), 0xFF9CD0FF)
+    heading('l-hist', 'Last sessions')
     for i = 1, 3 do
         local h = history[i]
         if h then
-            ui.text(('%s  %s  k%s  g%s'):format(fmt_time(h.played), tostring(h.hero or '?'), fmt_num(h.kills), fmt_num(h.gold_gained)),
-                x, y + 214 + i * 16, {color = DIM})
+            t:row(16)
+            t:label(1, ('%s  %s  k%s  g%s'):format(fmt_time(h.played), tostring(h.hero or '?'), fmt_num(h.kills), fmt_num(h.gold_gained)),
+                {color = DIM, span = 2})
         end
     end
-    if ui.button('reset', x, y + 278, 110, 22, 'New session', {tooltip = 'Ends this session (it goes to the history) and starts a new one'}) then
+    if ui.button('reset', x, y + t:height() + 12, 110, 22, 'New session', {tooltip = 'Ends this session (it goes to the history) and starts a new one'}) then
         begin_session()
     end
 end
