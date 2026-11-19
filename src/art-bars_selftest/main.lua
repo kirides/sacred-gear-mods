@@ -15,6 +15,7 @@ gear.task(function()
     gear.wait(4)
     gear.emit('custom-classes.window', false)
     local main = party.leader()
+    print('ABT available ' .. tostring(party.available()) .. ' leader ' .. tostring(main and main.id))
     local gla = party.recruit('gladiator', {experience = 120000})
     gear.wait(2)
     local list = main:abilities() or {}

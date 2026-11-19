@@ -235,24 +235,30 @@ local function draw_picker()
         return
     end
     ui.text(('%d abilities'):format(#list), x + 140, y + 4, {color = DIM, size = 12})
+    -- a table: icon, name and kind, a button; the whole row is the choice (controller: the button is the stop)
     local area = ui.scroll_begin('picker_list', x, y + 28, w, hh - 28, {})
-    local cw = math.floor((area.w - 8) / 2)
-    for i, id in ipairs(list) do
-        local cx = area.content_x + ((i - 1) % 2) * (cw + 8)
-        local cy = area.content_y + math.floor((i - 1) / 2) * 52
-        local r = ui.region('pick' .. id, cx, cy, cw, 48, {tooltip = ((not is_combo(id)) and gear.text.get((gear.data.abilities[id] or {}).description_text or 0) or 'The combo master\'s combo')})
-        ui.rect(cx, cy, cw, 48, r.hover and 0xC02A2210 or 0xC0141008)
-        ui.frame(cx, cy, cw, 48, r.hover and 0xFF8A7A4C or 0xFF4A3E24, 1)
-        slot_icon(id, cx + 4, cy + 4, 40)
+    local t = ui.table('picker_rows', area.content_x, area.content_y, area.w, {
+        columns = {44, '*', {width = 'auto', min = 80, align = 'right'}},
+        spacing = {8, 4},
+        row_height = 44,
+        stripes = true,
+    })
+    for _, id in ipairs(list) do
+        t:row()
         local a = (not is_combo(id)) and h:ability(id) or nil
-        ui.text(ability_name(id), cx + 50, cy + 6, {color = 0xFFFFFFFF, bold = true, size = 12})
-        ui.text(is_combo(id) and 'combo' or ((id >= 1000 and 'combat art' or 'spell') .. (a and (', level %d'):format((a.level or 0) + (a.bonus or 0)) or '')), cx + 50, cy + 26, {color = DIM, size = 11})
-        if r.clicked then
+        local rec = (not is_combo(id)) and gear.data.abilities[id] or nil
+        local tip = rec and gear.text.get(rec.description_text or 0) or "The combo master's combo"
+        local image, tint = nil, nil
+        if not is_combo(id) then image, tint = gear.classes.art_icon(id) end
+        if image then t:image(1, image, {color = tint, width = 40, height = 40}) else t:label(1, is_combo(id) and ('C' .. (id - 0x200 + 1)) or '?', {align = 'center'}) end
+        local kind = is_combo(id) and 'combo' or ((id >= 1000 and 'combat art' or 'spell') .. (a and (', level %d'):format((a.level or 0) + (a.bonus or 0)) or ''))
+        t:label(2, ability_name(id) .. '\n' .. kind, {bold = true, size = 12, tooltip = tip})
+        if t:button(3, 'Choose', {tooltip = tip}) then
             set_slot(h, pick.bar, pick.slot, id)
             ui.show_panel('picker', false)
         end
     end
-    ui.scroll_end(math.ceil(#list / 2) * 52)
+    ui.scroll_end(t:height())
 end
 
 gear.on('draw', guard('draw', function(s)
