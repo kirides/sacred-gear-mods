@@ -22,12 +22,12 @@ local SORT_KEY = {'new', 'level'}
 local MAX_SAVED = 50
 local GOLD, DIM, OK, WARN = ui.rgba(255, 215, 120), ui.rgba(255, 255, 255, 150), ui.rgba(143, 206, 122), ui.rgba(255, 200, 120)
 
-local S = {
+local view = {             -- what the panel shows and waits for
     tab = 1, class = 1, sort = 1, page = 1, list = nil, detail = nil, mine = nil, hero_data = nil,
     saved = {}, status = '', last_request = 0, opened = false, waiting = false,
 }
 
-local function say(text) S.status = tostring(text) end
+local function say(text) view.status = tostring(text) end
 
 -- Texts that come from outside are shown cut to a length (and only as text: gear.ui.text draws, it does not interpret).
 local fit = gear.fmt.fit
@@ -38,18 +38,18 @@ local function load_saved()
     if type(data.builds) == 'table' then
         for i = 1, math.min(#data.builds, MAX_SAVED) do
             local b = data.builds[i]
-            if type(b) == 'table' and type(b.name) == 'string' then S.saved[#S.saved + 1] = b end
+            if type(b) == 'table' and type(b.name) == 'string' then view.saved[#view.saved + 1] = b end
         end
     end
 end
 
 local function store_saved()
-    local ok, err = gear.store.save('saved_builds.json', {builds = S.saved})
+    local ok, err = gear.store.save('saved_builds.json', {builds = view.saved})
     if not ok then say('could not save: ' .. tostring(err)) end
 end
 
 local function saved_index(build)
-    for i, b in ipairs(S.saved) do
+    for i, b in ipairs(view.saved) do
         if b.id == build.id and b.name == build.name then return i end
     end
 end
@@ -63,8 +63,8 @@ end
 
 local function request(op, fields)
     if not ready() then return false end
-    if gear.time() - S.last_request < 0.4 then return false end        -- the server limits bursts too
-    S.last_request = gear.time()
+    if gear.time() - view.last_request < 0.4 then return false end        -- the server limits bursts too
+    view.last_request = gear.time()
     local payload = fields or {}
     payload.op = op
     local ok, err = ch:send(payload, 'server')
@@ -73,9 +73,9 @@ local function request(op, fields)
 end
 
 local function fetch_list()
-    local payload = {sort = SORT_KEY[S.sort], page = S.page, per = PAGE}
-    if CLASS_FILTER[S.class] then payload.class = CLASS_FILTER[S.class] end
-    S.waiting = request('list', payload)
+    local payload = {sort = SORT_KEY[view.sort], page = view.page, per = PAGE}
+    if CLASS_FILTER[view.class] then payload.class = CLASS_FILTER[view.class] end
+    view.waiting = request('list', payload)
 end
 
 local function carried_names()
@@ -110,26 +110,26 @@ end
 ch:on(function(from, p)
     if from.slot ~= 0 or type(p) ~= 'table' then return end          -- only the server answers
     if p.op == 'list' then
-        S.waiting = false
+        view.waiting = false
         if type(p.builds) ~= 'table' then return end
-        S.list = {builds = p.builds, total = tonumber(p.total) or 0, pages = tonumber(p.pages) or 1}
-        S.page = tonumber(p.page) or 1
-        S.status = ''
+        view.list = {builds = p.builds, total = tonumber(p.total) or 0, pages = tonumber(p.pages) or 1}
+        view.page = tonumber(p.page) or 1
+        view.status = ''
     elseif p.op == 'build' and type(p.build) == 'table' then
-        S.detail = p.build; S.tab = 4
+        view.detail = p.build; view.tab = 4
     elseif p.op == 'mine' then
-        S.mine = type(p.build) == 'table' and p.build or false
-        S.hero_data = p.hero_data == true
+        view.mine = type(p.build) == 'table' and p.build or false
+        view.hero_data = p.hero_data == true
     elseif p.op == 'published' then
-        S.mine = type(p.build) == 'table' and p.build or S.mine
-        say(S.mine and S.mine.verified and 'Published: the server read your hero.'
+        view.mine = type(p.build) == 'table' and p.build or view.mine
+        say(view.mine and view.mine.verified and 'Published: the server read your hero.'
             or 'Published (the server has no hero data: class, level and your notes only).')
-        S.list = nil
+        view.list = nil
     elseif p.op == 'unpublished' then
-        S.mine = false; S.list = nil
+        view.mine = false; view.list = nil
         say(p.removed and 'Your build is removed.' or 'You had no shared build.')
     elseif p.op == 'error' then
-        S.waiting = false
+        view.waiting = false
         say(fit(p.error, 80))
     end
 end)
@@ -152,32 +152,32 @@ local function browse(x, y, w, h)
     ui.label('l-class', 'Class', x, y + 3, {})
     ui.label('l-sort', 'Sort', x + 150, y + 3, {})
     local sort_changed
-    sort_changed, S.sort = ui.radio_group('sort', x + 186, y + 3, SORTS, S.sort, {horizontal = true})
-    if sort_changed then S.page = 1; fetch_list() end
+    sort_changed, view.sort = ui.radio_group('sort', x + 186, y + 3, SORTS, view.sort, {horizontal = true})
+    if sort_changed then view.page = 1; fetch_list() end
     if ui.button('refresh', x + w - 150, y, 70, 20, 'Refresh', {tooltip = 'Ask the server again'}) then fetch_list() end
-    if ui.button('prev', x + w - 76, y, 34, 20, '<', {enabled = S.page > 1}) then S.page = S.page - 1; fetch_list() end
-    if ui.button('next', x + w - 38, y, 34, 20, '>', {enabled = S.list ~= nil and S.page < S.list.pages}) then S.page = S.page + 1; fetch_list() end
+    if ui.button('prev', x + w - 76, y, 34, 20, '<', {enabled = view.page > 1}) then view.page = view.page - 1; fetch_list() end
+    if ui.button('next', x + w - 38, y, 34, 20, '>', {enabled = view.list ~= nil and view.page < view.list.pages}) then view.page = view.page + 1; fetch_list() end
     local top = y + 28
-    if not S.list then
-        ui.text(S.waiting and 'Asking the server ...' or 'Press Refresh to list the shared builds.', x, top, {color = DIM})
-    elseif #S.list.builds == 0 then
+    if not view.list then
+        ui.text(view.waiting and 'Asking the server ...' or 'Press Refresh to list the shared builds.', x, top, {color = DIM})
+    elseif #view.list.builds == 0 then
         ui.text('No build matches. Publish yours on the "My build" tab.', x, top, {color = DIM})
     else
         local area = ui.scroll_begin('browse', x, top, w, h - 54, {step = 22})
-        for i, b in ipairs(S.list.builds) do
+        for i, b in ipairs(view.list.builds) do
             if type(b) == 'table' and type(b.id) == 'string' then
                 if ui.button('b' .. i, x, area.content_y + (i - 1) * 22, area.w - 2, 20, row_text(b), {tooltip = 'Fetch this build'}) then
                     request('get', {id = b.id})
                 end
             end
         end
-        ui.scroll_end(#S.list.builds * 22)
-        ui.text(('%d build%s, page %d of %d'):format(S.list.total, S.list.total == 1 and '' or 's', S.page, S.list.pages), x, y + h - 20, {color = DIM})
+        ui.scroll_end(#view.list.builds * 22)
+        ui.text(('%d build%s, page %d of %d'):format(view.list.total, view.list.total == 1 and '' or 's', view.page, view.list.pages), x, y + h - 20, {color = DIM})
     end
     -- drawn last: the open list covers what is under it
     local class_changed
-    class_changed, S.class = ui.dropdown('class', x + 40, y, 100, CLASSES, S.class, {tooltip = 'Only this class'})
-    if class_changed then S.page = 1; fetch_list() end
+    class_changed, view.class = ui.dropdown('class', x + 40, y, 100, CLASSES, view.class, {tooltip = 'Only this class'})
+    if class_changed then view.page = 1; fetch_list() end
 end
 
 local function my_build(x, y, w, h)
@@ -193,26 +193,26 @@ local function my_build(x, y, w, h)
     local carried = carried_names()
     ui.text(('Carried items sent: %d%s'):format(#carried, gear.settings.get('share_carried') and '' or ' (off)'), x, y + 128, {})
     if ui.button('publish', x, y + 152, 120, 24, 'Publish', {tooltip = 'Share (or update) your build on this server'}) then publish() end
-    if ui.button('unpublish', x + 128, y + 152, 120, 24, 'Remove mine', {enabled = S.mine ~= nil and S.mine ~= false, tooltip = 'Take your build off the server'}) then
+    if ui.button('unpublish', x + 128, y + 152, 120, 24, 'Remove mine', {enabled = view.mine ~= nil and view.mine ~= false, tooltip = 'Take your build off the server'}) then
         request('unpublish')
     end
     if ui.button('mine', x + 256, y + 152, 120, 24, 'Check server', {tooltip = 'What the server holds of yours'}) then request('mine') end
     local ty = y + 190
-    if S.mine == false then
+    if view.mine == false then
         ui.text('The server has no build of yours.', x, ty, {color = DIM})
-    elseif S.mine then
-        local b = S.mine
+    elseif view.mine then
+        local b = view.mine
         ui.text(('On the server: %s, level %s, %s'):format(fit(b.class_name, 14), tostring(b.level), b.verified and 'server-verified' or 'reported only'), x, ty,
             {color = b.verified and OK or DIM})
         ui.text(('%d skills, %d equipped items, %d combat arts'):format(#(b.skills or {}), #(b.equipment or {}), #(b.arts or {})), x, ty + 16, {color = DIM})
     end
-    if S.hero_data == false then
+    if view.hero_data == false then
         ui.text('This server keeps no hero data of you yet: your build will only have class and level.', x, ty + 40, {color = WARN})
     end
 end
 
 local function detail(x, y, w, h)
-    local b = S.detail
+    local b = view.detail
     if not b then ui.text('Pick a build on the Browse or Saved tab.', x, y, {color = DIM}); return end
     ui.text(('%s - %s, level %s'):format(fit(b.name, 24), fit(b.class_name, 14), tostring(b.level)), x, y, {color = GOLD})
     ui.text(b.verified and 'server-verified' or 'reported by the player', x + w - 150, y, {color = b.verified and OK or DIM})
@@ -224,9 +224,9 @@ local function detail(x, y, w, h)
     local top = y + 24 + th
     local at = saved_index(b)
     if ui.button('save', x + w - 130, top - 4, 126, 20, at and 'Remove from Saved' or 'Save to Saved', {tooltip = 'Keep this build in a file on this computer'}) then
-        if at then table.remove(S.saved, at) else
-            if #S.saved >= MAX_SAVED then table.remove(S.saved, 1) end
-            S.saved[#S.saved + 1] = b
+        if at then table.remove(view.saved, at) else
+            if #view.saved >= MAX_SAVED then table.remove(view.saved, 1) end
+            view.saved[#view.saved + 1] = b
         end
         store_saved()
     end
@@ -252,32 +252,32 @@ local function detail(x, y, w, h)
 end
 
 local function saved_tab(x, y, w, h)
-    if #S.saved == 0 then ui.text('Nothing saved yet. Open a build and use "Save to Saved".', x, y, {color = DIM}); return end
+    if #view.saved == 0 then ui.text('Nothing saved yet. Open a build and use "Save to Saved".', x, y, {color = DIM}); return end
     local area = ui.scroll_begin('saved', x, y, w, h, {step = 22})
-    for i, b in ipairs(S.saved) do
+    for i, b in ipairs(view.saved) do
         if ui.button('s' .. i, x, area.content_y + (i - 1) * 22, area.w - 2, 20, row_text(b), {tooltip = 'Show this build'}) then
-            S.detail = b; S.tab = 4
+            view.detail = b; view.tab = 4
         end
     end
-    ui.scroll_end(#S.saved * 22)
+    ui.scroll_end(#view.saved * 22)
 end
 
 local function panel()
     local p = ui.panel('main', 'Build sharer' .. key_hint('toggle'), 80, 60, 560, 430, {})
-    if not p.open then S.opened = false; return end
-    if not S.opened then                         -- just opened: ask the server for the first page and for my own build
-        S.opened = true
+    if not p.open then view.opened = false; return end
+    if not view.opened then                         -- just opened: ask the server for the first page and for my own build
+        view.opened = true
         if net.supported() then fetch_list(); gear.after(0.5, function() request('mine') end) else ready() end
     end
     local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
-    local _, tab = ui.radio_group('tabs', x, y, TABS, S.tab, {horizontal = true})
-    S.tab = tab
+    local _, tab = ui.radio_group('tabs', x, y, TABS, view.tab, {horizontal = true})
+    view.tab = tab
     local top, body_h = y + 26, h - 26 - 22
-    if S.tab == 1 then browse(x, top, w, body_h)
-    elseif S.tab == 2 then my_build(x, top, w, body_h)
-    elseif S.tab == 3 then saved_tab(x, top, w, body_h)
+    if view.tab == 1 then browse(x, top, w, body_h)
+    elseif view.tab == 2 then my_build(x, top, w, body_h)
+    elseif view.tab == 3 then saved_tab(x, top, w, body_h)
     else detail(x, top, w, body_h) end
-    if S.status ~= '' then ui.text(fit(S.status, 90), x, y + h - 16, {color = WARN}) end
+    if view.status ~= '' then ui.text(fit(view.status, 90), x, y + h - 16, {color = WARN}) end
 end
 
 gear.keys.on('toggle', function() ui.toggle_panel('main') end)
@@ -288,7 +288,7 @@ gear.on('draw', function(state)
 end)
 
 gear.on('net_caps', function(caps)
-    if caps.supported and ui.panel_open('main') and not S.list then fetch_list() end
+    if caps.supported and ui.panel_open('main') and not view.list then fetch_list() end
 end)
 
 load_saved()
