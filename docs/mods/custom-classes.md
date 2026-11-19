@@ -123,6 +123,9 @@ Key: *Class window* (Ctrl+Shift+C), changeable on the mod's *Keys* page (**F11**
 
 ## Limits
 
+- **The game's Combat Arts window does not list copies and chains.** It is a fixed layout per class (one position per art id of the class), so
+  art copies and chains cannot be dragged to the game's skill slots. Use the [Art bars](art-bars.md) mod for more slots: it holds any
+  ability, copies and chains included.
 - **The new-hero choice is a window,** not a button on the game's character screen: it opens when a level 1 hero starts, and
   any time with the key. (The character screen's dialog is not changeable by mods yet.)
 - The skill lists are the body's record in the game, so they change when you switch heroes (companions of the same body see
