@@ -295,7 +295,7 @@ function M.new(env)
         local n_abil = tactics_hero and math.max(1, #(tactics_hero:abilities() or {}) + #(tactics_hero:combos() or {})) or 0
         local tactics_h = tactics_hero and math.min(420, 30 + 26 * (1 + n_abil) + 16) or 0
         local purses_h = separate() and (30 + #heroes * 30) or 0
-        local h = 40 + #heroes * 52 + 4 * 30 + 16 + tactics_h + purses_h
+        local h = 40 + #heroes * 52 + 4 * 30 + 16 + 26 + tactics_h + purses_h
         local p = ui.panel('party', 'Party' .. key_hint('window'), 192, 90, WIN_W, h, {})
         if not p.open then return end
         local x, y, w = p.content_x or 0, p.content_y or 0, p.content_w or WIN_W - 20
@@ -310,7 +310,7 @@ function M.new(env)
         local yy = y + ht:height() + 8
         ui.rect(x, yy - 5, w, 1, 0x806A5A3C)
         -- recruiting, bringing and keeping heroes, the game's mercenaries: label, field, button, note
-        local t = ui.table('party', x, yy, w, {columns = {90, 300, 100, '*'}, spacing = {6, 8}})
+        local t = ui.table('party', x, yy, w, {columns = {90, 240, 100, '*'}, spacing = {6, 8}})
         local full = #party.companions() >= setting('max_companions', 3)
         t:row()
         t:label(1, 'Recruit', {color = ACCENT})
@@ -323,9 +323,9 @@ function M.new(env)
             recruit(CLASS_ORDER[win.class])
         end
         t:label(4, ('%d of %d companions'):format(#party.companions(), setting('max_companions', 3)), {color = DIM, size = 12})
-        t:row()
+        t:row(48)
         if not files.loaded then refresh_files() end
-        t:label(1, 'Bring', {color = ACCENT})
+        t:label(1, 'Bring', {color = ACCENT, valign = 'center'})
         if #files.list > 0 then
             local fchanged, findex = t:dropdown(2, files.labels, files.index, cell({id = 'heroes',
                 tooltip = 'Heroes kept from other savegames, and your network characters'}))
@@ -336,6 +336,16 @@ function M.new(env)
         if t:button(3, 'Bring', cell({id = 'bring', enabled = not full and #files.list > 0,
             tooltip = 'A copy of this hero joins where you stand, with their level, skills, equipment and backpack'})) then
             bring(files.list[files.index])
+        end
+        -- the chosen hero file: the portrait of their class (as the companions' rings show) with name, class and level
+        local picked = files.list[files.index]
+        if picked then
+            local px, py = t:cell(4)
+            local img = party.class_portrait and party.class_portrait(picked.class_id or picked.class)
+            if img then ui.image(img, px, py + 4, 40, 40, {fit = 'contain'}) end
+            ui.frame(px, py + 4, 40, 40, 0xFF6A5A3C, 1)
+            ui.text(picked.name ~= '' and picked.name or '?', px + 48, py + 6, {color = 0xFFFFFFFF, bold = true})
+            ui.text(('%s, level %d'):format(CLASS_LABEL[picked.class or ''] or '?', picked.level or 0), px + 48, py + 24, {color = DIM, size = 12})
         end
         t:row()
         t:label(1, 'Keep', {color = ACCENT})
