@@ -266,6 +266,17 @@ local function refresh_files()
     files.loaded = true
 end
 
+-- A hero file whose class and name match a hero of the party: the hero MAY have been brought from it already (a warning
+-- only; the mod has no way to tell for sure). The companions carry the file's name when brought.
+local function may_be_in_party(f)
+    if not f or f.name == '' or f.name == 'Anonymous' then return false end
+    local want = f.name:sub(1, 30):lower()
+    for _, h in ipairs(party.heroes()) do
+        if h:class() == f.class and name_of(h):lower() == want then return true end
+    end
+    return false
+end
+
 local function bring(f)
     local ok, why = party.available()
     if not ok then return toast(why or 'Not now') end
@@ -464,7 +475,7 @@ apply_share()
 
 local window = require('window').new({
     play = play, recruit = recruit, dismiss = dismiss, keep = keep, bring = bring, name_of = name_of, record = record,
-    purse_of = purse_of, give_gold = give_gold, take_gold = take_gold, separate = separate,
+    may_be_in_party = may_be_in_party, purse_of = purse_of, give_gold = give_gold, take_gold = take_gold, separate = separate,
     setting = setting, store = store, prefs = prefs, files = files, refresh_files = refresh_files,
     NAMES = NAMES, CLASS_LABEL = CLASS_LABEL,
 })

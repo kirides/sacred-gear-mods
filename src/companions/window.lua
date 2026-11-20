@@ -13,6 +13,7 @@
 --   env.store, env.prefs    the stores of main.lua (:changed() after a change)
 --   env.files, env.refresh_files   the hero files list and its reader
 --   env.setting(id, fallback)      a setting of the mod
+--   env.may_be_in_party(f)         a hero file whose class and name match a hero of the party (a warning, not a block)
 --   env.separate(), env.purse_of(c), env.give_gold(c, n|'all'), env.take_gold(c, n|'all')   separate purses (setting)
 --   env.NAMES, env.CLASS_LABEL     names per class, class labels
 -- Returns {draw_portraits = fn, draw_window = fn}.
@@ -27,6 +28,7 @@ function M.new(env)
     local cfg = gear.config
     local play, recruit, dismiss, keep, bring = env.play, env.recruit, env.dismiss, env.keep, env.bring
     local name_of, record, setting = env.name_of, env.record, env.setting
+    local may_be_in_party = env.may_be_in_party
     local separate, purse_of, give_gold, take_gold = env.separate, env.purse_of, env.give_gold, env.take_gold
     local store, prefs, files, refresh_files = env.store, env.prefs, env.files, env.refresh_files
     local NAMES, CLASS_LABEL = env.NAMES, env.CLASS_LABEL
@@ -36,6 +38,7 @@ function M.new(env)
     local BEHAVIOUR_LABEL = {aggressive = 'Aggressive', defensive = 'Defensive', passive = 'Passive', default = 'Default'}
 
     local DIM, ACCENT, GOOD, BAD = 0xFFB0A890, 0xFFE8C878, 0xFF60C060, 0xFFC04040
+    local AMBER = 0xFFFFC060   -- the warning colour of Gear's mod manager (key conflicts)
 
     local function key_hint(id)
         local k = gear.keys.label(id)
@@ -327,14 +330,21 @@ function M.new(env)
         if not files.loaded then refresh_files() end
         t:label(1, 'Bring', {color = ACCENT, valign = 'center'})
         if #files.list > 0 then
-            local fchanged, findex = t:dropdown(2, files.labels, files.index, cell({id = 'heroes',
+            -- heroes that may be in the party already are marked in the list (as a key conflict is in the mod manager)
+            local labels = {}
+            for i, label in ipairs(files.labels) do
+                labels[i] = may_be_in_party(files.list[i]) and ('! ' .. label) or label
+            end
+            local fchanged, findex = t:dropdown(2, labels, files.index, cell({id = 'heroes',
                 tooltip = 'Heroes kept from other savegames, and your network characters'}))
             if fchanged then files.index = findex end
         else
             t:label(2, 'No kept heroes yet: "Keep" your hero below.', {color = DIM, size = 12})
         end
-        if t:button(3, 'Bring', cell({id = 'bring', enabled = not full and #files.list > 0,
-            tooltip = 'A copy of this hero joins where you stand, with their level, skills, equipment and backpack'})) then
+        local maybe = may_be_in_party(files.list[files.index])
+        if t:button(3, 'Bring', cell({id = 'bring', enabled = not full and #files.list > 0, color = maybe and AMBER or nil,
+            tooltip = (maybe and 'A hero with this class and name is in the party already: this may be a second copy. ' or '')
+                .. 'A copy of this hero joins where you stand, with their level, skills, equipment and backpack'})) then
             bring(files.list[files.index])
         end
         -- the chosen hero file: the portrait of their class (as the companions' rings show) with name, class and level
@@ -346,6 +356,10 @@ function M.new(env)
             ui.frame(px, py + 4, 40, 40, 0xFF6A5A3C, 1)
             ui.text(picked.name ~= '' and picked.name or '?', px + 48, py + 6, {color = 0xFFFFFFFF, bold = true})
             ui.text(('%s, level %d'):format(CLASS_LABEL[picked.class or ''] or '?', picked.level or 0), px + 48, py + 24, {color = DIM, size = 12})
+            if maybe then
+                ui.text('May be in the party already', px + 48, py + 38, {color = AMBER, size = 12,
+                    tooltip = 'A hero with this class and name is in the party: you may have brought them from this file before'})
+            end
         end
         t:row()
         t:label(1, 'Keep', {color = ACCENT})
