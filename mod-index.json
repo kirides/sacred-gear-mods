@@ -45,7 +45,8 @@
       "tags": [
         "multiplayer",
         "economy"
-      ]
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/auction-house.jpg"
     },
     {
       "id": "autosave",
@@ -232,7 +233,8 @@
       "tags": [
         "quests",
         "server"
-      ]
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/questhelper.jpg"
     },
     {
       "id": "realms",
@@ -244,7 +246,8 @@
       "tags": [
         "multiplayer",
         "tools"
-      ]
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/realms.jpg"
     },
     {
       "id": "region-counter",
@@ -255,7 +258,8 @@
       "description": "The kills a region needs before its Region Boss quest comes: set your own number, and keep the progress when you leave the region, teleport, save or quit.",
       "tags": [
         "tools"
-      ]
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/region-counter.jpg"
     },
     {
       "id": "serverfeed",
@@ -302,7 +306,8 @@
       "name": "Spawn rate",
       "version": "1.0.3",
       "author": "kirides",
-      "description": "Multiplies the creatures the game spawns, from 1x (the game as it is) up to 100x. Every hostile creature around you, those the world creates and those already there, brings extra ones of its kind with it. Single player only; safeguards keep the frame rate up."
+      "description": "Multiplies the creatures the game spawns, from 1x (the game as it is) up to 100x. Every hostile creature around you, those the world creates and those already there, brings extra ones of its kind with it. Single player only; safeguards keep the frame rate up.",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/spawn-rate.jpg"
     },
     {
       "id": "twi_sacred",
@@ -326,7 +331,8 @@
       "version": "0.1.1",
       "tags": [
         "twitch"
-      ]
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/twitch_integration.jpg"
     },
     {
       "id": "world-events",
@@ -338,7 +344,8 @@
       "tags": [
         "multiplayer",
         "server"
-      ]
+      ],
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/world-events.jpg"
     }
   ]
 }
