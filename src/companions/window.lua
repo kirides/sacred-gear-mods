@@ -357,7 +357,7 @@ function M.new(env)
             ui.text(picked.name ~= '' and picked.name or '?', px + 48, py + 6, {color = 0xFFFFFFFF, bold = true})
             ui.text(('%s, level %d'):format(CLASS_LABEL[picked.class or ''] or '?', picked.level or 0), px + 48, py + 24, {color = DIM, size = 12})
             if maybe then
-                ui.text('May be in the party already', px + 48, py + 38, {color = AMBER, size = 12,
+                ui.text('May be in the party', px + 48, py + 38, {color = AMBER, size = 12,
                     tooltip = 'A hero with this class and name is in the party: you may have brought them from this file before'})
             end
         end
