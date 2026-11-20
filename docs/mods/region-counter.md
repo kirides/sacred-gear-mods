@@ -1,5 +1,7 @@
 # Region counter
 
+![The Region counter page of the Mods screen](../images/region-counter.jpg)
+
 In Sacred Gold a region sends you its Region Boss quest after a number of kills. The game keeps that countdown in
 memory only: it starts over when you leave the region and is never saved. This mod fixes both.
 

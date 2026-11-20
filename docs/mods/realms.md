@@ -1,8 +1,6 @@
 # Realm picker
 
-![Realm picker](../images/realms.svg)
-
-*Illustration with example values.*
+![Realm picker](../images/realms.jpg)
 
 Choose which online play server ("realm") the game uses for Closed Internet and Open Internet. LAN is not affected.
 

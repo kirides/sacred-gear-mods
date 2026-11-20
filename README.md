@@ -13,7 +13,7 @@ build). A mod is a folder you copy into the game's `mods` folder; you switch it 
 ### What you get
 
 Click a name for the mod's page: how to use it, its settings and keys, and notes for anyone who wants to tinker with it.
-Pictures marked as illustrations (`.svg`) show example values; they will be replaced with screenshots from the game.
+The pictures are screenshots from the game, taken by a script ([how](docs/Screenshots.md)); the numbers and names of the server mods are examples.
 
 | Mod | Preview | What it does |
 |---|---|---|
@@ -31,19 +31,19 @@ Pictures marked as illustrations (`.svg`) show example values; they will be repl
 | [**Item comparison**](docs/mods/item-compare.md) | <img src="docs/images/item-compare.jpg" width="220" alt="Item comparison"> | Hover an item and see, in green and red, what it changes compared with what your hero (or a companion) wears in that slot. Works with the controller's cursor too. |
 | [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.jpg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. Ctrl+D. |
 | [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.jpg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
-| [**Spawn rate**](docs/mods/spawn-rate.md) | | Multiply the creatures the game spawns, from 1x to 100x, with safeguards for the frame rate. Single player. |
-| [**Region counter**](docs/mods/region-counter.md) | | The kills a region needs before its Region Boss quest: set your own number, and keep the count when you leave the region or quit. |
+| [**Spawn rate**](docs/mods/spawn-rate.md) | <img src="docs/images/spawn-rate.jpg" width="220" alt="Spawn rate"> | Multiply the creatures the game spawns, from 1x to 100x, with safeguards for the frame rate. Single player. |
+| [**Region counter**](docs/mods/region-counter.md) | <img src="docs/images/region-counter.jpg" width="220" alt="Region counter"> | The kills a region needs before its Region Boss quest: set your own number, and keep the count when you leave the region or quit. |
 | [**Layout editor**](docs/mods/layout.md) | <img src="docs/images/layout.jpg" width="220" alt="Layout editor"> | Move the game's windows and mod panels where you want them. Hold Alt. |
-| [**Realm picker**](docs/mods/realms.md) | <img src="docs/images/realms.svg" width="220" alt="Realm picker"> | Choose the online play server for Closed and Open Internet. |
-| [**Auction house**](src/auction-house/README.md) | <img src="docs/images/auction-house.svg" width="220" alt="Auction house"> | Buy and sell items between players. Needs a multiplayer game (useless in single player). |
+| [**Realm picker**](docs/mods/realms.md) | <img src="docs/images/realms.jpg" width="220" alt="Realm picker"> | Choose the online play server for Closed and Open Internet. |
+| [**Auction house**](src/auction-house/README.md) | <img src="docs/images/auction-house.jpg" width="220" alt="Auction house"> | Buy and sell items between players. Needs a multiplayer game (useless in single player). |
 | [**World events**](src/world-events/README.md) | <img src="docs/images/world-events.jpg" width="220" alt="World events"> | A progress bar for the server's world event. |
 | [**Sector tools**](src/sector-tools/README.md) | <img src="docs/images/sector-tools.jpg" width="220" alt="Sector tools"> | For server admins: sector and grid cell, recording areas. Not in the release zip. |
 | [**Achievements**](docs/mods/achievements.md) | <img src="docs/images/achievements.jpg" width="220" alt="Achievements"> | Messages for achievements and the daily login reward. Needs a server script. |
 | [**Bounty board**](docs/mods/bounty.md) | <img src="docs/images/bounty.jpg" width="220" alt="Bounty board"> | Bounties to hunt, with progress and rewards. Works alone in single player (make your own bounties and automatic triggers, e.g. for streams), shows the server's board in network games. Ctrl+J. Also [daily and weekly quests](docs/mods/bounty.md#daily-and-weekly-quests) with a streak bonus (Ctrl+Shift+D). |
 | [**Build sharer**](docs/mods/buildsharer.md) | <img src="docs/images/buildsharer.jpg" width="220" alt="Build sharer"> | Publish your build and browse the builds of others. Ctrl+K. Needs a server script. |
-| [**Quest helper**](docs/mods/questhelper.md) | <img src="docs/images/questhelper.svg" width="220" alt="Quest helper"> | Quest items and the server's quest records with hints. Ctrl+U. Needs a server script. |
+| [**Quest helper**](docs/mods/questhelper.md) | <img src="docs/images/questhelper.jpg" width="220" alt="Quest helper"> | Quest items and the server's quest records with hints. Ctrl+U. Needs a server script. |
 | [**Server feed**](docs/mods/serverfeed.md) | <img src="docs/images/serverfeed.jpg" width="220" alt="Server feed"> | Rare finds and hero deaths on screen. Needs a server script. |
-| [**Twitch Integration**](docs/mods/twitch_integration.md) | <img src="docs/images/twitch_integration.svg" width="220" alt="Twitch Integration"> | Turns rewards, bits and chat into actions in your game. Base mod. |
+| [**Twitch Integration**](docs/mods/twitch_integration.md) | <img src="docs/images/twitch_integration.jpg" width="220" alt="Twitch Integration"> | Turns rewards, bits and chat into actions in your game. Base mod. |
 | [**Twitch Integration: actions**](docs/mods/twi_sacred.md) | <img src="docs/images/twi_sacred.jpg" width="220" alt="Twitch Integration: actions"> | Viewers spawn monsters, give gold, heal or teleport your hero. |
 
 Each mod is switched on or off in the **Mod manager** (**F11**, or the *Mods* button under the escape menu), where you also change its settings and keys.

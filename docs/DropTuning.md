@@ -9,6 +9,8 @@ each setting touches: [Gear drops](https://github.com/kirides/sacred-bild/blob/m
 Install it like the other mods (copy `src\drop-tuning` to the game's `mods` folder, **F11**, switch it on). It binds no keys; its settings are on its page
 of the Mods screen (mouse or controller), and the **More** tab shows the game's rarity table next to the weights now in force.
 
+![The More tab: the game's rarity table next to the weights now in force](images/drop-tuning-more.jpg)
+
 | Setting | Meaning |
 |---|---|
 | Drop chance | A multiplier of the chance of every random drop attempt of creatures (2 = twice as many drops, 0 = none). Items a creature is set to drop (quest items, authored lists) are not touched. |

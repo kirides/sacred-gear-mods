@@ -5,16 +5,35 @@
 --   lootfilter      the filter panel
 --   layout          the layout editor's button (Alt held)
 --   modscreen       the Mods screen (F11)
+--   menumods        the Mods screen from the start menu (run without -gear-load)
+--   gold            gives the hero config.gold (for a self test that needs gold)
 -- Files go to GearAutomation\<instance>\.
 if not gear.auto then return end
 local A = gear.auto
 local phase = gear.config.phase
 
 local function shot(name) gear.wait(1); A.screenshot(name) end
+local function chord(mod, key) A.key_down(mod); A.press(key); A.key_up(mod) end
 
 gear.task(function()
     A.wait_for_menu(120)
+    if phase == 'menumods' then
+        -- the Mods screen from the start menu (no savegame loaded): for pages that are only live outside a game (the realm picker)
+        if gear.config.realm then gear.realm.add(gear.config.realm) end
+        gear.wait(3)
+        A.press('f11')
+        gear.wait(1)
+        for _, c in ipairs(gear.config.clicks or {}) do A.click(c[1], c[2]); gear.wait(1.2) end
+        gear.wait(3)
+        shot('menumods')
+        return A.quit(0)
+    end
     if not A.wait_for_game(180) then A.write('error.txt', 'no game') return A.quit(1) end
+    if phase == 'gold' then
+        -- gives the hero gold and stays out of the way (for self tests that need some: the auction house)
+        gear.world.hero():set_gold(gear.config.gold or 50000)
+        return
+    end
     gear.wait(4)
     if phase == 'autosave' then
         gear.emit('autosave.configure', {enabled = true, interval_minutes = 0.05, persist = false})
@@ -68,6 +87,8 @@ gear.task(function()
             for _, fn in ipairs(list) do fn({slot = 0}, payload) end
         end
         local w = gear.config.which
+        -- the quest helper's records tab needs a network game: let the mod believe in one
+        if w == 'questhelper' and gear.mp and gear.mp.force_network then gear.mp.force_network(true) end
         if w == 'achievements' then
             say('achievements:sync', {op = 'state', streak = 5, best = 9, days = 23, claimed = true, next = '250 gold', ach = {
                 {name = 'Monster Hunter', desc = 'Kill 100 monsters', done = true},
@@ -76,7 +97,7 @@ gear.task(function()
                 {name = 'Collector', desc = 'Find 10 magic items', need = 10, have = 7},
             }})
             say('achievements:sync', {op = 'unlock', name = 'Monster Hunter', desc = 'Kill 100 monsters', reward = '500 gold'})
-            if gear.config.press then A.press('f7') end
+            if gear.config.press then gear.ui.show_panel('achievements:panel', true) end
         elseif w == 'bounty' then
             say('bounty:state', {v = 1, bounties = {
                 {title = 'Wolf hunt', text = 'Kill wolves near the village', n = 12, target = 20, left = 4800, reward = '500 gold'},
@@ -90,13 +111,13 @@ gear.task(function()
                 {id = 'b2', name = 'Kell', class_name = 'Gladiator', level = 37, title = 'Tank for two', verified = true},
                 {id = 'b3', name = 'Tomm', class_name = 'Wood Elf', level = 44, title = 'Bow and traps', verified = false},
             }})
-            if gear.config.press then A.press('f7') end
+            if gear.config.press then gear.ui.show_panel('buildsharer:main', true) end
         elseif w == 'questhelper' then
             say('questhelper', {op = 'state', available = true, total = 2, known = 2, catalog = 2, records = {
                 {key = 100, value = 1, name = 'The lost sword', area = 'Ancaria', hint = 'Ask the smith.', label = 'started', known = true},
                 {key = 101, value = 2, name = 'The lost caravan', area = 'Ancaria', hint = 'Look near the east bridge.', label = 'step 2', known = true},
             }})
-            if gear.config.press then A.press('f8') end
+            if gear.config.press then gear.ui.show_panel('questhelper:main', true) end
         elseif w == 'serverfeed' then
             say('rare_drops:feed', {kind = 'drop', drop = {item = 'Ancient Sword of Fire', tier = 'unique', rarity = 15, by = 'Ria', from = 'Orc chief'}})
             say('graveyard:feed', {kind = 'death', name = 'Kell', level = 37, by = 'Zombie', killer_kind = 'monster'})
@@ -104,28 +125,42 @@ gear.task(function()
         end
         gear.wait(1.5)
         for _, c in ipairs(gear.config.clicks or {}) do A.click(c[1], c[2]); gear.wait(1) end
+        gear.wait(gear.config.wait or 0)
         shot('server-' .. tostring(w))
     elseif phase == 'fight' then
-        -- a real fight: zombies spawned next to the hero, the hero attacks them (clicks) and is kept alive.
-        -- The damage meter, the loot log and the session tracker record it; one picture of each follows.
+        -- a real fight: zombies spawned next to the hero; the hero attacks them (and is kept alive) until they are dead. The damage
+        -- meter (Ctrl+D), the loot log (F3) and the session tracker (F2, open by default) record it; one picture of each follows.
         local hero = gear.world.hero()
-        local hx, hy = hero:position()
-        for i = 1, 4 do
-            local c, why = gear.world.spawn(gear.config.monster or 'ZOMBIE.GRN', hx + 60 * i, hy + 40, {label = 'shot'})
+        local hx, hy, layer = hero:position()
+        for i = 1, (gear.config.count or 5) do
+            local c, why = gear.world.spawn(gear.config.monster or 'ZOMBIE.GRN', hx + 90 + 40 * (i % 3), hy + 40 * i - 100, {label = 'shot', layer = layer})
             A.write('spawn' .. i .. '.txt', c and 'ok' or tostring(why))
         end
         gear.wait(2)
-        for i = 1, 40 do
+        chord('control', 'd')
+        for i = 1, 120 do
             local h = gear.world.hero()
             if h then h:set_hp(99999) end
-            A.click(830, 475)
-            gear.wait(0.6)
+            local best, bd
+            local x, y = h:position()
+            for _, c in ipairs(gear.world.creatures_near(x, y, 2500, {layer = layer})) do
+                if not c:is_dead() and h:is_enemy(c) and not c:is_hero() then
+                    local cx, cy = c:position()
+                    local d = (cx - x) ^ 2 + (cy - y) ^ 2
+                    if not bd or d < bd then best, bd = c, d end
+                end
+            end
+            if not best then break end
+            if gear.config.foe_hp and (best:hp() or 0) > gear.config.foe_hp then best:set_hp(gear.config.foe_hp) end
+            h:order_attack(best)
+            gear.wait(0.7)
+            if i == (gear.config.meter_at or 14) then A.screenshot('damagemeter') end
         end
-        shot('damagemeter')
+        gear.wait(2)
+        chord('control', 'd')
         A.press('f3')
         shot('lootlog')
         A.press('f3')
-        A.press('f2')
         shot('sessiontracker')
     elseif phase == 'lootfilter' then
         A.press('f5')

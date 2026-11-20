@@ -1,8 +1,6 @@
 # Twitch Integration (base)
 
-![Twitch Integration (base)](../images/twitch_integration.svg)
-
-*Illustration with example values.*
+![Twitch Integration (base)](../images/twitch_integration.jpg)
 
 The link between your Twitch channel and the game: channel point rewards, bits and chat texts are turned into actions. On its own it does nothing visible; the action mods (like [Twitch Integration: actions](twi_sacred.md)) make things happen.
 

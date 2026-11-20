@@ -1,5 +1,7 @@
 # Spawn rate
 
+![The Spawn rate page of the Mods screen](../images/spawn-rate.jpg)
+
 Makes the world busier: every creature the game spawns brings extra ones of its kind, from **1x** (the game as it is) up to **100x**.
 
 ## What you need

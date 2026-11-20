@@ -1,8 +1,6 @@
 # Quest helper
 
-![Quest helper](../images/questhelper.svg)
-
-*Illustration with example values.*
+![Quest helper](../images/questhelper.jpg)
 
 A panel with the quest items in your backpack and near you, and, from a server that knows your hero, the quest records with hints.
 

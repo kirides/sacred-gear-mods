@@ -1,5 +1,7 @@
 # Auction house
 
+![The market panel beside the chest window](../../docs/images/auction-house.jpg)
+
 A [Sacred Gear](https://github.com/kirides/sacred-bild/blob/main/docs/Gear.md) mod: the players of a game put items
 up for sale for gold; the others browse, filter, sort and buy them. The design, the research on other games' auction
 houses and the reasons behind the rules are in [DESIGN.md](DESIGN.md).
