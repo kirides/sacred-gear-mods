@@ -2,7 +2,7 @@
 return {
     id = 'spawn-rate',
     name = 'Spawn rate',
-    version = '1.0.2',
+    version = '1.0.3',
     author = 'kirides',
     description = 'Multiplies the creatures the game spawns, from 1x (the game as it is) up to 100x. Every hostile creature around you, those the world creates and those already there, brings extra ones of its kind with it. Single player only; safeguards keep the frame rate up.',
     settings = {
