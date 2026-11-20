@@ -272,15 +272,6 @@ local function bring(f)
     if #party.companions() >= setting('max_companions', 3) then
         return toast('The party is full (setting: companions at most)')
     end
-    if setting('prevent_duplicates', false) then
-        -- a hero with the same class and name is in the party already (the hero file's name, as the companion is given it)
-        local want = (f.name ~= '' and f.name ~= 'Anonymous') and f.name:sub(1, 30) or nil
-        for _, h in ipairs(party.heroes()) do
-            if want and h:class() == f.class and name_of(h):lower() == want:lower() then
-                return toast(want .. ' (' .. (CLASS_LABEL[f.class or ''] or '?') .. ') is in the party already (setting: prevent duplicate recruitments)')
-            end
-        end
-    end
     local c, err = party.recruit_hero(f.file)
     if not c then return toast('Cannot bring ' .. f.name .. ': ' .. tostring(err)) end
     local r = record(c.id)

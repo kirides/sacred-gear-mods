@@ -26,7 +26,6 @@ hero slots belong to the players).
    to a hero file (in `mods\companions\heroes`). In another savegame, pick them under *Bring* and press *Bring*: a copy
    of that hero joins with their level, attributes, skills, combat arts, combos, equipment and backpack. Your network
    characters (`Save\HeroNN.pax`) are listed there too. The hero in the other savegame stays as they are.
-   With *Prevent duplicate recruitments* (setting, off by default) Bring refuses a hero whose class and name are already in the party.
 4. **Separate purses** (setting, off by default): every hero keeps their own gold. The hero you play holds theirs in the game as
    always; the gold of the others is kept by the mod (per savegame) and is theirs again when you play them. The party window
    then has a *Purses* section: pick an amount and press *Give* (from the hero you play to another hero) or *Take* (from
