@@ -21,12 +21,18 @@ hero slots belong to the players).
    stash or what you find.
 2. Play another hero: click their portrait, press **PageDown** / **PageUp**, use *Play* in the party window, or the mod menu.
    The camera, the HUD, the inventory, skills and combat arts windows, the mouse, the keys and the controller then serve
-   that hero. The gold goes with you (the party shares one purse) and mercenaries follow the hero you play.
+   that hero. The gold goes with you (the party shares one purse, unless you turn on *Separate purses*, see below) and mercenaries follow the hero you play.
 3. **Heroes from other savegames:** in the party window, *Keep <name> for other savegames* writes the hero you play
    to a hero file (in `mods\companions\heroes`). In another savegame, pick them under *Bring* and press *Bring*: a copy
    of that hero joins with their level, attributes, skills, combat arts, combos, equipment and backpack. Your network
    characters (`Save\HeroNN.pax`) are listed there too. The hero in the other savegame stays as they are.
-4. In the party window each hero has a **behaviour** for the time you play someone else (*Aggressive*: fights what
+4. **Separate purses** (setting, off by default): every hero keeps their own gold. The hero you play holds theirs in the game as
+   always; the gold of the others is kept by the mod (per savegame) and is theirs again when you play them. The party window
+   then has a *Purses* section: pick an amount and press *Give* (from the hero you play to another hero) or *Take* (from
+   another hero to the hero you play). Turning the setting off gives all the gold to the hero you play (the party's purse goes with
+   control, so it is with the main hero when you play them); none is lost. The same happens when a companion is dismissed or lost for
+   good, and when a savegame is loaded with the setting off.
+5. In the party window each hero has a **behaviour** for the time you play someone else (*Aggressive*: fights what
    comes near; *Defensive*: protects the hero you play; *Passive*: only follows), a **name**, and **tactics**: how they fight
    (weapon and combat arts; combat arts only, keeping back in between, for a battle mage; weapon first; or
    ranged weapon: they take up the bow, crossbow or musket of their weapon slots when a fight starts) and the

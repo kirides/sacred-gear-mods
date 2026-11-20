@@ -76,6 +76,88 @@ local function record(id)
     return r
 end
 
+---------------------------------------------------------------------------------------------------------------
+-- Separate purses (setting). The game has one purse that goes with control (gear.party.control moves all the gold of the
+-- hero you leave to the hero you play). With the setting on, the mod keeps the gold of the heroes you do not play in
+-- their record (`purse`, per savegame) and puts it back on the hero when you play them. The hero you play holds their
+-- gold in the game as always, so the game's merchants, drops and savegames see it. Turning the setting off gives every
+-- stored purse to the hero you play: gold never goes missing.
+---------------------------------------------------------------------------------------------------------------
+local MAX_GOLD = 2147483646
+
+local function separate() return setting('separate_purses', false) == true end
+
+-- The gold of a hero: the game's for the hero you play, the stored purse for the others.
+local function purse_of(c)
+    local leader = party.leader()
+    if leader and c.id == leader.id then return c:gold() or 0 end
+    return record(c.id).purse or 0
+end
+
+-- All stored purses to the hero you play. Used when the setting is off (also for a savegame saved with it on), when a
+-- companion leaves, and by the toggle itself.
+local function merge_purses()
+    local key = party_key()
+    local p = key and store.data.parties[key]
+    local leader = party.leader()
+    if not (p and p.heroes and leader) then return end
+    local sum, any = 0, false
+    for _, r in pairs(p.heroes) do
+        if r.purse then any = true; sum = sum + r.purse end
+    end
+    if not any then return end
+    local want = math.min(MAX_GOLD, (leader:gold() or 0) + sum)
+    local ok = leader:set_gold(want)
+    if not ok then return end   -- try again at the next opportunity: the purses stay stored
+    for _, r in pairs(p.heroes) do r.purse = nil end
+    store:changed()
+    if sum > 0 then toast(('%d gold of the other heroes went to %s'):format(sum, leader:name() or 'you')) end
+end
+
+-- After gear.party.control(from, to): the game has put the gold of both in `to` and emptied `from`.
+local function purses_on_control(from, to)
+    if not separate() then return merge_purses() end
+    -- A hero who is not played holds no gold in the game (the game emptied them), so what `to` holds now is all that `from`
+    -- had: it goes into `from`'s purse, and `to` gets the purse that was stored for them.
+    local rt, rf = record(to.id), record(from.id)
+    local mine = to:gold() or 0
+    local theirs = rt.purse or 0
+    if to:set_gold(theirs) then
+        rf.purse = ((rf.purse or 0) + mine) > 0 and math.min(MAX_GOLD, (rf.purse or 0) + mine) or nil
+        rt.purse = nil
+        store:changed()
+    end
+end
+
+-- Moves gold between the hero you play and another hero. amount: a number or 'all'.
+local function give_gold(c, amount)
+    local leader = party.leader()
+    if not (separate() and leader and c.id ~= leader.id) then return end
+    local have = leader:gold() or 0
+    local n = amount == 'all' and have or math.min(amount, have)
+    local r = record(c.id)
+    n = math.min(n, MAX_GOLD - (r.purse or 0))
+    if n <= 0 then return end
+    if leader:add_gold(-n) then
+        r.purse = (r.purse or 0) + n
+        store:changed()
+    end
+end
+
+local function take_gold(c, amount)
+    local leader = party.leader()
+    if not (separate() and leader and c.id ~= leader.id) then return end
+    local r = record(c.id)
+    local have = r.purse or 0
+    local n = amount == 'all' and have or math.min(amount, have)
+    n = math.min(n, MAX_GOLD - (leader:gold() or 0))
+    if n <= 0 then return end
+    if leader:add_gold(n) then
+        r.purse = have - n > 0 and have - n or nil
+        store:changed()
+    end
+end
+
 -- The tactics of a companion for ai.think: behaviour (nil: the default) and abilities switched off (id -> false).
 local function tactics(id)
     local r = record(id)
@@ -195,6 +277,7 @@ local function bring(f)
     local r = record(c.id)
     r.behaviour = nil
     r.fallen = nil
+    r.purse = nil
     r.abilities = {}
     r.name = (f.name ~= '' and f.name ~= 'Anonymous') and f.name:sub(1, 30) or default_name(c)
     store:changed()
@@ -228,6 +311,9 @@ local function dismiss(c)
     if not ok then return toast('Cannot dismiss ' .. name .. ': ' .. tostring(err)) end
     local key = party_key()
     if key and store.data.parties[key] then
+        local gone = store.data.parties[key].heroes[tostring(c.id)]
+        local leader = party.leader()
+        if gone and gone.purse and leader then leader:add_gold(gone.purse) end   -- their gold stays with the party
         store.data.parties[key].heroes[tostring(c.id)] = nil
         store:changed()
     end
@@ -263,6 +349,8 @@ local function forget_fallen()
     for sid, r in pairs(p.heroes) do
         local o = r.fallen and gear.world.object(tonumber(sid))
         if r.fallen and not (o and o:is_hero()) then
+            local leader = party.leader()
+            if r.purse and leader then leader:add_gold(r.purse) end   -- the purse of the fallen stays with the party
             p.heroes[sid] = nil
             store:changed()
         end
@@ -362,13 +450,21 @@ gear.on('session.start', guard('session', function()
     files.loaded = false
     ai.reset()
     apply_share()
+    if not separate() then merge_purses() end
 end))
-gear.on('settings.changed', guard('settings', function() apply_share() end))
-gear.on('party.control', guard('control', function() ai.reset() end))
+gear.on('settings.changed', guard('settings', function()
+    apply_share()
+    if not separate() then merge_purses() end
+end))
+gear.on('party.control', guard('control', function(from, to)
+    ai.reset()
+    purses_on_control(from, to)
+end))
 apply_share()
 
 local window = require('window').new({
     play = play, recruit = recruit, dismiss = dismiss, keep = keep, bring = bring, name_of = name_of, record = record,
+    purse_of = purse_of, give_gold = give_gold, take_gold = take_gold, separate = separate,
     setting = setting, store = store, prefs = prefs, files = files, refresh_files = refresh_files,
     NAMES = NAMES, CLASS_LABEL = CLASS_LABEL,
 })

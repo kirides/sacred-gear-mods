@@ -16,6 +16,8 @@ return {
         {id = 'share_xp', type = 'number', label = 'Shared experience (%)', min = 0, max = 100, step = 5, default = 100, section = 'Party',
             tooltip = 'Experience a party hero gains from kills and quests also goes to the others nearby, times this'},
         {id = 'share_radius', type = 'number', label = 'Shared within (tiles, 0: anywhere)', min = 0, max = 100, step = 5, default = 40, section = 'Party'},
+        {id = 'separate_purses', type = 'bool', label = 'Separate purses: every hero keeps their own gold', default = false, section = 'Party',
+            tooltip = 'Off (default): the party shares one purse that goes with the hero you play. On: each hero keeps their own gold; move it in the party window (Purses). Turning it off again gives all the gold to the hero you play (the party\'s purse), none is lost'},
         {id = 'revive', type = 'bool', label = 'Fallen companions get up after the fight', default = true, section = 'Party',
             tooltip = 'At your side with a quarter of their health, once no enemy is near (12 s at the latest). Off: the game removes a fallen companion, with what they carry'},
         {id = 'hardcore', type = 'bool', label = 'Hardcore companions: the fallen stay gone', default = false, section = 'Party',

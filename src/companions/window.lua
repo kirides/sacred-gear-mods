@@ -13,6 +13,7 @@
 --   env.store, env.prefs    the stores of main.lua (:changed() after a change)
 --   env.files, env.refresh_files   the hero files list and its reader
 --   env.setting(id, fallback)      a setting of the mod
+--   env.separate(), env.purse_of(c), env.give_gold(c, n|'all'), env.take_gold(c, n|'all')   separate purses (setting)
 --   env.NAMES, env.CLASS_LABEL     names per class, class labels
 -- Returns {draw_portraits = fn, draw_window = fn}.
 
@@ -26,6 +27,7 @@ function M.new(env)
     local cfg = gear.config
     local play, recruit, dismiss, keep, bring = env.play, env.recruit, env.dismiss, env.keep, env.bring
     local name_of, record, setting = env.name_of, env.record, env.setting
+    local separate, purse_of, give_gold, take_gold = env.separate, env.purse_of, env.give_gold, env.take_gold
     local store, prefs, files, refresh_files = env.store, env.prefs, env.files, env.refresh_files
     local NAMES, CLASS_LABEL = env.NAMES, env.CLASS_LABEL
 
@@ -157,7 +159,13 @@ function M.new(env)
     ---------------------------------------------------------------------------------------------------------------
     -- The party window: who is in the party, play / name / behaviour / dismiss, recruiting, and the tactics of one hero.
     ---------------------------------------------------------------------------------------------------------------
-    local win = {class = 4, tactics = nil}
+    local win = {class = 4, tactics = nil, amount = 2}
+    local function group(n)   -- 1234567 -> 1,234,567
+        local t = tostring(math.floor(n)):reverse():gsub('(%d%d%d)', '%1,'):reverse()
+        return (t:gsub('^,', ''))
+    end
+    local AMOUNTS = {100, 1000, 10000, 'all'}
+    local AMOUNT_LABELS = {'100', '1,000', '10,000', 'All'}
     -- The window's rows are gear.ui.table tables: the hero rows (portrait and name, then Play, Name, behaviour, Tactics,
     -- Dismiss in fixed columns), and below them label / field / button / note rows. A control that does not apply keeps
     -- its place, greyed, so the columns line up in every row.
@@ -286,7 +294,8 @@ function M.new(env)
         for _, h in ipairs(heroes) do if h.id == win.tactics then tactics_hero = h end end
         local n_abil = tactics_hero and math.max(1, #(tactics_hero:abilities() or {}) + #(tactics_hero:combos() or {})) or 0
         local tactics_h = tactics_hero and math.min(420, 30 + 26 * (1 + n_abil) + 16) or 0
-        local h = 40 + #heroes * 52 + 4 * 30 + 16 + tactics_h
+        local purses_h = separate() and (30 + #heroes * 30) or 0
+        local h = 40 + #heroes * 52 + 4 * 30 + 16 + tactics_h + purses_h
         local p = ui.panel('party', 'Party' .. key_hint('window'), 192, 90, WIN_W, h, {})
         if not p.open then return end
         local x, y, w = p.content_x or 0, p.content_y or 0, p.content_w or WIN_W - 20
@@ -347,8 +356,35 @@ function M.new(env)
             prefs:changed()
         end
         t:label(3, ('%d with the party'):format(#party.mercenaries()), {color = DIM, size = 12, span = 2})
+        local below = yy + t:height() + 16
+        if separate() then
+            -- the purses: one row per hero, gold moves between the hero you play and the others
+            ui.rect(x, below - 5, w, 1, 0x806A5A3C)
+            local pt = ui.table('purses', x, below, w, {columns = {90, 300, 100, 100}, spacing = {6, 8}})
+            pt:row()
+            pt:label(1, 'Purses', {color = ACCENT})
+            local achanged, anew = pt:dropdown(2, AMOUNT_LABELS, win.amount, cell({id = 'goldamount',
+                tooltip = 'How much gold Give and Take move'}))
+            if achanged then win.amount = anew end
+            for _, c in ipairs(heroes) do
+                local controlled = c == leader
+                pt:row()
+                pt:label(1, controlled and 'Playing' or '', {color = DIM, size = 12})
+                pt:label(2, ('%s: %s gold'):format(name_of(c), group(purse_of(c))),
+                    {color = controlled and ACCENT or 0xFFFFFFFF, valign = 'center'})
+                if pt:button(3, 'Give', cell({id = 'give' .. c.id, enabled = not controlled and (leader:gold() or 0) > 0,
+                    tooltip = controlled and 'Pick another hero to give gold to' or ('Gives gold of the hero you play to ' .. name_of(c))})) then
+                    give_gold(c, AMOUNTS[win.amount])
+                end
+                if pt:button(4, 'Take', cell({id = 'take' .. c.id, enabled = not controlled and purse_of(c) > 0,
+                    tooltip = controlled and 'This is the hero you play' or ('Takes gold from ' .. name_of(c) .. ' to the hero you play')})) then
+                    take_gold(c, AMOUNTS[win.amount])
+                end
+            end
+            below = below + pt:height() + 8
+        end
         if tactics_hero then
-            local ty = yy + t:height() + 16
+            local ty = below
             ui.rect(x, ty - 5, w, 1, 0x806A5A3C)
             tactics_area(tactics_hero, x, ty, w)
         end
