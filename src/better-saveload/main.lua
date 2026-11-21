@@ -495,7 +495,7 @@ local function portrait_url(s)
     return url
 end
 
-local function row_model(s, key)
+local function row_model(s, key, visible)
     if not s then
         return {id = 'rownew', sel = key == view.sel, ok = true, pic = '', nopic = '', port = '', title = 'New savegame', sub = '',
             line2 = 'Saves into the first free number'}
@@ -507,7 +507,7 @@ local function row_model(s, key)
     local line2 = when(s)
     if s.name ~= '' and s.name ~= 'QUICKSAVE' then line2 = line2 .. '   ' .. s.name end
     if not s.compatible then line2 = 'another version of the game - ' .. line2 end
-    local url = picture_url(s)
+    local url = visible and picture_url(s) or nil      -- only a row in view looks for its picture
     return {id = 'row' .. tostring(key), sel = key == view.sel, ok = s.compatible and true or false, pic = url or '', nopic = url == '' and 'no picture' or '', port = portrait_url(s),
         title = hero_label(s), sub = table.concat(sub, ' - '), line2 = line2}
 end
@@ -590,13 +590,16 @@ local function snapshot(preview)
     local rows = {}
     if view.mode == 'save' then rows[1] = false end   -- the "new savegame" row
     for _, sv in ipairs(view.shown) do rows[#rows + 1] = sv end
+    local list_h = view.mode == 'save' and 324 or 356      -- the list's height (screen.rcss: #list)
     local first = math.max(1, math.floor(scroll_top / ROW_H_UNITS) - 1)
     local lastrow = math.min(#rows, first + VIEW_ROWS + 4)
     row_keys = {}
     for i = first, lastrow do
         local sv = rows[i]
         local key = sv and sv.slot or 'new'
-        local r = row_model(sv or nil, key)
+        -- in view: the list is LIST_H tall (a row in the rendered window but below or above it is not looked at)
+        local visible = (i - 1) * ROW_H_UNITS < scroll_top + list_h and i * ROW_H_UNITS > scroll_top
+        local r = row_model(sv or nil, key, visible)
         row_keys[r.id] = key
         m.rows[#m.rows + 1] = r
     end
