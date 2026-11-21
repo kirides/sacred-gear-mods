@@ -1,0 +1,9 @@
+<rml>
+<head>
+    <title>Autosave</title>
+    <link type="text/rcss" href="note.rcss"/>
+</head>
+<body data-model="model">
+<div id="note" data-class-bad="!ok">{{ text }}</div>
+</body>
+</rml>

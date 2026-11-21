@@ -240,6 +240,8 @@ local function mmss(seconds)
     return ('%d:%02d'):format(math.floor(seconds / 60), seconds % 60)
 end
 
+-- ui/note.rml: a small themed line at the top of the screen (cfg.note_y from the top, centred).
+local note_doc
 ---@param s GearUiState
 local function draw_note(s)
     if not note or not playing(s) then return end
@@ -247,13 +249,18 @@ local function draw_note(s)
         note = nil
         return
     end
-    local w = 190
-    local x = (1024 - w) / 2
-    local y = cfg.note_y
-    ui.rect(x, y, w, 22, ui.rgba(0, 0, 0, 150))
-    ui.frame(x, y, w, 22, note.ok and ui.rgba(120, 200, 120, 200) or ui.rgba(220, 110, 90, 200))
-    ui.text(note.text, x, y, {width = w, height = 22, align = 'center', valign = 'middle', size = 13,
-        color = note.ok and 0xFFA0FFA0 or 0xFFFF9080})
+    if not note_doc then
+        local err
+        note_doc, err = ui.rml.load('ui/note.rml', {model = {text = note.text, ok = note.ok and true or false}})
+        if not note_doc then
+            print('autosave: ui/note.rml failed: ' .. tostring(err))
+            return
+        end
+    end
+    note_doc.model.text = note.text
+    note_doc.model.ok = note.ok and true or false
+    note_doc:style('#note', 'top', cfg.note_y .. 'px')
+    note_doc:draw({layer = 'top'})
 end
 
 -- A "More" tab in the mod's page of the Mods screen: the state, and Save now.
