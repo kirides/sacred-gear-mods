@@ -53,7 +53,19 @@ Each mod is switched on or off in the **Mod manager** (**F11**, or the *Mods* bu
 The mod for Sacred ReBorn lives in a repository of its own:
 [sacred-gear-reborn-decomp](https://github.com/kirides/sacred-gear-reborn-decomp).
 
-### Install
+### Recommended installation: Gear Mod Manager
+
+The easiest way to get SacredBild, Sacred Gear and these mods, and to keep them updated, is the
+[**Gear Mod Manager**](https://github.com/kirides/sacred-mod-manager):
+
+1. Download the newest `Gear-Mod-Manager-nightly-win-x64.zip` from its [releases](https://github.com/kirides/sacred-mod-manager/releases) (under **Assets**).
+2. Unzip it into the folder with `Sacred.exe` and start `Gear Mod Manager.exe`.
+3. Open **Browse**: install the plugins **Sacred-Bild** and **Sacred Gear** (tab **Plugins**), then the mods you like (tab **Mods**).
+4. Press **Start Sacred**.
+
+![Gear Mod Manager, Browse](https://raw.githubusercontent.com/kirides/sacred-mod-manager/main/docs/images/02-browse-dark.png)
+
+### Install by hand
 
 1. Install [SacredBild and Sacred Gear](https://github.com/kirides/sacred-bild#install): extract a release zip into
    the game folder. `SacredGear.dll` next to the game loads with SacredBild.
