@@ -1,0 +1,25 @@
+<rml>
+<head>
+    <title>World events</title>
+    <link type="text/rcss" href="events.rcss"/>
+</head>
+<body data-model="model">
+
+<!-- The pills of the events (and the region boss counter), one below the other in one movable and resizable panel. -->
+<div id="bar" class="bare" data-panel="bar" data-title="World events" data-resizable data-min-width="150" data-min-height="30" data-if="bar_on">
+    <div data-for="p : pills" class="pill" data-attr-id="p.id" data-style-background-color="p.bg" data-style-opacity="p.alpha">
+        <div class="rings">
+            <gear-ring class="outer" data-attr-value="p.frac" data-attr-on="p.ring_on" data-attr-off="p.ring_off" thickness="3" dots="86"/>
+            <gear-ring data-if="p.timed" class="inner" data-attr-value="p.time_frac" data-attr-on="p.time_on" data-attr-off="p.time_off" thickness="2" dots="58"/>
+            <span class="pct">{{ p.percent }}%</span>
+        </div>
+        <div class="txt">
+            <div class="l1"><span class="ptitle" data-style-color="p.title_color">{{ p.title }}</span><span class="parea">{{ p.area }}</span></div>
+            <div class="l2"><span class="count">{{ p.line2 }}</span><span data-if="p.time_text != ''" class="timer">{{ p.time_text }}</span></div>
+        </div>
+    </div>
+    <div data-if="more != ''" class="more">{{ more }}</div>
+</div>
+
+</body>
+</rml>

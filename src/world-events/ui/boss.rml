@@ -1,0 +1,17 @@
+<rml>
+<head>
+    <title>World boss</title>
+    <link type="text/rcss" href="events.rcss"/>
+</head>
+<body data-model="model">
+
+<!-- The world boss: a name over a health bar for each boss. -->
+<div id="boss" class="bare" data-panel="boss" data-title="World boss" data-resizable data-min-width="240" data-min-height="30" data-if="boss_on">
+    <div data-for="b : bosses" class="boss" data-attr-id="b.id" data-style-opacity="b.alpha">
+        <div class="bname">{{ b.name }}</div>
+        <div class="bbar"><div class="bfill" data-style-width="b.pct" data-style-background-color="b.fill"></div><span class="btext">{{ b.hp_text }}</span></div>
+    </div>
+    <div data-if="boss_more != ''" class="more">{{ boss_more }}</div>
+</div>
+</body>
+</rml>
