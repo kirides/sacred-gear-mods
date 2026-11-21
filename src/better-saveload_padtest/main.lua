@@ -102,5 +102,38 @@ gear.task(function()
         check('the card under the cursor is in view as a whole', r and r.y + r.h <= list.y + list.h + 1 and r.y >= list.y - 1,
             r and ('%.1f..%.1f of %.1f..%.1f'):format(r.y, r.y + r.h, list.y, list.y + list.h))
     end
+    -- The real mouse on the list's scroll bar: drag the knob, and press the groove.
+    A.pad_scroll(-1)                                                 -- (the list back near the top)
+    for _ = 1, 8 do A.pad_scroll(-1); gear.wait(0.1) end
+    gear.wait(0.5)
+    A.move(px, py)                                                   -- the mouse moves: the mouse is in use again
+    gear.wait(0.3)
+    local bar_x = list.x + list.w - 15                               -- the middle of the scroll bar (30 wide, at the list's right edge)
+    local knob_y = list.y + 30 + 15                                  -- the knob (30 high) under the up arrow, while the list is at its top
+    local top_before = query().scroll_top
+    local kx, ky = A.ui_to_pixels(bar_x, knob_y)
+    A.move(kx, ky)
+    gear.wait(0.3)
+    A.down()
+    gear.wait(0.2)
+    for step = 1, 8 do
+        local mx, my = A.ui_to_pixels(bar_x, knob_y + step * 12)
+        A.move(mx, my)
+        gear.wait(0.08)
+    end
+    A.up()
+    gear.wait(0.4)
+    local top_dragged = query().scroll_top
+    check('dragging the knob scrolls the list', top_dragged > top_before + 100, ('%s -> %s'):format(top_before, top_dragged))
+    local gx, gy = A.ui_to_pixels(bar_x, list.y + list.h - 45)       -- the groove near its lower end
+    A.move(gx, gy)
+    gear.wait(0.3)
+    A.down()
+    gear.wait(0.3)
+    A.up()
+    gear.wait(0.4)
+    local top_paged = query().scroll_top
+    check('pressing the groove below the knob scrolls toward the cursor', top_paged > top_dragged + 50, ('%s -> %s'):format(top_dragged, top_paged))
+    A.screenshot('pad-2-scrollbar')
     finish()
 end)
