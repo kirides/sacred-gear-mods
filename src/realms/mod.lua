@@ -4,5 +4,6 @@ return {
     name = 'Realm',
     version = '0.2.0',
     author = 'Sacred Gear',
+    requires = {'sacred-theme'},
     description = 'Choose the online play server (realm) for Closed / Open Internet: a page in the mod manager. Realms are kept in mods/gear_realms.json.',
 }

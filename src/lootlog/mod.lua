@@ -4,6 +4,7 @@ return {
     name = 'Loot log',
     version = '0.2.0',
     author = 'Sacred Gear',
+    requires = {'sacred-theme'},
     description = 'A log of the items that dropped near the hero and the items that ended up in the backpack, filterable by quality, category and kind; kept between sessions.',
     settings = {
         {id = 'radius', type = 'number', label = 'Watch the ground within (tiles)', min = 5, max = 60, step = 5, default = 25, section = 'General',

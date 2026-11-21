@@ -4,6 +4,7 @@ return {
     name = 'Enhanced Chat',
     version = '1.1.0',
     author = 'kirides',
+    requires = {'sacred-theme'},
     description = 'A chat window in place of the lines at the top of the screen that fade and are gone: it keeps the '
         .. 'last lines of the session to scroll back through, has tabs for global, private and system messages (and a '
         .. 'filter by player in a network game) and shows item names in their rarity colour, also for the drops near '

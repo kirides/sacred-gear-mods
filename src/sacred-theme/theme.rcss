@@ -1,0 +1,213 @@
+/* Gear theme: the classes RmlUi documents can rely on while this mod runs. Documents only override what is special.
+   The look of the legacy mod windows (Better SaveLoad, Damage meter ...): near-black fills with a hint of blue, the game's tooltip frame as the window border,
+   a brown title bar, yellow-gold headings, grey secondary text, brown-gold selection. */
+
+body { font-size: 15dp; color: #f0f0f0; }
+
+/* Fonts (families Gear registers: see gear.ui.rml.fonts; each falls back to the modern face when its file is missing). Body text stays modern; the native-looking pieces
+   (game-button, titlebar, heading, check-row text, list item names) use the game's own font, and any element can pick one with a class: .font-game (ANTQS__.TTF),
+   .font-default (Segoe UI) and .font-start (CAROLING.TTF, the start screen's, hard to read). The classes (written with a repeated class so they win over the rules of the pieces). */
+
+/* A window: .window is the frame (the game's tooltip border and fill); .titlebar its brown header with the title and a close mark; .body the content. */
+.window {
+    /* The game's own frame (tooltip: bars, fill, overhanging corner ornaments) is drawn by Gear behind every top-level element with
+       class "window" or data-frame="tooltip" (gear.ui.native.frame); a CSS decorator cannot overhang. The bars sit 6px inside the box: keep the padding. */
+    padding: 6px;
+}
+.window > .titlebar {
+    font-family: "Sacred Game";
+    padding: 4px 10px;
+    background-color: #302418;
+    color: #f0c860;
+}
+.window > .body { padding: 10px 14px 12px 14px; }
+.window.plain { padding: 14px 16px; }
+
+/* Text: .heading is a section title in the gold of the legacy headings; .label / .value are a grey name and its white value. */
+.heading { font-family: "Sacred Game"; color: #f0c860; margin: 8px 0 4px 0; }
+.label { color: #9a9a9a; }
+.value { color: #f0f0f0; }
+.muted { color: #8c8c8c; }
+.accent { color: #ffd780; }
+.good { color: #7fd37f; }
+.bad { color: #e06060; }
+
+/* Rows: .row lays its children out side by side; .right pushes them to the right edge; .space puts the first at the left, the last at the right. */
+.row { display: flex; flex-direction: row; margin: 6px 0; }
+.row.right { justify-content: flex-end; }
+.row.space { justify-content: space-between; }
+
+/* Buttons (pad stops, like every button): dark fill, dim gold edge; hover brightens the edge; .primary has the bright gold edge. */
+button {
+    margin-right: 8px;
+    padding: 4px 14px;
+    color: #f0f0f0;
+    background-color: #14141f;
+    border: 1px #8c7440;
+    cursor: pointer;
+    transition: transform 0.12s cubic-out;
+}
+button:hover, button:focus { background-color: #24243a; border-color: #ffd780; transform: scale(1.03); }
+button:active { background-color: #34344e; }
+button.primary { border-color: #c8aa5a; color: #ffd780; }
+button.danger { border-color: #a84030; }
+button:disabled { color: #8c8c8c; border-color: #3c3c3c; transform: none; }
+
+/* Text fields and selects. */
+input.field, select.field {
+    padding: 4px 8px;
+    color: #f0f0f0;
+    background-color: #0c0c14;
+    border: 1px #6e5e3a;
+}
+input.field:focus, select.field:focus { border-color: #ffd780; }
+
+/* Lists: .list holds .item rows (a thumbnail, a gold .name, grey .sub); .selected is the brown-gold chosen row. Make an item a button to make it a pad stop. */
+.list { margin: 4px 0; }
+.list .item { padding: 6px 10px; margin-bottom: 4px; background-color: #12121c; border: 1px #4a4030; }
+.list .item:hover { border-color: #c8aa5a; }
+/* An item that is a button (a pad stop) is a row like the others, not a shrunk inline box. */
+.list button.item { display: block; margin-right: 0; text-align: left; }
+.list .item.selected { background-color: #4a3f2a; border-color: #ffd780; }
+.item .name { font-family: "Sacred Game"; color: #ffd780; font-weight: bold; }
+.item .sub { color: #9a9a9a; }
+
+/* Bars (health, progress): <div class="bar"><div class="fill" style="width: 40%"/></div>. */
+.bar { height: 10px; margin: 4px 0; background-color: #0c0c14; border: 1px #6e5e3a; }
+.bar .fill { height: 10px; background-color: #a82828; }
+.bar.mana .fill { background-color: #2f6fd0; }
+.bar.xp .fill { background-color: #7fd37f; }
+
+/* Clickable text (like a hyperlink that opens a dialogue or popup; the entries of Sacred's own menus): cream text that blooms while
+   hovered or focused with the pad, as the game's menu entries do. Use on <a> (a pad stop) or any element with data-nav. The bloom is
+   RmlUi's glow font effect: the glyphs are blurred into a halo (outline 2px, blur 6px) in the text's own shape, baked into the glyph
+   textures, so it needs no off-screen render targets. */
+.link {
+    display: inline-block;
+    padding: 4px 22px;
+    color: #e8d8a8;
+    cursor: pointer;
+    text-align: center;
+}
+.link:hover, .link:focus { color: #fff6d0; font-effect: glow(2px 6px 0px 0px #ffb840e6); }
+.link:active { color: #ffffff; font-effect: glow(3px 8px 0px 0px #ffe9a8ff); }     /* the click: the same bloom, brighter and wider */
+.link.big { font-size: 1.25em; }
+
+/* Tab headers (not buttons, so nobody takes them for a button that does something in the content): <div class="tabbar"><a class="link tab on">One</a><span class="tab-sep"></span><a class="link tab">Two</a></div>.
+   The anchors are the .link text with its bloom on hover and pad focus, separated by thin vertical lines with a little room around them, and one horizontal line runs under the whole bar. The open tab is bright gold with a short bar on the line. */
+.tabbar { display: flex; flex-direction: row; align-items: center; padding: 0 0 4px 0; margin: 0 0 10px 0; border-bottom: 1px #8c7440c0; }
+.tabbar a.link.tab { padding: 3px 14px; font-family: "Sacred Game"; font-size: 17px; }
+.tabbar a.link.tab.on { color: #ffcf40; border-bottom: 2px #ffcf40; margin-bottom: -5px; padding-bottom: 5px; }   /* the open tab: brighter, with a short gold bar on the bar's line */
+.tabbar a.link.tab + a.link.tab { border-left: 1px #8c744099; margin-left: 6px; padding-left: 20px; }   /* tabs made with data-for: the separator is the next tab's left edge */
+.tabbar .tab-sep { width: 1px; height: 20px; margin: 0 6px; background-color: #8c744099; }
+
+/* Controller prompts: <img class="padkey" src="gear:pad/a"/> in front of the text inside a button; shown only while the controller was used last
+   (gear sets body.pad), sized with the text. */
+.padkey { display: none; width: 1.3em; height: 1.3em; margin-right: 0.5em; vertical-align: middle; }
+body.pad .padkey { display: inline-block; }
+
+/* The same prompts without an <img>: <span class="padkey a"></span> (a span is sized like the img, the glyph is its decorator). */
+span.padkey.a { decorator: image(gear:pad/a contain); }
+span.padkey.b { decorator: image(gear:pad/b contain); }
+span.padkey.x { decorator: image(gear:pad/x contain); }
+span.padkey.y { decorator: image(gear:pad/y contain); }
+span.padkey.lb { decorator: image(gear:pad/lb contain); }
+span.padkey.rb { decorator: image(gear:pad/rb contain); }
+span.padkey.lt { decorator: image(gear:pad/lt contain); }
+span.padkey.rt { decorator: image(gear:pad/rt contain); }
+span.padkey.back { decorator: image(gear:pad/back contain); }
+span.padkey.start { decorator: image(gear:pad/start contain); }
+span.padkey.l3 { decorator: image(gear:pad/l3 contain); }
+span.padkey.r3 { decorator: image(gear:pad/r3 contain); }
+span.padkey.up { decorator: image(gear:pad/up contain); }
+span.padkey.down { decorator: image(gear:pad/down contain); }
+span.padkey.left { decorator: image(gear:pad/left contain); }
+span.padkey.right { decorator: image(gear:pad/right contain); }
+
+/* The thick frame of the character selection and the other big menu screens (class thick-frame, or data-frame="thick" on a top-level element;
+   Gear draws it behind the window like the thin one). The border is 22 units at the sides, 25 on top and 28 at the bottom (the rounded corners are inside the box): keep the padding. Dividers: data-dividers="142"
+   (offsets from the top where a bar runs across). */
+.thick-frame { padding: 29px 26px 32px 26px; }
+/* Where the dark fill starts inside the border (the game sets it per window; Gear reads these classes): bg-fill-settings is the bigger gap (22 / 24.5 / 22 / 24.5, the character selection and the settings screens), bg-fill-dialog the thin one (16 / 20 / 15 / 18, the confirmation popup); without either the default is the settings gap. data-fill-inset="l t r b" overrides. */
+
+/* The game's own button (class game-button on a <button>): the orb caps (images 280 / 282) keep their size, only the middle (281) is tiled, so a button
+   of any width works; the label is centred in the middle part and the pad prompt (.padkey) sits in front of it. Normal grey-white label, hover
+   yellow (and with the pad focus; the glow is for the frameless .link only), pressed the other plate (283 to 285), disabled dim. */
+button.game-button {
+    display: inline-block;
+    height: 37px;
+    min-width: 100px;
+    margin: 0 8px 0 0;
+    padding: 0 46px 0 45px;
+    border: 0;
+    background-color: transparent;
+    decorator: image(gear:image/281 repeat-x) content-box, image(gear:image/280 scale-none left center) border-box, image(gear:image/282 scale-none right center) border-box;
+    color: #e4e4e4;
+    font-family: "Sacred Game";
+    font-size: 18px;
+    line-height: 31px;
+    text-align: center;
+    cursor: pointer;
+    transform: none;
+}
+button.game-button:hover, button.game-button:focus {
+    color: #ffe030;
+    background-color: transparent;
+    border: 0;
+    transform: none;
+}
+button.game-button:active { decorator: image(gear:image/284 repeat-x) content-box, image(gear:image/283 scale-none left center) border-box, image(gear:image/285 scale-none right center) border-box; color: #fff2a0; }
+button.game-button:disabled, button.game-button[disabled], button.game-button[disabled]:hover, button.game-button[disabled]:focus { color: #8a8a8a; opacity: 0.55; font-effect: none; }
+
+/* Check boxes and radio buttons of the game (class game-check on <input type="checkbox"> or "radio"): the orb of the options screens,
+   plain (image 272) and with the golden check (323), kept at its own size in a box a little larger. Hover and pad focus add a whitish bloom
+   (bloom-plain.png / bloom-check.png, listed first, so drawn over the orb (RmlUi draws the first decorator on top): the per-pixel overlay measured from the game's own hover, which brightens the sphere with its gloss and spills 1 to 2 px past the ring); no pressed state. Disabled: dim, no bloom. .check-row: the label text on the left, the orb on the right. */
+input.game-check {
+    display: inline-block;
+    width: 52px;
+    height: 52px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    decorator: image(gear:image/272 scale-none center center);
+    cursor: pointer;
+}
+input.game-check:checked { decorator: image(gear:image/323 scale-none center center); }
+input.game-check:hover, input.game-check:focus { decorator: image(bloom-plain.png), image(gear:image/272 scale-none center center); }
+input.game-check:checked:hover, input.game-check:checked:focus { decorator: image(bloom-check.png), image(gear:image/323 scale-none center center); }
+input.game-check:active { decorator: image(bloom-plain.png), image(gear:image/272 scale-none center center); }
+input.game-check:checked:active { decorator: image(bloom-check.png), image(gear:image/323 scale-none center center); }
+input.game-check[disabled], input.game-check[disabled]:hover, input.game-check[disabled]:focus { opacity: 0.5; decorator: image(gear:image/272 scale-none center center); }
+input.game-check[disabled]:checked, input.game-check[disabled]:checked:hover { decorator: image(gear:image/323 scale-none center center); }
+.check-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; height: 40px; }
+.check-row .text { font-family: "Sacred Game"; color: #e4e4e4; font-size: 18px; }
+
+/* Pick a font for any text: the game's own, the modern default, the start screen's. */
+.font-game.font-game.font-game, .font-game { font-family: "Sacred Game"; }
+.font-start.font-start.font-start, .font-start { font-family: "Sacred Start"; }
+.font-default.font-default.font-default, .font-default { font-family: "Segoe UI"; }
+
+/* Sliders of the options screens (class game-slider on <input type="range">): the minus button with the start of the groove (image 263) and the plus
+   button with its end (265) are the caps and keep their size, the groove (264) repeats in between, the knob is the star orb (262). RmlUi's slider already
+   does what the game does: a press in the track jumps to that value and a drag goes on, the minus and plus buttons step (and repeat while held); Gear
+   hands it the real mouse and the pad's D-pad. No glow on the track or the knob. Any width from about 90px works. */
+input.game-slider { display: inline-block; width: 300px; height: 37px; margin: 0; padding: 0; border: 0; background-color: transparent; cursor: pointer; }
+input.game-slider slidertrack { height: 37px; decorator: image(gear:image/264 repeat-x); }
+input.game-slider sliderbar { width: 30px; height: 37px; decorator: image(gear:image/262 scale-none center center); }
+input.game-slider sliderarrowdec { width: 37px; height: 37px; decorator: image(gear:image/263 scale-none left center); }
+input.game-slider sliderarrowinc { width: 40px; height: 37px; decorator: image(gear:image/265 scale-none right center); }
+input.game-slider[disabled] { opacity: 0.5; }
+.slider-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; height: 44px; }
+.slider-row .text { font-family: "Sacred Game"; color: #e4e4e4; font-size: 18px; }
+/* A data-driven ring (or ring of dots): <gear-ring value="0.4" thickness="3" on="#e0c040" off="#40404080" start="0" dots="0" segments="96"/>, lit clockwise
+   from the top for the fraction value of the circle; data-attr-value="expression" redraws it. Its size is its CSS box. */
+gear-ring { display: inline-block; width: 40px; height: 40px; }
+
+/* Vertical scroll bars of every scrolling box (overflow: auto) in the look of the game's lists: the round arrow buttons (images 298 up, 299 down), the groove
+   between them (288) and the star orb as the knob (286). */
+scrollbarvertical { width: 30px; }
+scrollbarvertical slidertrack { width: 30px; decorator: image(gear:image/288 repeat-y center top); background-color: transparent; }
+scrollbarvertical sliderbar { width: 30px; height: 30px; decorator: image(gear:image/286 scale-none center center); background-color: transparent; }
+scrollbarvertical sliderarrowdec { width: 30px; height: 30px; decorator: image(gear:image/298 scale-none center center); }
+scrollbarvertical sliderarrowinc { width: 30px; height: 30px; decorator: image(gear:image/299 scale-none center center); }

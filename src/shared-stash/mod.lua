@@ -4,6 +4,7 @@ return {
     name = 'Shared stash',
     version = '0.3.0',
     author = 'kirides',
+    requires = {'sacred-theme'},
     description = 'A stash shared by all your heroes, in a panel beside the chest window.',
     automation = true,      -- only for its self test (-gear-auto)
     -- The defaults; config.lua in this folder overrides them. The settings below are changed in the Mods screen.

@@ -4,6 +4,7 @@ return {
     name = 'Sector tools',
     version = '0.1.0',
     author = 'kirides',
+    requires = {'sacred-theme'},
     description = 'For server admins: shows the sector you stand in (id, grid cell, position), draws sector boundaries on the ground, records the sectors you walk through into a named area and copies a ready-to-paste line for the server\'s world_events.lua.',
     settings = {
         {id = 'area_name', type = 'text', label = 'Area name', default = 'My area', max_length = 40, section = 'Recording',

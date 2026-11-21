@@ -18,10 +18,10 @@ function Prepare($names, $config) {
     Remove-Item $mods -Recurse -Force -ErrorAction SilentlyContinue
     New-Item $mods -ItemType Directory | Out-Null
     foreach ($n in $names) {
-        if ($n -eq 'theme') {
-            Copy-Item (Join-Path $env:SACRED_BILD 'gear\examples\theme') (Join-Path $mods 'theme') -Recurse
+        if ($n -eq 'sacred-theme') {
+            Copy-Item (Join-Path $repo 'src\sacred-theme') (Join-Path $mods 'sacred-theme') -Recurse
             # SHOTS_PAD=1: the controller prompts of the buttons show in every picture (they only show while the pad was used last), to check that no label clips
-            if ($env:SHOTS_PAD) { Add-Content (Join-Path $mods 'theme\theme.rcss') '.padkey { display: inline-block; }' }
+            if ($env:SHOTS_PAD) { Add-Content (Join-Path $mods 'sacred-theme\theme.rcss') '.padkey { display: inline-block; }' }
         }
         elseif ($n -eq 'shots') { Copy-Item $PSScriptRoot (Join-Path $mods 'shots') -Recurse; Remove-Item (Join-Path $mods 'shots\run.ps1'), (Join-Path $mods 'shots\crop.py'), (Join-Path $mods 'shots\crops.json') }
         else { Copy-Item (Join-Path $repo "src\$n") (Join-Path $mods $n) -Recurse }
@@ -38,8 +38,8 @@ function Run($instance, $slot, $modlist, $timeout = 240) {
 # One step = the mods in, the config, one run. The panels' open state is kept by Gear in mods\gear_layout.json: it is gone with the folder.
 function Step($name, $modlist, $config = @{}, $slot = $Save, $timeout = 240) {
     if ($Only.Count -and ($Only -notcontains $name)) { return }
-    # the shared RmlUi theme (sacred-bild gear/examples/theme; $env:SACRED_BILD is the checkout) is part of every run
-    $modlist = $modlist + ',theme'
+    # the shared RmlUi theme (src/sacred-theme) is part of every run
+    $modlist = $modlist + ',sacred-theme'
     $names = $modlist -split ','
     Prepare $names $config
     Run $name $slot $modlist $timeout

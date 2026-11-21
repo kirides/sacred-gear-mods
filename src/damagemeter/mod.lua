@@ -4,6 +4,7 @@ return {
     name = 'Damage meter',
     version = '0.2.0',
     author = 'Sacred Gear',
+    requires = {'sacred-theme'},
     description = 'Damage dealt and taken by the hero (from the engine\'s final damage of every hit), DPS over the fight and the last seconds (compact view by default: character name and DPS, the whole party in a network game), the biggest hit, damage by monster type, kills per minute.',
     settings = {
         {id = 'combat_timeout', type = 'number', label = 'A fight ends after (seconds without damage)', min = 2, max = 30, step = 1, default = 5, section = 'General'},

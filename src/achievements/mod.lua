@@ -4,6 +4,7 @@ return {
     name = 'Achievements and login streak',
     version = '0.2.0',
     author = 'Sacred Gear',
+    requires = {'sacred-theme'},
     description = 'Toasts for the achievements and the daily login streak of the game server\'s achievements.lua '
         .. '(Sacred.GameServer scripts-examples), and a panel listing them with progress. Needs that server; '
         .. 'the original GameServer.exe does not talk to mods.',

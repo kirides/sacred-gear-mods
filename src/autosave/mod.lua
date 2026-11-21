@@ -4,6 +4,7 @@ return {
     name = 'Autosave',
     version = '1.2.0',
     author = 'kirides',
+    requires = {'sacred-theme'},
     description = 'Saves the game every few minutes of play into its own slots.',
     -- The defaults; the player's choices (Mods screen, F11) override them. Saved in mods\gear_mods.json.
     config = {

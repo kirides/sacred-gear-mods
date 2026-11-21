@@ -4,6 +4,7 @@ return {
     name = 'Auction house',
     version = '0.2.0',
     author = 'kirides',
+    requires = {'sacred-theme'},
     description = 'Buy and sell items with the other players of a game, from the chest window. The host keeps the market.',
     automation = true,      -- only for its self test (-gear-auto)
     config = {
