@@ -70,6 +70,20 @@ local function configure(values)
     gear.wait(0.3)
 end
 
+-- How many of the living extras (ids) are hostile to the hero, both ways (like their originals).
+local function hostile_count(ids)
+    local hero = W.hero()
+    local total, enemies = 0, 0
+    for _, id in ipairs(ids) do
+        local c = W.object(id)
+        if c and c:exists() and not c:is_dead() then
+            total = total + 1
+            if c:is_enemy(hero) == true and hero:is_enemy(c) == true then enemies = enemies + 1 end
+        end
+    end
+    return enemies, total
+end
+
 local DIRS = 8
 -- Visits `cfg.sites` places on a ring of `radius` world units around (x0, y0); `each` runs every quarter second of the dwell.
 local function visit(x0, y0, layer, radius, each)
@@ -113,6 +127,79 @@ gear.task(function()
     local x0, y0, layer = hero:position()
     note('start', {x0, y0, layer})
     check('single player: the world may be changed', W.can_change())
+
+    -- Phase H: hostility. An extra must be hostile to the hero like its original (is_enemy) and must actually attack: the hero
+    -- stands next to a hostile group, the mod multiplies it (5x) and the extras close to the hero have to come and fight.
+    do
+        local mates = {}
+        for _, c in ipairs(W.creatures_near(x0, y0, 5000, {layer = layer, limit = 800})) do
+            if c.id ~= hero.id and not c:is_dead() and c:is_enemy(hero) == true then
+                mates[#mates + 1] = c
+            end
+        end
+        local origin = mates[1]
+        check('hostility: a hostile group is in reach', origin ~= nil, #mates)
+        if origin then
+            local ox, oy = origin:position()
+            local baseline_hp = hero:hp() or 1
+            configure({rate = 5, max_extra = 200, budget = 20, existing = true})
+            hero:teleport(ox + 450, oy, layer)
+            local reached, near_ids, first_seen = {}, {}, {}
+            local worst = 1e9
+            for step = 1, 48 do                        -- 24 s
+                gear.wait(0.5)
+                local hx, hy = hero:position()
+                local st = stats()
+                for _, id in ipairs(st.ids) do
+                    local c = W.object(id)
+                    if c and c:exists() and not c:is_dead() then
+                        local cx, cy = c:position()
+                        local d = math.sqrt((cx - hx) ^ 2 + (cy - hy) ^ 2)
+                        first_seen[id] = first_seen[id] or d
+                        if first_seen[id] <= 650 then near_ids[id] = true end
+                        if d < (reached[id] or 1e9) then reached[id] = d end
+                    end
+                end
+                hero:set_hp(hero:max_hp() or 1000)     -- keep the hero alive: the test is about who comes
+            end
+            local st = stats()
+            local enemies, total = 0, 0
+            for _, id in ipairs(st.ids) do
+                local c = W.object(id)
+                if c and c:exists() then
+                    total = total + 1
+                    if c:is_enemy(hero) == true and hero:is_enemy(c) == true then enemies = enemies + 1
+                    else
+                        local function f(o) return A.object_bytes(o.id, 0x1F0, 16) end
+                        local sib
+                        for _, m in ipairs(mates) do if m:type() == c:type() then sib = m break end end
+                        note('nonhostile_' .. id, {type = c:type_name(), enemy_of_hero = c:is_enemy(hero), hero_enemy_of = hero:is_enemy(c), hp = c:hp(),
+                            raw = f(c), original_raw = sib and f(sib) or 'none', original_enemy = sib and sib:is_enemy(hero)})
+                    end
+                end
+            end
+            local near_n, came = 0, 0
+            for id in pairs(near_ids) do
+                near_n = near_n + 1
+                if (reached[id] or 1e9) <= 260 then came = came + 1 end
+            end
+            note('hostility', {extras = total, hostile = enemies, near = near_n, came = came, ordered = st.ordered, made = st.made})
+            check('hostility: extras exist', total > 0, total)
+            check('hostility: every extra is hostile to the hero, both ways (like its original)', total > 0 and enemies == total, ('%d of %d'):format(enemies, total))
+            check('hostility: the mod gave attack orders', st.ordered > 0, st.ordered)
+            check('hostility: at least 80% of the extras that started within 650 units came to fight (within 260)', near_n > 0 and came >= near_n * 0.8,
+                  ('%d of %d came'):format(came, near_n))
+            for _, id in ipairs(st.ids) do
+                local c = W.object(id)
+                if c and c:exists() then c:remove() end
+            end
+            gear.emit('spawn-rate.reset')
+            configure({rate = 1, existing = false})
+            gear.wait(3)
+            hero:teleport(x0, y0, layer)
+            gear.wait(1)
+        end
+    end
 
     -- Phase 0: the creatures already there (what a savegame restored: no creature.created event exists for them). At 100x with
     -- the sliders at their maxima the mod must make a good share of max_extra from them, near the hero first.
@@ -179,8 +266,9 @@ gear.task(function()
     local after = stats()
     check('reload: the extras are known again', after.alive == before.alive, ('%d -> %d'):format(before.alive, after.alive))
     check('reload: nothing is multiplied a second time (only what was still owed is queued again)',
-          after.made == before.made and after.queued <= before.queued and after.alive == before.alive,
-          ('made %d -> %d, queued %d -> %d, alive %d -> %d'):format(before.made, after.made, before.queued, after.queued, before.alive, after.alive))
+          after.made == before.made and after.queued <= before.queued + 99 * (after.from_scan - before.from_scan) and after.alive == before.alive,
+          ('made %d -> %d, queued %d -> %d (%d creatures came into reach), alive %d -> %d'):format(before.made, after.made, before.queued, after.queued,
+              after.from_scan - before.from_scan, before.alive, after.alive))
     remove_extras()
     configure({rate = 1, existing = false})
     gear.wait(3)
@@ -256,6 +344,8 @@ gear.task(function()
         if n:find('rabbit') or n:find('crow') or n:find('dove') or n:find('bird') then ambient = ambient + 1 end
     end
     check('5x: no rabbits, crows, doves or birds among the extras', ambient == 0, ambient)
+    local e5, t5 = hostile_count(s.ids)
+    check('5x: every extra is hostile to the hero like its original', t5 > 0 and e5 == t5, ('%d of %d'):format(e5, t5))
     check('5x: no creature.created for the extras (they are not multiplied again)', re_event == 0, re_event)
     local near, far = 0, 0
     for _, id in ipairs(s.ids) do
@@ -293,6 +383,8 @@ gear.task(function()
     note('phase100', {sites = sites, created = #created - first3, hostile = hostile_since(first3 + 1), made = s.made, refused = s.refused,
                       failed = s.failed, alive = s.alive, max_alive = max_alive, queued = s.queued, frame_max = frames.max, slow = frames.slow, frames = frames.n})
     check('100x: extras alive never exceed max_extra', max_alive <= 50, max_alive)
+    local e100, t100 = hostile_count(s.ids)
+    check('100x: every extra is hostile to the hero like its original', t100 > 0 and e100 == t100, ('%d of %d'):format(e100, t100))
     check('100x: the cap was reached or no hostile spawned', max_alive >= 40 or hostile_since(first3 + 1) == 0, max_alive)
     check('100x: nothing is refused for a full queue', s.refused == 0, s.refused)
     check('100x: frame time sane', frame_ok(), ('max %.3f s, %d slow frames of %d'):format(frames.max, frames.slow, frames.n))
