@@ -1,0 +1,40 @@
+<rml>
+<head>
+    <title>Quests</title>
+    <link type="text/rcss" href="common.rcss"/>
+    <link type="text/rcss" href="quests.rcss"/>
+</head>
+<body data-model="model">
+<div id="qtracker" class="bare tracker" data-panel="quest_tracker" data-title="Quest tracker" data-if="tracker_on">
+    <div class="th">Quests</div>
+    <div data-for="l : tracker_lines" class="tl">{{ l }}</div>
+</div>
+
+<div id="quests" class="window" data-panel="quests" data-title="Daily and weekly quests" data-if="open">
+    <div class="titlebar">{{ title }}</div>
+    <div class="body">
+        <p data-if="msg != ''" class="msg">{{ msg }}</p>
+        <div data-if="msg == ''">
+            <div class="blist">
+                <div data-for="s : sections">
+                    <div class="row space"><span class="heading">{{ s.head }}</span><span class="muted small">{{ s.left }}</span></div>
+                    <p data-if="s.empty != ''" class="muted small">{{ s.empty }}</p>
+                    <div data-for="b : s.rows" class="brow">
+                        <div class="top"><span data-class-done="b.done" class="title">{{ b.title }}</span><span data-class-done="b.done" class="state">{{ b.state }}</span></div>
+                        <div class="text">{{ b.text }}</div>
+                        <div class="bar"><div data-class-done="b.done" class="fill" data-style-width="b.pct"></div><span class="num">{{ b.prog }}</span></div>
+                        <div class="reward">{{ b.reward }}</div>
+                    </div>
+                    <div data-if="s.streak1 != ''" data-class-good="s.streak_on" class="small muted">{{ s.streak1 }}</div>
+                    <div data-if="s.streak2 != ''" class="small muted">{{ s.streak2 }}</div>
+                </div>
+            </div>
+            <div data-if="own" class="row space">
+                <span data-class-accent="waiting" class="muted small">{{ own_line }}</span>
+                <button data-if="waiting" class="game-button" id="quest-claim" title="Pay the rewards of finished quests and streak bonuses now">Claim rewards</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</rml>

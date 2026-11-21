@@ -1,0 +1,25 @@
+/* shared by board.rml, quests.rml and editor.rml (the game theme comes from the theme mod) */
+.brow { margin: 0 0 6px 0; }
+.brow .top { display: flex; flex-direction: row; justify-content: space-between; }
+.brow .title { font-family: "Sacred Game"; font-size: 16dp; color: #ffd780; }
+.brow .title.done, .brow .state.done { color: #80ff80; }
+.brow .state { color: #b0b0b0; font-size: 13dp; }
+.brow .text { color: #e0e0e0; font-size: 13dp; }
+.brow .bar { position: relative; height: 12px; margin: 3px 0; background-color: #000000a0; border: 1px #c8aa5aa0; }
+.brow .bar .fill { height: 10px; background-color: #d2a03cdc; }
+.brow .bar .fill.done { background-color: #50c864dc; }
+.brow .bar .num { position: absolute; left: 0px; right: 0px; top: -3px; text-align: center; font-size: 11dp; color: #ffffff; }
+.brow .reward { color: #b0b0b0; font-size: 12dp; }
+.blist { overflow-y: auto; }
+.small { font-size: 12dp; }
+.msg { color: #b0b0b0; white-space: pre-wrap; }
+.tracker { position: absolute; width: 240px; }
+.tracker .th { font-family: "Sacred Game"; font-size: 15dp; color: #ffd780; }
+.tracker .tl { font-size: 13dp; color: #e0e0e0; }
+button.mini { padding: 0 8px; margin: 0 4px 0 0; }
+button.game-button { min-width: 0; padding: 0 38px 0 37px; font-size: 16px; margin-right: 8px; }
+button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
+button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
+scrollbarvertical { width: 14px; }
+scrollbarvertical slidertrack { background-color: #0c0c14; }
+scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }

@@ -1,0 +1,85 @@
+<rml>
+<head>
+    <title>Bounty editor</title>
+    <link type="text/rcss" href="common.rcss"/>
+    <link type="text/rcss" href="editor.rcss"/>
+</head>
+<body data-model="model">
+<div id="editor" class="window" data-panel="editor" data-title="Bounty editor" data-if="open">
+    <div class="titlebar">Bounty editor</div>
+    <div class="body">
+
+        <div data-if="view == 'list'">
+            <div class="row">
+                <button class="game-button" id="new">New bounty</button>
+                <button class="game-button" id="reload" title="Read custom.json again after editing it by hand">Reload file</button>
+                <span data-if="flash != ''" class="good small">{{ flash }}</span>
+            </div>
+            <p data-if="list_empty" class="msg small">No bounties of your own yet. "New bounty" makes one: pick the creatures, how many, and the reward. Start it here, or let it start by itself after some kills. Good for challenges on a stream.</p>
+            <div class="blist elist">
+                <div data-for="d : defs" class="def">
+                    <div class="dinfo">
+                        <div data-class-done="d.running" class="title">{{ d.title }}</div>
+                        <div class="text">{{ d.summary }}</div>
+                        <div class="reward">{{ d.extra }}</div>
+                    </div>
+                    <div class="dbtns">
+                        <button class="mini" data-attr-id="d.id_go">{{ d.go }}</button>
+                        <button class="mini" data-attr-id="d.id_ed">Edit</button>
+                        <button class="mini" data-attr-id="d.id_del">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div data-if="view == 'form'">
+            <div class="fscroll">
+            <div class="frow"><span class="lab">Title</span><input type="text" class="field grow" data-value="f_title" maxlength="60"/></div>
+
+            <div class="frow top"><span class="lab">Creatures</span>
+                <div class="grow">
+                    <span data-if="names.any" class="muted small">Any monster</span>
+                    <div class="chips"><button data-for="c : names.chips" class="chip" data-attr-id="c.id" title="Click to remove">{{ c.label }}  x</button></div>
+                    <div class="frow"><input type="text" class="field grow" data-value="f_names_filter" placeholder="Type part of a creature name to shorten the list"/></div>
+                    <div class="opts"><button data-for="o : names.opts" class="opt" data-attr-id="o.id">{{ o.label }}</button></div>
+                </div>
+            </div>
+
+            <div class="slider-row"><span class="lab">How many</span><input type="range" class="game-slider" min="1" max="1000" step="1" data-value="f_target"/><span class="val">{{ f_target }}</span></div>
+            <div class="slider-row"><span class="lab">Time limit (0 = none)</span><input type="range" class="game-slider" min="0" max="240" step="5" data-value="f_minutes"/><span class="val">{{ f_minutes }}</span></div>
+            <div class="slider-row"><span class="lab">Minimum level</span><input type="range" class="game-slider" min="1" max="100" step="1" data-value="f_minlevel"/><span class="val">{{ f_minlevel }}</span></div>
+            <div class="slider-row"><span class="lab">Gold</span><input type="range" class="game-slider" min="0" max="100000" step="100" data-value="f_gold"/><span class="val">{{ f_gold }}</span></div>
+
+            <div class="frow"><span class="lab">Item</span>
+                <button class="mini wide" id="mode">{{ mode_label }}</button>
+                <button data-if="show_tier" class="mini" id="tier">{{ tier_label }}</button>
+            </div>
+            <div data-if="show_items" class="frow"><span class="lab">Items</span>
+                <button class="mini" id="finditem" title="Search by the name of the item in your language; typos are fine">Find an item...</button>
+                <button data-if="items_ok" class="mini" id="clearpick">Clear</button>
+                <span data-class-accent="items_ok" data-class-bad="!items_ok" class="small">{{ items_line }}</span>
+            </div>
+
+            <div class="check-row"><span class="text small" title="Counts kills of the creatures below; at the count the bounty starts, unless it is already running">Start automatically after kills</span><input id="trig" type="checkbox" class="game-check" data-checked="trigger_on"/></div>
+            <div data-if="trigger_on">
+                <div class="frow top"><span class="lab">Trigger creatures <span class="muted small">(empty: as the bounty)</span></span>
+                    <div class="grow">
+                        <div class="chips"><button data-for="c : trig.chips" class="chip" data-attr-id="c.id" title="Click to remove">{{ c.label }}  x</button></div>
+                        <div class="frow"><input type="text" class="field grow" data-value="f_trig_filter" placeholder="Type part of a creature name to shorten the list"/></div>
+                        <div class="opts"><button data-for="o : trig.opts" class="opt" data-attr-id="o.id">{{ o.label }}</button></div>
+                    </div>
+                </div>
+                <div class="slider-row"><span class="lab">Kills to start</span><input type="range" class="game-slider" min="1" max="1000" step="1" data-value="f_count"/><span class="val">{{ f_count }}</span></div>
+                <div class="slider-row"><span class="lab">Cooldown (min)</span><input type="range" class="game-slider" min="0" max="240" step="5" data-value="f_cool"/><span class="val">{{ f_cool }}</span></div>
+            </div>
+
+            </div>
+            <div class="row">
+                <button class="game-button" id="save" data-class-dis="blocked">Save</button>
+                <button class="game-button" id="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</rml>

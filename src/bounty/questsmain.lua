@@ -25,8 +25,6 @@ local R = {}
 
 local GOLD, GREEN, GREY, RED = 0xFFFFD780, 0xFF80FF80, 0xFFB0B0B0, 0xFFFF8080
 
-ui.show_panel('quests', false)
-
 local function key_hint(id)
     local k = gear.keys.label(id)
     return k ~= '' and (' (' .. k .. ')') or ''
@@ -300,23 +298,6 @@ local function left_text(p, age)
     return gear.fmt.span(math.max(0, (p.left or 0) - age))
 end
 
-local ROW = 54
-local function row(q, x, y, w)
-    local done = q.done == true
-    local n = math.min(q.n or 0, q.target)
-    ui.text(q.title, x, y, {color = done and GREEN or GOLD, size = 15, bold = true})
-    ui.text(done and (q.claimed and 'paid' or 'reward waiting') or '', x, y, {width = w, align = 'right', color = done and GREEN or GREY, size = 12})
-    ui.text((q.text or '') .. (q.level and q.level > 1 and (' (level ' .. q.level .. '+)') or ''), x, y + 17, {color = 0xFFE0E0E0, size = 12})
-    local by = y + 33
-    ui.rect(x, by, w, 10, ui.rgba(0, 0, 0, 160))
-    local frac = q.target > 0 and n / q.target or 0
-    if frac > 0 then ui.rect(x, by, math.max(1, math.floor(w * frac)), 10, done and ui.rgba(80, 200, 100, 220) or ui.rgba(210, 160, 60, 220)) end
-    ui.frame(x, by, w, 10, ui.rgba(200, 170, 90, 160), 1)
-    ui.text(('%d / %d'):format(n, q.target), x, by - 2, {width = w, align = 'center', size = 11, shadow = true})
-    ui.text('Reward: ' .. tostring(q.reward or '?'), x, by + 12, {color = GREY, size = 11})
-    return ROW
-end
-
 local function streak_lines(period, s)
     local unit, units = period == 'daily' and 'day' or 'week', period == 'daily' and 'days' or 'weeks'
     local line = ('Streak: %d %s in a row (best %d)%s'):format(s.count or 0, (s.count or 0) == 1 and unit or units, s.best or 0,
@@ -328,92 +309,89 @@ local function streak_lines(period, s)
     return line, second
 end
 
-local function section(period, p, s, age, x, y, w)
-    local cy = y
-    ui.text((period == 'daily' and 'Daily quests' or 'Weekly quests') .. ('  %d/%d'):format(p.done or 0, #p.quests), x, cy, {color = GOLD, size = 16, bold = true})
-    ui.text('new in ' .. left_text(p, age), x, cy + 2, {width = w, align = 'right', color = GREY, size = 12})
-    cy = cy + 22
-    if #p.quests == 0 then
-        ui.text('No quests for this ' .. (period == 'daily' and 'day' or 'week') .. '.', x, cy, {color = GREY, size = 12})
-        cy = cy + 18
-    end
-    for _, q in ipairs(p.quests) do
-        row(q, x, cy, w)
-        cy = cy + ROW + 6
+-- The window and the tracker are ui/quests.rml (the game theme): a model of ready-made strings, rebuilt every frame; each frame
+-- writes what changed.
+local rows_lib = require('bounty-rows')
+local doc
+local last = {}
+local quests_open = false
+
+local function section_model(period, p, s, age)
+    local sec = {head = (period == 'daily' and 'Daily quests' or 'Weekly quests') .. ('  %d/%d'):format(p.done or 0, #p.quests),
+        left = 'new in ' .. left_text(p, age), empty = '', rows = {}, streak1 = '', streak2 = '', streak_on = false}
+    if #p.quests == 0 then sec.empty = 'No quests for this ' .. (period == 'daily' and 'day' or 'week') .. '.' end
+    for i, q in ipairs(p.quests) do
+        sec.rows[i] = rows_lib.row(q, {state = q.done and (q.claimed and 'paid' or 'reward waiting') or ''})
     end
     if s then
-        local a, b = streak_lines(period, s)
-        ui.text(a, x, cy, {color = (s.count or 0) > 0 and GREEN or GREY, size = 12})
-        cy = cy + 15
-        if b then ui.text(b, x, cy, {color = GREY, size = 11}) cy = cy + 14 end
+        sec.streak1, sec.streak2 = streak_lines(period, s)
+        sec.streak2 = sec.streak2 or ''
+        sec.streak_on = (s.count or 0) > 0
     end
-    return cy - y + 10
+    return sec
 end
 
-local function panel()
-    local p = ui.panel('quests', 'Daily and weekly quests' .. key_hint('quests'), 320, 70, 430, 460, {resizable = true, min_width = 340, min_height = 200})
-    if not p.open then return end
-    local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
-    local m = mode()
-    if not m then
-        ui.text('Quests are off (setting "Daily and weekly quests").', x, y, {color = GREY})
-        return
-    end
+local function snapshot()
+    local m = {open = quests_open, title = 'Daily and weekly quests' .. key_hint('quests'), msg = '', sections = {}, own = false, own_line = '',
+        waiting = false, tracker_on = false, tracker_lines = {}}
+    local mo = mode()
     local v, age = current()
-    if not v then
-        local text = m == 'local' and 'Looking for your hero...'
+    if not mo then
+        m.msg = 'Quests are off (setting "Daily and weekly quests").'
+    elseif not v then
+        m.msg = mo == 'local' and 'Looking for your hero...'
             or ((not channel or not net.supported()) and 'This server has no daily quests (it needs the Sacred Gear game server with daily_quests.lua).'
                 or 'Waiting for the server...')
-        for i, line in ipairs(ui.text_wrap(text, w, {size = 12})) do ui.text(line, x, y + (i - 1) * 15, {color = GREY, size = 12}) end
-        return
-    end
-    local waiting = m == 'local' and #H.data.pending or (v.pending or 0)
-    local foot = (m == 'local' and 22 or 0)
-    local area = ui.scroll_begin('quest-list', x, y, w, h - 4 - foot)
-    local cy = area.content_y
-    for _, period in ipairs(Q.PERIODS) do
-        cy = cy + section(period, v[period], v.streak and v.streak[period], age, area.content_x, cy, area.w - 4)
-    end
-    ui.scroll_end(cy - area.content_y)
-    if m == 'local' then
-        ui.text(waiting > 0 and ('Rewards waiting: %d'):format(waiting) or 'Single player: your own quests, new ones every day and Monday.',
-            x, y + h - 16, {color = waiting > 0 and GOLD or GREY, size = 11})
-        if waiting > 0 and ui.button('quest-claim', x + w - 130, y + h - 20, 130, 18, 'Claim rewards',
-            {tooltip = 'Pay the rewards of finished quests and streak bonuses now'}) then
-            pay_pending()
+    else
+        for _, period in ipairs(Q.PERIODS) do
+            m.sections[#m.sections + 1] = section_model(period, v[period], v.streak and v.streak[period], age)
         end
+        local waiting = mo == 'local' and #H.data.pending or (v.pending or 0)
+        m.own = mo == 'local'
+        m.waiting = m.own and waiting > 0
+        m.own_line = waiting > 0 and ('Rewards waiting: %d'):format(waiting) or 'Single player: your own quests, new ones every day and Monday.'
     end
+    if mo and v and gear.settings.get('quest_tracker') then
+        for _, period in ipairs(Q.PERIODS) do
+            for _, q in ipairs(v[period].quests) do
+                if not q.done then
+                    m.tracker_lines[#m.tracker_lines + 1] = ('%s  %s  %d/%d'):format(period == 'daily' and 'D' or 'W', q.title, math.min(q.n or 0, q.target), q.target)
+                end
+            end
+        end
+        m.tracker_on = #m.tracker_lines > 0 or ui.edit_mode()
+    end
+    return m
 end
 
-local function tracker()
-    if not gear.settings.get('quest_tracker') then return end
-    local v = current()
-    if not v then return end
-    local lines = {}
-    for _, period in ipairs(Q.PERIODS) do
-        for _, q in ipairs(v[period].quests) do
-            if not q.done then lines[#lines + 1] = {tag = period == 'daily' and 'D' or 'W', q = q} end
-        end
-    end
-    local editing = ui.edit_mode()
-    if #lines == 0 and not editing then return end
-    local h = 18 + math.max(1, #lines) * 14
-    local p = ui.panel('quest_tracker', 'Quest tracker', cfg.quest_tracker_x, cfg.quest_tracker_y, 240, h, {bare = true})
-    ui.text('Quests', p.x, p.y, {color = GOLD, size = 13, bold = true, shadow = true})
-    for i, e in ipairs(lines) do
-        ui.text(('%s  %s  %d/%d'):format(e.tag, e.q.title, math.min(e.q.n or 0, e.q.target), e.q.target), p.x, p.y + 4 + i * 14,
-            {color = 0xFFE0E0E0, size = 12, shadow = true})
-    end
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function load_doc()
+    local m = snapshot()
+    last = m
+    local err
+    doc, err = ui.rml.load('ui/quests.rml', {model = m})
+    if not doc then gear.log('quests: ui/quests.rml failed: ' .. tostring(err)) return end
+    doc:on('#quest-claim', 'click', gear.guard('claim', function() pay_pending() end))
 end
 
 gear.on('draw', function(state)
     if not state or state.mode ~= 'game' or state.exclusive then return end
-    tracker()
-    panel()
+    if not doc then load_doc() end
+    if not doc then return end
+    for k, v in pairs(snapshot()) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+    doc:draw({layer = 'hud'})
 end)
 
-gear.keys.on('quests', function() ui.toggle_panel('quests') end)
-if ui.menu_item then ui.menu_item('quests', 'Daily and weekly quests', function() ui.toggle_panel('quests') end) end
+gear.keys.on('quests', function() quests_open = not quests_open end)
+if ui.menu_item then ui.menu_item('quests', 'Daily and weekly quests', function() quests_open = not quests_open end) end
 
 ---------------------------------------------------------------------------------------------------------------------
 -- Test aid for quests_selftest: moves the date, counts a kill, reports the state
@@ -442,7 +420,7 @@ gear.on('bounty.test', function(ctx)
     elseif op == 'q_save' then
         H:save()
     elseif op == 'q_open' then
-        ui.show_panel('quests', ctx.value ~= false)
+        quests_open = ctx.value ~= false
     elseif op == 'q_auto' then
         test_auto = ctx.value
     elseif op == 'q_pay' then

@@ -19,8 +19,6 @@ end
 
 local cfg = gear.config
 local ui, net = gear.ui, gear.net
-ui.show_panel('board', false)       -- closed until Ctrl+J (then the open / closed state is kept)
-if ui.persist_panel then ui.persist_panel('editor', false) end
 
 local localboard = require('localboard')
 local localgame = require('localgame')
@@ -165,7 +163,7 @@ gear.on('session.start', function()
     if mine then close_mine() end
     board = nil
     ask(true)
-    ui.show_panel('editor', false)
+    editor.close()
 end)
 gear.on('session.stop', function()
     if mine then close_mine() end
@@ -273,94 +271,74 @@ local time_text = gear.fmt.span
 
 local function left_of(b) return (b.left or 0) - (gear.time() - received) end
 
--- One bounty at (x, y) in a width of w; returns its height.
-local ROW = 58
-local function row(b, x, y, w)
-    local done = b.done == true
-    local n = math.min(b.n or 0, b.target)
-    ui.text(b.title, x, y, {color = done and GREEN or GOLD, size = 15, bold = true})
-    ui.text(done and 'done' or (b.endless and 'no limit' or time_text(left_of(b))), x, y, {width = w, align = 'right', color = done and GREEN or GREY})
-    ui.text((b.text or '') .. (b.level and b.level > 1 and (' (level ' .. b.level .. '+)') or ''),
-        x, y + 17, {color = 0xFFE0E0E0, size = 12})
-    local by = y + 33
-    ui.rect(x, by, w, 10, ui.rgba(0, 0, 0, 160))
-    local frac = b.target > 0 and n / b.target or 0
-    if frac > 0 then ui.rect(x, by, math.max(1, math.floor(w * frac)), 10, done and ui.rgba(80, 200, 100, 220) or ui.rgba(210, 160, 60, 220)) end
-    ui.frame(x, by, w, 10, ui.rgba(200, 170, 90, 160), 1)
-    ui.text(('%d / %d'):format(n, b.target), x, by - 2, {width = w, align = 'center', size = 11, shadow = true})
-    ui.text('Reward: ' .. tostring(b.reward or '?'), x, by + 12, {color = GREY, size = 11})
-    return ROW
-end
+-- The board and the tracker are ui/board.rml (the game theme): a model of ready-made strings, rebuilt every frame; each frame writes
+-- what changed. (bounty-rows.lua turns one bounty into a row for this and for the quests window.)
+local rows_lib = require('bounty-rows')
+local doc
+local last = {}
+local board_open = false
 
-local function panel()
-    local p = ui.panel('board', 'Bounty board' .. key_hint('panel'), 300, 70, 400, 320, {resizable = true, min_width = 300, min_height = 160})
-    if not p.open then return end
-    local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
+local function snapshot()
     local own = is_local()
+    local m = {open = board_open, title = 'Bounty board' .. key_hint('panel'), msg = '', rows = {}, own = own and true or false, own_line = '',
+        tracker_on = false, tracker_lines = {}}
     if not own and (not channel or not net.supported()) then
-        local lines = ui.text_wrap('This server has no bounty board (it needs the Sacred Gear game server with bounty_board.lua).', w, {size = 12})
-        for i, line in ipairs(lines) do ui.text(line, x, y + (i - 1) * 15, {color = GREY, size = 12}) end
-        return
-    end
-    if not board then
-        ui.text(own and 'Looking for your hero...' or 'Waiting for the server...', x, y, {color = GREY})
-        return
-    end
-    if #board.bounties == 0 then
-        ui.text('The board is empty.', x, y, {color = GREY})
-        if own and ui.button('open-editor', x, y + 24, 110, 20, 'Editor...') then editor.open() end
-        return
-    end
-    local foot = own and 20 or 0
-    local area = ui.scroll_begin('bounty-list', x, y, w, h - 4 - foot)
-    local cy = area.content_y
-    for _, b in ipairs(board.bounties) do
-        row(b, area.content_x, cy, area.w - 4)
-        cy = cy + ROW + 6
-    end
-    ui.scroll_end(cy - area.content_y)
-    if own then
-        ui.text(('Single player: your own board. Finished so far: %d'):format(board.done_count or 0), x, y + h - 14,
-            {color = GREY, size = 11})
-        if ui.button('open-editor', x + w - 110, y + h - 18, 110, 18, 'Editor...', {tooltip = 'Make your own bounties, start and stop them'}) then
-            editor.open()
+        m.msg = 'This server has no bounty board (it needs the Sacred Gear game server with bounty_board.lua).'
+    elseif not board then
+        m.msg = own and 'Looking for your hero...' or 'Waiting for the server...'
+    elseif #board.bounties == 0 then
+        m.msg = 'The board is empty.'
+    else
+        for i, b in ipairs(board.bounties) do
+            m.rows[i] = rows_lib.row(b, {state = b.done and 'done' or (b.endless and 'no limit' or time_text(left_of(b)))})
         end
+        m.own_line = ('Single player: your own board. Finished so far: %d'):format(board.done_count or 0)
     end
+    if gear.settings.get('tracker') and board then
+        for _, b in ipairs(board.bounties) do
+            if not b.done then m.tracker_lines[#m.tracker_lines + 1] = ('%s  %d/%d'):format(b.title, math.min(b.n or 0, b.target), b.target) end
+        end
+        m.tracker_on = #m.tracker_lines > 0 or ui.edit_mode()
+    end
+    return m
 end
 
-local function tracker()
-    if not gear.settings.get('tracker') or not board then return end
-    local lines = {}
-    for _, b in ipairs(board.bounties) do
-        if not b.done then lines[#lines + 1] = b end
-    end
-    local editing = ui.edit_mode()
-    if #lines == 0 and not editing then return end
-    -- A bare panel (no window), so the layout editor lists it and the player can move it; cfg.tracker_x / _y are only the default.
-    local h = 18 + math.max(1, #lines) * 14
-    local p = ui.panel('tracker', 'Bounty tracker', cfg.tracker_x, cfg.tracker_y, 220, h, {bare = true})
-    local x, y = p.x, p.y
-    ui.text('Bounties', x, y, {color = GOLD, size = 13, bold = true, shadow = true})
-    for i, b in ipairs(lines) do
-        ui.text(('%s  %d/%d'):format(b.title, math.min(b.n or 0, b.target), b.target), x, y + 4 + i * 14,
-            {color = 0xFFE0E0E0, size = 12, shadow = true})
-    end
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function load_doc()
+    local m = snapshot()
+    last = m
+    local err
+    doc, err = ui.rml.load('ui/board.rml', {model = m})
+    if not doc then gear.log('bounty: ui/board.rml failed: ' .. tostring(err)) return end
+    doc:on('#open-editor', 'click', gear.guard('editor', function() editor.open() end))
+    doc:on('#open-editor2', 'click', gear.guard('editor', function() editor.open() end))
 end
 
 gear.on('draw', function(state)
     if not state or state.mode ~= 'game' or state.exclusive then return end
-    tracker()
-    panel()
+    if not doc then load_doc() end
+    if doc then
+        for k, v in pairs(snapshot()) do
+            if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+        end
+        doc:draw({layer = 'hud'})
+    end
     if is_local() and mine then editor.draw(editor_hooks) end
 end)
 
 gear.keys.on('panel', function()
-    ui.toggle_panel('board')
+    board_open = not board_open
 end)
 
 gear.keys.on('editor', function()
     if is_local() then
-        if ui.panel_open('editor') then ui.show_panel('editor', false) else editor.open() end
+        if editor.is_open() then editor.close() else editor.open() end
     end
 end)
 

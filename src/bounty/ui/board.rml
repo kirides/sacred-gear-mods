@@ -1,0 +1,35 @@
+<rml>
+<head>
+    <title>Bounty board</title>
+    <link type="text/rcss" href="common.rcss"/>
+    <link type="text/rcss" href="board.rcss"/>
+</head>
+<body data-model="model">
+<div id="tracker" class="bare tracker" data-panel="tracker" data-title="Bounty tracker" data-if="tracker_on">
+    <div class="th">Bounties</div>
+    <div data-for="l : tracker_lines" class="tl">{{ l }}</div>
+</div>
+
+<div id="board" class="window" data-panel="board" data-title="Bounty board" data-if="open">
+    <div class="titlebar">{{ title }}</div>
+    <div class="body">
+        <p data-if="msg != ''" class="msg">{{ msg }}</p>
+        <div data-if="msg == ''">
+            <div class="blist">
+                <div data-for="b : rows" class="brow">
+                    <div class="top"><span data-class-done="b.done" class="title">{{ b.title }}</span><span data-class-done="b.done" class="state">{{ b.state }}</span></div>
+                    <div class="text">{{ b.text }}</div>
+                    <div class="bar"><div data-class-done="b.done" class="fill" data-style-width="b.pct"></div><span class="num">{{ b.prog }}</span></div>
+                    <div class="reward">{{ b.reward }}</div>
+                </div>
+            </div>
+            <div data-if="own" class="row space">
+                <span class="muted small">{{ own_line }}</span>
+                <button class="game-button" id="open-editor" title="Make your own bounties, start and stop them">Editor...</button>
+            </div>
+        </div>
+        <div data-if="msg != '' &amp;&amp; own"><button class="game-button" id="open-editor2">Editor...</button></div>
+    </div>
+</div>
+</body>
+</rml>

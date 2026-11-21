@@ -1,0 +1,3 @@
+#board { position: absolute; left: 300px; top: 70px; width: 440px; }
+.blist { height: 300px; }
+#tracker { left: 16px; top: 300px; }
