@@ -16,8 +16,8 @@
                 <span class="label">Class</span><button class="mini" id="class" title="Only this class">{{ class_name }}</button>
                 <span class="label">Sort</span><button class="mini" id="sort">{{ sort_name }}</button>
                 <button class="mini" id="refresh" title="Ask the server again">Refresh</button>
-                <button class="mini" id="prev" data-class-dis="!can_prev">&lt;</button>
-                <button class="mini" id="next" data-class-dis="!can_next">&gt;</button>
+                <button class="mini" id="prev" data-attrif-disabled="!can_prev">&lt;</button>
+                <button class="mini" id="next" data-attrif-disabled="!can_next">&gt;</button>
             </div>
             <p data-if="browse_msg != ''" class="muted">{{ browse_msg }}</p>
             <div class="blist">
@@ -37,7 +37,7 @@
             <p>{{ carried }}</p>
             <div class="row">
                 <button class="game-button" id="publish" title="Share (or update) your build on this server">Publish</button>
-                <button class="game-button" id="unpublish" data-class-dis="!has_mine" title="Take your build off the server">Remove mine</button>
+                <button class="game-button" id="unpublish" data-attrif-disabled="!has_mine" title="Take your build off the server">Remove mine</button>
                 <button class="game-button" id="mine" title="What the server holds of yours">Check server</button>
             </div>
             <p data-class-good="mine_verified" class="muted">{{ mine_line }}</p>

@@ -31,11 +31,11 @@
                     </div>
                 </div>
                 <div class="hbtns">
-                    <button class="mini" data-class-dis="!h.can_play" data-attr-id="h.id_play" data-attr-title="h.tip_play">{{ h.play }}</button>
-                    <button class="mini" data-class-dis="!h.can_name" data-attr-id="h.id_name" data-attr-title="h.tip_name">Name</button>
+                    <button class="mini" data-attrif-disabled="!h.can_play" data-attr-id="h.id_play" data-attr-title="h.tip_play">{{ h.play }}</button>
+                    <button class="mini" data-attrif-disabled="!h.can_name" data-attr-id="h.id_name" data-attr-title="h.tip_name">Name</button>
                     <button class="mini wide" data-attr-id="h.id_beh" title="What this hero does while you play another one">{{ h.behaviour }}</button>
                     <button class="mini" data-attr-id="h.id_tac" title="How this hero fights and the combat arts and spells they use on their own">{{ h.tactics }}</button>
-                    <button class="mini" data-class-dis="!h.can_dismiss" data-attr-id="h.id_dis" data-attr-title="h.tip_dismiss">Dismiss</button>
+                    <button class="mini" data-attrif-disabled="!h.can_dismiss" data-attr-id="h.id_dis" data-attr-title="h.tip_dismiss">Dismiss</button>
                 </div>
             </div>
 
@@ -43,14 +43,14 @@
             <div class="frow">
                 <span class="accent lab">Recruit</span>
                 <button class="mini wide" id="class" title="The class of the new hero">{{ class_name }}</button>
-                <button class="game-button" id="recruit" data-class-dis="full" title="A new hero of this class joins where you stand">Recruit</button>
+                <button class="game-button" id="recruit" data-attrif-disabled="full" title="A new hero of this class joins where you stand">Recruit</button>
                 <span class="muted small">{{ companions_text }}</span>
             </div>
             <div class="frow">
                 <span class="accent lab">Bring</span>
                 <span data-if="no_files" class="muted small">No kept heroes yet: "Keep" your hero below.</span>
                 <button data-if="!no_files" class="mini wide" id="heroes" title="Heroes kept from other savegames, and your network characters">{{ file_label }}</button>
-                <button class="game-button" id="bring" data-class-dis="!can_bring" data-attr-title="bring_tip" data-class-amber="maybe">Bring</button>
+                <button class="game-button" id="bring" data-attrif-disabled="!can_bring" data-attr-title="bring_tip" data-class-amber="maybe">Bring</button>
             </div>
             <div class="frow" data-if="picked != ''"><span class="lab"></span><span class="small">{{ picked }}</span><span data-if="maybe" class="amber small">May be in the party</span></div>
             <div class="frow">
@@ -71,8 +71,8 @@
                 </div>
                 <div data-for="p : purses" class="frow">
                     <span data-class-accent="p.controlled" class="pname">{{ p.text }}</span>
-                    <button class="mini" data-class-dis="!p.can_give" data-attr-id="p.id_give" data-attr-title="p.tip_give">Give</button>
-                    <button class="mini" data-class-dis="!p.can_take" data-attr-id="p.id_take" data-attr-title="p.tip_take">Take</button>
+                    <button class="mini" data-attrif-disabled="!p.can_give" data-attr-id="p.id_give" data-attr-title="p.tip_give">Give</button>
+                    <button class="mini" data-attrif-disabled="!p.can_take" data-attr-id="p.id_take" data-attr-title="p.tip_take">Take</button>
                 </div>
             </div>
 

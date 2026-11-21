@@ -75,7 +75,7 @@
 
             </div>
             <div class="row">
-                <button class="game-button" id="save" data-class-dis="blocked">Save</button>
+                <button class="game-button" id="save" data-attrif-disabled="blocked">Save</button>
                 <button class="game-button" id="cancel">Cancel</button>
             </div>
         </div>
