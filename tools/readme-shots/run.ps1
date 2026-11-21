@@ -59,7 +59,8 @@ if (-not $CropOnly) {
     Step 'we'         'world-events,world-events_selftest'
     Step 'boss'       'world-events,world-events_bosstest'
     Step 'chat'       'enhanced-chat,enhanced-chat_selftest' @{ 'enhanced-chat_selftest' = "{slot = $Save, quit = true}" }
-    Step 'bsl'        'better-saveload,better-saveload_selftest' @{} $Save
+    # (no savegame to load: the self test starts in the menus and loads one itself)
+    Step 'bsl'        'better-saveload,better-saveload_selftest' @{} '-'
     Step 'bounty'     'bounty,bounty_selftest' @{ bounty_selftest = "{phase = 'shots'}" }
     Step 'beditor'    'bounty,bounty_selftest' @{ bounty_selftest = "{phase = 'editor'}" }
     Step 'quests'     'bounty,quests_selftest' @{ quests_selftest = "{phase = 'shots'}" }
