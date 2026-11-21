@@ -21,8 +21,8 @@ game's own notes and your own lines. Chat is still typed with the game's own cha
   item's label colour: white, blue (magic), yellow (rare), gold (unique), green (set). Rest the cursor on such a line to
   see the item's tooltip while the item still lies there.
 - **-** beside the tabs folds the window to its tab row; **+** opens it again.
-- **Move and resize** it with the layout editor (hold **Alt**, *Edit layout*): drag it, pull its corner. It scales with
-  the game's UI like every window.
+- **Move** it with the layout editor (hold **Alt**, *Edit layout*): drag it. Its size is set in the mod's settings (*Window
+  width*, *Window height*). It scales with the game's UI like every window.
 
 By default the window shows in network games only: in single player (*Hide in Singleplayer*, on by default) the game
 keeps its own lines at the top. When the window is hidden (in single player, setting *Show the chat window* off, or the
@@ -61,7 +61,7 @@ Sacred Gear with `gear.chat`; an older one leaves the mod idle.
 
 - **Files:** `src/enhanced-chat/mod.lua` (manifest) and `main.lua` (about 370 lines). Nothing is written to disk.
 - **Depends on:** `gear.chat` (the lines, `replace_overlay`, `segments`), `gear.world.items_near` and `item_color`
-  (drops), `gear.mp` (the player filter), `gear.ui` (a bare, resizable panel, a scroll area, `item_tooltip`).
+  (drops), `gear.mp` (the player filter), `gear.ui` (an RmlUi document with the game theme, `element:scroll`, `item_tooltip`).
 - **Other mods:** `gear.emit('enhanced-chat.query', out)` fills `out` with the window's state (for the self test).
 - **Self test:** `src/enhanced-chat_selftest` (with `-gear-auto`, in a copy of the game folder):
 

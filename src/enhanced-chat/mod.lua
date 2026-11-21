@@ -7,7 +7,7 @@ return {
     description = 'A chat window in place of the lines at the top of the screen that fade and are gone: it keeps the '
         .. 'last lines of the session to scroll back through, has tabs for global, private and system messages (and a '
         .. 'filter by player in a network game) and shows item names in their rarity colour, also for the drops near '
-        .. 'your hero. Move and resize it with the layout editor. Mouse, keyboard and controller.',
+        .. 'your hero. Move it with the layout editor, set its size in the settings. Mouse, keyboard and controller.',
     settings = {
         {id = 'visible', type = 'bool', label = 'Show the chat window', default = true,
          tooltip = 'Off: the game shows its own chat lines again'},
@@ -17,6 +17,9 @@ return {
          tooltip = 'While the chat window shows, the game adds no lines at the top of the screen'},
         {id = 'lines', type = 'number', label = 'Lines kept', min = 50, max = 500, step = 50, default = 200},
         {id = 'font_size', type = 'number', label = 'Text size', min = 10, max = 20, step = 1, default = 13},
+        {id = 'window_width', type = 'number', label = 'Window width', min = 240, max = 900, step = 20, default = 420,
+         tooltip = 'The size of the window; the layout editor moves it'},
+        {id = 'window_height', type = 'number', label = 'Window height', min = 80, max = 600, step = 20, default = 200},
         {id = 'opacity', type = 'number', label = 'Background opacity', min = 0, max = 255, step = 5, default = 140},
         {id = 'timestamps', type = 'bool', label = 'Show the time of each line', default = false},
         {id = 'loot', type = 'choice', label = 'Drops near the hero', default = 'rare',

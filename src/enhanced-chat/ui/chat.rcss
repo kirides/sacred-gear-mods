@@ -1,0 +1,13 @@
+#chat { position: absolute; left: 8px; top: 420px; width: 420px; padding: 2px; }
+.tabs { display: flex; flex-direction: row; height: 20px; margin-bottom: 3px; }
+.grow { flex: 1 1 auto; }
+button.tab { margin: 0 2px 0 0; padding: 0 7px; font-size: 12dp; height: 18px; line-height: 16px; }
+button.tab.on { border-color: #ffd780; color: #ffd780; }
+.lwrap { position: relative; }
+#lines { height: 170px; overflow-y: auto; padding-right: 4px; }
+.line { color: #ffffff; margin: 0 0 1px 0; }
+.line.item:hover { background-color: #ffffff18; }
+button.newer { position: absolute; right: 18px; bottom: 2px; }
+scrollbarvertical { width: 10px; }
+scrollbarvertical slidertrack { background-color: #0c0c1480; }
+scrollbarvertical sliderbar { background-color: #8c7440; width: 10px; }

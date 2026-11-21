@@ -147,138 +147,152 @@ local function shown(e, player)
 end
 
 ---------------------------------------------------------------------------------------------------------------
--- Layout of a line: runs broken into rows that fit the width (at spaces; a word wider than the row gets its own)
+-- The window: ui/chat.rml (the game theme)
 ---------------------------------------------------------------------------------------------------------------
-local function measure(text, fs)
-    local w = ui.text_size(text, {size = fs})
-    return w or (#text * fs * 0.5)
+-- A model of ready-made lines (runs with their colours), rebuilt when the entries, the tab or the filter change; the document wraps
+-- and scrolls them. The list sticks to the newest line (element:scroll('end')) until the player scrolls up; "N new" brings it back.
+local doc
+local last = {}
+local sig                    -- what the lines were built from
+local line_items = {}        -- line element id -> item object id (a drop: the game's tooltip while the cursor rests on it)
+local hover_item
+
+local function css_color(argb)
+    argb = argb or 0xFFFFFFFF
+    return ('#%02x%02x%02x%02x'):format(math.floor(argb / 65536) % 256, math.floor(argb / 256) % 256, argb % 256, math.floor(argb / 16777216) % 256)
 end
 
-local function lay_out(e, width, fs, stamps)
-    local c = layout_cache[e]
-    if c and c.w == width and c.fs == fs and c.stamps == stamps then return c.rows end
-    local rows, row, x = {}, {}, 0
-    local function put(text, color)
-        local tw = measure(text, fs)
-        if x > 0 and x + tw > width and text:find('%S') then
-            rows[#rows + 1] = row
-            row, x = {}, 0
-            text = text:gsub('^%s+', '')
-            tw = measure(text, fs)
-        end
-        row[#row + 1] = {text = text, x = x, color = color}
-        x = x + tw
-    end
-    if stamps and e.stamp then put('[' .. e.stamp .. '] ', STAMP) end
-    for _, r in ipairs(e.runs or {}) do
-        for piece in r.text:gmatch('%s*%S+%s*') do put(piece, r.color) end
-        if not r.text:find('%S') and r.text ~= '' then put(r.text, r.color) end
-    end
-    rows[#rows + 1] = row
-    layout_cache[e] = {w = width, fs = fs, stamps = stamps, rows = rows}
-    return rows
-end
-
----------------------------------------------------------------------------------------------------------------
--- The window
----------------------------------------------------------------------------------------------------------------
 local function tab_label(i)
     return TABS[i].label .. (view.unread[i] and ' \u{2022}' or '')
 end
 
-local function draw_tabs(x, y, w)
-    local cx = x + 2
-    view.tab_rects = {}
-    for i = 1, #TABS do
-        local label = tab_label(i)
-        local bw = math.floor(measure(label, 12) + 14)
-        view.tab_rects[i] = {x = cx, y = y, w = bw, h = TAB_H}
-        if ui.button('tab' .. i, cx, y, bw, TAB_H, label, {tooltip = i == 1 and 'Every line' or nil}) then
-            view.tab = i
-            view.unread[i] = nil
-            view.stick = true
+local function lines_model()
+    local stamps = setting('timestamps', false) == true
+    local out = {}
+    line_items = {}
+    for i, e in ipairs(entries) do
+        if shown(e, view.player_name) then
+            local id = 'L' .. i
+            local runs = {}
+            if stamps and e.stamp then runs[1] = {t = '[' .. e.stamp .. '] ', c = css_color(STAMP)} end
+            for _, r in ipairs(e.runs or {}) do runs[#runs + 1] = {t = r.text, c = css_color(r.color)} end
+            if e.item then line_items[id] = e.item end
+            out[#out + 1] = {id = id, item = e.item ~= nil, runs = runs}
         end
-        if i == view.tab then ui.rect(cx + 2, y + TAB_H - 2, bw - 4, 2, ui.COLORS and ui.COLORS.accent or 0xFFE0C060) end
-        cx = cx + bw + 2
     end
-    local right = x + w - 2
-    if ui.button('min', right - TAB_H, y, TAB_H, TAB_H, view.minimized and '+' or '-',
-        {tooltip = view.minimized and 'Show the lines' or 'Only the tabs'}) then
-        view.minimized = not view.minimized
-        state_file.data.minimized = view.minimized
-        state_file:changed()
-    end
-    right = right - TAB_H - 4
-    if network_game() and not view.minimized then
-        local names = players()
+    view.shown = #out
+    return out
+end
+
+local function snapshot()
+    local fs = math.floor(setting('font_size', 13))
+    local names = network_game() and not view.minimized and players() or nil
+    if names then
         if view.player > #names then view.player = 1 end
-        local dw = math.min(130, right - cx - 4)
-        if dw >= 70 then
-            local _, i = ui.dropdown('player', right - dw, y, dw, names, view.player, {tooltip = 'Only the lines of this player'})
-            view.player = i
-            view.player_name = i > 1 and names[i] or nil
-        end
+        view.player_name = view.player > 1 and names[view.player] or nil
     else
         view.player, view.player_name = 1, nil
     end
+    local width = math.floor(setting('window_width', 420))
+    local height = math.floor(setting('window_height', 200))
+    local m = {
+        open = true, minimized = view.minimized, fs = fs .. 'px', bg = ('#000000%02x'):format(math.floor(setting('opacity', 140))),
+        box_h = (view.minimized and 24 or height) .. 'px', box_w = width .. 'px',
+        min_label = view.minimized and '+' or '-', min_tip = view.minimized and 'Show the lines' or 'Only the tabs',
+        tabs = {}, show_player = names ~= nil, player_label = view.player_name or 'All players',
+        lines = last.lines or {}, new_label = view.new_below > 0 and ('%d new \u{25BC}'):format(view.new_below) or '',
+    }
+    for i = 1, #TABS do m.tabs[i] = {id = 'tab' .. i, label = tab_label(i), on = i == view.tab} end
+    local s = table.concat({#entries, tostring(entries[#entries]), view.tab, tostring(view.player_name), tostring(setting('timestamps', false))}, '|')
+    if s ~= sig then
+        sig = s
+        m.lines = lines_model()
+    end
+    return m
 end
 
-local function draw_lines(x, y, w, h, fs)
-    local stamps = setting('timestamps', false) == true
-    local row_h = math.floor(fs * 1.35 + 0.5)
-    local list = {}
-    for _, e in ipairs(entries) do
-        if shown(e, view.player_name) then list[#list + 1] = e end
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function load_doc()
+    sig = nil
+    local m = snapshot()
+    last = m
+    local err
+    doc, err = ui.rml.load('ui/chat.rml', {model = m})
+    if not doc then gear.log('Enhanced Chat: ui/chat.rml failed: ' .. tostring(err)) return end
+    doc:style('#chat', 'width', m.box_w)
+    local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
+    on('.tab', function(e)
+        local id = tostring(e.current)
+        local i = tonumber(id:match('^tab(%d+)$'))
+        if i then
+            view.tab = i
+            view.unread[i] = nil
+            view.stick, view.content_h = true, nil
+        elseif id == 'min' then
+            view.minimized = not view.minimized
+            state_file.data.minimized = view.minimized
+            state_file:changed()
+        elseif id == 'player' then
+            local names = players()
+            view.player = view.player % #names + 1
+            view.player_name = view.player > 1 and names[view.player] or nil
+            view.stick = true
+        elseif id == 'newer' then
+            view.stick, view.new_below, view.content_h = true, 0, nil
+        end
+    end)
+    doc:on('.line', 'mouseover', function(e) hover_item = line_items[tostring(e.current)] end)
+    doc:on('.line', 'mouseout', function() hover_item = nil end)
+end
+
+local function draw_window()
+    if not doc then load_doc() end
+    if not doc then return end
+    local m = snapshot()
+    for k, v in pairs(m) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
     end
-    view.shown = #list
+    if m.box_w ~= last.applied_w then
+        last.applied_w = m.box_w
+        doc:style('#chat', 'width', m.box_w)
+    end
     -- follow the newest line unless the player scrolled up
-    -- (scroll_begin clamps to the last frame's height and adds the wheel to the offset: set the last bottom, every frame)
-    if view.stick then ui.scroll_to('lines', view.max or 0) end
-    if #list ~= view.last_count then
-        if not view.stick then view.new_below = view.new_below + math.max(0, #list - view.last_count) end
-        view.last_count = #list
-    end
-    local area = ui.scroll_begin('lines', x, y, w, h, {step = row_h})
-    view.lines_rect = {x = x, y = y, w = w, h = h}
-    local inner = (area.w or w) - 4
-    local cy, top, bottom = 0, area.offset or 0, (area.offset or 0) + (area.h or h)
-    local mx, my = ui.mouse()
-    local hover_item
-    for _, e in ipairs(list) do
-        local rows = lay_out(e, inner, fs, stamps)
-        local eh = #rows * row_h
-        if cy + eh >= top and cy <= bottom then
-            for r, row in ipairs(rows) do
-                local ry = cy + (r - 1) * row_h
-                if ry + row_h >= top and ry <= bottom then
-                    for _, piece in ipairs(row) do
-                        ui.text(piece.text, area.content_x + 2 + piece.x, area.content_y + ry, {size = fs, color = piece.color, shadow = true})
-                    end
-                end
-            end
-            if e.item and mx >= area.x and mx < area.x + area.w and my >= area.content_y + cy and my < area.content_y + cy + eh
-                and my >= area.y and my < area.y + area.h then
-                hover_item = e.item
-            end
-        end
-        cy = cy + eh
-    end
-    local o, m = ui.scroll_end(cy)
-    -- scrolled up by the player: stop following; back at the bottom: follow again
-    if o < (view.max or 0) - 2 then view.stick = false elseif o >= m - 2 then view.stick = true end
-    view.max, view.offset = m, o
-    if view.stick then view.new_below = 0 end
-    view.newer_rect = nil
-    if view.new_below > 0 then
-        local label = ('%d new \u{25BC}'):format(view.new_below)
-        local bw = math.floor(measure(label, 12) + 14)
-        view.newer_rect = {x = x + w - bw - 16, y = y + h - TAB_H - 2, w = bw, h = TAB_H}
-        if ui.button('newer', x + w - bw - 16, y + h - TAB_H - 2, bw, TAB_H, label, {tooltip = 'To the newest line'}) then
-            ui.scroll_to('lines', 1e9)
-            view.stick, view.new_below = true, 0
+    local list = doc:query('#lines')
+    if list and not view.minimized then
+        local lines_before = view.shown
+        if view.stick then list:scroll('end') end
+        if lines_before ~= view.last_count then
+            if not view.stick then view.new_below = view.new_below + math.max(0, lines_before - view.last_count) end
+            view.last_count = lines_before
         end
     end
-    if hover_item then
+    doc:draw({layer = 'hud'})
+    list = doc:query('#lines')
+    if list and not view.minimized then
+        local top, height, client = list:scroll()
+        if top then
+            local bottom = math.max(0, height - client)
+            if view.stick and view.content_h ~= height then
+                -- the content grew (or was rebuilt) this frame: stay with the newest line, this is not the player scrolling
+                top = list:scroll('end') or top
+                bottom = math.max(0, height - client)
+            elseif top < bottom - 2 then
+                view.stick = false
+            elseif top >= bottom - 2 then
+                view.stick = true
+            end
+            view.content_h = height
+            view.max, view.offset = bottom, top
+            if view.stick then view.new_below = 0 end
+        end
+    end
+    if hover_item and not view.minimized then
         -- placed beside the cursor with the size the tooltip took last time (the game lays it out when it draws)
         local tx, ty = ui.tooltip_rect(view.tip_w or 260, view.tip_h or 160)
         local shown_ok, tw, th = ui.item_tooltip(hover_item, tx, ty)
@@ -286,20 +300,9 @@ local function draw_lines(x, y, w, h, fs)
     end
 end
 
-local function draw_window()
-    local fs = math.floor(setting('font_size', 13))
-    local p = ui.panel('chat', 'Chat', 8, 420, 420, 200, {bare = true, resizable = true, min_width = 240, min_height = 80})
-    if not p.open then return end
-    local x, y, w, h = p.x, p.y, p.w, p.h
-    local alpha = math.floor(setting('opacity', 140))
-    if view.minimized then
-        if alpha > 0 then ui.rect(x, y, w, TAB_H + 4, ui.rgba(0, 0, 0, alpha)) end
-        draw_tabs(x, y + 2, w)
-        return
-    end
-    if alpha > 0 then ui.rect(x, y, w, h, ui.rgba(0, 0, 0, alpha)) end
-    draw_tabs(x, y + 2, w)
-    draw_lines(x + 2, y + TAB_H + 6, w - 4, h - TAB_H - 8, fs)
+local function rect_of(sel)
+    local e = doc and doc:query(sel)
+    return e and e:rect() or nil
 end
 
 local function visible() return setting('visible', true) ~= false end
@@ -372,9 +375,10 @@ gear.on('enhanced-chat.query', function(out)
     out.active = active()
     out.visible, out.tab, out.entries, out.shown, out.minimized = visible(), view.tab, #entries, view.shown or 0, view.minimized
     out.last = entries[#entries]
-    out.tabs = view.tab_rects
-    out.lines = view.lines_rect
-    out.newer = view.newer_rect
+    out.tabs = {}
+    for i = 1, #TABS do out.tabs[i] = rect_of('#tab' .. i) end
+    out.lines = rect_of('#lines')
+    out.newer = rect_of('#newer')
     out.new_below = view.new_below
     out.scroll_offset, out.scroll_max, out.following = view.offset or 0, view.max or 0, view.stick
     out.unread = view.unread
