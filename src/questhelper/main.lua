@@ -17,7 +17,6 @@ end
 local ui, net = gear.ui, gear.net
 local ch = net.channel('questhelper')
 local TABS = {'Quest items', 'Records', 'About'}
-local DIM, OK, WARN, GOLD = ui.rgba(255, 255, 255, 150), ui.rgba(143, 206, 122), ui.rgba(255, 200, 120), ui.rgba(255, 215, 120)
 local NEAR_TILES = 40
 
 local view = {             -- what the panel shows and waits for
@@ -103,81 +102,51 @@ local function backpack_quest_items()
     return list
 end
 
-local function items_tab(x, y, w, h)
+local function items_model(m)
     if gear.time() - view.near_at > 1 then refresh_near() end
-    ui.text('In your backpack', x, y, {color = ui.COLORS.accent})
-    local cy = y + 18
     local bag = backpack_quest_items()
-    if #bag == 0 then ui.text('no quest items', x + 8, cy, {color = DIM}); cy = cy + 16 end
-    if #bag > 0 then
-        local t = ui.table('bag', x + 8, cy, w - 8, {columns = {'*', 110}, row_height = 16, spacing = {8, 0}})
-        for _, it in ipairs(bag) do
-            t:row()
-            t:label(1, type_label(it))
-            t:label(2, ('%d x %d cells'):format(it.w or 1, it.h or 1), {color = DIM})
-        end
-        cy = cy + t:height()
+    m.bag_empty = #bag == 0
+    for i, it in ipairs(bag) do m.bag[i] = {name = type_label(it), size = ('%d x %d cells'):format(it.w or 1, it.h or 1)} end
+    m.near_title = ('On the ground within %d tiles'):format(NEAR_TILES)
+    m.near_empty = #view.near == 0
+    for i, n in ipairs(view.near) do
+        m.near[i] = {name = n.name, dist = ('%.0f tiles away'):format(n.dist), pos = ('%d, %d'):format(n.x, n.y)}
     end
-    cy = cy + 10
-    ui.text(('On the ground within %d tiles'):format(NEAR_TILES), x, cy, {color = ui.COLORS.accent})
-    cy = cy + 18
-    if #view.near == 0 then ui.text('no quest items in sight', x + 8, cy, {color = DIM}) end
-    local area = ui.scroll_begin('near', x, cy, w, math.max(40, y + h - cy), {step = 16})
-    local t = ui.table('near', area.content_x + 8, area.content_y, area.w - 8, {
-        columns = {'*', {width = 90, align = 'right'}, 110}, row_height = 16, spacing = {8, 0},
-    })
-    for _, n in ipairs(view.near) do
-        t:row()
-        t:label(1, n.name)
-        t:label(2, ('%.0f tiles away'):format(n.dist))
-        t:label(3, ('%d, %d'):format(n.x, n.y), {color = DIM})
-    end
-    ui.scroll_end(t:height())
 end
 
--- ---- records (from the server) ----
-local function records_tab(x, y, w, h)
+local function records_model(m)
     if not net.supported() then
-        local lines = ui.text_wrap('Records need a game server with the quest helper script (Sacred.GameServer of the SacredEngineRemake, scripts-examples/quest_helper.lua). '
-            .. 'Single player and the original GameServer.exe have none.', w, {})
-        for i, line in ipairs(lines) do ui.text(line, x, y + (i - 1) * 16, {color = WARN}) end
+        m.rec_msg = 'Records need a game server with the quest helper script (Sacred.GameServer of the SacredEngineRemake, scripts-examples/quest_helper.lua). '
+            .. 'Single player and the original GameServer.exe have none.'
+        m.rec_warn = true
         return
     end
     if not view.state then
-        local lines = ui.text_wrap(view.reason or 'Asking the server ...', w, {})
-        for i, line in ipairs(lines) do ui.text(line, x, y + (i - 1) * 16, {color = view.reason and WARN or DIM}) end
-        if ui.button('ask', x, y + #lines * 16 + 8, 80, 20, 'Refresh') then ask(true) end
+        m.rec_msg = view.reason or 'Asking the server ...'
+        m.rec_warn = view.reason ~= nil
+        m.can_ask = true
         return
     end
     local st = view.state
-    ui.text(('%d record%s, %d with a catalog entry (the catalog has %d)'):format(st.total, st.total == 1 and '' or 's', st.known, st.catalog), x, y, {color = DIM})
-    local _
-    _, view.show_unknown = ui.checkbox('unknown', x + w - 190, y - 2, 'Show unnamed records', view.show_unknown, {})
-    if ui.button('refresh', x + w - 70, y + 20, 70, 20, 'Refresh') then ask(true) end
-    local area = ui.scroll_begin('records', x, y + 22, w - 76, h - 24, {step = 20})
-    local cy = area.content_y
-    local shown = 0
+    m.has_state = true
+    m.rec_head = ('%d record%s, %d with a catalog entry (the catalog has %d)'):format(st.total, st.total == 1 and '' or 's', st.known, st.catalog)
     for _, r in ipairs(st.records) do
         if type(r) == 'table' and (r.known or view.show_unknown) then
-            shown = shown + 1
             local label = (type(r.label) == 'string' and r.label ~= '') and (' - ' .. fit(r.label, 40)) or ''
-            ui.text(('%s = %s%s'):format(fit(title_of(r), 50), tostring(r.value), label), x, cy, {color = r.known and GOLD or nil})
-            cy = cy + 16
-            if type(r.area) == 'string' and r.area ~= '' then ui.text('Where: ' .. fit(r.area, 80), x + 10, cy, {color = DIM}); cy = cy + 16 end
-            if type(r.hint) == 'string' and r.hint ~= '' then
-                local lines = ui.text_wrap(fit(r.hint, 400), area.w - 24, {})
-                for _, line in ipairs(lines) do ui.text(line, x + 10, cy, {}); cy = cy + 15 end
-            end
+            local others = ''
             if type(r.others) == 'table' and #r.others > 0 then
                 local names = {}
                 for _, n in ipairs(r.others) do names[#names + 1] = fit(n, 20) end
-                ui.text('Also: ' .. table.concat(names, ', '), x + 10, cy, {color = OK}); cy = cy + 16
+                others = 'Also: ' .. table.concat(names, ', ')
             end
-            cy = cy + 6
+            m.records[#m.records + 1] = {
+                line = ('%s = %s%s'):format(fit(title_of(r), 50), tostring(r.value), label), known = r.known and true or false,
+                area = (type(r.area) == 'string' and r.area ~= '') and ('Where: ' .. fit(r.area, 80)) or '',
+                hint = (type(r.hint) == 'string' and r.hint ~= '') and fit(r.hint, 400) or '', others = others,
+            }
         end
     end
-    if shown == 0 then ui.text('nothing to show (the server has no quest records of your hero, or they are hidden)', x, cy, {color = DIM}); cy = cy + 16 end
-    ui.scroll_end(cy - area.content_y)
+    m.rec_none = #m.records == 0
 end
 
 local ABOUT = 'What this panel can show: quest items (backpack and near you, read by this mod) and the quest records of your hero (reported by the server). '
@@ -186,40 +155,68 @@ local ABOUT = 'What this panel can show: quest items (backpack and near you, rea
     .. 'exist only where the server owner added them to the server\'s catalog; every other record is shown as "record <key>". '
     .. 'The records need a Sacred.GameServer with quest_helper.lua that keeps hero data (web UI or --authoritative).'
 
-local function about_tab(x, y, w, h)
-    local lines = ui.text_wrap(ABOUT, w, {})
-    for i, line in ipairs(lines) do ui.text(line, x, y + (i - 1) * 16, {}) end
+-- ---- the window: ui/main.rml (the game theme) ----
+local shown = false
+local doc
+local last = {}
+
+local function snapshot()
+    local m = {
+        open = shown, title = 'Quest helper' .. key_hint('toggle'), tab = view.tab, status = view.status, tabs = {},
+        bag = {}, bag_empty = false, near_title = '', near = {}, near_empty = false,
+        rec_msg = '', rec_warn = false, can_ask = false, has_state = false, rec_head = '', show_unknown = view.show_unknown, rec_none = false, records = {},
+        about = ABOUT,
+    }
+    for i, name in ipairs(TABS) do m.tabs[i] = {id = 'tab' .. i, name = name, on = view.tab == i} end
+    if view.tab == 1 then items_model(m) elseif view.tab == 2 then records_model(m) end
+    return m
 end
 
-local function panel()
-    local p = ui.panel('main', 'Quest helper' .. key_hint('toggle'), 80, 60, 520, 400, {})
-    if not p.open then
-        if view.opened then view.opened = false; if net.supported() then ch:send({op = 'unwatch'}, 'server') end end
-        return
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function load_doc()
+    local m = snapshot()
+    last = m
+    local err
+    doc, err = gear.ui.rml.load('ui/main.rml', {model = m})
+    if not doc then gear.log('quest helper: ui/main.rml failed: ' .. tostring(err)) return end
+    local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
+    on('.tab', function(e) local i = tonumber(tostring(e.current):match('^tab(%d+)$')); if i then view.tab = i end end)
+    on('#ask', function() ask(true) end)
+    on('#refresh', function() ask(true) end)
+    on('#unknown', function() view.show_unknown = not view.show_unknown end)
+end
+
+gear.keys.on('toggle', function()
+    shown = not shown
+    if shown then
+        view.opened = true; refresh_near(); ask(true)
+    else
+        view.opened = false
+        if net.supported() then ch:send({op = 'unwatch'}, 'server') end
     end
-    if not view.opened then view.opened = true; refresh_near(); ask(true) end
-    local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
-    local _, tab = ui.radio_group('tabs', x, y, TABS, view.tab, {horizontal = true})
-    view.tab = tab
-    local top, body_h = y + 28, h - 28 - 20
-    if view.tab == 1 then items_tab(x, top, w, body_h)
-    elseif view.tab == 2 then records_tab(x, top, w, body_h)
-    else about_tab(x, top, w, body_h) end
-    if view.status ~= '' then ui.text(view.status, x, y + h - 16, {color = WARN}) end
-end
-
-gear.keys.on('toggle', function() ui.toggle_panel('main') end)
+end)
 
 -- Refresh while the panel is open (the server also pushes changes to a watching client).
 gear.every(5, function()
-    if ui.panel_open('main') and net.supported() and gear.time() - view.asked >= (tonumber(gear.settings.get('refresh')) or 30) then ask(true) end
+    if shown and net.supported() and gear.time() - view.asked >= (tonumber(gear.settings.get('refresh')) or 30) then ask(true) end
 end)
 
 gear.on('draw', function(state)
-    if not state or state.mode ~= 'game' or state.exclusive then return end
-    panel()
+    if not state or state.mode ~= 'game' or state.exclusive or not shown then return end
+    if not doc then load_doc() end
+    if not doc then return end
+    for k, v in pairs(snapshot()) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+    doc:draw({layer = 'hud'})
 end)
 
 gear.on('net_caps', function(caps)
-    if caps.supported and ui.panel_open('main') then ask(true) end
+    if caps.supported and shown then ask(true) end
 end)

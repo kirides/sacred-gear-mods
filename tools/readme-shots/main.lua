@@ -117,7 +117,7 @@ gear.task(function()
                 {key = 100, value = 1, name = 'The lost sword', area = 'Ancaria', hint = 'Ask the smith.', label = 'started', known = true},
                 {key = 101, value = 2, name = 'The lost caravan', area = 'Ancaria', hint = 'Look near the east bridge.', label = 'step 2', known = true},
             }})
-            if gear.config.press then gear.ui.show_panel('questhelper:main', true) end
+            if gear.config.press then A.key_down('control'); A.press('u'); A.key_up('control') end
         elseif w == 'serverfeed' then
             say('rare_drops:feed', {kind = 'drop', drop = {item = 'Ancient Sword of Fire', tier = 'unique', rarity = 15, by = 'Ria', from = 'Orc chief'}})
             say('graveyard:feed', {kind = 'death', name = 'Kell', level = 37, by = 'Zombie', killer_kind = 'monster'})

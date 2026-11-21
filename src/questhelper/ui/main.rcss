@@ -1,0 +1,21 @@
+#main { position: absolute; left: 80px; top: 60px; width: 560px; }
+.tabs { display: flex; flex-direction: row; margin-bottom: 8px; }
+button.tab { margin-right: 4px; font-family: "Sacred Game"; }
+button.tab.on { border-color: #ffd780; color: #ffd780; }
+button.mini { padding: 0 8px; margin: 0; }
+.pad { margin-left: 10px; }
+.line { display: flex; flex-direction: row; justify-content: space-between; margin: 1px 0 1px 10px; }
+.line .grow { flex: 1 1 auto; }
+.line .dist { width: 120px; text-align: right; }
+.line .pos { width: 110px; text-align: right; }
+.nlist { max-height: 200px; overflow-y: auto; }
+.rlist { height: 280px; overflow-y: auto; }
+.rec { margin-bottom: 6px; }
+.rec .sub { margin-left: 10px; font-size: 14dp; }
+.wrap { white-space: pre-wrap; }
+.warn { color: #ffc878; }
+.good { color: #8fce7a; }
+.status { margin-top: 8px; }
+scrollbarvertical { width: 14px; }
+scrollbarvertical slidertrack { background-color: #0c0c14; }
+scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }

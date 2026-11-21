@@ -75,7 +75,7 @@ if (-not $CropOnly) {
     foreach ($w in 'achievements', 'buildsharer', 'serverfeed') {
         Phase "srv-$w" $w "{phase = 'server', which = '$w', press = true, wait = 8}"
     }
-    Phase 'srv-questhelper' 'questhelper' "{phase = 'server', which = 'questhelper', press = true, clicks = {{522, 112}}}"
+    Phase 'srv-questhelper' 'questhelper' "{phase = 'server', which = 'questhelper', press = true, clicks = {{570, 137}}}"
     # the Mods screen (F11): the mod is the second row of the list (README screenshots comes first), its Settings button is at 1005, 323
     # (the first row is at 250), its tabs at 1015 / 1113, 213, the next page button at 887, 707
     Phase 'dt'       'drop-tuning' "{phase = 'modscreen', clicks = {{1005, 250}, {887, 707}}}"
