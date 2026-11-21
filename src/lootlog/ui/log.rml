@@ -1,0 +1,29 @@
+<rml>
+<head>
+    <title>Loot log</title>
+    <link type="text/rcss" href="log.rcss"/>
+</head>
+<body data-model="model">
+<div id="log" class="window" data-panel="log" data-title="Loot log">
+    <div class="titlebar">{{ title }}</div>
+    <div class="body">
+        <div class="row filters">
+            <button class="game-button" data-event-click="cycle_q" title="Lowest quality shown">{{ fq }}</button>
+            <button class="game-button" data-event-click="cycle_c" title="Category shown">{{ fc }}</button>
+            <button class="game-button" data-event-click="cycle_k" title="Dropped on the ground, picked up into the backpack, or acquired otherwise">{{ fk }}</button>
+        </div>
+        <div class="row space">
+            <span class="label">{{ count }}</span>
+            <button class="game-button" data-event-click="clear" title="Empties the log (also the file)">Clear</button>
+        </div>
+        <div class="rows">
+            <div data-for="r : rows" class="entry">
+                <span class="when">{{ r.when }}</span>
+                <span class="name" data-class-magic="r.q == 'magic'" data-class-rare="r.q == 'rare'" data-class-set="r.q == 'set'" data-class-unique="r.q == 'unique'">{{ r.name }}</span>
+                <span class="tail">{{ r.tail }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</rml>

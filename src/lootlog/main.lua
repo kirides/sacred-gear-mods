@@ -277,54 +277,67 @@ end
 
 local clock_text = gear.fmt.clock
 
-local function draw_panel()
-    local p = ui.panel('log', 'Loot log' .. key_hint('panel'), 300, 200, 420, 360, {resizable = true, min_width = 340, min_height = 220})
-    if not p.open then return end
-    local x, y = p.content_x or 0, p.content_y or 0
-    local w = p.content_w or 400
-    local h = p.content_h or 320
-    -- The filters (three dropdowns across) and, under them, the count and the Clear button.
-    local head = ui.table('head', x, y, w, {columns = {'*', '*', '*'}, spacing = {6, 4}, row_height = 22})
-    head:row()
-    local _
-    _, filter.q = head:dropdown(1, Q_OPTIONS, filter.q, {id = 'f-quality', tooltip = 'Lowest quality shown'})
-    _, filter.c = head:dropdown(2, C_OPTIONS, filter.c, {id = 'f-category', tooltip = 'Category shown'})
-    _, filter.k = head:dropdown(3, K_OPTIONS, filter.k, {id = 'f-kind', tooltip = 'Dropped on the ground, picked up into the backpack, or acquired otherwise'})
+-- ui/log.rml (the game theme). The three filters are buttons that step through their options (works with the pad too).
+local doc
+local shown = false
+local sig                  -- what the model was built from: entry count, newest entry, filters
 
-    -- newest first
-    local shown = {}
+local function build()
+    local list = {}
+    local total = 0
     for i = #entries, 1, -1 do
-        if passes(entries[i]) then shown[#shown + 1] = entries[i] end
+        local e = entries[i]
+        if passes(e) then
+            total = total + 1
+            if total <= 300 then
+                local tail = KIND_LABEL[e.kind] or e.kind
+                local src = e.st and creature_label(e.st) or e.src
+                if src then tail = tail .. ' (' .. src .. ')' end
+                list[total] = {when = ('#%d %s'):format(e.s, clock_text(e.t)), name = e.name, q = e.quality, tail = tail}
+            end
+        end
     end
-    head:row()
-    head:label(1, ('%d of %d entries'):format(#shown, #entries), {color = 0xFFB0B0B0, span = 2})
-    if head:button(3, 'Clear', {id = 'clear', width = 70, height = 20, halign = 'right', tooltip = 'Empties the log (also the file)'}) then
-        entries = {}
-        dirty = true
-        save_file()
-    end
+    return {
+        title = 'Loot log' .. key_hint('panel'),
+        fq = Q_OPTIONS[filter.q], fc = C_OPTIONS[filter.c], fk = K_OPTIONS[filter.k],
+        count = ('%d of %d entries'):format(total, #entries),
+        rows = list,
+    }
+end
 
-    local top = y + head:height() + 6
-    local area = ui.scroll_begin('rows', x, top, w, math.max(40, h - (top - y)), {step = 18})
-    local rows = ui.table('entries', area.content_x or x, area.content_y or top, (area.w or w) - 6,
-        {columns = {{width = 'auto'}, '*', {width = 'auto', align = 'right'}}, spacing = {8, 0}, row_height = 18})
-    for i = 1, math.min(#shown, 300) do
-        local e = shown[i]
-        rows:row()
-        rows:label(1, ('#%d %s'):format(e.s, clock_text(e.t)), {color = 0xFF808080, ellipsis = false})
-        rows:label(2, e.name, {color = QUALITY_COLOR[e.quality] or 0xFFFFFFFF})
-        local tail = KIND_LABEL[e.kind] or e.kind
-        local src = e.st and creature_label(e.st) or e.src
-        if src then tail = tail .. ' (' .. src .. ')' end
-        rows:label(3, tail, {color = 0xFFA0A0A0})
+local function cycle(which, options)
+    return function() filter[which] = filter[which] % #options + 1 end
+end
+
+local function load_doc()
+    local err
+    doc, err = ui.rml.load('ui/log.rml', {model = build(), calls = {
+        cycle_q = guard('cycle_q', cycle('q', Q_OPTIONS)),
+        cycle_c = guard('cycle_c', cycle('c', C_OPTIONS)),
+        cycle_k = guard('cycle_k', cycle('k', K_OPTIONS)),
+        clear = guard('clear', function()
+            entries = {}
+            dirty = true
+            save_file()
+        end),
+    }})
+    if not doc then gear.log('loot log: ui/log.rml failed: ' .. tostring(err)) end
+end
+
+local function draw_panel()
+    if not doc then load_doc() end
+    if not doc then return end
+    local s = table.concat({#entries, tostring(entries[#entries]), filter.q, filter.c, filter.k}, '|')
+    if s ~= sig then
+        sig = s
+        for k, v in pairs(build()) do doc.model[k] = v end
     end
-    ui.scroll_end(rows:height())
+    doc:draw({layer = 'hud'})
 end
 
 gear.on('draw', guard('draw', function(state)
     if type(state) ~= 'table' then return end
-    if state.mode == 'game' and not state.exclusive then draw_panel() end
+    if state.mode == 'game' and not state.exclusive and shown then draw_panel() end
 end))
 
-ui.show_panel('log', false)
-gear.keys.on('panel', guard('key', function() ui.toggle_panel('log') end))
+gear.keys.on('panel', guard('key', function() shown = not shown end))

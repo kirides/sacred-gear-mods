@@ -1,0 +1,14 @@
+#log { position: absolute; left: 300px; top: 200px; width: 520px; }
+.filters button.game-button { min-width: 0; padding: 0 30px 0 29px; font-size: 15px; margin-right: 4px; }
+.rows { height: 230px; overflow-y: auto; margin-top: 6px; }
+.entry { display: flex; flex-direction: row; padding: 1px 0; font-size: 14dp; }
+.when { width: 90px; color: #808080; }
+.name { flex: 1 1 auto; color: #efefef; }
+.name.magic { color: #a0a0ff; }
+.name.rare { color: #f0e040; }
+.name.set { color: #15ff25; }
+.name.unique { color: #c19a33; }
+.tail { color: #a0a0a0; text-align: right; }
+scrollbarvertical { width: 14px; }
+scrollbarvertical slidertrack { background-color: #0c0c14; }
+scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }

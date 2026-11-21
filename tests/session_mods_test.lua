@@ -283,6 +283,7 @@ do
     -- the panel draws the entries, newest first; the log survives a restart
     local G2 = load_mod('lootlog', {files = {['lootlog.json'] = G.files['lootlog.json']}, json = G.gear.json})
     fire(G2, 'load')
+    G2.keys.panel()
     fire(G2, 'draw', {mode = 'game'})
     ok(joined(G2):find('Blade', 1, true), 'loot: reloaded entries are drawn')
     ok(joined(G2):find('entries', 1, true), 'loot: count line')
@@ -290,6 +291,7 @@ do
     -- a log of an older version holds the source as text: still shown as it is
     local G3 = load_mod('lootlog', {files = {['lootlog.json'] = G.gear.json.encode({session = 1, entries = {{s = 1, t = 5, kind = 'drop', name = 'Old Blade', quality = 'rare', category = 'weapon', src = 'gob_warrior.grn'}}})}, json = G.gear.json})
     fire(G3, 'load')
+    G3.keys.panel()
     fire(G3, 'draw', {mode = 'game'})
     ok(joined(G3):find('gob_warrior.grn', 1, true), 'loot: an older entry keeps its saved source text')
 end
