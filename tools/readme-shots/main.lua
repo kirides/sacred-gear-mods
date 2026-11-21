@@ -31,6 +31,7 @@ gear.task(function()
     if not A.wait_for_game(180) then A.write('error.txt', 'no game') return A.quit(1) end
     if phase == 'gold' then
         -- gives the hero gold and stays out of the way (for self tests that need some: the auction house)
+        gear.wait(4)      -- the savegame's own load still writes the hero's gold in the first seconds: a value set at once is lost
         local hero = gear.world.hero()
         for _ = 1, 100 do
             if hero then break end
