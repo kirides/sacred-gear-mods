@@ -208,7 +208,7 @@ local function apply_filters()
     view.follow = true
 end
 
-local pic_cache = {}        -- slot -> {url, at}: the pictures made (see picture_url)
+local pic_cache = {}        -- slot -> url: the pictures made (see picture_url)
 local function refresh()
     pic_cache = {}
     view.all = game.saves()
@@ -459,19 +459,18 @@ local row_keys = {}          -- row element id -> slot | 'new'
 local scroll_top = 0
 
 -- A savegame's picture is read from its file the first time (a few milliseconds each): the rows in view ask every frame, and scrolling fast brings new ones every
--- frame, so a frame loads at most PIC_BUDGET of them (the others show nothing for a moment) and every one is kept for PIC_RECHECK seconds.
-local PIC_BUDGET, PIC_RECHECK = 2, 5
+-- frame, so a frame loads at most PIC_BUDGET of them (the others show nothing for a moment) and every one is kept until the screen is opened again (refresh).
+local PIC_BUDGET = 2
 local pic_budget = PIC_BUDGET
 local function picture_url(s)
     if not (s and s.picture) then return '' end
     local c = pic_cache[s.slot]
-    local now = gear.time()
-    if c and now - c.at < PIC_RECHECK then return c.url end
-    if pic_budget <= 0 then return c and c.url or nil end       -- nil: not loaded yet
+    if c then return c end
+    if pic_budget <= 0 then return nil end       -- nil: not loaded yet
     pic_budget = pic_budget - 1
     local pic = game.save_picture(s.slot)
     local url = pic and ('gear:image/' .. pic) or ''
-    pic_cache[s.slot] = {url = url, at = now}
+    pic_cache[s.slot] = url
     return url
 end
 
