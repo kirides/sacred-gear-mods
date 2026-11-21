@@ -1,0 +1,48 @@
+<rml>
+<head>
+    <title>Loot filter</title>
+    <link type="text/rcss" href="filter.rcss"/>
+</head>
+<body data-model="model">
+
+<!-- The rules in force: only while Alt is held (like the game's labels) or in the layout editor. -->
+<div id="overlay" class="bare" data-style-left="overlay_x" data-style-top="overlay_y" data-panel="overlay" data-title="Loot filter overlay" data-if="overlay_visible">
+    <div class="oh"><span data-class-off="!enabled" class="ot">Loot filter</span><span data-class-bad="!enabled" class="good">{{ on_text }}</span></div>
+    <div data-for="l : olines" class="ol"><span data-class-sub="l.sub">{{ l.k }}</span><span data-class-magic="l.q == 'magic'" data-class-rare="l.q == 'rare'" data-class-set="l.q == 'set'" data-class-unique="l.q == 'unique'" data-class-bad="l.q == 'never'" class="ov">{{ l.v }}</span></div>
+    <button data-if="!editing" class="game-button" id="open-settings" title="Change the rules in game">{{ settings_label }}</button>
+</div>
+
+<div id="settings" class="window" data-panel="settings" data-title="Loot filter settings" data-if="settings_open">
+    <div class="titlebar">Loot filter settings</div>
+    <div class="body">
+        <div class="check-row"><span class="text" title="Off: the hero picks up everything">Filter on</span><input id="enabled" type="checkbox" class="game-check chk" data-checked="enabled"/></div>
+
+        <p class="heading">Pick up items for</p>
+        <div class="classes">
+            <div class="cls3"><span class="text small" title="The hero's own class">My class</span><input id="mode1" type="radio" name="mode" value="1" class="game-check small" data-checked="mode"/></div>
+            <div class="cls3"><span class="text small" title="Every item, whatever its class">Any class</span><input id="mode2" type="radio" name="mode" value="2" class="game-check small" data-checked="mode"/></div>
+            <div class="cls3"><span class="text small" title="The classes ticked below (for your other heroes too)">These classes:</span><input id="mode3" type="radio" name="mode" value="3" class="game-check small" data-checked="mode"/></div>
+        </div>
+        <div class="classes">
+            <div data-for="c : classes" class="cls"><input data-attr-id="c.id" type="checkbox" class="game-check chk small" data-checked="c.on"/><span class="text small">{{ c.name }}</span></div>
+        </div>
+
+        <div class="check-row"><span class="heading" title="Items below it are left on the ground">Lowest quality</span><button class="game-button" id="min_quality">{{ min_quality }}</button></div>
+        <div class="cats">
+            <div data-for="c : cats" class="cat"><span class="text small">{{ c.name }}</span><button data-attr-id="c.id" class="mini catb">{{ c.rule }}</button></div>
+        </div>
+
+        <p class="heading">Potions</p>
+        <div class="classes">
+            <div data-for="p : potions" class="cls"><input data-attr-id="p.id" type="checkbox" class="game-check chk small" data-checked="p.on"/><span class="text small" data-attr-title="p.tip">{{ p.name }}</span></div>
+        </div>
+
+        <div class="check-row"><span class="text">Set items always</span><input id="keep_set" type="checkbox" class="game-check chk" data-checked="keep_set"/></div>
+        <div class="check-row"><span class="text">Quest items always</span><input id="keep_quest" type="checkbox" class="game-check chk" data-checked="keep_quest"/></div>
+        <div class="slider-row"><span class="text" title="Alpha of the labels of filtered items (255: not dimmed)">Dim filtered labels</span><input id="dim" type="range" class="game-slider" min="0" max="255" step="5" data-value="dim"/></div>
+
+        <div class="row space"><button class="game-button" id="close">Close</button><span class="muted small">Also in the Mods screen (F11)</span></div>
+    </div>
+</div>
+</body>
+</rml>

@@ -1,0 +1,26 @@
+#overlay { position: absolute; left: 16px; top: 100px; width: 210px; padding: 5px 6px 8px 6px; background-color: #0000008c; border: 1px #c8aa5ac8; font-size: 12dp; }
+.oh { display: flex; flex-direction: row; justify-content: space-between; }
+.ot { font-family: "Sacred Game"; font-size: 15dp; color: #ffd780; }
+.ot.off { color: #909090; }
+.ol { display: flex; flex-direction: row; }
+.ol span { color: #e0e0e0; width: 50%; }
+.ol span.sub { color: #b0b0b0; padding-left: 8px; }
+.ol .ov { color: #efefef; }
+.ov.magic { color: #a0a0ff; }
+.ov.rare { color: #f0e040; }
+.ov.set { color: #15ff25; }
+.ov.unique { color: #c19a33; }
+.ov.bad { color: #ff8080; }
+.good { color: #80ff80; }
+.good.bad { color: #ff8080; }
+#overlay button.game-button { min-width: 0; margin: 6px 0 0 0; padding: 0 30px 0 29px; font-size: 15px; }
+#settings { position: absolute; left: 240px; top: 40px; width: 560px; }
+.classes { display: flex; flex-direction: row; flex-wrap: wrap; }
+.cls { display: flex; flex-direction: row; align-items: center; width: 25%; height: 34px; }
+.cls3 { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 31%; height: 34px; margin-right: 2%; }
+.cats { display: flex; flex-direction: row; flex-wrap: wrap; }
+.cat { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 48%; margin: 2px 1%; }
+.text.small, .small { font-size: 14dp; }
+input.game-check.small { width: 36px; height: 36px; margin-right: 4px; }
+button.catb { min-width: 90px; }
+button.mini { padding: 0 8px; margin: 0; }

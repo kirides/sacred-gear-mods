@@ -119,66 +119,6 @@ end
 gear.every(0.25, refresh)
 gear.on('session.start', refresh)
 
--- The overlay: the rules in force, read only.
-local function line(text, x, y, color)
-    ui.text(text, x, y, {color = color or 0xFFE0E0E0, size = 11})
-end
-
--- Only while the game shows its labels (Alt held), like the game's own text; the settings panel stays open on its own.
-local overlay_shown = false
-local show_text_until = 0       -- gear.time() until which the overlay stays after Alt was released
-local function overlay(state)
-    overlay_shown = false
-    -- It stays a moment after Alt is released, so a click made just before still lands on its button.
-    if state.show_text then show_text_until = gear.time() + 0.4 end
-    local editing = ui.edit_mode()
-    if not cfg.overlay or state.mode ~= 'game' or state.exclusive or (gear.time() >= show_text_until and not editing) then
-        return
-    end
-    overlay_shown = true
-    local rows = 7 + #CATEGORIES
-    local h = 18 + rows * 13
-    -- A bare panel (no window of its own), so the layout editor lists it and the player can move it; it also shows in
-    -- the edit mode, Alt or not. cfg.overlay_x / overlay_y are only its default place. The settings button lies in it.
-    local p = ui.panel('overlay', 'Loot filter overlay', cfg.overlay_x, cfg.overlay_y, 196, h + 26, {bare = true})
-    local x, y = p.x, p.y
-    ui.rect(x, y, 196, h, ui.rgba(0, 0, 0, 140))
-    ui.frame(x, y, 196, h, ui.rgba(200, 170, 90, 200))
-    ui.text('Loot filter', x + 6, y + 3, {color = cfg.enabled and 0xFFFFD780 or 0xFF909090, size = 15, bold = true})
-    ui.text(cfg.enabled and 'on' or 'off', x + 6, y + 3, {width = 184, align = 'right',
-        color = cfg.enabled and 0xFF80FF80 or 0xFFFF8080})
-    local ty = y + 24
-    local classes = wanted_classes(W.hero())
-    line('Classes: ' .. (classes and table.concat(classes, ', ') or 'any'), x + 6, ty); ty = ty + 13
-    line('Minimum:', x + 6, ty)
-    line(cfg.min_quality, x + 90, ty, QUALITY_COLOR[cfg.min_quality]); ty = ty + 13
-    for _, cat in ipairs(CATEGORIES) do
-        local rule = cfg.categories[cat]
-        line(cat, x + 14, ty, 0xFFB0B0B0)
-        if rule == false then
-            line('never', x + 90, ty, 0xFFFF8080)
-        else
-            local q = rule or cfg.min_quality
-            line(q .. (rule and '' or ' *'), x + 90, ty, QUALITY_COLOR[q])
-        end
-        ty = ty + 13
-    end
-    local taken = {}        -- the potion kinds picked up, then the colours that are not
-    for _, k in ipairs(POTIONS) do
-        if cfg.potions[k] ~= false then taken[#taken + 1] = k end
-    end
-    for _, color in ipairs(POTION_COLORS) do
-        if cfg.potions[color] == false then taken[#taken + 1] = 'no ' .. color end
-    end
-    line('Potions: ' .. (#taken > 0 and table.concat(taken, ', ') or 'none'), x + 6, ty); ty = ty + 13
-    line(('Set items: %s, quest: %s'):format(cfg.keep_set and 'always' or 'by rule', cfg.keep_quest and 'always' or 'by rule'), x + 6, ty); ty = ty + 13
-    line(('Nearby: %d items, %d filtered'):format(stats.near, stats.blocked), x + 6, ty); ty = ty + 13
-    line(('Refused pickups: %d'):format(W.pickup_refused()), x + 6, ty, 0xFFB0B0B0)
-    if not editing and ui.button('open-settings', x + 6, y + h + 4, 184, 20, 'Settings' .. key_hint('panel'), {tooltip = 'Change the rules in game'}) then
-        ui.toggle_panel('settings')
-    end
-end
-
 ---------------------------------------------------------------------------------------------------------------
 -- The settings panel: the same rules, changed in game.
 ---------------------------------------------------------------------------------------------------------------
@@ -279,7 +219,6 @@ gear.on('settings.changed', function(id, v)
     check_config()
     refresh()
 end)
-ui.show_panel('settings', false)
 
 local QUALITY_OPTIONS = {'normal', 'magic', 'rare', 'set', 'unique'}
 local CATEGORY_OPTIONS = {'(minimum)', 'normal', 'magic', 'rare', 'set', 'unique', 'never'}
@@ -291,115 +230,157 @@ end
 -- Where the self test finds the controls it clicks (set by the panel while it is drawn).
 local rects = {}
 
--- The settings form: stacked tables (a table per block), so the labels, checkboxes and dropdowns of a block share their
--- columns and rows; the radio group is the only widget placed by hand, in the cell the table reserves for it.
-local function settings_panel()
-    local p = ui.panel('settings', 'Loot filter settings', 240, 70, 540, 440)
-    if not p.open then return end
-    local x, y, w = p.content_x, p.content_y, p.content_w
-    local accent = ui.COLORS.accent
-    local changed = false   -- any rule changed this frame: saved and applied at the end
-    local c, t
+-- The window: ui/filter.rml (the game theme) holds the overlay and the settings form. Check orbs and the cycling buttons are handled by
+-- delegated click listeners (the settings keep their old rules: push() writes them to the mod manager, refresh() applies them).
+local doc
+local last = {}
+local settings_open = false
+local editing_now = false
 
-    c, cfg.enabled = ui.checkbox('enabled', x, y, 'Filter on', cfg.enabled, {tooltip = 'Off: the hero picks up everything'})
-    changed = changed or c
-    y = y + 28
-
-    -- Classes
-    local mode = cfg.classes == 'own' and 1 or cfg.classes == false and 2 or 3
-    t = ui.table('classes', x, y, w, {columns = {'*', '*', '*', '*'}, spacing = {8, 2}, row_height = 20})
-    t:row(); t:label(1, 'Pick up items for', {id = 'l-classes', color = accent, span = 4})
-    t:row()
-    local rx, ry = t:cell(1, 4)
-    c, mode = ui.radio_group('classmode', rx, ry, {'my class', 'any class', 'these classes:'}, mode,
-        {horizontal = true, tooltips = {"The hero's own class", 'Every item, whatever its class',
-            'The classes ticked below (for your other heroes too)'}})
-    if c then
-        changed = true
-        if mode == 1 then cfg.classes = 'own'
-        elseif mode == 2 then cfg.classes = false
+local function olines()
+    local out = {}
+    local classes = wanted_classes(W.hero())
+    local function add(k, v, q, sub) out[#out + 1] = {k = k, v = v or '', q = q or '', sub = sub and true or false} end
+    add('Classes:', classes and table.concat(classes, ', ') or 'any')
+    add('Minimum:', cfg.min_quality, cfg.min_quality)
+    for _, cat in ipairs(CATEGORIES) do
+        local rule = cfg.categories[cat]
+        if rule == false then
+            add(cat, 'never', 'never', true)
         else
+            local q = rule or cfg.min_quality
+            add(cat, q .. (rule and '' or ' *'), q, true)
+        end
+    end
+    local taken = {}        -- the potion kinds picked up, then the colours that are not
+    for _, k in ipairs(POTIONS) do
+        if cfg.potions[k] ~= false then taken[#taken + 1] = k end
+    end
+    for _, color in ipairs(POTION_COLORS) do
+        if cfg.potions[color] == false then taken[#taken + 1] = 'no ' .. color end
+    end
+    add('Potions:', #taken > 0 and table.concat(taken, ', ') or 'none')
+    add('Set items:', cfg.keep_set and 'always' or 'by rule')
+    add('Quest items:', cfg.keep_quest and 'always' or 'by rule')
+    add('Nearby:', ('%d items, %d filtered'):format(stats.near, stats.blocked))
+    add('Refused pickups:', tostring(W.pickup_refused()))
+    return out
+end
+
+local function snapshot(visible)
+    local picked = {}
+    if type(cfg.classes) == 'table' then for _, n in ipairs(cfg.classes) do picked[n] = true end end
+    local mode = cfg.classes == 'own' and 1 or cfg.classes == false and 2 or 3
+    local m = {
+        overlay_x = (cfg.overlay_x or 16) .. 'px', overlay_y = (cfg.overlay_y or 100) .. 'px', overlay_visible = visible, editing = editing_now, enabled = cfg.enabled == true, on_text = cfg.enabled and 'on' or 'off',
+        settings_label = 'Settings' .. key_hint('panel'), olines = visible and olines() or {},
+        settings_open = settings_open, mode = tostring(mode), min_quality = cfg.min_quality, classes = {}, cats = {}, potions = {},
+        keep_set = cfg.keep_set == true, keep_quest = cfg.keep_quest ~= false, dim = cfg.dim_alpha,
+    }
+    if settings_open then
+        for _, cls in ipairs(W.CLASSES) do m.classes[#m.classes + 1] = {id = 'class-' .. cls.name, name = cls.name, on = picked[cls.name] == true} end
+        for _, cat in ipairs(CATEGORIES) do
+            local rule = cfg.categories[cat]
+            m.cats[#m.cats + 1] = {id = 'cat-' .. cat, name = cat, rule = rule == false and 'never' or rule or '(minimum)'}
+        end
+        for _, k in ipairs(POTIONS) do
+            m.potions[#m.potions + 1] = {id = 'potion-' .. k, name = k, on = cfg.potions[k] ~= false,
+                tip = k == 'colored' and 'The black, blue, green, red and yellow potions' or ''}
+        end
+    end
+    return m
+end
+
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function changed()
+    push()
+    refresh()
+end
+
+local function next_in(list, v)
+    for i, x in ipairs(list) do if x == v then return list[i % #list + 1] end end
+    return list[1]
+end
+
+local function load_doc()
+    local m = snapshot(false)
+    last = m
+    local err
+    doc, err = ui.rml.load('ui/filter.rml', {model = m, on_change = function(_, model)
+        local dim = tonumber(model.dim)
+        if dim and dim ~= cfg.dim_alpha then cfg.dim_alpha = dim; changed() end
+    end})
+    if not doc then gear.log('loot filter: ui/filter.rml failed: ' .. tostring(err)) return end
+    local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
+    on('#open-settings', function() settings_open = not settings_open end)
+    on('#close', function() settings_open = false end)
+    on('#enabled', function() cfg.enabled = not cfg.enabled; changed() end)
+    on('#keep_set', function() cfg.keep_set = not cfg.keep_set; changed() end)
+    on('#keep_quest', function() cfg.keep_quest = not (cfg.keep_quest ~= false); changed() end)
+    on('#mode1', function() cfg.classes = 'own'; changed() end)
+    on('#mode2', function() cfg.classes = false; changed() end)
+    on('#mode3', function()
+        if type(cfg.classes) ~= 'table' then
             local own = W.hero() and W.hero():class()
             cfg.classes = {own or 'seraphim'}
         end
-    end
-    local picked = {}
-    if type(cfg.classes) == 'table' then for _, n in ipairs(cfg.classes) do picked[n] = true end end
-    for i, cls in ipairs(W.CLASSES) do
-        if (i - 1) % 4 == 0 then t:row() end
-        local cc, on = t:checkbox((i - 1) % 4 + 1, cls.name, picked[cls.name] == true,
-            {id = 'class-' .. cls.name, enabled = mode == 3})
-        if cc then
-            changed = true
-            picked[cls.name] = on
-            local list = {}
-            for _, k in ipairs(W.CLASSES) do if picked[k.name] then list[#list + 1] = k.name end end
-            cfg.classes = list
-        end
-    end
-    y = y + t:height() + 12
-
-    -- Qualities
-    ui.label('l-quality', 'Lowest quality', x, y, {height = 22, valign = 'middle', color = accent,
-        tooltip = 'Items below it are left on the ground'})
-    local qc, qi = ui.dropdown('min_quality', x + 140, y, 120, QUALITY_OPTIONS, index_of(QUALITY_OPTIONS, cfg.min_quality))
-    rects.min_quality = {x + 140, y, 120, 22}
-    cfg.min_quality = QUALITY_OPTIONS[qi]
-    changed = changed or qc
-    y = y + 30
-
-    t = ui.table('categories', x, y, w, {columns = {72, 120, 40, 72, 120}, spacing = {8, 3}})
-    for i, cat in ipairs(CATEGORIES) do
-        local col = (i - 1) % 2 * 3 + 1
-        if col == 1 then t:row() end
-        t:label(col, cat)
+        changed()
+    end)
+    on('#min_quality', function() cfg.min_quality = next_in(QUALITY_OPTIONS, cfg.min_quality); changed() end)
+    on('[id^=class-]', function(e)
+        if type(cfg.classes) ~= 'table' then return end
+        local name = tostring(e.current):sub(7)
+        local picked = {}
+        for _, n in ipairs(cfg.classes) do picked[n] = true end
+        picked[name] = not picked[name] or nil
+        local list = {}
+        for _, k in ipairs(W.CLASSES) do if picked[k.name] then list[#list + 1] = k.name end end
+        cfg.classes = list
+        changed()
+    end)
+    on('.catb', function(e)
+        local cat = tostring(e.current):sub(5)
         local rule = cfg.categories[cat]
         local cur = rule == false and 'never' or rule or '(minimum)'
-        local ch, idx = t:dropdown(col + 1, CATEGORY_OPTIONS, index_of(CATEGORY_OPTIONS, cur), {id = 'cat-' .. cat})
-        if ch then
-            cfg.categories[cat] = category_rule(CATEGORY_OPTIONS[idx])
-            changed = true
-        end
-    end
-    y = y + t:height() + 12
-
-    -- Potions and the rest
-    t = ui.table('potions', x, y, w, {columns = {'*', '*', '*', '*', '*'}, spacing = {8, 2}, row_height = 20})
-    t:row(); t:label(1, 'Potions', {id = 'l-potions', color = accent, span = 5})
-    t:row()
-    for i, k in ipairs(POTIONS) do
-        local pc, on = t:checkbox(i, k, cfg.potions[k] ~= false,
-            {id = 'potion-' .. k, tooltip = k == 'colored' and 'The black, blue, green, red and yellow potions' or nil})
-        if k == 'stamina' then rects.potion_stamina = {t:cell(i)} end
-        if pc then cfg.potions[k] = on; changed = true end
-    end
-    y = y + t:height() + 10
-
-    t = ui.table('rest', x, y, w, {columns = {180, 220, '*'}, spacing = {8, 6}})
-    t:row()
-    c, cfg.keep_set = t:checkbox(1, 'Set items always', cfg.keep_set == true, {id = 'keep_set'})
-    changed = changed or c
-    c, cfg.keep_quest = t:checkbox(2, 'Quest items always', cfg.keep_quest ~= false, {id = 'keep_quest'})
-    changed = changed or c
-    t:row()
-    t:label(1, 'Dim filtered labels')
-    c, cfg.dim_alpha = t:slider(2, 0, 255, cfg.dim_alpha, {id = 'dim', step = 5,
-        tooltip = 'Alpha of the labels of filtered items (255: not dimmed)'})
-    changed = changed or c
-    t:row(28)
-    if t:button(1, 'Close', {id = 'close', width = 120, halign = 'left'}) then ui.show_panel('settings', false) end
-    t:label(2, 'Also in the Mods screen (F11)', {size = 11, color = ui.COLORS.text_dim, span = 2})
-    if changed then push(); refresh() end
+        cfg.categories[cat] = category_rule(next_in(CATEGORY_OPTIONS, cur))
+        changed()
+    end)
+    on('[id^=potion-]', function(e)
+        local k = tostring(e.current):sub(8)
+        cfg.potions[k] = not (cfg.potions[k] ~= false)
+        changed()
+    end)
 end
 
+-- Overlay: only while the game shows its labels (Alt held), like the game's own text, and in the layout editor; the settings window stays open on its own.
+local overlay_shown = false
+local show_text_until = 0       -- gear.time() until which the overlay stays after Alt was released
 gear.on('draw', function(state)
     if not state then return end
-    overlay(state)
-    if state.mode == 'game' and not state.exclusive then settings_panel() end
+    overlay_shown = false
+    if state.show_text then show_text_until = gear.time() + 0.4 end     -- it stays a moment, so a click made just before still lands on its button
+    editing_now = ui.edit_mode()
+    local game = state.mode == 'game' and not state.exclusive
+    local visible = cfg.overlay and game and (gear.time() < show_text_until or editing_now) and true or false
+    overlay_shown = visible
+    if not game or (not visible and not settings_open) then return end
+    if not doc then load_doc() end
+    if not doc then return end
+    for k, v in pairs(snapshot(visible)) do
+        if k ~= 'dim' and not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+    if tonumber(doc.model.dim) ~= cfg.dim_alpha then doc.model.dim = cfg.dim_alpha end
+    doc:draw({layer = 'hud'})
 end)
 
 gear.keys.on('panel', function()
-    ui.toggle_panel('settings')
+    settings_open = not settings_open
 end)
 
 ---------------------------------------------------------------------------------------------------------------
