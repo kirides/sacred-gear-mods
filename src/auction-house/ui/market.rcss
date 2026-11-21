@@ -36,9 +36,6 @@ button.cell img.icon { position: absolute; left: 1px; top: 1px; }
 .oskrow { display: flex; flex-direction: row; margin: 2px 0; }
 .oskline { height: 24px; padding: 2px 6px; background-color: #202030; margin-bottom: 4px; }
 button.key { min-width: 34px; margin-right: 4px; text-align: center; }
-scrollbarvertical { width: 14px; }
-scrollbarvertical slidertrack { background-color: #0c0c14; }
-scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

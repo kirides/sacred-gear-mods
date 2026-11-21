@@ -16,9 +16,6 @@ button.mini { padding: 0 8px; margin: 0; }
 .warn { color: #ffc878; }
 .good { color: #8fce7a; }
 .status { margin-top: 8px; }
-scrollbarvertical { width: 14px; }
-scrollbarvertical slidertrack { background-color: #0c0c14; }
-scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

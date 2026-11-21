@@ -22,9 +22,6 @@ button.game-button { min-width: 0; padding: 0 38px 0 37px; font-size: 16px; marg
 .tlist { max-height: 200px; overflow-y: auto; }
 .check-row.small { height: 30px; }
 input.game-check.chk { width: 40px; height: 40px; }
-scrollbarvertical { width: 14px; }
-scrollbarvertical slidertrack { background-color: #0c0c14; }
-scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }
 
 /* portraits */
 #portraits { position: absolute; width: 100px; }
