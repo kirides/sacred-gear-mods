@@ -16,3 +16,5 @@ button.brow { display: block; width: 100%; margin: 0 0 2px 0; padding: 2px 8px; 
 scrollbarvertical { width: 14px; }
 scrollbarvertical slidertrack { background-color: #0c0c14; }
 scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }
+button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
+button.game-button.dis { color: #8a8a8a; opacity: 0.55; }

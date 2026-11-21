@@ -277,7 +277,7 @@ local function load_doc()
         elseif s and view.saved[s] then view.detail = view.saved[s]; view.tab = 4 end
     end)
     on('#publish', publish)
-    on('#unpublish', function() request('unpublish') end)
+    on('#unpublish', function() if view.mine then request('unpublish') end end)
     on('#mine', function() request('mine') end)
     on('#save', function()
         local b = view.detail
