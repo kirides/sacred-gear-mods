@@ -184,7 +184,11 @@ gear.task(function()
     check('the mod menu opens', menu ~= nil)
     A.screenshot('companions-5-padmenu')
     if menu then
-        A.ui_click(menu.x + menu.w / 2, menu.y + 28 + 30 + 13)
+        -- (the cursor rests on the entry first: the menu takes a press for the widget the cursor was over a frame before)
+        local mx, my = A.ui_to_pixels(menu.x + menu.w / 2, menu.y + 28 + 30 + 13)
+        A.move(mx, my)
+        gear.wait(0.3)
+        A.click(mx, my)
         gear.wait(1.5)
         check('the mod menu plays the next hero', party.leader() == comp)
     end
