@@ -208,7 +208,9 @@ local function apply_filters()
     view.follow = true
 end
 
+local pic_cache = {}        -- slot -> {url, at}: the pictures made (see picture_url)
 local function refresh()
+    pic_cache = {}
     view.all = game.saves()
     local heroes, seen = {}, {}
     for _, s in ipairs(view.all) do
@@ -456,9 +458,21 @@ local last = {}
 local row_keys = {}          -- row element id -> slot | 'new'
 local scroll_top = 0
 
+-- A savegame's picture is read from its file the first time (a few milliseconds each): the rows in view ask every frame, and scrolling fast brings new ones every
+-- frame, so a frame loads at most PIC_BUDGET of them (the others show nothing for a moment) and every one is kept for PIC_RECHECK seconds.
+local PIC_BUDGET, PIC_RECHECK = 2, 5
+local pic_budget = PIC_BUDGET
 local function picture_url(s)
-    local pic = s and s.picture and game.save_picture(s.slot)
-    return pic and ('gear:image/' .. pic) or ''
+    if not (s and s.picture) then return '' end
+    local c = pic_cache[s.slot]
+    local now = gear.time()
+    if c and now - c.at < PIC_RECHECK then return c.url end
+    if pic_budget <= 0 then return c and c.url or nil end       -- nil: not loaded yet
+    pic_budget = pic_budget - 1
+    local pic = game.save_picture(s.slot)
+    local url = pic and ('gear:image/' .. pic) or ''
+    pic_cache[s.slot] = {url = url, at = now}
+    return url
 end
 
 local function same(a, b)
@@ -480,14 +494,16 @@ local function row_model(s, key)
     local line2 = when(s)
     if s.name ~= '' and s.name ~= 'QUICKSAVE' then line2 = line2 .. '   ' .. s.name end
     if not s.compatible then line2 = 'another version of the game - ' .. line2 end
-    return {id = 'row' .. tostring(key), sel = key == view.sel, ok = s.compatible and true or false, pic = picture_url(s), nopic = 'no picture',
+    local url = picture_url(s)
+    return {id = 'row' .. tostring(key), sel = key == view.sel, ok = s.compatible and true or false, pic = url or '', nopic = url == '' and 'no picture' or '',
         title = hero_label(s), sub = table.concat(sub, ' - '), line2 = line2}
 end
 
 local function details_model(s)
     local d = {pic = '', nopic = '', title = '', sub = '', fields = {}, note = ''}
-    d.pic = picture_url(s)
-    if d.pic == '' then d.nopic = 'no picture' end
+    local url = picture_url(s)
+    d.pic = url or ''
+    if url == '' then d.nopic = 'no picture' end
     if not s then
         if view.mode == 'save' then
             local h = current_hero()
@@ -535,6 +551,7 @@ local ROW_H_UNITS = 56      -- a row (50 and its 1px border on both sides) and i
 local VIEW_ROWS = 8
 
 local function snapshot(preview)
+    pic_budget = PIC_BUDGET
     local m = {
         open = view.open ~= nil or preview == true, title = view.open == WND_MENUS and 'Load game' or 'Savegames',
         in_game = view.open == WND_GAME, load_on = view.mode == 'load', save_on = view.mode == 'save',

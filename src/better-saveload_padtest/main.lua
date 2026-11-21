@@ -74,5 +74,33 @@ gear.task(function()
     gear.wait(0.5)
     check('D-pad up scrolls back by one card', math.abs(query().scroll_top - top0 - 3 * ROW) <= 1, query().scroll_top)
     A.screenshot('pad-1-scrolled')
+
+    -- A card that is only partly in view under the pad's cursor is brought fully into view (the pad's step puts the cursor on a card whose centre is in view).
+    A.pad(1, 0, 0)                                                   -- the controller is in use from now on
+    A.move(px, py)
+    gear.wait(0.3)
+    local list = rect('#list')
+    local o = query()
+    local reached, moved = false, false
+    for _ = 1, 12 do
+        A.wheel(-1)                                                  -- a notch of the wheel: the list scrolls by a few pixels more than a card, sooner or later partly
+        gear.wait(0.3)
+        o = query()
+        local phase = o.scroll_top % ROW
+        if phase > 8 and phase < 28 then reached = true break end
+    end
+    check('the list stands where a card is partly out of view', reached, o.scroll_top)
+    if reached then
+        -- the cursor on the card at the bottom edge: the card that is cut there
+        local by = list.y + list.h - 6
+        local bx, byp = A.ui_to_pixels(list.x + list.w / 2, by)
+        A.move(bx, byp)
+        gear.wait(0.8)
+        local idx = math.floor((o.scroll_top + (by - list.y)) / ROW) + 1
+        local slot = o.order[idx - (o.mode == 'save' and 1 or 0)]
+        local r = slot and rect('#row' .. slot)
+        check('the card under the cursor is in view as a whole', r and r.y + r.h <= list.y + list.h + 1 and r.y >= list.y - 1,
+            r and ('%.1f..%.1f of %.1f..%.1f'):format(r.y, r.y + r.h, list.y, list.y + list.h))
+    end
     finish()
 end)
