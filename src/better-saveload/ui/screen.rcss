@@ -27,11 +27,12 @@ button.row:hover { border-color: #ffe030; }
 button.row.sel { background-color: #4a3f2a; border-color: #ffd780; }
 .thumb { position: absolute; left: 4px; top: 1px; width: 64px; height: 48px; background-color: #08080c; }
 .nopic { display: block; text-align: center; color: #8c8c8c; font-size: 11dp; padding-top: 16px; }
-.rtop { position: absolute; left: 72px; right: 6px; top: 3px; height: 20px; line-height: 20px; }
+.port { position: absolute; right: 4px; top: 1px; width: 36px; height: 48px; }
+.rtop { position: absolute; left: 72px; right: 46px; top: 3px; height: 20px; line-height: 20px; }
 .rtitle { line-height: 18px; font-size: 15dp; font-weight: bold; color: #ffd780; }
 .rtitle.dim { color: #8c8c8c; }
 .rsub { float: right; font-size: 12dp; color: #f0f0f0; }
-.rline { position: absolute; left: 72px; right: 6px; top: 27px; height: 16px; line-height: 16px; font-size: 12dp; color: #8c8c8c; white-space: nowrap; overflow: hidden; }
+.rline { position: absolute; left: 72px; right: 46px; top: 27px; height: 16px; line-height: 16px; font-size: 12dp; color: #8c8c8c; white-space: nowrap; overflow: hidden; }
 .pad { margin: 8px; }
 .pic { width: 250px; height: 188px; background-color: #08080c; border: 1px #4a4030; }
 .dpic { width: 250px; height: 188px; }

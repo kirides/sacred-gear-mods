@@ -482,9 +482,23 @@ local function same(a, b)
     return true
 end
 
+-- The portrait of the hero's class (what the party window draws for such a hero), an image of the game: one per class, asked once.
+local port_cache = {}
+local function portrait_url(s)
+    local class = s and s.class
+    if not class then return '' end
+    local url = port_cache[class]
+    if url == nil then
+        local ok, id = pcall(function() return gear.party and gear.party.class_portrait and gear.party.class_portrait(class) end)
+        url = (ok and id) and ('gear:image/' .. id) or ''
+        port_cache[class] = url
+    end
+    return url
+end
+
 local function row_model(s, key)
     if not s then
-        return {id = 'rownew', sel = key == view.sel, ok = true, pic = '', nopic = '', title = 'New savegame', sub = '',
+        return {id = 'rownew', sel = key == view.sel, ok = true, pic = '', nopic = '', port = '', title = 'New savegame', sub = '',
             line2 = 'Saves into the first free number'}
     end
     local sub = {}
@@ -495,7 +509,7 @@ local function row_model(s, key)
     if s.name ~= '' and s.name ~= 'QUICKSAVE' then line2 = line2 .. '   ' .. s.name end
     if not s.compatible then line2 = 'another version of the game - ' .. line2 end
     local url = picture_url(s)
-    return {id = 'row' .. tostring(key), sel = key == view.sel, ok = s.compatible and true or false, pic = url or '', nopic = url == '' and 'no picture' or '',
+    return {id = 'row' .. tostring(key), sel = key == view.sel, ok = s.compatible and true or false, pic = url or '', nopic = url == '' and 'no picture' or '', port = portrait_url(s),
         title = hero_label(s), sub = table.concat(sub, ' - '), line2 = line2}
 end
 
