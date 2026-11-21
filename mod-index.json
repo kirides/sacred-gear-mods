@@ -20,10 +20,7 @@
         "quests",
         "server"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/achievements.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/achievements.jpg"
     },
     {
       "id": "art-bars",
@@ -36,10 +33,7 @@
         "ui",
         "combat"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/art-bars.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/art-bars.jpg"
     },
     {
       "id": "auction-house",
@@ -52,10 +46,7 @@
         "multiplayer",
         "economy"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/auction-house.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/auction-house.jpg"
     },
     {
       "id": "autosave",
@@ -67,10 +58,7 @@
       "tags": [
         "saves"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/autosave.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/autosave.jpg"
     },
     {
       "id": "better-saveload",
@@ -83,10 +71,7 @@
         "saves",
         "ui"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/better-saveload.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/better-saveload.jpg"
     },
     {
       "id": "bounty",
@@ -98,10 +83,7 @@
       "tags": [
         "quests"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/bounty.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/bounty.jpg"
     },
     {
       "id": "buildsharer",
@@ -114,10 +96,7 @@
         "multiplayer",
         "server"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/buildsharer.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/buildsharer.jpg"
     },
     {
       "id": "companions",
@@ -129,10 +108,7 @@
       "tags": [
         "companions"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/companions.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/companions.jpg"
     },
     {
       "id": "custom-classes",
@@ -144,10 +120,7 @@
       "tags": [
         "classes"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes.jpg"
     },
     {
       "id": "damagemeter",
@@ -160,10 +133,7 @@
         "ui",
         "tools"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/damagemeter.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/damagemeter.jpg"
     },
     {
       "id": "drop-tuning",
@@ -188,10 +158,7 @@
         "chat",
         "ui"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/enhanced-chat.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/enhanced-chat.jpg"
     },
     {
       "id": "item-compare",
@@ -204,10 +171,7 @@
         "ui",
         "loot"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/item-compare.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/item-compare.jpg"
     },
     {
       "id": "key-bindings",
@@ -244,10 +208,7 @@
       "tags": [
         "loot"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/lootfilter.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/lootfilter.jpg"
     },
     {
       "id": "lootlog",
@@ -260,10 +221,7 @@
         "loot",
         "tools"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/lootlog.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/lootlog.jpg"
     },
     {
       "id": "questhelper",
@@ -276,10 +234,7 @@
         "quests",
         "server"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/questhelper.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/questhelper.jpg"
     },
     {
       "id": "realms",
@@ -292,10 +247,7 @@
         "multiplayer",
         "tools"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/realms.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/realms.jpg"
     },
     {
       "id": "region-counter",
@@ -315,7 +267,7 @@
       "name": "Sacred theme",
       "version": "0.1.0",
       "author": "Sacred Gear",
-      "description": "The look of the game for the RmlUi screens of the other mods: the thick frame, game buttons, check orbs, sliders, tab bars, scroll bars and the controller prompts. Gear puts its stylesheet in front of every RmlUi document, so the mods that use it list it as a requirement; switching one of them on switches this on.",
+      "description": "The look of the game for the RmlUi screens of the other mods: the thick frame, game buttons, check orbs, sliders, tab bars, scroll bars and the controller prompts. Gear puts its stylesheet in front of every RmlUi document. The mods do not need it: without a theme they use the plain base style of Sacred Gear and look plainer; this one gives them the look of the game.",
       "tags": [
         "ui"
       ]
@@ -344,10 +296,7 @@
         "tools",
         "ui"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/sessiontracker.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/sessiontracker.jpg"
     },
     {
       "id": "shared-stash",
@@ -360,10 +309,7 @@
         "loot",
         "multiplayer"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/shared-stash.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/shared-stash.jpg"
     },
     {
       "id": "spawn-rate",
@@ -410,10 +356,7 @@
         "multiplayer",
         "server"
       ],
-      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/world-events.jpg",
-      "requires": [
-        "sacred-theme"
-      ]
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/world-events.jpg"
     }
   ]
 }

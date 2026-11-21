@@ -4,7 +4,6 @@ return {
     name = 'Better SaveLoad',
     version = '1.4.0',
     author = 'kirides',
-    requires = {'sacred-theme'},
     description = 'The savegame screen made new: hero, class, level and picture of every savegame, filters by '
         .. 'character and class, a search, several orders, and room for thousands of savegames (the game stops at '
         .. '100 on its own screen). Works with the mouse, the keyboard and the controller.',

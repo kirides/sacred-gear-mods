@@ -4,7 +4,6 @@ return {
     name = 'World events',
     version = '0.2.0',
     author = 'kirides',
-    requires = {'sacred-theme'},
     description = 'Shows the game server\'s world event (a realm-wide goal such as "slay 1000 orcs in 2 hours") as a small movable indicator (a pill with progress and time rings). Needs a Sacred Gear game server with the world_events script.',
     settings = {
         {id = 'visibility', type = 'choice', label = 'Show the bar', default = 'always', section = 'Progress bar',

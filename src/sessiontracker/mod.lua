@@ -4,7 +4,6 @@ return {
     name = 'Session tracker',
     version = '0.2.0',
     author = 'Sacred Gear',
-    requires = {'sacred-theme'},
     description = 'Time played, kills, gold and experience gained this session, with per-hour rates; lifetime totals and the last sessions are kept.',
     settings = {
         {id = 'min_rate_seconds', type = 'number', label = 'Show per-hour rates after (seconds)', min = 5, max = 600, step = 5, default = 30,

@@ -39,7 +39,7 @@ function Run($instance, $slot, $modlist, $timeout = 240) {
 function Step($name, $modlist, $config = @{}, $slot = $Save, $timeout = 240) {
     if ($Only.Count -and ($Only -notcontains $name)) { return }
     # the shared RmlUi theme (src/sacred-theme) is part of every run
-    $modlist = $modlist + ',sacred-theme'
+    if (-not $env:SHOTS_NOTHEME) { $modlist = $modlist + ',sacred-theme' }     # SHOTS_NOTHEME=1: without a theme, to see the base style
     $names = $modlist -split ','
     Prepare $names $config
     Run $name $slot $modlist $timeout
