@@ -89,6 +89,8 @@ if (-not $CropOnly) {
     Phase 'mm-dm'    'autosave' "{phase = 'modscreen', clicks = {{1136, 277, shot = 'dm'}, {940, 268, shot = 'arrow'}}}" @('damagemeter')
     Phase 'mm-more'  'autosave' "{phase = 'modscreen', clicks = {{1128, 187}, {1260, 125}, {485, 232, shot = 'save'}}}" @('damagemeter')
     Phase 'mm-menu'  'autosave' "{phase = 'menupad'}" @() '-'
+    Phase 'mm-pad'   'region-counter' "{phase = 'modscreen', open = {mod = 'region-counter'}, pad = true, hover = {456, 125}}" @('autosave')
+    Phase 'mm-pad2'  'region-counter' "{phase = 'modscreen', open = {mod = 'region-counter'}, pad = true, hover = {1235, 187}}" @('autosave')
     Phase 'mm-set'   'autosave' "{phase = 'modscreen', clicks = {{1128, 187, shot = 'settings'}, {1172, 125, shot = 'keys'}, {1260, 125, shot = 'more'}}}" @('damagemeter')
     Phase 'dt'       'drop-tuning' "{phase = 'modscreen', open = {mod = 'drop-tuning'}}"
     Phase 'dtmore'   'drop-tuning' "{phase = 'modscreen', open = {mod = 'drop-tuning', tab = 'page'}}"

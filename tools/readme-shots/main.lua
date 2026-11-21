@@ -194,6 +194,9 @@ gear.task(function()
         -- the key and the event would race and the key would close the screen again)
         if gear.config.open then gear.emit('mods.open', gear.config.open) else A.press('f11') end
         gear.wait(1)
+        -- config.pad: the controller is in use (the prompts show); config.hover = {x, y}: the cursor rests there (the control under it shows its prompt)
+        if gear.config.pad then A.pad(1, 0, 0); gear.wait(0.3) end
+        if gear.config.hover then A.move(gear.config.hover[1], gear.config.hover[2]); gear.wait(0.6) end
         -- {x, y} clicks; {x, y, wheel = n} moves there and turns the mouse wheel n notches (negative: down); {key = 'escape'} presses a key
         for _, c in ipairs(gear.config.clicks or {}) do
             if c.wheel then A.move(c[1], c[2]); gear.wait(0.3); A.wheel(c.wheel) elseif c.key then A.press(c.key) else A.click(c[1], c[2]) end
