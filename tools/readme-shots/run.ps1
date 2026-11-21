@@ -80,15 +80,22 @@ if (-not $CropOnly) {
         Phase "srv-$w" $w "{phase = 'server', which = '$w', press = true, wait = 8}"
     }
     Phase 'srv-questhelper' 'questhelper' "{phase = 'server', which = 'questhelper', press = true, clicks = {{570, 137}}}"
-    # the Mods screen (F11): the mod is the second row of the list (README screenshots comes first), its Settings button is at 1005, 323
-    # (the first row is at 250), its tabs at 1015 / 1113, 213, the next page button at 887, 707
-    Phase 'dt'       'drop-tuning' "{phase = 'modscreen', clicks = {{1005, 250}, {887, 707}}}"
-    Phase 'dtmore'   'drop-tuning' "{phase = 'modscreen', clicks = {{1005, 250}, {1113, 213}}}"
-    Phase 'keys'     'key-bindings' "{phase = 'modscreen', clicks = {{1106, 250}}}"
-    Phase 'realms'   'realms' "{phase = 'modscreen', realm = {id = 'private', name = 'Private realm', host = 'realm.example.com', port = 7066}, clicks = {{1005, 382}}}"
-    Phase 'autopage' 'autosave' "{phase = 'modscreen', clicks = {{1005, 250}, {1113, 213}}}"
-    Phase 'spawn'    'spawn-rate' "{phase = 'modscreen', clicks = {{1005, 323}}}"
-    Phase 'region'   'region-counter' "{phase = 'modscreen', clicks = {{1005, 323}}}"
+    # the Mods screen (F11): the tours 'mm-*' click through the real window (the coordinates are for 1600x900 and a list with a scroll bar: they are the Settings link of the
+    # first row, the tabs at the top right, ...) and take a picture after each click that says shot = name; the others open a mod's own screen with open = {mod, tab}
+    Phase 'mm-list'  'autosave' "{phase = 'modscreen', clicks = {}}" @('sessiontracker', 'lootlog', 'damagemeter', 'bounty')
+    Phase 'mm-osk'   'autosave' "{phase = 'modscreen', clicks = {{1128, 187}, {985, 329, shot = 'osk'}, {1172, 125, shot = 'x'}}}" @('damagemeter')
+    Phase 'mm-act'   'autosave' "{phase = 'modscreen', clicks = {{402, 205, shot = 'off'}, {402, 205}, {1128, 187}, {676, 177, shot = 'check'}, {800, 228, shot = 'slider'}, {1172, 125}, {745, 180, shot = 'capture'}, {key = 'f7', shot = 'bound'}}}" @('damagemeter')
+    Phase 'mm-dm'    'autosave' "{phase = 'modscreen', clicks = {{1136, 277, shot = 'dm'}, {940, 268, shot = 'arrow'}}}" @('damagemeter')
+    Phase 'mm-more'  'autosave' "{phase = 'modscreen', clicks = {{1128, 187}, {1260, 125}, {485, 232, shot = 'save'}}}" @('damagemeter')
+    Phase 'mm-menu'  'autosave' "{phase = 'menupad'}" @() '-'
+    Phase 'mm-set'   'autosave' "{phase = 'modscreen', clicks = {{1128, 187, shot = 'settings'}, {1172, 125, shot = 'keys'}, {1260, 125, shot = 'more'}}}" @('damagemeter')
+    Phase 'dt'       'drop-tuning' "{phase = 'modscreen', open = {mod = 'drop-tuning'}}"
+    Phase 'dtmore'   'drop-tuning' "{phase = 'modscreen', open = {mod = 'drop-tuning', tab = 'page'}}"
+    Phase 'keys'     'key-bindings' "{phase = 'modscreen', open = {mod = 'key-bindings', tab = 'keys'}}"
+    Phase 'realms'   'realms' "{phase = 'modscreen', realm = {id = 'private', name = 'Private realm', host = 'realm.example.com', port = 7066}, open = {mod = 'realms'}}"
+    Phase 'autopage' 'autosave' "{phase = 'modscreen', open = {mod = 'autosave', tab = 'page'}}"
+    Phase 'spawn'    'spawn-rate' "{phase = 'modscreen', open = {mod = 'spawn-rate'}}"
+    Phase 'region'   'region-counter' "{phase = 'modscreen', open = {mod = 'region-counter'}}"
     Phase 'twibase'  'twitch_integration' "{phase = 'modscreen', clicks = {}}" @('twi_sacred')
 }
 python (Join-Path $PSScriptRoot 'crop.py') $Game

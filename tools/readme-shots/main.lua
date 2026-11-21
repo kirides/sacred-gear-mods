@@ -17,6 +17,14 @@ local function chord(mod, key) A.key_down(mod); A.press(key); A.key_up(mod) end
 
 gear.task(function()
     A.wait_for_menu(120)
+    if phase == 'menupad' then
+        -- the start menu with the controller in use: the Mods button's prompt (Select until it has the focus)
+        gear.wait(3)
+        A.pad(1, 0, 0)
+        gear.wait(1)
+        shot('menu-pad')
+        return A.quit(0)
+    end
     if phase == 'menumods' then
         -- the Mods screen from the start menu (no savegame loaded): for pages that are only live outside a game (the realm picker)
         if gear.config.realm then gear.realm.add(gear.config.realm) end
@@ -182,12 +190,15 @@ gear.task(function()
     elseif phase == 'modscreen' then
         -- the Mods screen, then clicks (config.clicks = {{x, y}, ...} in client pixels), then the picture
         if gear.config.realm then gear.realm.add(gear.config.realm) end
-        A.press('f11')
+        -- config.open = {mod = id, tab = 'settings' | 'keys' | 'page'}: straight to that mod's screen (more robust than clicking the row; no F11 then:
+        -- the key and the event would race and the key would close the screen again)
+        if gear.config.open then gear.emit('mods.open', gear.config.open) else A.press('f11') end
         gear.wait(1)
-        -- {x, y} clicks; {x, y, wheel = n} moves there and turns the mouse wheel n notches (negative: down)
+        -- {x, y} clicks; {x, y, wheel = n} moves there and turns the mouse wheel n notches (negative: down); {key = 'escape'} presses a key
         for _, c in ipairs(gear.config.clicks or {}) do
-            if c.wheel then A.move(c[1], c[2]); gear.wait(0.3); A.wheel(c.wheel) else A.click(c[1], c[2]) end
+            if c.wheel then A.move(c[1], c[2]); gear.wait(0.3); A.wheel(c.wheel) elseif c.key then A.press(c.key) else A.click(c[1], c[2]) end
             gear.wait(1.2)
+            if c.shot then shot(c.shot) end     -- {x, y, shot = 'name'}: a picture after this click (as well as the last one)
         end
         gear.wait(5)
         shot('modscreen')
