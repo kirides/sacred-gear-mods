@@ -1,0 +1,14 @@
+<rml>
+<head>
+    <title>Realms</title>
+    <link type="text/rcss" href="page.rcss"/>
+</head>
+<body data-model="model">
+<div id="page">
+    <p>Online play server (Closed / Open Internet)</p>
+    <div class="line"><span class="muted lab">Realm</span><button class="game-button" id="realm" title="Register and login of the next Closed / Open Internet go to this server"><span class="padkey a"></span>{{ realm }}</button></div>
+    <p class="muted">Host: {{ host }}</p>
+    <p data-if="message != ''" class="muted">{{ message }}</p>
+</div>
+</body>
+</rml>

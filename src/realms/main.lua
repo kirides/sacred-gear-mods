@@ -12,26 +12,31 @@ local C = ui.COLORS
 local message
 local function note(text) message = text end
 
-gear.mods.page(function(x, y, w, h)
-    local realms = gear.realm.list()
-    local current = gear.realm.current()
-    ui.text('Online play server (Closed / Open Internet)', x, y, {color = C.text})
-    local names, index = {}, 1
-    for i, r in ipairs(realms) do
-        names[i] = r.name
-        if r.id == current.id then index = i end
-    end
-    local line = y + 24
-    ui.text('Realm', x, line, {color = C.text_dim, height = 18, valign = 'middle'})
-    local changed, picked = ui.dropdown('realm', x + 60, line, math.min(w - 70, 320), names, index,
-        {tooltip = 'Register and login of the next Closed / Open Internet go to this server'})
-    if changed then
-        local ok, why = gear.realm.use(realms[picked].id)
-        note(ok and ('Realm: ' .. realms[picked].name) or ('Not changed: ' .. tostring(why)))
-    end
-    local r = realms[index]
-    ui.text('Host: ' .. (r.host ~= '' and r.host or '(from Settings.cfg)') .. (r.port and (':' .. r.port) or ''),
-        x, line + 30, {color = C.text_dim})
-    if message then ui.text(message, x, line + 52, {color = C.text_dim}) end
-    return 100
-end)
+-- The page is ui/page.rml (the game theme): the realm button steps through the realms.
+gear.mods.page_rml('ui/page.rml', {
+    model = {realm = '', host = '', message = ''},
+    on_load = function(doc)
+        doc:on('#realm', 'click', function()
+            local realms = gear.realm.list()
+            local current = gear.realm.current()
+            local index = 1
+            for i, r in ipairs(realms) do if r.id == current.id then index = i end end
+            local pick = realms[index % #realms + 1]
+            if not pick then return end
+            local ok, why = gear.realm.use(pick.id)
+            note(ok and ('Realm: ' .. pick.name) or ('Not changed: ' .. tostring(why)))
+        end)
+    end,
+    update = function(doc)
+        local current = gear.realm.current()
+        local r
+        for _, x in ipairs(gear.realm.list()) do if x.id == current.id then r = x end end
+        r = r or current
+        local host = (r.host and r.host ~= '') and r.host or '(from Settings.cfg)'
+        local m = doc.model
+        if m.realm ~= r.name then m.realm = r.name end
+        local h = host .. (r.port and (':' .. r.port) or '')
+        if m.host ~= h then m.host = h end
+        if m.message ~= (message or '') then m.message = message or '' end
+    end,
+})

@@ -1,0 +1,15 @@
+<rml>
+<head>
+    <title>Autosave</title>
+    <link type="text/rcss" href="page.rcss"/>
+</head>
+<body data-model="model">
+<div id="page">
+    <p>Status: {{ status }}</p>
+    <p class="muted">Slots: {{ slots }}</p>
+    <p data-if="last != ''" class="muted">{{ last }}</p>
+    <p data-if="game_autosave" class="warn small">The game's own Auto-Save is on: it also saves into a new slot</p>
+    <button class="game-button" id="now" data-attrif-disabled="requested" title="Autosave right away (into the next slot)"><span class="padkey a"></span>Save now</button>
+</div>
+</body>
+</rml>

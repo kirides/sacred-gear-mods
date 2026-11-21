@@ -263,31 +263,31 @@ local function draw_note(s)
     note_doc:draw({layer = 'top'})
 end
 
--- A "More" tab in the mod's page of the Mods screen: the state, and Save now.
-gear.mods.page(function(x, y, w, h)
-    local status
-    if not cfg.enabled then status = 'off'
-    elseif requested then status = 'saving ...'
-    elseif due then status = 'waiting: ' .. tostring(waiting_reason or 'retrying')
-    else status = 'next in ' .. mmss(cfg.interval_minutes * 60 - active) end
-    ui.text('Status: ' .. status, x, y, {height = 18, valign = 'middle'})
-    local names = {}
-    for i, n in ipairs(cfg.slots) do names[i] = ('GAME%02d'):format(n) end
-    ui.text('Slots: ' .. table.concat(names, ', '), x, y + 20, {height = 18, valign = 'middle'})
-    if gear.game.config('AUTOSAVE') == 1 then
-        ui.text("The game's own Auto-Save is on: it also saves into a new slot", x, y + 56,
-            {height = 16, size = 11, color = 0xFFE0C060})
-    end
-    if last then
-        ui.text(('Last: slot %d, %s ago'):format(last.slot, mmss(gear.time() - last.time)), x, y + 40,
-            {height = 18, valign = 'middle'})
-    end
-    if ui.button('now', x, y + 78, 120, 22, 'Save now', {enabled = not requested,
-        tooltip = 'Autosave right away (into the next slot)'}) then
-        due, next_try = true, 0
-    end
-    return 106
-end)
+-- A "More" tab in the mod's page of the Mods screen (ui/page.rml, the game theme): the state, and Save now.
+gear.mods.page_rml('ui/page.rml', {
+    model = {status = '', slots = '', last = '', game_autosave = false, requested = false},
+    on_load = function(doc)
+        doc:on('#now', 'click', function()
+            if not requested then due, next_try = true, 0 end
+        end)
+    end,
+    update = function(doc)
+        local status
+        if not cfg.enabled then status = 'off'
+        elseif requested then status = 'saving ...'
+        elseif due then status = 'waiting: ' .. tostring(waiting_reason or 'retrying')
+        else status = 'next in ' .. mmss(cfg.interval_minutes * 60 - active) end
+        local names = {}
+        for i, n in ipairs(cfg.slots) do names[i] = ('GAME%02d'):format(n) end
+        local m = doc.model
+        local function set(k, v) if m[k] ~= v then m[k] = v end end
+        set('status', status)
+        set('slots', table.concat(names, ', '))
+        set('last', last and ('Last: slot %d, %s ago'):format(last.slot, mmss(gear.time() - last.time)) or '')
+        set('game_autosave', gear.game.config('AUTOSAVE') == 1)
+        set('requested', requested and true or false)
+    end,
+})
 
 gear.on('draw', function(s)
     if s then draw_note(s) end
