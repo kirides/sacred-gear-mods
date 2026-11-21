@@ -208,7 +208,9 @@ local function apply_filters()
     view.follow = true
 end
 
+local pic_cache = {}        -- slot -> url: the pictures made (see picture_url)
 local function refresh()
+    pic_cache = {}
     view.all = game.saves()
     local heroes, seen = {}, {}
     for _, s in ipairs(view.all) do
@@ -456,9 +458,20 @@ local last = {}
 local row_keys = {}          -- row element id -> slot | 'new'
 local scroll_top = 0
 
+-- A savegame's picture is read from its file the first time (a few milliseconds each): the rows in view ask every frame, and scrolling fast brings new ones every
+-- frame, so a frame loads at most PIC_BUDGET of them (the others show nothing for a moment) and every one is kept until the screen is opened again (refresh).
+local PIC_BUDGET = 2
+local pic_budget = PIC_BUDGET
 local function picture_url(s)
-    local pic = s and s.picture and game.save_picture(s.slot)
-    return pic and ('gear:image/' .. pic) or ''
+    if not (s and s.picture) then return '' end
+    local c = pic_cache[s.slot]
+    if c then return c end
+    if pic_budget <= 0 then return nil end       -- nil: not loaded yet
+    pic_budget = pic_budget - 1
+    local pic = game.save_picture(s.slot)
+    local url = pic and ('gear:image/' .. pic) or ''
+    pic_cache[s.slot] = url
+    return url
 end
 
 local function same(a, b)
@@ -468,9 +481,23 @@ local function same(a, b)
     return true
 end
 
-local function row_model(s, key)
+-- The portrait of the hero's class (what the party window draws for such a hero), an image of the game: one per class, asked once.
+local port_cache = {}
+local function portrait_url(s)
+    local class = s and s.class
+    if not class then return '' end
+    local url = port_cache[class]
+    if url == nil then
+        local ok, id = pcall(function() return gear.party and gear.party.class_portrait and gear.party.class_portrait(class) end)
+        url = (ok and id) and ('gear:image/' .. id) or ''
+        port_cache[class] = url
+    end
+    return url
+end
+
+local function row_model(s, key, visible)
     if not s then
-        return {id = 'rownew', sel = key == view.sel, ok = true, pic = '', nopic = '', title = 'New savegame', sub = '',
+        return {id = 'rownew', sel = key == view.sel, ok = true, pic = '', nopic = '', port = '', title = 'New savegame', sub = '',
             line2 = 'Saves into the first free number'}
     end
     local sub = {}
@@ -480,14 +507,16 @@ local function row_model(s, key)
     local line2 = when(s)
     if s.name ~= '' and s.name ~= 'QUICKSAVE' then line2 = line2 .. '   ' .. s.name end
     if not s.compatible then line2 = 'another version of the game - ' .. line2 end
-    return {id = 'row' .. tostring(key), sel = key == view.sel, ok = s.compatible and true or false, pic = picture_url(s), nopic = 'no picture',
+    local url = visible and picture_url(s) or nil      -- only a row in view looks for its picture
+    return {id = 'row' .. tostring(key), sel = key == view.sel, ok = s.compatible and true or false, pic = url or '', nopic = url == '' and 'no picture' or '', port = portrait_url(s),
         title = hero_label(s), sub = table.concat(sub, ' - '), line2 = line2}
 end
 
 local function details_model(s)
     local d = {pic = '', nopic = '', title = '', sub = '', fields = {}, note = ''}
-    d.pic = picture_url(s)
-    if d.pic == '' then d.nopic = 'no picture' end
+    local url = picture_url(s)
+    d.pic = url or ''
+    if url == '' then d.nopic = 'no picture' end
     if not s then
         if view.mode == 'save' then
             local h = current_hero()
@@ -531,10 +560,11 @@ local function osk_model()
     return o.target == 'search' and 'On-screen keyboard: search' or 'On-screen keyboard: the name of the savegame', rows, o.shift and 'SHIFT' or 'Shift'
 end
 
-local ROW_H_UNITS = 54      -- a row (50) and its gap (4)
+local ROW_H_UNITS = 56      -- a row (50 and its 1px border on both sides) and its gap (4)
 local VIEW_ROWS = 8
 
 local function snapshot(preview)
+    pic_budget = PIC_BUDGET
     local m = {
         open = view.open ~= nil or preview == true, title = view.open == WND_MENUS and 'Load game' or 'Savegames',
         in_game = view.open == WND_GAME, load_on = view.mode == 'load', save_on = view.mode == 'save',
@@ -560,13 +590,16 @@ local function snapshot(preview)
     local rows = {}
     if view.mode == 'save' then rows[1] = false end   -- the "new savegame" row
     for _, sv in ipairs(view.shown) do rows[#rows + 1] = sv end
+    local list_h = view.mode == 'save' and 324 or 356      -- the list's height (screen.rcss: #list)
     local first = math.max(1, math.floor(scroll_top / ROW_H_UNITS) - 1)
     local lastrow = math.min(#rows, first + VIEW_ROWS + 4)
     row_keys = {}
     for i = first, lastrow do
         local sv = rows[i]
         local key = sv and sv.slot or 'new'
-        local r = row_model(sv or nil, key)
+        -- in view: the list is LIST_H tall (a row in the rendered window but below or above it is not looked at)
+        local visible = (i - 1) * ROW_H_UNITS < scroll_top + list_h and i * ROW_H_UNITS > scroll_top
+        local r = row_model(sv or nil, key, visible)
         row_keys[r.id] = key
         m.rows[#m.rows + 1] = r
     end
@@ -827,6 +860,7 @@ gear.on('better-saveload.query', function(out)
     out.name, out.osk = view.name, view.osk ~= nil
     out.search, out.focus, out.page = view.search, view.focus, view.page
     out.osk_target = view.osk and view.osk.target or nil
+    out.scroll_top = scroll_top
     out.order = {}
     for i, s in ipairs(view.shown) do out.order[i] = s.slot end
 end)
