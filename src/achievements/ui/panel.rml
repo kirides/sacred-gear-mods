@@ -1,0 +1,31 @@
+<rml>
+<head>
+    <title>Achievements</title>
+    <link type="text/rcss" href="panel.rcss"/>
+</head>
+<body data-model="model">
+<div id="panel" class="window" data-panel="panel" data-title="Achievements">
+    <div class="titlebar">{{ title }}</div>
+    <div class="body">
+        <p data-if="!has_state" class="muted msg">{{ msg }}</p>
+        <div data-if="has_state">
+            <p class="accent">{{ streak }}</p>
+            <p class="muted small" data-if="reward != ''">{{ reward }}</p>
+            <p class="heading">{{ count }}</p>
+            <div class="list">
+                <div data-for="a : list" class="ach" data-class-done="a.done">
+                    <div class="top">
+                        <span class="name">{{ a.name }}</span>
+                        <span class="prog">{{ a.prog }}</span>
+                    </div>
+                    <div class="bottom">
+                        <span class="desc">{{ a.desc }}</span>
+                        <div class="bar" data-if="!a.done"><div class="fill" data-style-width="a.pct + '%'"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</rml>

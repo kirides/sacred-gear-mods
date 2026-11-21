@@ -1,0 +1,16 @@
+#panel { position: absolute; left: 590px; top: 40px; width: 410px; }
+.msg { white-space: pre-wrap; }
+.small { font-size: 12dp; }
+.list { max-height: 360px; overflow-y: auto; }
+.ach { padding: 3px 6px; margin: 0 0 4px 0; background-color: #ffffff16; }
+.ach.done { background-color: #4a3814c8; }
+.ach .top, .ach .bottom { display: flex; flex-direction: row; justify-content: space-between; align-items: center; }
+.ach .name { color: #e8e8e8; font-weight: bold; }
+.ach.done .name, .ach.done .prog { color: #f0c86e; }
+.ach .prog { color: #ffffff8c; font-size: 12dp; }
+.ach .desc { color: #ffffff8c; font-size: 12dp; }
+.ach .bar { width: 80px; height: 5px; margin: 0; border: 0; background-color: #ffffff1e; }
+.ach .bar .fill { height: 5px; background-color: #c8a03cdc; }
+scrollbarvertical { width: 14px; }
+scrollbarvertical slidertrack { background-color: #0c0c14; }
+scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }

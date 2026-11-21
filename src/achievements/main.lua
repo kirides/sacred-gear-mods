@@ -12,11 +12,6 @@ end
 
 local ui, net = gear.ui, gear.net
 
-local GOLD = ui.rgba(240, 200, 110)
-local DIM = ui.rgba(255, 255, 255, 140)
-local DONE_BG = ui.rgba(74, 56, 20, 200)
-local TODO_BG = ui.rgba(255, 255, 255, 22)
-
 local ch = net.channel('achievements:sync')
 local state = nil          -- the last {op = 'state'} table
 local toast = gear.toast
@@ -49,71 +44,70 @@ gear.on('net_caps', function(caps)
 end)
 gear.on('load', function() request() end)
 
+local shown = false
+
 -- keep the panel's numbers fresh while it is open
 gear.every(30, function()
-    if ui.panel_open('panel') then request() end
+    if shown then request() end
 end)
 
 gear.keys.on('panel', function()
-    local open = not ui.panel_open('panel')
-    ui.show_panel('panel', open)
-    if open then request() end
+    shown = not shown
+    if shown then request() end
 end)
 
 -- ---- drawing ----
+-- ui/panel.rml (the game theme): the model holds ready-made strings; it is rebuilt when the server's state or the key hint changes.
 
-local function bar(x, y, w, h, fraction)
-    ui.rect(x, y, w, h, ui.rgba(255, 255, 255, 30))
-    if fraction > 0 then ui.rect(x, y, math.max(1, w * fraction), h, ui.rgba(200, 160, 60, 220)) end
-end
+local doc
+local function plural(n, word) return ('%d %s%s'):format(n, word, n == 1 and '' or 's') end
 
-local ROW = 40
-local function draw_panel()
-    local px, py = gear.config.panel_x or 590, gear.config.panel_y or 40
-    local p = ui.panel('panel', 'Achievements' .. key_hint('panel'), px, py, 410, 480, {resizable = true, min_width = 330, min_height = 240})
-    if not p.open then return end
-    local x, y = p.content_x, p.content_y
-    local w = p.x + p.w - 8 - x
+local function snapshot()
+    local m = {title = 'Achievements' .. key_hint('panel'), has_state = state ~= nil, msg = '', streak = '', reward = '', count = '', list = {}}
     if not state then
-        local msg = net.supported() and 'Waiting for the server...'
+        m.msg = net.supported() and 'Waiting for the server...'
             or 'This server has no achievements.\nThey need the Sacred Gear game server with its achievements.lua script.'
-        ui.text(msg, x, y + 4, {color = DIM})
-        return
+        return m
     end
     local list = state.ach or {}
-    local streak, days = state.streak or 0, state.days or 0
     local done = 0
     for _, a in ipairs(list) do if a.done then done = done + 1 end end
-    ui.text(('Login streak: %d day%s   best %d   %d day%s visited'):format(streak, streak == 1 and '' or 's',
-        state.best or 0, days, days == 1 and '' or 's'), x, y, {color = GOLD})
+    m.streak = ('Login streak: %s, best %d, %s visited'):format(plural(state.streak or 0, 'day'), state.best or 0, plural(state.days or 0, 'day'))
     if state.next then
-        ui.text((state.claimed and "Today's reward is claimed. Tomorrow: " or "Today's reward: ") .. state.next,
-            x, y + 17, {color = DIM, size = 12})
+        m.reward = (state.claimed and "Today's reward is claimed. Tomorrow: " or "Today's reward: ") .. state.next
     end
-    ui.text(('%d of %d unlocked'):format(done, #list), x, y + 34, {color = ui.COLORS.accent})
-    local top = y + 54
-    local area = ui.scroll_begin('list', x, top, w, p.y + p.h - 8 - top, {step = ROW})
-    local cy = area.content_y
+    m.count = ('%d of %d unlocked'):format(done, #list)
     for i, a in ipairs(list) do
-        local ry = cy + (i - 1) * ROW
-        local aw = area.w - 6
-        ui.rect(x, ry, aw, ROW - 4, a.done and DONE_BG or TODO_BG)
-        ui.text(tostring(a.name), x + 6, ry + 2, {color = a.done and GOLD or ui.COLORS.text, bold = true})
-        ui.text(tostring(a.desc), x + 6, ry + 20, {color = DIM, size = 11})
-        if a.done then
-            ui.text('Done', x, ry + 2, {width = aw - 6, align = 'right', color = GOLD})
-        else
-            local need = math.max(1, tonumber(a.need) or 1)
-            local have = tonumber(a.have) or 0
-            ui.text(('%d / %d'):format(math.floor(have), math.floor(need)), x, ry + 2,
-                {width = aw - 6, align = 'right', color = DIM, size = 12})
-            bar(x + aw - 86, ry + 22, 80, 5, math.min(1, have / need))
-        end
+        local need = math.max(1, tonumber(a.need) or 1)
+        local have = tonumber(a.have) or 0
+        m.list[i] = {
+            name = tostring(a.name), desc = tostring(a.desc), done = a.done and true or false,
+            prog = a.done and 'Done' or ('%d / %d'):format(math.floor(have), math.floor(need)),
+            pct = a.done and 100 or math.floor(math.min(1, have / need) * 100),
+        }
     end
-    ui.scroll_end(#list * ROW)
+    return m
+end
+
+local last = {}
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
 end
 
 gear.on('draw', function(st)
-    if not st or st.mode ~= 'game' then return end
-    if not st.exclusive then draw_panel() end
+    if not st or st.mode ~= 'game' or st.exclusive or not shown then return end
+    if not doc then
+        local m = snapshot()
+        last = m
+        local err
+        doc, err = ui.rml.load('ui/panel.rml', {model = m})
+        if not doc then gear.log('achievements: ui/panel.rml failed: ' .. tostring(err)) return end
+    end
+    for k, v in pairs(snapshot()) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+    doc:draw({layer = 'hud'})
 end)

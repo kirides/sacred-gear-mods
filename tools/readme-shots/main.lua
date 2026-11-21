@@ -97,7 +97,7 @@ gear.task(function()
                 {name = 'Collector', desc = 'Find 10 magic items', need = 10, have = 7},
             }})
             say('achievements:sync', {op = 'unlock', name = 'Monster Hunter', desc = 'Kill 100 monsters', reward = '500 gold'})
-            if gear.config.press then gear.ui.show_panel('achievements:panel', true) end
+            if gear.config.press then A.key_down('control'); A.press('g'); A.key_up('control') end
         elseif w == 'bounty' then
             say('bounty:state', {v = 1, bounties = {
                 {title = 'Wolf hunt', text = 'Kill wolves near the village', n = 12, target = 20, left = 4800, reward = '500 gold'},
