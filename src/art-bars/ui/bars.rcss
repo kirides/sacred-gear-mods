@@ -1,0 +1,25 @@
+.bar { position: absolute; box-sizing: border-box; height: 52px; background-color: #00000080; }
+.bar .slot { box-sizing: border-box; position: relative; display: inline-block; margin: 4px 0 0 4px; padding: 0; border: 1px #6e5e3a; background-color: #2a2418; }
+.bar .slot.edit { border-color: #ffd780; }
+.bar .slot:hover, .bar .slot:focus { border-color: #ffe030; }
+.bar .slot.dim .icon { opacity: 0.4; }
+.slot .icon { position: absolute; left: 3px; top: 3px; }
+.slot .glyph { position: absolute; left: 0px; right: 0px; top: 30%; text-align: center; color: #e8c878; font-size: 18dp; }
+.slot .cd { position: absolute; left: 3px; right: 3px; top: 3px; background-color: #000000a0; }
+.slot .cdn { position: absolute; left: 0px; right: 0px; top: 38%; text-align: center; color: #ffffff; font-size: 14dp; font-weight: bold; }
+.slot .key { position: absolute; left: 4px; bottom: 2px; color: #ffffff; font-size: 10dp; }
+.bar .side { position: absolute; left: 100%; top: 4px; margin-left: 4px; }
+.page { display: block; font-size: 11dp; }
+#picker { position: absolute; left: 200px; top: 100px; width: 520px; }
+.plist { height: 320px; overflow-y: auto; margin-top: 6px; }
+.pick { display: block; margin: 0 0 3px 0; padding: 2px 6px; text-align: left; height: 44px; background-color: #12121c; border: 1px #4a4030; }
+.pick:hover, .pick:focus { border-color: #ffe030; }
+.picon { width: 40px; height: 40px; vertical-align: middle; margin-right: 8px; }
+.pglyph { display: inline-block; width: 40px; text-align: center; color: #e8c878; margin-right: 8px; }
+.ptext { display: inline-block; vertical-align: middle; }
+.pname { color: #ffd780; font-size: 14dp; }
+.pkind { color: #9a9a9a; font-size: 12dp; }
+button.mini { padding: 0 6px; margin: 0; font-size: 12dp; }
+scrollbarvertical { width: 14px; }
+scrollbarvertical slidertrack { background-color: #0c0c14; }
+scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }

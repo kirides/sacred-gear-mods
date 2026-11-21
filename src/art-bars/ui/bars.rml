@@ -1,0 +1,61 @@
+<rml>
+<head>
+    <title>Art bars</title>
+    <link type="text/rcss" href="bars.rcss"/>
+</head>
+<body data-model="model">
+<div id="bar1" class="bar" data-panel="bar1" data-title="Art bar" data-if="b1.show" data-style-left="b1.left" data-style-top="b1.top" data-style-width="b1.width">
+    <button data-for="s : b1.slots" class="slot" data-attr-id="s.id" data-attr-title="s.tip" data-class-edit="edit" data-class-dim="!s.known" data-style-width="px" data-style-height="px">
+        <img data-if="s.icon != ''" class="icon" data-style-width="ipx" data-style-height="ipx" data-attr-src="s.icon" data-style-image-color="s.tint"/>
+        <span data-if="s.label != ''" class="glyph">{{ s.label }}</span>
+        <div data-if="s.cd &gt; 0" class="cd" data-style-height="s.cd + '%'"></div>
+        <span data-if="s.cd &gt; 0" class="cdn">{{ s.cdn }}</span>
+        <span data-if="s.key != ''" class="key">{{ s.key }}</span>
+    </button>
+    <div class="side">
+        <button class="mini" id="edit" data-attr-title="edit_tip">{{ edit_mark }}</button>
+        <span data-if="paging" class="muted page">{{ page }}</span>
+    </div>
+</div>
+
+<div id="bar2" class="bar" data-panel="bar2" data-title="Art bar" data-if="b2.show" data-style-left="b2.left" data-style-top="b2.top" data-style-width="b2.width">
+    <button data-for="s : b2.slots" class="slot" data-attr-id="s.id" data-attr-title="s.tip" data-class-edit="edit" data-class-dim="!s.known" data-style-width="px" data-style-height="px">
+        <img data-if="s.icon != ''" class="icon" data-style-width="ipx" data-style-height="ipx" data-attr-src="s.icon" data-style-image-color="s.tint"/>
+        <span data-if="s.label != ''" class="glyph">{{ s.label }}</span>
+        <div data-if="s.cd &gt; 0" class="cd" data-style-height="s.cd + '%'"></div>
+        <span data-if="s.cd &gt; 0" class="cdn">{{ s.cdn }}</span>
+        <span data-if="s.key != ''" class="key">{{ s.key }}</span>
+    </button>
+</div>
+
+<div id="bar3" class="bar" data-panel="bar3" data-title="Art bar" data-if="b3.show" data-style-left="b3.left" data-style-top="b3.top" data-style-width="b3.width">
+    <button data-for="s : b3.slots" class="slot" data-attr-id="s.id" data-attr-title="s.tip" data-class-edit="edit" data-class-dim="!s.known" data-style-width="px" data-style-height="px">
+        <img data-if="s.icon != ''" class="icon" data-style-width="ipx" data-style-height="ipx" data-attr-src="s.icon" data-style-image-color="s.tint"/>
+        <span data-if="s.label != ''" class="glyph">{{ s.label }}</span>
+        <div data-if="s.cd &gt; 0" class="cd" data-style-height="s.cd + '%'"></div>
+        <span data-if="s.cd &gt; 0" class="cdn">{{ s.cdn }}</span>
+        <span data-if="s.key != ''" class="key">{{ s.key }}</span>
+    </button>
+</div>
+
+<div id="picker" class="window" data-panel="picker" data-title="Art bars" data-if="picker_open">
+    <div class="titlebar">{{ picker_title }}</div>
+    <div class="body">
+        <p data-if="!picking" class="muted">Choose a slot first: press the edit button next to the first bar, then click a slot.</p>
+        <div data-if="picking">
+            <div class="row space">
+                <span><button class="game-button" id="clear">Empty this slot</button><button class="game-button" id="close">Close</button></span>
+                <span class="muted">{{ count }}</span>
+            </div>
+            <div class="plist">
+                <button data-for="a : abilities" class="pick" data-attr-id="a.id" data-attr-title="a.tip">
+                    <img data-if="a.icon != ''" class="picon" data-attr-src="a.icon" data-style-image-color="a.tint"/>
+                    <span data-if="a.icon == ''" class="pglyph">{{ a.glyph }}</span>
+                    <span class="ptext"><span class="pname">{{ a.name }}</span><br/><span class="pkind">{{ a.kind }}</span></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</rml>

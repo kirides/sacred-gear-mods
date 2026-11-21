@@ -114,7 +114,7 @@ local function press(bar, slot)
     if not h then return end
     local id = get_slot(h, bar, slot)
     if not id then
-        if setting('show_empty', true) then state.picking = {bar = bar, slot = slot}; ui.show_panel('picker', true) end
+        if setting('show_empty', true) then state.picking = {bar = bar, slot = slot}; state.picker = true end
         return
     end
     use(h, id, false)
@@ -123,29 +123,36 @@ end
 ---------------------------------------------------------------------------------------------------------------
 -- Drawing.
 ---------------------------------------------------------------------------------------------------------------
-local DIM, ACCENT = 0xFFB0A890, 0xFFE8C878
-
 local function bar_count() return setting('paging', false) and 1 or setting('bars', 2) end
 
-local function slot_icon(id, x, y, size, tint_override)
-    if is_combo(id) then
-        ui.rect(x, y, size, size, 0xFF2A2418)
-        ui.text('C' .. (id - 0x200 + 1), x + size / 2 - 8, y + size / 2 - 8, {color = ACCENT, bold = true, size = 14})
-        return
-    end
-    local image, tint = gear.classes.art_icon(id)
-    if image then
-        ui.image(image, x, y, size, size, {color = tint_override or tint})
-    else
-        ui.rect(x, y, size, size, 0xFF2A2418)
-        ui.text('?', x + size / 2 - 4, y + size / 2 - 8, {color = DIM})
-    end
+-- ui/bars.rml (the game theme): up to three bars and the picker window; one model rebuilt every frame, only what changed is written.
+local doc
+local last = {}
+
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
 end
 
-local function draw_slot(h, bar, slot, x, y, size, key_id)
+local function icon_of(id)
+    if is_combo(id) then return '', 0xFFFFFFFF end
+    local image, tint = gear.classes.art_icon(id)
+    if image then return 'gear:image/' .. image, tint or 0xFFFFFFFF end
+    return '', 0xFFFFFFFF
+end
+
+local function css_color(argb)
+    argb = argb or 0xFFFFFFFF
+    return ('#%02x%02x%02x%02x'):format(math.floor(argb / 65536) % 256, math.floor(argb / 256) % 256, argb % 256, math.floor(argb / 16777216) % 256)
+end
+
+local function slot_model(h, bar, slot, i)
     local id = get_slot(h, bar, slot)
-    local tip
+    local key_id = ('bar%d_%d'):format(bar, slot)
     local known = id and (is_combo(id) or h:ability(id) ~= nil)
+    local tip
     if id then
         local a = (not is_combo(id)) and h:ability(id) or nil
         tip = ability_name(id) .. (a and ('  (level %d)'):format((a.level or 0) + (a.bonus or 0)) or '')
@@ -155,119 +162,119 @@ local function draw_slot(h, bar, slot, x, y, size, key_id)
     end
     local label = gear.keys.label(key_id)
     if label ~= '' then tip = tip .. '\nKey: ' .. label end
-    local clicked = ui.button('slot' .. bar .. '_' .. slot, x, y, size, size, '', {tooltip = tip})
+    local m = {id = ('b%ds%d'):format(i, slot), tip = tip, known = known and true or false, icon = '', tint = '#ffffffff', label = '', cd = 0, cdn = '', key = ''}
     if id then
-        local dim = not known
-        slot_icon(id, x + 3, y + 3, size - 6, dim and 0xFF606060 or nil)
+        if is_combo(id) then
+            m.label = 'C' .. (id - 0x200 + 1)
+        else
+            local src, tint = icon_of(id)
+            if src ~= '' then m.icon, m.tint = src, css_color(tint) else m.label = '?' end
+        end
         local a = (not is_combo(id)) and h:ability(id) or (function()
             for _, k in ipairs(h:combos() or {}) do if k.id == id then return {regen = math.max(0, k.total - k.charge), regen_max = k.total} end end
         end)()
         if a and a.regen and a.regen > 0.05 then
-            local frac = math.min(1, a.regen / math.max(0.1, a.regen_max or a.regen))
-            ui.rect(x + 3, y + 3, size - 6, (size - 6) * frac, 0xA0000000)
-            ui.text(('%.0f'):format(a.regen), x + 6, y + size / 2 - 7, {color = 0xFFFFFFFF, bold = true, size = 13, shadow = true})
+            m.cd = math.floor(math.min(1, a.regen / math.max(0.1, a.regen_max or a.regen)) * 100)
+            m.cdn = ('%.0f'):format(a.regen)
         end
     elseif state.edit or setting('show_empty', true) then
-        ui.text('+', x + size / 2 - 4, y + size / 2 - 9, {color = DIM, size = 16})
+        m.label = '+'
     end
     if setting('keys_shown', true) and label ~= '' then
-        ui.text(label:gsub('ctrl%+shift%+', 'cs+'):gsub('ctrl%+', 'c+'):gsub('Ctrl%+Shift%+', 'CS+'):gsub('Ctrl%+', 'C+'), x + 4, y + size - 14,
-            {color = 0xFFFFFFFF, size = 10, shadow = true})
+        m.key = label:gsub('ctrl%+shift%+', 'cs+'):gsub('ctrl%+', 'c+'):gsub('Ctrl%+Shift%+', 'CS+'):gsub('Ctrl%+', 'C+')
     end
-    if clicked then
-        if state.edit or not id then
-            state.picking = {bar = bar, slot = slot}
-            ui.show_panel('picker', true)
-        else
-            use(h, id, true)
-        end
-    end
+    return m
 end
 
-local function draw_bars()
+local function snapshot()
     local h = hero()
-    if not h then return end
     local size = setting('size', 44)
     local slots = setting('slots', 8)
-    local n = bar_count()
-    for i = 1, n do
-        local bar = setting('paging', false) and state.page or i
-        local w = slots * (size + 4) + 4
-        local height = size + 8
-        local p = ui.panel('bar' .. i, ('Art bar %d'):format(bar), cfg.bar_x, cfg.bar_y - (i - 1) * (height + 6), w, height,
-            {bare = true, min_width = w, min_height = height, passive = true})
-        if p.open then
-            local x0, y0 = p.content_x or 0, p.content_y or 0
-            ui.rect(x0, y0, w, height, 0x80000000)
-            for s = 1, slots do
-                draw_slot(h, bar, s, x0 + 4 + (s - 1) * (size + 4), y0 + 4, size, ('bar%d_%d'):format(bar, s))
-            end
-            if i == 1 then
-                if ui.button('edit', x0 + w + 4, y0 + 4, 22, 22, state.edit and 'x' or 'e', {tooltip = 'Fill the slots: click a slot, choose an ability'}) then
-                    state.edit = not state.edit
-                end
-                if setting('paging', false) then
-                    ui.text(('%d/%d'):format(state.page, 3), x0 + w + 4, y0 + 30, {color = DIM, size = 11})
-                end
-            end
+    local n = h and bar_count() or 0
+    local m = {px = size .. 'px', ipx = (size - 6) .. 'px', edit = state.edit, edit_mark = state.edit and 'x' or 'e',
+        edit_tip = 'Fill the slots: click a slot, choose an ability', paging = setting('paging', false),
+        page = ('%d/%d'):format(state.page, 3), picker_open = state.picker and true or false, picking = false,
+        picker_title = 'Art bars', count = '', abilities = {}}
+    local w = slots * (size + 4) + 4
+    local height = size + 8
+    for i = 1, 3 do
+        local b = {show = i <= n, left = cfg.bar_x .. 'px', top = (cfg.bar_y - (i - 1) * (height + 6)) .. 'px', width = w .. 'px', slots = {}}
+        if b.show then
+            local bar = setting('paging', false) and state.page or i
+            for s = 1, slots do b.slots[s] = slot_model(h, bar, s, i) end
+        end
+        m['b' .. i] = b
+    end
+    local pick = state.picking
+    if state.picker and h and pick then
+        m.picking = true
+        m.picker_title = ('Art bar %d, slot %d'):format(pick.bar, pick.slot)
+        local list = {}
+        for _, a in ipairs(h:abilities() or {}) do list[#list + 1] = a.id end
+        for _, k in ipairs(h:combos() or {}) do list[#list + 1] = k.id end
+        m.count = ('%d abilities'):format(#list)
+        for i, id in ipairs(list) do
+            local a = (not is_combo(id)) and h:ability(id) or nil
+            local rec = (not is_combo(id)) and gear.data.abilities[id] or nil
+            local src, tint = '', nil
+            if not is_combo(id) then src, tint = icon_of(id) end
+            local kind = is_combo(id) and 'combo' or ((id >= 1000 and 'combat art' or 'spell') .. (a and (', level %d'):format((a.level or 0) + (a.bonus or 0)) or ''))
+            m.abilities[i] = {id = 'a' .. id, name = ability_name(id), kind = kind, icon = src, tint = css_color(tint), glyph = is_combo(id) and ('C' .. (id - 0x200 + 1)) or '?',
+                tip = rec and gear.text.get(rec.description_text or 0) or "The combo master's combo"}
         end
     end
+    return m
 end
 
--- The picker: the hero's abilities as cards (icon, name, level); click one to put it into the slot being edited.
-local function draw_picker()
-    if not ui.panel_open('picker') then return end
-    local h = hero()
-    local pick = state.picking
-    local p = ui.panel('picker', pick and ('Art bar %d, slot %d'):format(pick.bar, pick.slot) or 'Art bars', 200, 100, 520, 420, {resizable = true, min_width = 360, min_height = 200})
-    if not p.open then return end
-    local x, y, w, hh = p.content_x or 0, p.content_y or 0, p.content_w or 500, p.content_h or 380
-    if not h or not pick then
-        ui.text('Choose a slot first: press the edit button next to the first bar, then click a slot.', x, y, {color = DIM, size = 12})
-        return
-    end
-    local list = {}
-    for _, a in ipairs(h:abilities() or {}) do list[#list + 1] = a.id end
-    for _, k in ipairs(h:combos() or {}) do list[#list + 1] = k.id end
-    if ui.button('clear', x, y, 130, 22, 'Empty this slot', {}) then
-        set_slot(h, pick.bar, pick.slot, nil)
-        ui.show_panel('picker', false)
-        return
-    end
-    ui.text(('%d abilities'):format(#list), x + 140, y + 4, {color = DIM, size = 12})
-    -- a table: icon, name and kind, a button; the whole row is the choice (controller: the button is the stop)
-    local area = ui.scroll_begin('picker_list', x, y + 28, w, hh - 28, {})
-    local t = ui.table('picker_rows', area.content_x, area.content_y, area.w, {
-        columns = {44, '*', {width = 'auto', min = 80, align = 'right'}},
-        spacing = {8, 4},
-        row_height = 44,
-        stripes = true,
-    })
-    for _, id in ipairs(list) do
-        t:row()
-        local a = (not is_combo(id)) and h:ability(id) or nil
-        local rec = (not is_combo(id)) and gear.data.abilities[id] or nil
-        local tip = rec and gear.text.get(rec.description_text or 0) or "The combo master's combo"
-        local image, tint = nil, nil
-        if not is_combo(id) then image, tint = gear.classes.art_icon(id) end
-        if image then t:image(1, image, {color = tint, width = 40, height = 40}) else t:label(1, is_combo(id) and ('C' .. (id - 0x200 + 1)) or '?', {align = 'center'}) end
-        local kind = is_combo(id) and 'combo' or ((id >= 1000 and 'combat art' or 'spell') .. (a and (', level %d'):format((a.level or 0) + (a.bonus or 0)) or ''))
-        t:label(2, ability_name(id) .. '\n' .. kind, {bold = true, size = 12, tooltip = tip})
-        if t:button(3, 'Choose', {tooltip = tip}) then
-            set_slot(h, pick.bar, pick.slot, id)
-            ui.show_panel('picker', false)
-        end
-    end
-    ui.scroll_end(t:height())
+local function open_picker(bar, slot)
+    state.picking = {bar = bar, slot = slot}
+    state.picker = true
+end
+
+local function slot_of(id)
+    local i, s = tostring(id):match('^b(%d+)s(%d+)$')
+    if not i then return nil end
+    i, s = tonumber(i), tonumber(s)
+    return setting('paging', false) and state.page or i, s
+end
+
+local function load_doc()
+    local m = snapshot()
+    last = m
+    local err
+    doc, err = ui.rml.load('ui/bars.rml', {model = m})
+    if not doc then gear.log('art-bars: ui/bars.rml failed: ' .. tostring(err)) return end
+    doc:on('.slot', 'click', guard('slot click', function(e)
+        local bar, slot = slot_of(e.current)
+        local h = hero()
+        if not (bar and h) then return end
+        local id = get_slot(h, bar, slot)
+        if state.edit or not id then open_picker(bar, slot) else use(h, id, true) end
+    end))
+    doc:on('#edit', 'click', guard('edit click', function() state.edit = not state.edit end))
+    doc:on('#clear', 'click', guard('clear click', function()
+        local h, pick = hero(), state.picking
+        if h and pick then set_slot(h, pick.bar, pick.slot, nil) end
+        state.picker = false
+    end))
+    doc:on('#close', 'click', guard('close click', function() state.picker = false end))
+    doc:on('.pick', 'click', guard('pick click', function(e)
+        local h, pick = hero(), state.picking
+        local id = tonumber(tostring(e.current):match('^a(%d+)$'))
+        if h and pick and id then set_slot(h, pick.bar, pick.slot, id) end
+        state.picker = false
+    end))
 end
 
 gear.on('draw', guard('draw', function(s)
     if type(s) ~= 'table' or s.mode ~= 'game' or s.exclusive then return end
-    draw_bars()
-    draw_picker()
+    if not doc then load_doc() end
+    if not doc then return end
+    for k, v in pairs(snapshot()) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+    doc:draw({layer = 'hud'})
 end))
-
-ui.show_panel('picker', false)
 
 for bar = 1, 3 do
     for slot = 1, 12 do
@@ -308,5 +315,5 @@ gear.on('art-bars.set', guard('set', function(bar, slot, id)
 end))
 gear.on('art-bars.use', guard('use', function(bar, slot) press(bar, slot) end))
 gear.events.declare('art-bars.pick', 'Open the picker for a slot: (bar, slot)')
-gear.on('art-bars.pick', guard('pick', function(bar, slot) state.picking = {bar = bar, slot = slot}; ui.show_panel('picker', true) end))
+gear.on('art-bars.pick', guard('pick', function(bar, slot) state.picking = {bar = bar, slot = slot}; state.picker = true end))
 gear.on('art-bars.edit', guard('edit', function(on) state.edit = on ~= false end))
