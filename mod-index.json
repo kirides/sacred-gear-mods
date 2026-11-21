@@ -13,7 +13,7 @@
       "id": "achievements",
       "path": "mods/achievements",
       "name": "Achievements and login streak",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "Toasts for the achievements and the daily login streak of the game server's achievements.lua (Sacred.GameServer scripts-examples), and a panel listing them with progress. Needs that server; the original GameServer.exe does not talk to mods.",
       "tags": [
@@ -26,7 +26,7 @@
       "id": "art-bars",
       "path": "mods/art-bars",
       "name": "Art bars",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "More combat arts at hand than the game's skill bar holds: extra bars of slots for your hero's combat arts and spells (copies and chains of the Custom classes mod too), with keys, cooldowns and the controller. Single player.",
       "tags": [
@@ -39,7 +39,7 @@
       "id": "auction-house",
       "path": "mods/auction-house",
       "name": "Auction house",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "kirides",
       "description": "Buy and sell items with the other players of a game, from the chest window. The host keeps the market.",
       "tags": [
@@ -52,7 +52,7 @@
       "id": "autosave",
       "path": "mods/autosave",
       "name": "Autosave",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": "kirides",
       "description": "Saves the game every few minutes of play into its own slots.",
       "tags": [
@@ -64,7 +64,7 @@
       "id": "better-saveload",
       "path": "mods/better-saveload",
       "name": "Better SaveLoad",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "author": "kirides",
       "description": "The savegame screen made new: hero, class, level and picture of every savegame, filters by character and class, a search, several orders, and room for thousands of savegames (the game stops at 100 on its own screen). Works with the mouse, the keyboard and the controller.",
       "tags": [
@@ -77,7 +77,7 @@
       "id": "bounty",
       "path": "mods/bounty",
       "name": "Bounty board",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "author": "Sacred Gear",
       "description": "Bounties to hunt, plus daily and weekly quests with streak rewards: in single player the mod posts, counts and pays them itself, in a network game it shows the board of a Sacred.GameServer with scripts-examples/bounty_board.lua. Panel and a small tracker.",
       "tags": [
@@ -89,7 +89,7 @@
       "id": "buildsharer",
       "path": "mods/buildsharer",
       "name": "Build sharer",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "Publish your hero build to the game server and browse the builds other players shared. Needs the Sacred.GameServer of the SacredEngineRemake with scripts-examples/build_sharer.lua; the server reads your skills and equipment itself, this mod only sends a title, a note, tags and the items you carry.",
       "tags": [
@@ -102,7 +102,7 @@
       "id": "companions",
       "path": "mods/companions",
       "name": "Companions",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": "Sacred Gear",
       "description": "A party of heroes in single player: recruit companions of any class, each with their own inventory, equipment, attributes, skills, combat arts and experience. Click a portrait (or use the controller's mod menu) to play that hero; the others follow and fight on their own, with their combat arts and spells.",
       "tags": [
@@ -114,7 +114,7 @@
       "id": "custom-classes",
       "path": "mods/custom-classes",
       "name": "Custom classes",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "Heroes with a class of your own: a Seraphim body with Battle Mage fire, a Gladiator that casts. A class is a profile on one of the eight hero bodies (skills, arts from any class, runes) made with the Sacred Class Editor or by hand. Needs the mod on every computer in a LAN game.",
       "tags": [
@@ -126,7 +126,7 @@
       "id": "damagemeter",
       "path": "mods/damagemeter",
       "name": "Damage meter",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "Damage dealt and taken by the hero (from the engine's final damage of every hit), DPS over the fight and the last seconds (compact view by default: character name and DPS, the whole party in a network game), the biggest hit, damage by monster type, kills per minute.",
       "tags": [
@@ -151,7 +151,7 @@
       "id": "enhanced-chat",
       "path": "mods/enhanced-chat",
       "name": "Enhanced Chat",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": "kirides",
       "description": "A chat window in place of the lines at the top of the screen that fade and are gone: it keeps the last lines of the session to scroll back through, has tabs for global, private and system messages (and a filter by player in a network game) and shows item names in their rarity colour, also for the drops near your hero. Move it with the layout editor, set its size in the settings. Mouse, keyboard and controller.",
       "tags": [
@@ -164,7 +164,7 @@
       "id": "item-compare",
       "path": "mods/item-compare",
       "name": "Item comparison",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "Hover an item (backpack, chest, shop, the pad's cursor too) and a panel beside the game's tooltip shows what it changes compared with the item your hero wears in that slot: green for better, red for worse. Optionally for your companions too.",
       "tags": [
@@ -202,7 +202,7 @@
       "id": "lootfilter",
       "path": "mods/lootfilter",
       "name": "Loot filter",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": "Sacred Gear",
       "description": "Picks up only the items you want: by class, quality and category; dims the rest on the ground.",
       "tags": [
@@ -214,7 +214,7 @@
       "id": "lootlog",
       "path": "mods/lootlog",
       "name": "Loot log",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "A log of the items that dropped near the hero and the items that ended up in the backpack, filterable by quality, category and kind; kept between sessions.",
       "tags": [
@@ -227,7 +227,7 @@
       "id": "questhelper",
       "path": "mods/questhelper",
       "name": "Quest helper",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "A panel with the quest items in your backpack (read here) and the quest records of your hero, with hints, which the game server reports (Sacred.GameServer with scripts-examples/quest_helper.lua and hero data). Limits: neither Gear nor the server can read the game's quest journal.",
       "tags": [
@@ -240,7 +240,7 @@
       "id": "realms",
       "path": "mods/realms",
       "name": "Realm",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "Choose the online play server (realm) for Closed / Open Internet: a page in the mod manager. Realms are kept in mods/gear_realms.json.",
       "tags": [
@@ -265,7 +265,7 @@
       "id": "sacred-theme",
       "path": "mods/sacred-theme",
       "name": "Sacred theme",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": "Sacred Gear",
       "description": "The look of the game for the RmlUi screens of the other mods: the thick frame, game buttons, check orbs, sliders, tab bars, scroll bars and the controller prompts. Gear puts its stylesheet in front of every RmlUi document. The mods do not need it: without a theme they use the plain base style of Sacred Gear and look plainer; this one gives them the look of the game.",
       "tags": [
@@ -289,7 +289,7 @@
       "id": "sessiontracker",
       "path": "mods/sessiontracker",
       "name": "Session tracker",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "Sacred Gear",
       "description": "Time played, kills, gold and experience gained this session, with per-hour rates; lifetime totals and the last sessions are kept.",
       "tags": [
@@ -302,7 +302,7 @@
       "id": "shared-stash",
       "path": "mods/shared-stash",
       "name": "Shared stash",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": "kirides",
       "description": "A stash shared by all your heroes, in a panel beside the chest window.",
       "tags": [
@@ -349,7 +349,7 @@
       "id": "world-events",
       "path": "mods/world-events",
       "name": "World events",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": "kirides",
       "description": "Shows the game server's world event (a realm-wide goal such as \"slay 1000 orcs in 2 hours\") as a small movable indicator (a pill with progress and time rings). Needs a Sacred Gear game server with the world_events script.",
       "tags": [

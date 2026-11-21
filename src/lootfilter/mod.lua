@@ -8,7 +8,7 @@ local COLOR_RULES = {{value = 'default', label = 'As their kind'}, {value = 'tak
 return {
     id = 'lootfilter',
     name = 'Loot filter',
-    version = '0.3.0',
+    version = '0.3.1',
     author = 'Sacred Gear',
     description = 'Picks up only the items you want: by class, quality and category; dims the rest on the ground.',
     automation = true,      -- only for its self test (-gear-auto)
