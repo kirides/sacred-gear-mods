@@ -4,10 +4,11 @@
 -- the party (play, name, behaviour, dismiss), recruiting and bringing heroes, the game's mercenaries, and the tactics
 -- of one hero.
 --
--- Nothing here changes the party by itself: every action goes back through the functions main.lua passes to
--- window.new (env): play, recruit, dismiss, keep, bring, record, store, prefs and the heroes' files. Drawing only.
+-- Both are ui/party.rml (the game theme): one model of ready-made values, rebuilt every frame (only what changed is written), and
+-- delegated click listeners. Nothing here changes the party by itself: every action goes back through the functions main.lua
+-- passes to window.new (env): play, recruit, dismiss, keep, bring, record, store, prefs and the heroes' files.
 --   env.play(c)             play that hero             env.recruit(class)   a new companion of that class
---   env.dismiss(c)          dismiss (second click)      env.bring(f)         bring the hero of a hero file
+--   env.dismiss(c)          dismiss                     env.bring(f)         bring the hero of a hero file
 --   env.keep()              keep the hero you play     env.name_of(c)       the companion's name
 --   env.record(id)          the stored record (name, behaviour, abilities switched off)
 --   env.store, env.prefs    the stores of main.lua (:changed() after a change)
@@ -16,7 +17,7 @@
 --   env.may_be_in_party(f)         a hero file whose class and name match a hero of the party (a warning, not a block)
 --   env.separate(), env.purse_of(c), env.give_gold(c, n|'all'), env.take_gold(c, n|'all')   separate purses (setting)
 --   env.NAMES, env.CLASS_LABEL     names per class, class labels
--- Returns {draw_portraits = fn, draw_window = fn}.
+-- Returns {draw = fn, open = fn, toggle = fn, rect = fn}.
 
 local ai = require('ai')
 
@@ -36,47 +37,33 @@ function M.new(env)
     local CLASS_ORDER = {'seraphim', 'gladiator', 'battlemage', 'darkelf', 'woodelf', 'vampiress', 'dwarf', 'daemon'}
     local BEHAVIOURS = {'aggressive', 'defensive', 'passive'}
     local BEHAVIOUR_LABEL = {aggressive = 'Aggressive', defensive = 'Defensive', passive = 'Passive', default = 'Default'}
-
-    local DIM, ACCENT, GOOD, BAD = 0xFFB0A890, 0xFFE8C878, 0xFF60C060, 0xFFC04040
-    local AMBER = 0xFFFFC060   -- the warning colour of Gear's mod manager (key conflicts)
+    local AMOUNTS = {100, 1000, 10000, 'all'}
+    local AMOUNT_LABELS = {'100', '1,000', '10,000', 'All'}
+    local MB = {'vanilla', 'assist', 'passive'}
+    local ML = {'As the game does', 'Assist (fight the party\'s target)', 'Passive (stay with you)'}
+    local USE_LABEL = {target = 'on the target', self = 'in a fight, on themselves', heal = 'when someone is hurt', form = 'when a fight starts (and to change back after it)'}
+    local STYLES = {'balanced', 'arts', 'weapon', 'ranged'}
+    local STYLE_LABEL = {balanced = 'Weapon and combat arts', arts = 'Combat arts only', weapon = 'Weapon first', ranged = 'Ranged weapon'}
+    local STYLE_TIP = 'How they fight: combat arts and spells as soon as they are ready, the weapon in between (default); '
+        .. 'combat arts and spells only, keeping back from the fight in between (a battle mage); or the weapon first, '
+        .. 'combat arts now and then; or with the ranged weapon of their weapon slots (bow, crossbow, musket), taking it up '
+        .. 'when a fight starts'
 
     local function key_hint(id)
         local k = gear.keys.label(id)
         return k ~= '' and (' (' .. k .. ')') or ''
     end
 
-
-    ---------------------------------------------------------------------------------------------------------------
-    -- Portraits: the companions under the game's own portraits. A click plays that hero; the controller's D-pad stops on
-    -- them like on any window button.
-    ---------------------------------------------------------------------------------------------------------------
-    -- The portraits look like the game's own (its mercenaries' at the top right): the portrait ring of GUI_main_02 (red;
-    -- grey when fallen, gilded under the cursor) with the round portrait inside, the game's health bar under it.
-    local IMG_RING, IMG_RING_GREY, IMG_BAR, IMG_BAR_FILL = 41, 42, 66, 67
-    -- Measured against the game's own portraits: the ring at its own size, the portrait over its hole (stretched as the
-    -- game does), the health bar under it, the rows 128 apart from the top of the game's column.
-    local RW, RH = 96, 108              -- the ring
-    local PX, PY, PIW, PIH = 8, 20, 66, 72  -- the portrait
-    local BX, BY, BW, BH = 7, 105, 73, 9    -- the health bar
-    local PW, ROW = RW, 132
-
-    local function bar(x, y, w, h, frac, color)
-        ui.rect(x, y, w, h, 0xC0000000)
-        ui.rect(x + 1, y + 1, math.max(0, (w - 2) * math.min(1, math.max(0, frac))), h - 2, color)
+    local function group(n)   -- 1234567 -> 1,234,567
+        local t = tostring(math.floor(n)):reverse():gsub('(%d%d%d)', '%1,'):reverse()
+        return (t:gsub('^,', ''))
     end
 
-    -- The game's health bar: its frame, the green beads, the lost part dimmed.
-    -- The game's bead bar: its frame, the green beads up to `frac` (experience toward the next level, as the game shows
-    -- its own heroes'), the rest dark.
-    local function bead_bar(x, y, frac)
-        frac = math.min(1, math.max(0, frac))
-        if not ui.image(IMG_BAR, x, y, BW, BH) then
-            return bar(x, y, BW, BH - 2, frac, GOOD)
-        end
-        if frac > 0 then
-            ui.image(IMG_BAR_FILL, x + 1, y + 1, BW - 2, BH - 2, {crop = {0, 0, frac, 1}})
-        end
-    end
+    local win = {class = 4, tactics = nil, amount = 2}
+    local shown = false
+    local doc
+    local last = {}
+    local by_id = {}          -- element id -> hero / ability, for the click handlers
 
     -- Experience toward the next level: the game's levels (gear's experience_range), cached per hero and level.
     local xp_cache = {}
@@ -91,49 +78,24 @@ function M.new(env)
         end
         local now = c:experience() or 0
         if not e.from or not e.to or e.to <= e.from then return 0 end
-        return (now - e.from) / (e.to - e.from)
+        return math.min(1, math.max(0, (now - e.from) / (e.to - e.from)))
     end
 
-    -- The ring's circle within its image (the hanger above it, the ornament beside it): the health gauge fills it from
-    -- the bottom as the game's ring does.
-    local RING_TOP, RING_BOTTOM = 0.09, 0.95
+    -- The portrait ring: grey where health is lost, red for what is left, filled from the bottom as the game's ring does.
+    local RING_TOP, RING_BOTTOM, RH = 0.09, 0.95, 108
+    local PW, ROW = 96, 132
 
-    local function draw_portrait(c, x, y)
-        local dead = c:is_dead()
-        local r = ui.region('portrait' .. c.id, x, y + 6, RW - 8, BY + BH - 6, {
-            tooltip = name_of(c) .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level())
-                .. ')\n' .. (dead and 'Fallen' or ('Click to play' .. key_hint('next')))})
-        -- as the game draws it: the ring, grey where health is lost and red for what is left (gilded under the cursor),
-        -- the portrait over it, the experience beads below
-        local hp, max = c:hp() or 0, c:max_hp() or 1
-        local frac = dead and 0 or math.min(1, math.max(0, hp / math.max(1, max)))
-        local drawn = ui.image(IMG_RING_GREY, x, y, RW, RH, {color = dead and 0xFF808080 or (r.hover and 0xFFFFD27A or 0xFFFFFFFF)})
-        if drawn and frac > 0 then
-            local top = RING_TOP + (1 - frac) * (RING_BOTTOM - RING_TOP)
-            ui.image(IMG_RING, x, y, RW, RH, {crop = {0, frac >= 1 and 0 or top, 1, 1},
-                color = r.hover and 0xFFFFE0A0 or 0xFFFFFFFF})
-        end
-        local img = c:portrait()
-        if img then
-            ui.image(img, x + PX, y + PY, PIW, PIH, {color = dead and 0xFF606060 or 0xFFFFFFFF})
-        end
-        if not drawn then ui.frame(x + 8, y + 12, RW - 18, RH - 18, r.hover and ACCENT or 0xFF6A5A3C, 1) end
-        bead_bar(x + BX, y + BY, xp_fraction(c))
-        local lvl = tostring(c:level() or '')
-        ui.text(lvl, x + 13, y + 79, {color = 0xFF000000, size = 12})
-        ui.text(lvl, x + 12, y + 78, {color = ACCENT, size = 12})
-        if r.clicked and not dead then play(c) end
-    end
+    local function image_url(id) return id and ('gear:image/' .. id) or '' end
 
-    -- Where the column goes: under the game's own portraits (its UI_WND_MERC at the screen's right edge), so the
-    -- companions continue that column; the layout's 1024x768 place from the config when the game's is not known.
+    local function px(n) return ('%dpx'):format(math.floor(n + 0.5)) end
+
+    -- Where the column goes: under the game's own portraits (its UI_WND_MERC at the screen's right edge).
     local placed_at
     local function column_place()
         local w = ui.window('UI_WND_MERC')
         local b = w and w.drawn and w.bounds
         local x, y
         if b and b.w and b.w > 0 then
-            -- its rows: 120 high in its bounds, the rings 132 apart
             x, y = b.x, b.y + 2 + math.floor(b.h / 120 + 0.5) * ROW
         elseif w then
             local st = ui.state()
@@ -144,61 +106,165 @@ function M.new(env)
         return math.floor(x + 0.5) - 2, math.floor(y + 0.5) - 2
     end
 
-    local function draw_portraits()
+    local function same(a, b)
+        if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+        if #a ~= #b then return false end
+        for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+        return true
+    end
+
+    local function portraits_model(m)
         if not setting('portraits', true) or not party.available() then return end
         local list = party.companions()
         if #list == 0 then return end
+        m.portraits_on = true
         local x, y = column_place()
+        m.px, m.py = px(x or cfg.portraits_x or 932), px(y or cfg.portraits_y or 260)
+        for _, c in ipairs(list) do
+            local dead = c:is_dead()
+            local hp, max = c:hp() or 0, c:max_hp() or 1
+            local frac = dead and 0 or math.min(1, math.max(0, hp / math.max(1, max)))
+            local top = frac >= 1 and 0 or RING_TOP + (1 - frac) * (RING_BOTTOM - RING_TOP)
+            local id = 'pt' .. c.id
+            by_id[id] = c
+            m.portraits[#m.portraits + 1] = {
+                id = id, dead = dead, image = image_url(c:portrait()), level = tostring(c:level() or ''),
+                xp = px(71 * xp_fraction(c)), red_top = px(top * RH), red_h = frac > 0 and px(RH - top * RH) or '0px',
+                tip = name_of(c) .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level())
+                    .. ')\n' .. (dead and 'Fallen' or ('Click to play' .. key_hint('next'))),
+            }
+        end
         if x and setting('portraits_follow', true) and (not placed_at or placed_at[1] ~= x or placed_at[2] ~= y) then
             if ui.set_panel_rect('companions:portraits', x, y) then placed_at = {x, y} end
         end
-        local p = ui.panel('portraits', 'Companions', x or cfg.portraits_x or 932, y or cfg.portraits_y or 260, PW + 4, #list * ROW + 4, {bare = true, min_width = PW + 4, min_height = ROW})
-        if not p.open then return end
-        for i, c in ipairs(list) do
-            draw_portrait(c, (p.content_x or 0) + 2, (p.content_y or 0) + 2 + (i - 1) * ROW)
+    end
+
+    local function tactics_model(m, c)
+        local r = record(c.id)
+        local t = {title = 'Tactics of ' .. name_of(c), style = STYLE_LABEL[r.style or 'balanced'], style_tip = STYLE_TIP, none = false, abilities = {}}
+        local list = c:abilities() or {}
+        for _, k in ipairs(c:combos() or {}) do
+            local names = {}
+            for _, a in ipairs(k.arts) do names[#names + 1] = ai.ability_info(a).name end
+            list[#list + 1] = {id = k.id, level = 0, bonus = 0, combo = 'Combo ' .. (k.slot + 1) .. ': ' .. table.concat(names, ', ')}
+        end
+        t.none = #list == 0
+        for _, a in ipairs(list) do
+            local info = a.combo and {name = a.combo} or ai.ability_info(a.id)
+            local use = a.combo and 'target' or ai.use_of(a.id)
+            local id = 'use' .. c.id .. '_' .. a.id
+            if use then
+                by_id[id] = {hero = c, ability = a.id}
+                t.abilities[#t.abilities + 1] = {id = id, used = true, on = r.abilities[tostring(a.id)] ~= false,
+                    text = a.combo and info.name or ('%s (level %d)'):format(info.name, a.level + a.bonus), tip = 'Used ' .. USE_LABEL[use]}
+            else
+                t.abilities[#t.abilities + 1] = {id = id, used = false, on = false, text = info.name, tip = ''}
+            end
+        end
+        m.tac = t
+        m.tac_on = true
+    end
+
+    local function window_model(m)
+        m.open = shown
+        m.title = 'Party' .. key_hint('window')
+        if not shown then return end
+        local ok, why = party.available()
+        if not ok then m.msg = why or 'The party works in single player only.' return end
+        local heroes = party.heroes()
+        local leader = heroes[1]
+        for _, c in ipairs(heroes) do
+            local controlled = c == leader
+            local dead = c:is_dead()
+            local companion = c.id >= party.FIRST_ID
+            local r = record(c.id)
+            local index = 1
+            for i, b in ipairs(BEHAVIOURS) do if r.behaviour == b then index = i + 1 end end
+            by_id['play' .. c.id], by_id['name' .. c.id], by_id['beh' .. c.id] = c, c, c
+            by_id['tac' .. c.id], by_id['dis' .. c.id] = c, c
+            local can_dismiss = companion and not controlled
+            m.heroes[#m.heroes + 1] = {
+                id_play = 'play' .. c.id, id_name = 'name' .. c.id, id_beh = 'beh' .. c.id, id_tac = 'tac' .. c.id, id_dis = 'dis' .. c.id,
+                image = image_url(c:portrait()), name = name_of(c), controlled = controlled, dead = dead,
+                sub = ('%s, level %s%s'):format(CLASS_LABEL[c:class() or ''] or '?', tostring(c:level()), dead and ', fallen' or ''),
+                hp = px(130 * math.min(1, math.max(0, (c:hp() or 0) / math.max(1, c:max_hp() or 1)))),
+                play = controlled and 'Playing' or 'Play', can_play = not controlled and not dead,
+                tip_play = controlled and 'You play this hero' or 'Play this hero',
+                can_name = companion, tip_name = companion and 'Another name for this companion' or 'Your own hero keeps the name you gave it',
+                behaviour = index == 1 and BEHAVIOUR_LABEL.default or BEHAVIOUR_LABEL[BEHAVIOURS[index - 1]],
+                tactics = win.tactics == c.id and 'Close' or 'Tactics',
+                can_dismiss = can_dismiss, tip_dismiss = can_dismiss and 'Leaves the party for good, with what they wear (empty their backpack first)'
+                    or 'Play another hero to dismiss this one',
+            }
+            if win.tactics == c.id then tactics_model(m, c) end
+        end
+        local full = #party.companions() >= setting('max_companions', 3)
+        m.class_name = CLASS_LABEL[CLASS_ORDER[win.class]] or '?'
+        m.full = full
+        m.companions_text = ('%d of %d companions'):format(#party.companions(), setting('max_companions', 3))
+        if not files.loaded then refresh_files() end
+        m.no_files = #files.list == 0
+        local picked = files.list[files.index]
+        local maybe = may_be_in_party(picked)
+        m.maybe = maybe and true or false
+        if #files.list > 0 then
+            local label = files.labels[files.index] or '?'
+            m.file_label = maybe and ('! ' .. label) or label
+        end
+        m.can_bring = not full and #files.list > 0
+        m.bring_tip = (maybe and 'A hero with this class and name is in the party already: this may be a second copy. ' or '')
+            .. 'A copy of this hero joins where you stand, with their level, skills, equipment and backpack'
+        if picked then
+            m.picked = ('%s, %s, level %d'):format(picked.name ~= '' and picked.name or '?', CLASS_LABEL[picked.class or ''] or '?', picked.level or 0)
+        end
+        m.keep_label = 'Keep ' .. name_of(leader) .. ' for other savegames'
+        local mi = 1
+        for i, b in ipairs(MB) do if prefs.data.merc_behaviour == b then mi = i end end
+        m.merc_label = ML[mi]
+        m.merc_count = ('%d with the party'):format(#party.mercenaries())
+        m.purses_on = separate() and true or false
+        if m.purses_on then
+            m.amount_label = AMOUNT_LABELS[win.amount]
+            for _, c in ipairs(heroes) do
+                local controlled = c == leader
+                by_id['give' .. c.id], by_id['take' .. c.id] = c, c
+                m.purses[#m.purses + 1] = {
+                    id_give = 'give' .. c.id, id_take = 'take' .. c.id, controlled = controlled,
+                    text = ('%s%s: %s gold'):format(controlled and 'Playing: ' or '', name_of(c), group(purse_of(c))),
+                    can_give = not controlled and (leader:gold() or 0) > 0, can_take = not controlled and purse_of(c) > 0,
+                    tip_give = controlled and 'Pick another hero to give gold to' or ('Gives gold of the hero you play to ' .. name_of(c)),
+                    tip_take = controlled and 'This is the hero you play' or ('Takes gold from ' .. name_of(c) .. ' to the hero you play'),
+                }
+            end
         end
     end
 
-    ---------------------------------------------------------------------------------------------------------------
-    -- The party window: who is in the party, play / name / behaviour / dismiss, recruiting, and the tactics of one hero.
-    ---------------------------------------------------------------------------------------------------------------
-    local win = {class = 4, tactics = nil, amount = 2}
-    local function group(n)   -- 1234567 -> 1,234,567
-        local t = tostring(math.floor(n)):reverse():gsub('(%d%d%d)', '%1,'):reverse()
-        return (t:gsub('^,', ''))
-    end
-    local AMOUNTS = {100, 1000, 10000, 'all'}
-    local AMOUNT_LABELS = {'100', '1,000', '10,000', 'All'}
-    -- The window's rows are gear.ui.table tables: the hero rows (portrait and name, then Play, Name, behaviour, Tactics,
-    -- Dismiss in fixed columns), and below them label / field / button / note rows. A control that does not apply keeps
-    -- its place, greyed, so the columns line up in every row.
-    local WIN_W = 640
-    local function cell(extra)
-        local o = {height = 22, valign = 'center'}
-        for k, v in pairs(extra or {}) do o[k] = v end
-        return o
+    local function snapshot()
+        local m = {portraits_on = false, px = '932px', py = '260px', portraits = {}, open = false, title = '', msg = '', heroes = {},
+            class_name = '', full = false, companions_text = '', no_files = true, file_label = '', can_bring = false, bring_tip = '', maybe = false,
+            picked = '', keep_label = '', merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
+            tac_on = false, tac = {title = '', style = '', style_tip = '', none = false, abilities = {}}}
+        by_id = {}
+        portraits_model(m)
+        window_model(m)
+        return m
     end
 
-    local function hero_row(t, c, leader)
-        local controlled = c == leader
-        local dead = c:is_dead()
-        local companion = c.id >= party.FIRST_ID
-        t:row()
-        -- the hero itself: portrait, name, class and level, health
-        local x, y = t:cell(1)
-        local img = c:portrait()
-        if img then ui.image(img, x, y + 6, 40, 40, {fit = 'contain'}) end
-        ui.frame(x, y + 6, 40, 40, controlled and ACCENT or 0xFF6A5A3C, 1)
-        ui.text(name_of(c), x + 48, y + 6, {color = controlled and ACCENT or 0xFFFFFFFF, bold = true})
-        ui.text(('%s, level %s%s'):format(CLASS_LABEL[c:class() or ''] or '?', tostring(c:level()), dead and ', fallen' or ''),
-            x + 48, y + 22, {color = DIM, size = 12})
-        bar(x + 48, y + 39, 130, 6, (c:hp() or 0) / math.max(1, c:max_hp() or 1), dead and BAD or GOOD)
-        if t:button(2, controlled and 'Playing' or 'Play', cell({id = 'play' .. c.id, enabled = not controlled and not dead,
-            tooltip = controlled and 'You play this hero' or 'Play this hero'})) then
-            play(c)
-        end
-        if t:button(3, 'Name', cell({id = 'name' .. c.id, enabled = companion,
-            tooltip = companion and 'Another name for this companion' or 'Your own hero keeps the name you gave it'})) then
+    local function leader_of() local h = party.heroes(); return h[1] end
+
+    local function load_doc()
+        local m = snapshot()
+        last = m
+        local err
+        doc, err = ui.rml.load('ui/party.rml', {model = m})
+        if not doc then gear.log('companions: ui/party.rml failed: ' .. tostring(err)) return end
+        local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
+        local function target(e) return by_id[tostring(e.current)] end
+        on('.pt', function(e) local c = target(e); if c and not c:is_dead() then play(c) end end)
+        on('[id^=play]', function(e) local c = target(e); if c and c ~= leader_of() and not c:is_dead() then play(c) end end)
+        on('[id^=name]', function(e)
+            local c = target(e)
+            if not c or c.id < party.FIRST_ID then return end
             local list = NAMES[c:class() or ''] or {'Companion'}
             local cur, at = name_of(c), 0
             for i, n in ipairs(list) do if n == cur then at = i end end
@@ -206,215 +272,84 @@ function M.new(env)
             r.name = list[at % #list + 1]
             store:changed()
             c:set_name(r.name)
-        end
-        local r = record(c.id)
-        local opts = {'Default'}
-        for _, b in ipairs(BEHAVIOURS) do opts[#opts + 1] = BEHAVIOUR_LABEL[b] end
-        local index = 1
-        for i, b in ipairs(BEHAVIOURS) do if r.behaviour == b then index = i + 1 end end
-        local changed, new = t:dropdown(4, opts, index, cell({id = 'behaviour' .. c.id,
-            tooltip = 'What this hero does while you play another one'}))
-        if changed then
+        end)
+        on('[id^=beh]', function(e)
+            local c = target(e)
+            if not c then return end
+            local r = record(c.id)
+            local index = 1
+            for i, b in ipairs(BEHAVIOURS) do if r.behaviour == b then index = i + 1 end end
+            local new = index % (#BEHAVIOURS + 1) + 1
             r.behaviour = new > 1 and BEHAVIOURS[new - 1] or nil
             store:changed()
-        end
-        if t:button(5, win.tactics == c.id and 'Close' or 'Tactics', cell({id = 'tactics' .. c.id,
-            tooltip = 'How this hero fights and the combat arts and spells they use on their own'})) then
+        end)
+        on('[id^=tac]', function(e)
+            local c = target(e)
+            if not c then return end
             if win.tactics == c.id then win.tactics = nil else win.tactics = c.id end
-        end
-        local can_dismiss = companion and not controlled
-        if t:button(6, 'Dismiss', cell({id = 'dismiss' .. c.id, enabled = can_dismiss,
-            tooltip = can_dismiss and 'Leaves the party for good, with what they wear (empty their backpack first)'
-                or 'Play another hero to dismiss this one'})) then
-            dismiss(c)
-        end
-    end
-
-    local USE_LABEL = {target = 'on the target', self = 'in a fight, on themselves', heal = 'when someone is hurt', form = 'when a fight starts (and to change back after it)'}
-
-    local STYLES = {'balanced', 'arts', 'weapon', 'ranged'}
-    local STYLE_LABEL = {balanced = 'Weapon and combat arts', arts = 'Combat arts only', weapon = 'Weapon first',
-        ranged = 'Ranged weapon'}
-    local STYLE_TIP = 'How they fight: combat arts and spells as soon as they are ready, the weapon in between (default); '
-        .. 'combat arts and spells only, keeping back from the fight in between (a battle mage); or the weapon first, '
-        .. 'combat arts now and then; or with the ranged weapon of their weapon slots (bow, crossbow, musket), taking it up '
-        .. 'when a fight starts'
-
-    -- The tactics of one hero, under the rest: its combat style, then its abilities (one checkbox per row).
-    local function tactics_area(c, x, y, w)
-        local r = record(c.id)
-        ui.text('Tactics of ' .. name_of(c), x, y, {height = 22, valign = 'middle', color = ACCENT})
-        local t = ui.table('tactics', x, y + 30, w, {columns = {90, 300, '*'}, spacing = {6, 4}})
-        t:row()
-        t:label(1, 'Fights with', {color = DIM, size = 12})
-        local labels, index = {}, 1
-        for i, st in ipairs(STYLES) do
-            labels[i] = STYLE_LABEL[st]
-            if (r.style or 'balanced') == st then index = i end
-        end
-        local schanged, snew = t:dropdown(2, labels, index, cell({id = 'style' .. c.id, tooltip = STYLE_TIP}))
-        if schanged then
-            r.style = STYLES[snew] ~= 'balanced' and STYLES[snew] or nil
-            store:changed()
-        end
-        local list = c:abilities() or {}
-        for _, k in ipairs(c:combos() or {}) do
-            local names = {}
-            for _, a in ipairs(k.arts) do names[#names + 1] = ai.ability_info(a).name end
-            list[#list + 1] = {id = k.id, level = 0, bonus = 0, combo = 'Combo ' .. (k.slot + 1) .. ': ' .. table.concat(names, ', ')}
-        end
-        t:row()
-        t:label(1, 'Abilities', {color = DIM, size = 12})
-        if #list == 0 then
-            t:label(2, 'No combat arts or spells learned yet.', {color = DIM, size = 12, span = 2})
-        end
-        for i, a in ipairs(list) do
-            if i > 1 then t:row() end
-            local info = a.combo and {name = a.combo} or ai.ability_info(a.id)
-            local use = a.combo and 'target' or ai.use_of(a.id)
-            if use then
-                local on = r.abilities[tostring(a.id)] ~= false
-                local text = a.combo and info.name or ('%s (level %d)'):format(info.name, a.level + a.bonus)
-                local changed, checked = t:checkbox(2, text, on, {id = 'use' .. c.id .. '_' .. a.id, span = 2,
-                    tooltip = 'Used ' .. USE_LABEL[use]})
-                if changed then
-                    -- (not `checked and nil or false`: that is always false)
-                    if checked then r.abilities[tostring(a.id)] = nil else r.abilities[tostring(a.id)] = false end
-                    store:changed()
-                end
-            else
-                t:label(2, ('%s: not used by the AI'):format(info.name), {color = DIM, size = 12, span = 2})
-            end
-        end
-        return 30 + t:height()
-    end
-
-    local function draw_window()
-        if not ui.panel_open('party') then return end
-        local heroes = party.heroes()
-        local leader = heroes[1]
-        local tactics_hero
-        for _, h in ipairs(heroes) do if h.id == win.tactics then tactics_hero = h end end
-        local n_abil = tactics_hero and math.max(1, #(tactics_hero:abilities() or {}) + #(tactics_hero:combos() or {})) or 0
-        local tactics_h = tactics_hero and math.min(420, 30 + 26 * (1 + n_abil) + 16) or 0
-        local purses_h = separate() and (30 + #heroes * 30) or 0
-        local h = 40 + #heroes * 52 + 4 * 30 + 16 + 26 + tactics_h + purses_h
-        local p = ui.panel('party', 'Party' .. key_hint('window'), 192, 90, WIN_W, h, {})
-        if not p.open then return end
-        local x, y, w = p.content_x or 0, p.content_y or 0, p.content_w or WIN_W - 20
-        local ok, why = party.available()
-        if not ok then
-            ui.text(why or 'The party works in single player only.', x, y, {color = DIM})
-            return
-        end
-        -- the heroes: one row each, the controls in fixed columns
-        local ht = ui.table('heroes', x, y, w, {columns = {184, 72, 72, 112, 72, 72}, spacing = {6, 0}, row_height = 52})
-        for _, c in ipairs(heroes) do hero_row(ht, c, leader) end
-        local yy = y + ht:height() + 8
-        ui.rect(x, yy - 5, w, 1, 0x806A5A3C)
-        -- recruiting, bringing and keeping heroes, the game's mercenaries: label, field, button, note
-        local t = ui.table('party', x, yy, w, {columns = {90, 240, 100, '*'}, spacing = {6, 8}})
-        local full = #party.companions() >= setting('max_companions', 3)
-        t:row()
-        t:label(1, 'Recruit', {color = ACCENT})
-        local labels = {}
-        for i, c in ipairs(CLASS_ORDER) do labels[i] = CLASS_LABEL[c] end
-        local changed, index = t:dropdown(2, labels, win.class, cell({id = 'class'}))
-        if changed then win.class = index end
-        if t:button(3, 'Recruit', cell({id = 'recruit', enabled = not full,
-            tooltip = 'A new hero of this class joins where you stand'})) then
-            recruit(CLASS_ORDER[win.class])
-        end
-        t:label(4, ('%d of %d companions'):format(#party.companions(), setting('max_companions', 3)), {color = DIM, size = 12})
-        t:row(48)
-        if not files.loaded then refresh_files() end
-        t:label(1, 'Bring', {color = ACCENT, valign = 'center'})
-        if #files.list > 0 then
-            -- heroes that may be in the party already are marked in the list (as a key conflict is in the mod manager)
-            local labels = {}
-            for i, label in ipairs(files.labels) do
-                labels[i] = may_be_in_party(files.list[i]) and ('! ' .. label) or label
-            end
-            local fchanged, findex = t:dropdown(2, labels, files.index, cell({id = 'heroes',
-                tooltip = 'Heroes kept from other savegames, and your network characters'}))
-            if fchanged then files.index = findex end
-        else
-            t:label(2, 'No kept heroes yet: "Keep" your hero below.', {color = DIM, size = 12})
-        end
-        local maybe = may_be_in_party(files.list[files.index])
-        if t:button(3, 'Bring', cell({id = 'bring', enabled = not full and #files.list > 0, color = maybe and AMBER or nil,
-            tooltip = (maybe and 'A hero with this class and name is in the party already: this may be a second copy. ' or '')
-                .. 'A copy of this hero joins where you stand, with their level, skills, equipment and backpack'})) then
-            bring(files.list[files.index])
-        end
-        -- the chosen hero file: the portrait of their class (as the companions' rings show) with name, class and level
-        local picked = files.list[files.index]
-        if picked then
-            local px, py = t:cell(4)
-            local img = party.class_portrait and party.class_portrait(picked.class_id or picked.class)
-            if img then ui.image(img, px, py + 4, 40, 40, {fit = 'contain'}) end
-            ui.frame(px, py + 4, 40, 40, 0xFF6A5A3C, 1)
-            ui.text(picked.name ~= '' and picked.name or '?', px + 48, py + 6, {color = 0xFFFFFFFF, bold = true})
-            ui.text(('%s, level %d'):format(CLASS_LABEL[picked.class or ''] or '?', picked.level or 0), px + 48, py + 24, {color = DIM, size = 12})
-            if maybe then
-                ui.text('May be in the party', px + 48, py + 38, {color = AMBER, size = 12,
-                    tooltip = 'A hero with this class and name is in the party: you may have brought them from this file before'})
-            end
-        end
-        t:row()
-        t:label(1, 'Keep', {color = ACCENT})
-        if t:button(2, 'Keep ' .. name_of(leader) .. ' for other savegames', cell({id = 'keep',
-            tooltip = 'Writes the hero you play to a hero file another savegame can bring into its party'})) then
-            keep()
-        end
-        t:row()
-        t:label(1, 'Mercenaries', {color = ACCENT})
-        local MB = {'vanilla', 'assist', 'passive'}
-        local ML = {'As the game does', 'Assist (fight the party\'s target)', 'Passive (stay with you)'}
-        local mi = 1
-        for i, b in ipairs(MB) do if prefs.data.merc_behaviour == b then mi = i end end
-        local mchanged, mnew = t:dropdown(2, ML, mi, cell({id = 'mercs',
-            tooltip = 'What the game\'s own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts'}))
-        if mchanged then
-            prefs.data.merc_behaviour = MB[mnew]
+        end)
+        on('[id^=dis]', function(e)
+            local c = target(e)
+            if c and c.id >= party.FIRST_ID and c ~= leader_of() then dismiss(c) end
+        end)
+        on('#class', function() win.class = win.class % #CLASS_ORDER + 1 end)
+        on('#recruit', function()
+            if #party.companions() < setting('max_companions', 3) then recruit(CLASS_ORDER[win.class]) end
+        end)
+        on('#heroes', function() if #files.list > 0 then files.index = files.index % #files.list + 1 end end)
+        on('#bring', function()
+            if #party.companions() < setting('max_companions', 3) and files.list[files.index] then bring(files.list[files.index]) end
+        end)
+        on('#keep', function() keep() end)
+        on('#mercs', function()
+            local mi = 1
+            for i, b in ipairs(MB) do if prefs.data.merc_behaviour == b then mi = i end end
+            prefs.data.merc_behaviour = MB[mi % #MB + 1]
             prefs:changed()
-        end
-        t:label(3, ('%d with the party'):format(#party.mercenaries()), {color = DIM, size = 12, span = 2})
-        local below = yy + t:height() + 16
-        if separate() then
-            -- the purses: one row per hero, gold moves between the hero you play and the others
-            ui.rect(x, below - 5, w, 1, 0x806A5A3C)
-            local pt = ui.table('purses', x, below, w, {columns = {90, 300, 100, 100}, spacing = {6, 8}})
-            pt:row()
-            pt:label(1, 'Purses', {color = ACCENT})
-            local achanged, anew = pt:dropdown(2, AMOUNT_LABELS, win.amount, cell({id = 'goldamount',
-                tooltip = 'How much gold Give and Take move'}))
-            if achanged then win.amount = anew end
-            for _, c in ipairs(heroes) do
-                local controlled = c == leader
-                pt:row()
-                pt:label(1, controlled and 'Playing' or '', {color = DIM, size = 12})
-                pt:label(2, ('%s: %s gold'):format(name_of(c), group(purse_of(c))),
-                    {color = controlled and ACCENT or 0xFFFFFFFF, valign = 'center'})
-                if pt:button(3, 'Give', cell({id = 'give' .. c.id, enabled = not controlled and (leader:gold() or 0) > 0,
-                    tooltip = controlled and 'Pick another hero to give gold to' or ('Gives gold of the hero you play to ' .. name_of(c))})) then
-                    give_gold(c, AMOUNTS[win.amount])
-                end
-                if pt:button(4, 'Take', cell({id = 'take' .. c.id, enabled = not controlled and purse_of(c) > 0,
-                    tooltip = controlled and 'This is the hero you play' or ('Takes gold from ' .. name_of(c) .. ' to the hero you play')})) then
-                    take_gold(c, AMOUNTS[win.amount])
-                end
-            end
-            below = below + pt:height() + 8
-        end
-        if tactics_hero then
-            local ty = below
-            ui.rect(x, ty - 5, w, 1, 0x806A5A3C)
-            tactics_area(tactics_hero, x, ty, w)
-        end
+        end)
+        on('#goldamount', function() win.amount = win.amount % #AMOUNTS + 1 end)
+        on('[id^=give]', function(e)
+            local c, leader = target(e), leader_of()
+            if c and c ~= leader and (leader:gold() or 0) > 0 then give_gold(c, AMOUNTS[win.amount]) end
+        end)
+        on('[id^=take]', function(e)
+            local c, leader = target(e), leader_of()
+            if c and c ~= leader and purse_of(c) > 0 then take_gold(c, AMOUNTS[win.amount]) end
+        end)
+        on('#style', function()
+            local c
+            for _, h in ipairs(party.heroes()) do if h.id == win.tactics then c = h end end
+            if not c then return end
+            local r = record(c.id)
+            local index = 1
+            for i, st in ipairs(STYLES) do if (r.style or 'balanced') == st then index = i end end
+            local new = STYLES[index % #STYLES + 1]
+            r.style = new ~= 'balanced' and new or nil
+            store:changed()
+        end)
+        on('[id^=use]', function(e)
+            local t = target(e)
+            if not t then return end
+            local r = record(t.hero.id)
+            local key = tostring(t.ability)
+            if r.abilities[key] == false then r.abilities[key] = nil else r.abilities[key] = false end
+            store:changed()
+        end)
     end
 
-    return {draw_portraits = draw_portraits, draw_window = draw_window}
+    local function draw()
+        if not doc then load_doc() end
+        if not doc then return end
+        local m = snapshot()
+        for k, v in pairs(m) do
+            if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+        end
+        doc:draw({layer = 'hud'})
+    end
+
+    return {draw = draw,
+        open = function(on) shown = on ~= false end, toggle = function() shown = not shown end,
+        rect = function(sel) local e = doc and doc:query(sel); return e and e:rect() or nil end}
 end
 
 return M

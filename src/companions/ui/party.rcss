@@ -1,0 +1,39 @@
+#party { position: absolute; left: 192px; top: 60px; width: 700px; }
+.lab { width: 110px; flex: none; }
+.small { font-size: 13dp; }
+.amber { color: #ffc060; }
+.hero { display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.hinfo { display: flex; flex-direction: row; align-items: center; width: 230px; }
+.himg { width: 40px; height: 40px; margin-right: 8px; }
+.hname { font-size: 15dp; font-weight: bold; }
+.hbar { width: 130px; height: 6px; background-color: #000000c0; }
+.hfill { height: 6px; background-color: #60c060; }
+.hfill.bad { background-color: #c04040; }
+.hbtns { display: flex; flex-direction: row; }
+button.mini { padding: 0 8px; margin: 0 3px 0 0; font-size: 13dp; }
+button.mini.wide { min-width: 120px; }
+button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
+button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
+button.game-button.amber { color: #ffc060; }
+button.game-button { min-width: 0; padding: 0 38px 0 37px; font-size: 16px; margin-right: 8px; }
+.sep { height: 1px; background-color: #6a5a3c80; margin: 6px 0; }
+.frow { display: flex; flex-direction: row; align-items: center; margin: 3px 0; }
+.pname { width: 330px; }
+.tlist { max-height: 200px; overflow-y: auto; }
+.check-row.small { height: 30px; }
+input.game-check.chk { width: 40px; height: 40px; }
+scrollbarvertical { width: 14px; }
+scrollbarvertical slidertrack { background-color: #0c0c14; }
+scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }
+
+/* portraits */
+#portraits { position: absolute; width: 100px; }
+button.pt { display: block; position: relative; width: 96px; height: 132px; padding: 0; margin: 0 0 24px 0; border: 0; background-color: transparent; }
+.pt .ring { position: absolute; left: 0px; top: 0px; width: 96px; height: 108px; decorator: image(gear:image/42 scale-none left top); }
+.pt .redring { position: absolute; left: 0px; width: 96px; decorator: image(gear:image/41 scale-none left bottom); }
+.pt:hover .ring { opacity: 0.85; }
+.pt .pimg { position: absolute; left: 8px; top: 20px; width: 66px; height: 72px; }
+.pt.dead .pimg { opacity: 0.45; }
+.pt .beadbar { position: absolute; left: 7px; top: 105px; width: 73px; height: 9px; decorator: image(gear:image/66 scale-none left top); }
+.pt .beadfill { position: absolute; left: 1px; top: 1px; height: 7px; overflow: hidden; decorator: image(gear:image/67 scale-none left top); }
+.pt .plevel { position: absolute; left: 12px; top: 78px; color: #e8c878; font-size: 12dp; }

@@ -481,20 +481,20 @@ local window = require('window').new({
 })
 
 
+gear.on('companions.rect', function(out) out.rect = window.rect end)   -- for the self test
+
 gear.on('draw', guard('draw', function(state)
     if type(state) ~= 'table' or state.mode ~= 'game' or state.exclusive then return end
-    window.draw_portraits()
-    window.draw_window()
+    window.draw()
 end))
 
-ui.show_panel('party', false)
 gear.keys.on('next', guard('key', function() cycle(1) end))
 gear.keys.on('previous', guard('key', function() cycle(-1) end))
-gear.keys.on('window', guard('key', function() ui.toggle_panel('party') end))
+gear.keys.on('window', guard('key', function() window.toggle() end))
 
 -- The controller's mod menu (LT + LB) reaches the same.
 if ui.menu_item then
-    pcall(ui.menu_item, 'party', 'Party window (recruit, tactics)', function() ui.toggle_panel('party') end)
+    pcall(ui.menu_item, 'party', 'Party window (recruit, tactics)', function() window.toggle() end)
     pcall(ui.menu_item, 'next', 'Play the next hero', function() cycle(1) end)
     pcall(ui.menu_item, 'previous', 'Play the previous hero', function() cycle(-1) end)
 end

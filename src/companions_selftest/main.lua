@@ -55,6 +55,16 @@ local function panel_rect(key)
     end
 end
 
+-- The middle of an element of the mod's RmlUi document (the mod answers 'companions.rect'), clicked.
+local function click_element(sel)
+    local out = {}
+    gear.emit('companions.rect', out)
+    local r = out.rect and out.rect(sel)
+    if not r then return false end
+    A.ui_click(r.x + r.w / 2, r.y + r.h / 2)
+    return true
+end
+
 gear.task(function()
     A.wait_for_menu(cfg.timeout_menu)
     if not A.wait_for_game(cfg.timeout_game) then check('game', false) return finish() end
@@ -76,10 +86,7 @@ gear.task(function()
     if p then
         local nodes = {}
         -- the Recruit button is drawn at content (220, rows + 6): find it from the panel and click its middle
-        local heroes = #party.heroes()
-        local cx = p.x + 10 + 402 + 50      -- the button column of the window's grid
-        local cy = p.y + 30 + heroes * 52 + 8 + 11
-        A.ui_click(cx, cy)
+        click_element('#recruit')
         gear.wait(1.5)
         nodes = party.companions()
         check('Recruit adds a companion', #nodes == 1, #nodes)
@@ -146,7 +153,7 @@ gear.task(function()
     local pr = panel_rect('companions:portraits')
     check('portraits shown', pr ~= nil)
     if pr then
-        A.ui_click(pr.x + 2 + 41, pr.y + 2 + 50)
+        click_element('.pt')
         gear.wait(1.5)
         check('portrait click plays the companion', party.leader() == comp)
     end
@@ -193,16 +200,14 @@ gear.task(function()
     end
     check('party window again', w ~= nil)
     if w then
-        local cx0, cy0 = w.x + 10, w.y + 30
-        local yy = cy0 + #party.heroes() * 52 + 8
         -- (the hero files a mod sees are its own: the kept file lands in the companions mod's heroes folder)
-        A.ui_click(cx0 + 96 + 150, yy + 60 + 11)   -- Keep (the field column, third line)
-        gear.wait(1)
+        click_element('#keep')
+        gear.wait(10)        -- the toasts of the keep cover the Bring button until they are gone
         local first = party.hero_files()[1]
         local n0 = #party.companions()
         -- Bring (the button column, second line); once more if the first click came before the button was hovered
         for _ = 1, 2 do
-            A.ui_click(cx0 + 402 + 50, yy + 30 + 11)
+            click_element('#bring')
             gear.wait(1.5)
             if #party.companions() > n0 then break end
         end

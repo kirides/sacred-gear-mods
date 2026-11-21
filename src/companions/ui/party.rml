@@ -1,0 +1,96 @@
+<rml>
+<head>
+    <title>Companions</title>
+    <link type="text/rcss" href="party.rcss"/>
+</head>
+<body data-model="model">
+
+<!-- The companions under the game's own portraits: the ring (grey, red for the health left), the portrait, the experience beads. -->
+<div id="portraits" class="bare ptcol" data-panel="portraits" data-title="Companions" data-if="portraits_on" data-style-left="px" data-style-top="py">
+    <button data-for="c : portraits" class="pt" data-attr-id="c.id" data-attr-title="c.tip" data-class-dead="c.dead">
+        <div class="ring"></div>
+        <div class="redring" data-style-top="c.red_top" data-style-height="c.red_h"></div>
+        <img class="pimg" data-attr-src="c.image"/>
+        <div class="beadbar"><div class="beadfill" data-style-width="c.xp"></div></div>
+        <span class="plevel">{{ c.level }}</span>
+    </button>
+</div>
+
+<div id="party" class="window" data-panel="party" data-title="Party" data-if="open">
+    <div class="titlebar">{{ title }}</div>
+    <div class="body">
+        <p data-if="msg != ''" class="muted">{{ msg }}</p>
+        <div data-if="msg == ''">
+            <div data-for="h : heroes" class="hero">
+                <div class="hinfo">
+                    <img class="himg" data-attr-src="h.image"/>
+                    <div class="htext">
+                        <div data-class-accent="h.controlled" class="hname">{{ h.name }}</div>
+                        <div class="muted small">{{ h.sub }}</div>
+                        <div class="hbar"><div data-class-bad="h.dead" class="hfill" data-style-width="h.hp"></div></div>
+                    </div>
+                </div>
+                <div class="hbtns">
+                    <button class="mini" data-class-dis="!h.can_play" data-attr-id="h.id_play" data-attr-title="h.tip_play">{{ h.play }}</button>
+                    <button class="mini" data-class-dis="!h.can_name" data-attr-id="h.id_name" data-attr-title="h.tip_name">Name</button>
+                    <button class="mini wide" data-attr-id="h.id_beh" title="What this hero does while you play another one">{{ h.behaviour }}</button>
+                    <button class="mini" data-attr-id="h.id_tac" title="How this hero fights and the combat arts and spells they use on their own">{{ h.tactics }}</button>
+                    <button class="mini" data-class-dis="!h.can_dismiss" data-attr-id="h.id_dis" data-attr-title="h.tip_dismiss">Dismiss</button>
+                </div>
+            </div>
+
+            <div class="sep"></div>
+            <div class="frow">
+                <span class="accent lab">Recruit</span>
+                <button class="mini wide" id="class" title="The class of the new hero">{{ class_name }}</button>
+                <button class="game-button" id="recruit" data-class-dis="full" title="A new hero of this class joins where you stand">Recruit</button>
+                <span class="muted small">{{ companions_text }}</span>
+            </div>
+            <div class="frow">
+                <span class="accent lab">Bring</span>
+                <span data-if="no_files" class="muted small">No kept heroes yet: "Keep" your hero below.</span>
+                <button data-if="!no_files" class="mini wide" id="heroes" title="Heroes kept from other savegames, and your network characters">{{ file_label }}</button>
+                <button class="game-button" id="bring" data-class-dis="!can_bring" data-attr-title="bring_tip" data-class-amber="maybe">Bring</button>
+            </div>
+            <div class="frow" data-if="picked != ''"><span class="lab"></span><span class="small">{{ picked }}</span><span data-if="maybe" class="amber small">May be in the party</span></div>
+            <div class="frow">
+                <span class="accent lab">Keep</span>
+                <button class="game-button" id="keep" title="Writes the hero you play to a hero file another savegame can bring into its party">{{ keep_label }}</button>
+            </div>
+            <div class="frow">
+                <span class="accent lab">Mercenaries</span>
+                <button class="mini wide" id="mercs" title="What the game's own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts">{{ merc_label }}</button>
+                <span class="muted small">{{ merc_count }}</span>
+            </div>
+
+            <div data-if="purses_on">
+                <div class="sep"></div>
+                <div class="frow">
+                    <span class="accent lab">Purses</span>
+                    <button class="mini wide" id="goldamount" title="How much gold Give and Take move">{{ amount_label }}</button>
+                </div>
+                <div data-for="p : purses" class="frow">
+                    <span data-class-accent="p.controlled" class="pname">{{ p.text }}</span>
+                    <button class="mini" data-class-dis="!p.can_give" data-attr-id="p.id_give" data-attr-title="p.tip_give">Give</button>
+                    <button class="mini" data-class-dis="!p.can_take" data-attr-id="p.id_take" data-attr-title="p.tip_take">Take</button>
+                </div>
+            </div>
+
+            <div data-if="tac_on">
+                <div class="sep"></div>
+                <p class="accent">{{ tac.title }}</p>
+                <div class="frow"><span class="muted lab">Fights with</span><button class="mini wide" id="style" data-attr-title="tac.style_tip">{{ tac.style }}</button></div>
+                <p data-if="tac.none" class="muted small">No combat arts or spells learned yet.</p>
+                <div class="tlist">
+                    <div data-for="a : tac.abilities" class="check-row small">
+                        <span class="text small" data-attr-title="a.tip">{{ a.text }}</span>
+                        <input data-if="a.used" data-attr-id="a.id" type="checkbox" class="game-check chk" data-checked="a.on"/>
+                        <span data-if="!a.used" class="muted small">not used by the AI</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</rml>
