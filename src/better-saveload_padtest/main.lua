@@ -52,6 +52,14 @@ gear.task(function()
     check('many savegames are listed', q.shown >= 30, q.shown)
     A.screenshot('pad-0-list')
 
+    -- The pad's cursor starts on the topmost savegame, not on the search field (the first stop Gear reports is the first card's).
+    do
+        local fx, fy = A.nav_first()
+        local card = rect('.row')
+        check('the pad starts on the topmost card', fx ~= nil and card ~= nil and fx >= card.x and fx <= card.x + card.w and fy >= card.y and fy <= card.y + card.h,
+            tostring(fx) .. ',' .. tostring(fy))
+    end
+
     -- The filters are drop-down lists: a click opens the list under the button, a click on an entry picks it and closes it, B closes it without.
     local function click_rect(r, wait)
         local x, y = A.ui_to_pixels(r.x + r.w / 2, r.y + r.h / 2)

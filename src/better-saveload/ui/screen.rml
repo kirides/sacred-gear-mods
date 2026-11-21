@@ -30,7 +30,7 @@
         <div class="left">
             <div data-if="!osk" id="list" data-nav-scroll data-class-save="save_on">
                 <div data-style-height="spacer_top"></div>
-                <button data-for="r : rows" class="row" data-attr-id="r.id" data-class-sel="r.sel" data-class-bad="!r.ok">
+                <button data-for="r : rows" class="row" data-attr-id="r.id" data-attrif-data-nav-home="r.first" data-class-sel="r.sel" data-class-bad="!r.ok">
                     <img data-if="r.pic != ''" class="thumb" data-attr-src="r.pic"/>
                     <span data-if="r.pic == ''" class="thumb nopic">{{ r.nopic }}</span>
                     <img data-if="r.port != ''" class="port" data-attr-src="r.port"/>
