@@ -111,7 +111,7 @@ gear.task(function()
                 {id = 'b2', name = 'Kell', class_name = 'Gladiator', level = 37, title = 'Tank for two', verified = true},
                 {id = 'b3', name = 'Tomm', class_name = 'Wood Elf', level = 44, title = 'Bow and traps', verified = false},
             }})
-            if gear.config.press then gear.ui.show_panel('buildsharer:main', true) end
+            if gear.config.press then A.key_down('control'); A.press('k'); A.key_up('control') end
         elseif w == 'questhelper' then
             say('questhelper', {op = 'state', available = true, total = 2, known = 2, catalog = 2, records = {
                 {key = 100, value = 1, name = 'The lost sword', area = 'Ancaria', hint = 'Ask the smith.', label = 'started', known = true},

@@ -36,7 +36,6 @@ end
 local SORTS = {'Newest', 'Highest level'}
 local SORT_KEY = {'new', 'level'}
 local MAX_SAVED = 50
-local GOLD, DIM, OK, WARN = ui.rgba(255, 215, 120), ui.rgba(255, 255, 255, 150), ui.rgba(143, 206, 122), ui.rgba(255, 200, 120)
 
 local view = {             -- what the panel shows and waits for
     tab = 1, class = 1, sort = 1, page = 1, list = nil, detail = nil, mine = nil, hero_data = nil,
@@ -45,7 +44,7 @@ local view = {             -- what the panel shows and waits for
 
 local function say(text) view.status = tostring(text) end
 
--- Texts that come from outside are shown cut to a length (and only as text: gear.ui.text draws, it does not interpret).
+-- Texts that come from outside are shown cut to a length (and only as text: the document shows them as plain text, never as markup).
 local fit = gear.fmt.fit
 
 -- ---- saved builds (a file of this mod) ----
@@ -157,111 +156,32 @@ ch:on(function(from, p)
     end
 end)
 
--- ---- drawing ----
+-- ---- the window: ui/main.rml (the game theme) ----
+-- One model of ready-made strings, rebuilt every frame; only what changed is written. Buttons are handled by delegated click listeners.
 local function row_text(b)
     return ('%s  %s  L%s%s%s'):format(fit(b.name, 18), fit(b.class_name, 12), tostring(b.level or '?'), b.verified and '  [verified]' or '',
         (b.title and b.title ~= '') and ('  - ' .. fit(b.title, 30)) or '')
 end
 
-local function lines_of(items, fmt, x, y, w)
-    for _, item in ipairs(items or {}) do
-        ui.text(fit(fmt(item), math.floor(w / 6.5)), x, y, {})
-        y = y + 16
-    end
-    return y
+local function lines_of(items, fmt)
+    local out = {}
+    for _, item in ipairs(items or {}) do out[#out + 1] = fit(fmt(item), 70) end
+    return out
 end
 
-local function browse(x, y, w, h)
-    -- Class | dropdown | Sort | the sort radios | Refresh | prev | next
-    local bar = ui.table('bar', x, y, w, {columns = {36, 100, 30, '*', 70, 34, 34}, spacing = {4, 0}, row_height = 20})
-    bar:row()
-    bar:label(1, 'Class', {id = 'l-class'})
-    local class_changed
-    class_changed, view.class = bar:dropdown(2, class_choices(), view.class, {id = 'class', tooltip = 'Only this class'})
-    if class_changed then view.page = 1; fetch_list() end
-    bar:label(3, 'Sort', {id = 'l-sort'})
-    local rx, ry = bar:cell(4)
-    local sort_changed
-    sort_changed, view.sort = ui.radio_group('sort', rx + 6, ry + 3, SORTS, view.sort, {horizontal = true})
-    if sort_changed then view.page = 1; fetch_list() end
-    if bar:button(5, 'Refresh', {id = 'refresh', tooltip = 'Ask the server again'}) then fetch_list() end
-    if bar:button(6, '<', {id = 'prev', enabled = view.page > 1}) then view.page = view.page - 1; fetch_list() end
-    if bar:button(7, '>', {id = 'next', enabled = view.list ~= nil and view.page < view.list.pages}) then view.page = view.page + 1; fetch_list() end
-    local top = y + 28
-    if not view.list then
-        ui.text(view.waiting and 'Asking the server ...' or 'Press Refresh to list the shared builds.', x, top, {color = DIM})
-    elseif #view.list.builds == 0 then
-        ui.text('No build matches. Publish yours on the "My build" tab.', x, top, {color = DIM})
-    else
-        local area = ui.scroll_begin('browse', x, top, w, h - 54, {step = 22})
-        for i, b in ipairs(view.list.builds) do
-            if type(b) == 'table' and type(b.id) == 'string' then
-                if ui.button('b' .. i, x, area.content_y + (i - 1) * 22, area.w - 2, 20, row_text(b), {tooltip = 'Fetch this build'}) then
-                    request('get', {id = b.id})
-                end
-            end
-        end
-        ui.scroll_end(#view.list.builds * 22)
-        ui.text(('%d build%s, page %d of %d'):format(view.list.total, view.list.total == 1 and '' or 's', view.page, view.list.pages), x, y + h - 20, {color = DIM})
-    end
-end
-
-local function my_build(x, y, w, h)
-    local hero = gear.world.hero()
-    ui.text('What you publish', x, y, {color = ui.COLORS.accent})
-    local cls = hero and hero:class() or '?'
-    ui.text(('%s, %s, level %s'):format(hero and hero:name() or '(no hero)', cls, hero and tostring(hero:level()) or '?'), x, y + 18, {})
-    ui.text('The server reads your skills and equipment itself.', x, y + 36, {color = DIM})
-    ui.text('Title: ' .. fit(gear.settings.get('title'), 40), x, y + 58, {})
-    ui.text('Note: ' .. fit(gear.settings.get('note'), 70), x, y + 74, {})
-    ui.text('Tags: ' .. table.concat(my_tags(), ', '), x, y + 90, {})
-    ui.text('(change these in the Mods screen, F11, under Build sharer)', x, y + 106, {color = DIM})
-    local carried = carried_names()
-    ui.text(('Carried items sent: %d%s'):format(#carried, gear.settings.get('share_carried') and '' or ' (off)'), x, y + 128, {})
-    if ui.button('publish', x, y + 152, 120, 24, 'Publish', {tooltip = 'Share (or update) your build on this server'}) then publish() end
-    if ui.button('unpublish', x + 128, y + 152, 120, 24, 'Remove mine', {enabled = view.mine ~= nil and view.mine ~= false, tooltip = 'Take your build off the server'}) then
-        request('unpublish')
-    end
-    if ui.button('mine', x + 256, y + 152, 120, 24, 'Check server', {tooltip = 'What the server holds of yours'}) then request('mine') end
-    local ty = y + 190
-    if view.mine == false then
-        ui.text('The server has no build of yours.', x, ty, {color = DIM})
-    elseif view.mine then
-        local b = view.mine
-        ui.text(('On the server: %s, level %s, %s'):format(fit(b.class_name, 14), tostring(b.level), b.verified and 'server-verified' or 'reported only'), x, ty,
-            {color = b.verified and OK or DIM})
-        ui.text(('%d skills, %d equipped items, %d combat arts'):format(#(b.skills or {}), #(b.equipment or {}), #(b.arts or {})), x, ty + 16, {color = DIM})
-    end
-    if view.hero_data == false then
-        ui.text('This server keeps no hero data of you yet: your build will only have class and level.', x, ty + 40, {color = WARN})
-    end
-end
-
-local function detail(x, y, w, h)
-    local b = view.detail
-    if not b then ui.text('Pick a build on the Browse or Saved tab.', x, y, {color = DIM}); return end
-    ui.text(('%s - %s, level %s'):format(fit(b.name, 24), fit(b.class_name, 14), tostring(b.level)), x, y, {color = GOLD})
-    ui.text(b.verified and 'server-verified' or 'reported by the player', x + w - 150, y, {color = b.verified and OK or DIM})
+local function detail_model(b)
+    local d = {head = '', verified = false, verified_text = '', text = '', save_text = '', sections = {}, tags = ''}
+    d.head = ('%s - %s, level %s'):format(fit(b.name, 24), fit(b.class_name, 14), tostring(b.level))
+    d.verified = b.verified and true or false
+    d.verified_text = b.verified and 'server-verified' or 'reported by the player'
     local text = {}
     if b.title and b.title ~= '' then text[#text + 1] = fit(b.title, 60) end
     if b.note and b.note ~= '' then text[#text + 1] = fit(b.note, 240) end
-    local lines, th = ui.text_wrap(table.concat(text, '\n'), w - 8, {})
-    for i, line in ipairs(lines) do ui.text(line, x, y + 20 + (i - 1) * (th / math.max(1, #lines)), {}) end
-    local top = y + 24 + th
-    local at = saved_index(b)
-    if ui.button('save', x + w - 130, top - 4, 126, 20, at and 'Remove from Saved' or 'Save to Saved', {tooltip = 'Keep this build in a file on this computer'}) then
-        if at then table.remove(view.saved, at) else
-            if #view.saved >= MAX_SAVED then table.remove(view.saved, 1) end
-            view.saved[#view.saved + 1] = b
-        end
-        store_saved()
-    end
-    local area = ui.scroll_begin('detail', x, top + 20, w, h - (top + 20 - y) - 4, {step = 16})
-    local cy = area.content_y
+    d.text = table.concat(text, '\n')
+    d.save_text = saved_index(b) and 'Remove from Saved' or 'Save to Saved'
     local function section(title, items, fmt)
         if type(items) ~= 'table' or #items == 0 then return end
-        ui.text(title, x, cy, {color = ui.COLORS.accent}); cy = cy + 18
-        cy = lines_of(items, fmt, x + 8, cy, area.w - 16) + 4
+        d.sections[#d.sections + 1] = {title = title, lines = lines_of(items, fmt)}
     end
     section('Skills', b.skills, function(s) return ('%s  %s%s'):format(fit(s.name, 30), tostring(s.level), (s.bonus or 0) > 0 and (' (+' .. tostring(s.bonus) .. ')') or '') end)
     section('Combat arts', b.arts, function(a) return fit(a.name, 40) end)
@@ -272,49 +192,127 @@ local function detail(x, y, w, h)
     if type(b.tags) == 'table' and #b.tags > 0 then
         local tags = {}
         for _, t in ipairs(b.tags) do tags[#tags + 1] = fit(t, 16) end
-        ui.text('Tags: ' .. table.concat(tags, ', '), x, cy, {color = DIM}); cy = cy + 18
+        d.tags = table.concat(tags, ', ')
     end
-    ui.scroll_end(cy - area.content_y)
+    return d
 end
 
-local function saved_tab(x, y, w, h)
-    if #view.saved == 0 then ui.text('Nothing saved yet. Open a build and use "Save to Saved".', x, y, {color = DIM}); return end
-    local area = ui.scroll_begin('saved', x, y, w, h, {step = 22})
-    for i, b in ipairs(view.saved) do
-        if ui.button('s' .. i, x, area.content_y + (i - 1) * 22, area.w - 2, 20, row_text(b), {tooltip = 'Show this build'}) then
-            view.detail = b; view.tab = 4
+local shown = false
+local doc
+local last = {}
+
+local function snapshot()
+    local hero = gear.world.hero()
+    local m = {
+        open = shown, title = 'Build sharer' .. key_hint('toggle'), tab = view.tab, status = fit(view.status, 90), tabs = {},
+        class_name = class_choices()[view.class], sort_name = SORTS[view.sort], can_prev = view.page > 1,
+        can_next = view.list ~= nil and view.page < view.list.pages, browse_msg = '', builds = {}, builds_count = '',
+        me = '', my_title = fit(gear.settings.get('title'), 40), my_note = fit(gear.settings.get('note'), 70), my_tags = table.concat(my_tags(), ', '),
+        carried = '', has_mine = view.mine ~= nil and view.mine ~= false, mine_verified = false, mine_line = '', mine_line2 = '',
+        no_hero_data = view.hero_data == false, saved = {}, saved_msg = '', has_detail = view.detail ~= nil,
+        d = {head = '', verified = false, verified_text = '', text = '', save_text = '', sections = {}, tags = ''},
+    }
+    for i, name in ipairs(TABS) do m.tabs[i] = {id = 'tab' .. i, name = name, on = view.tab == i} end
+    if view.tab == 1 then
+        if not view.list then
+            m.browse_msg = view.waiting and 'Asking the server ...' or 'Press Refresh to list the shared builds.'
+        elseif #view.list.builds == 0 then
+            m.browse_msg = 'No build matches. Publish yours on the "My build" tab.'
+        else
+            for i, b in ipairs(view.list.builds) do
+                if type(b) == 'table' and type(b.id) == 'string' then m.builds[#m.builds + 1] = {id = 'b' .. i, text = row_text(b)} end
+            end
+            m.builds_count = ('%d build%s, page %d of %d'):format(view.list.total, view.list.total == 1 and '' or 's', view.page, view.list.pages)
         end
+    elseif view.tab == 2 then
+        local cls = hero and hero:class() or '?'
+        m.me = ('%s, %s, level %s'):format(hero and hero:name() or '(no hero)', cls, hero and tostring(hero:level()) or '?')
+        local carried = carried_names()
+        m.carried = ('Carried items sent: %d%s'):format(#carried, gear.settings.get('share_carried') and '' or ' (off)')
+        if view.mine == false then
+            m.mine_line = 'The server has no build of yours.'
+        elseif view.mine then
+            local b = view.mine
+            m.mine_verified = b.verified and true or false
+            m.mine_line = ('On the server: %s, level %s, %s'):format(fit(b.class_name, 14), tostring(b.level), b.verified and 'server-verified' or 'reported only')
+            m.mine_line2 = ('%d skills, %d equipped items, %d combat arts'):format(#(b.skills or {}), #(b.equipment or {}), #(b.arts or {}))
+        end
+    elseif view.tab == 3 then
+        if #view.saved == 0 then m.saved_msg = 'Nothing saved yet. Open a build and use "Save to Saved".' end
+        for i, b in ipairs(view.saved) do m.saved[i] = {id = 's' .. i, text = row_text(b)} end
+    elseif view.detail then
+        m.d = detail_model(view.detail)
     end
-    ui.scroll_end(#view.saved * 22)
+    return m
 end
 
-local function panel()
-    local p = ui.panel('main', 'Build sharer' .. key_hint('toggle'), 80, 60, 560, 430, {})
-    if not p.open then view.opened = false; return end
-    if not view.opened then                         -- just opened: ask the server for the first page and for my own build
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function pick_index(id, prefix)
+    return tonumber(tostring(id):match('^' .. prefix .. '(%d+)$'))
+end
+
+local function load_doc()
+    local m = snapshot()
+    last = m
+    local err
+    doc, err = gear.ui.rml.load('ui/main.rml', {model = m})
+    if not doc then gear.log('build sharer: ui/main.rml failed: ' .. tostring(err)) return end
+    local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
+    on('.tab', function(e) local i = pick_index(e.current, 'tab'); if i then view.tab = i end end)
+    on('#class', function() view.class = view.class % #CLASSES + 1; view.page = 1; fetch_list() end)
+    on('#sort', function() view.sort = view.sort % #SORTS + 1; view.page = 1; fetch_list() end)
+    on('#refresh', function() fetch_list() end)
+    on('#prev', function() if view.page > 1 then view.page = view.page - 1; fetch_list() end end)
+    on('#next', function() if view.list and view.page < view.list.pages then view.page = view.page + 1; fetch_list() end end)
+    on('.brow', function(e)
+        local i = pick_index(e.current, 'b')
+        local s = pick_index(e.current, 's')
+        if i and view.list and type(view.list.builds[i]) == 'table' then request('get', {id = view.list.builds[i].id})
+        elseif s and view.saved[s] then view.detail = view.saved[s]; view.tab = 4 end
+    end)
+    on('#publish', publish)
+    on('#unpublish', function() request('unpublish') end)
+    on('#mine', function() request('mine') end)
+    on('#save', function()
+        local b = view.detail
+        if not b then return end
+        local at = saved_index(b)
+        if at then table.remove(view.saved, at) else
+            if #view.saved >= MAX_SAVED then table.remove(view.saved, 1) end
+            view.saved[#view.saved + 1] = b
+        end
+        store_saved()
+    end)
+end
+
+gear.keys.on('toggle', function()
+    shown = not shown
+    if shown then
         view.opened = true
         if net.supported() then fetch_list(); gear.after(0.5, function() request('mine') end) else ready() end
+    else
+        view.opened = false
     end
-    local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
-    local _, tab = ui.radio_group('tabs', x, y, TABS, view.tab, {horizontal = true})
-    view.tab = tab
-    local top, body_h = y + 26, h - 26 - 22
-    if view.tab == 1 then browse(x, top, w, body_h)
-    elseif view.tab == 2 then my_build(x, top, w, body_h)
-    elseif view.tab == 3 then saved_tab(x, top, w, body_h)
-    else detail(x, top, w, body_h) end
-    if view.status ~= '' then ui.text(fit(view.status, 90), x, y + h - 16, {color = WARN}) end
-end
-
-gear.keys.on('toggle', function() ui.toggle_panel('main') end)
+end)
 
 gear.on('draw', function(state)
-    if not state or state.mode ~= 'game' or state.exclusive then return end
-    panel()
+    if not state or state.mode ~= 'game' or state.exclusive or not shown then return end
+    if not doc then load_doc() end
+    if not doc then return end
+    for k, v in pairs(snapshot()) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+    doc:draw({layer = 'hud'})
 end)
 
 gear.on('net_caps', function(caps)
-    if caps.supported and ui.panel_open('main') and not view.list then fetch_list() end
+    if caps.supported and shown and not view.list then fetch_list() end
 end)
 
 load_saved()

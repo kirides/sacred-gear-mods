@@ -8,7 +8,7 @@
   "better-saveload.jpg":         {"src": "shot-bsl/game_load", "box": [305, 35, 1295, 865]},
   "bounty.jpg":                  {"src": "shot-bounty/bounty-panel", "box": [525, 55, 1255, 480]},
   "bounty-editor.jpg":           {"src": "shot-beditor/editor-form", "box": [455, 25, 1150, 775]},
-  "buildsharer.jpg":             {"src": "shot-srv-buildsharer/server-buildsharer", "box": [270, 45, 975, 600]},
+  "buildsharer.jpg":             {"src": "shot-srv-buildsharer/server-buildsharer", "box": [105, 40, 1080, 640]},
   "companions.jpg":              {"src": "shot-companions/companions-4-back", "box": [640, 0, 1600, 600]},
   "companions-portraits.png":    {"src": "shot-companions/companions-6-brought", "box": [1380, 0, 1600, 640]},
   "custom-classes.jpg":          {"src": "shot-cc/cc-window-seraphim", "box": [295, 5, 1185, 700]},

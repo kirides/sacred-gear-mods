@@ -1,0 +1,75 @@
+<rml>
+<head>
+    <title>Build sharer</title>
+    <link type="text/rcss" href="main.rcss"/>
+</head>
+<body data-model="model">
+<div id="main" class="window" data-panel="main" data-title="Build sharer" data-if="open">
+    <div class="titlebar">{{ title }}</div>
+    <div class="body">
+        <div class="tabs">
+            <button data-for="t : tabs" class="tab" data-attr-id="t.id" data-class-on="t.on">{{ t.name }}</button>
+        </div>
+
+        <div data-if="tab == 1">
+            <div class="row">
+                <span class="label">Class</span><button class="mini" id="class" title="Only this class">{{ class_name }}</button>
+                <span class="label">Sort</span><button class="mini" id="sort">{{ sort_name }}</button>
+                <button class="mini" id="refresh" title="Ask the server again">Refresh</button>
+                <button class="mini" id="prev" data-attr-disabled="!can_prev">&lt;</button>
+                <button class="mini" id="next" data-attr-disabled="!can_next">&gt;</button>
+            </div>
+            <p data-if="browse_msg != ''" class="muted">{{ browse_msg }}</p>
+            <div class="blist">
+                <button data-for="b : builds" class="brow" data-attr-id="b.id" title="Fetch this build">{{ b.text }}</button>
+            </div>
+            <p class="muted small" data-if="builds_count != ''">{{ builds_count }}</p>
+        </div>
+
+        <div data-if="tab == 2">
+            <p class="heading">What you publish</p>
+            <p>{{ me }}</p>
+            <p class="muted">The server reads your skills and equipment itself.</p>
+            <p>Title: {{ my_title }}</p>
+            <p>Note: {{ my_note }}</p>
+            <p>Tags: {{ my_tags }}</p>
+            <p class="muted small">(change these in the Mods screen, F11, under Build sharer)</p>
+            <p>{{ carried }}</p>
+            <div class="row">
+                <button class="game-button" id="publish" title="Share (or update) your build on this server">Publish</button>
+                <button class="game-button" id="unpublish" data-attr-disabled="!has_mine" title="Take your build off the server">Remove mine</button>
+                <button class="game-button" id="mine" title="What the server holds of yours">Check server</button>
+            </div>
+            <p data-class-good="mine_verified" class="muted">{{ mine_line }}</p>
+            <p class="muted">{{ mine_line2 }}</p>
+            <p class="warn" data-if="no_hero_data">This server keeps no hero data of you yet: your build will only have class and level.</p>
+        </div>
+
+        <div data-if="tab == 3">
+            <p data-if="saved_msg != ''" class="muted">{{ saved_msg }}</p>
+            <div class="blist">
+                <button data-for="b : saved" class="brow" data-attr-id="b.id" title="Show this build">{{ b.text }}</button>
+            </div>
+        </div>
+
+        <div data-if="tab == 4">
+            <p data-if="!has_detail" class="muted">Pick a build on the Browse or Saved tab.</p>
+            <div data-if="has_detail">
+                <div class="row space"><span class="accent">{{ d.head }}</span><span data-class-good="d.verified" class="muted">{{ d.verified_text }}</span></div>
+                <p class="wrap">{{ d.text }}</p>
+                <div class="row right"><button class="mini" id="save">{{ d.save_text }}</button></div>
+                <div class="dlist">
+                    <div data-for="s : d.sections">
+                        <p class="heading">{{ s.title }}</p>
+                        <div data-for="l : s.lines" class="dline">{{ l }}</div>
+                    </div>
+                    <p class="muted" data-if="d.tags != ''">Tags: {{ d.tags }}</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="warn status" data-if="status != ''">{{ status }}</p>
+    </div>
+</div>
+</body>
+</rml>

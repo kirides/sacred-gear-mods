@@ -1,0 +1,18 @@
+#main { position: absolute; left: 80px; top: 60px; width: 600px; }
+.tabs { display: flex; flex-direction: row; margin-bottom: 8px; }
+button.tab { margin-right: 4px; font-family: "Sacred Game"; }
+button.tab.on { border-color: #ffd780; color: #ffd780; }
+.row .label { margin: 0 4px 0 8px; align-self: center; }
+button.mini { padding: 0 8px; margin: 0 4px 0 0; }
+.blist { height: 270px; overflow-y: auto; margin-top: 6px; }
+button.brow { display: block; width: 100%; margin: 0 0 2px 0; padding: 2px 8px; text-align: left; font-size: 14dp; }
+.dlist { height: 220px; overflow-y: auto; }
+.dline { margin-left: 10px; font-size: 14dp; }
+.small { font-size: 12dp; }
+.wrap { white-space: pre-wrap; }
+.warn { color: #ffc878; }
+.good { color: #8fce7a; }
+.status { margin-top: 8px; }
+scrollbarvertical { width: 14px; }
+scrollbarvertical slidertrack { background-color: #0c0c14; }
+scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }
