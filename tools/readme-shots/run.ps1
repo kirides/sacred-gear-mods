@@ -18,9 +18,11 @@ function Prepare($names, $config) {
     Remove-Item $mods -Recurse -Force -ErrorAction SilentlyContinue
     New-Item $mods -ItemType Directory | Out-Null
     foreach ($n in $names) {
-        if ($n -eq 'shots') { Copy-Item $PSScriptRoot (Join-Path $mods 'shots') -Recurse; Remove-Item (Join-Path $mods 'shots\run.ps1'), (Join-Path $mods 'shots\crop.py'), (Join-Path $mods 'shots\crops.json') }
+        if ($n -eq 'theme') { Copy-Item (Join-Path $env:SACRED_BILD 'gear\examples\theme') (Join-Path $mods 'theme') -Recurse }
+        elseif ($n -eq 'shots') { Copy-Item $PSScriptRoot (Join-Path $mods 'shots') -Recurse; Remove-Item (Join-Path $mods 'shots\run.ps1'), (Join-Path $mods 'shots\crop.py'), (Join-Path $mods 'shots\crops.json') }
         else { Copy-Item (Join-Path $repo "src\$n") (Join-Path $mods $n) -Recurse }
     }
+    foreach ($k in $script:seedFiles.Keys) { $script:seedFiles[$k] | Set-Content (Join-Path $mods $k) }   # files a step wants in place (the loot log's entries)
     foreach ($k in $config.Keys) { "return $($config[$k])" | Set-Content (Join-Path $mods "$k\config.lua") }
 }
 function Run($instance, $slot, $modlist, $timeout = 240) {
@@ -32,6 +34,8 @@ function Run($instance, $slot, $modlist, $timeout = 240) {
 # One step = the mods in, the config, one run. The panels' open state is kept by Gear in mods\gear_layout.json: it is gone with the folder.
 function Step($name, $modlist, $config = @{}, $slot = $Save, $timeout = 240) {
     if ($Only.Count -and ($Only -notcontains $name)) { return }
+    # the shared RmlUi theme (sacred-bild gear/examples/theme; $env:SACRED_BILD is the checkout) is part of every run
+    $modlist = $modlist + ',theme'
     $names = $modlist -split ','
     Prepare $names $config
     Run $name $slot $modlist $timeout
@@ -62,7 +66,11 @@ if (-not $CropOnly) {
     # phases of main.lua
     Phase 'autosave' 'autosave' "{phase = 'autosave'}"
     Phase 'lf'       'lootfilter' "{phase = 'lootfilter'}"
-    Phase 'fight'    'damagemeter' "{phase = 'fight'}" @('lootlog', 'sessiontracker')
+    # the loot log shows a few seeded entries (the spawned monsters drop nothing in this run)
+    $seed = '{"session":1,"entries":[{"s":1,"t":104,"kind":"pickup","name":"Stinging Belt of Dominion","quality":"magic","category":"armor"},{"s":1,"t":101,"kind":"pickup","name":"Damaged Shield","quality":"normal","category":"shield"},{"s":1,"t":94,"kind":"drop","name":"Glorious Warrior Two-Hander","quality":"rare","category":"weapon"},{"s":1,"t":94,"kind":"drop","name":"Energy Flash","quality":"unique","category":"special"},{"s":1,"t":89,"kind":"drop","name":"Damaged Shield","quality":"normal","category":"shield"},{"s":1,"t":87,"kind":"drop","name":"Gold","quality":"normal","category":"gold"}]}'
+    $script:seedFiles = @{ 'lootlog\lootlog.json' = $seed }
+    Phase 'fight'    'damagemeter' "{phase = 'fight', monster = 'ORC_WARRIOR.GRN'}" @('lootlog', 'sessiontracker')
+    $script:seedFiles = @{}
     Phase 'twitch'   'twitch_integration' "{phase = 'twitch'}" @('twi_sacred')
     foreach ($w in 'achievements', 'buildsharer', 'serverfeed') {
         Phase "srv-$w" $w "{phase = 'server', which = '$w', press = true, wait = 8}"
