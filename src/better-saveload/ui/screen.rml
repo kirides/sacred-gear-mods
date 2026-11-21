@@ -5,15 +5,16 @@
 </head>
 <body data-model="model">
 <div id="screen" class="thick-frame bg-fill-settings" data-panel="screen" data-title="Savegames (Better SaveLoad)" data-if="open">
+    <div data-if="dd != ''" id="ddshade"></div>
     <div class="titlerow"><span class="ttl">{{ title }}</span></div>
 
     <div data-if="in_game" class="tabbar">
         <a class="link tab" id="mode-load" data-class-on="load_on">Load</a><span class="tab-sep"></span><a class="link tab" id="mode-save" data-class-on="save_on">Save</a>
     </div>
     <div class="tool">
-        <button class="mini cyc" id="hero" title="Character"><span class="padkey a"></span>{{ hero_label }}</button>
-        <button class="mini cyc" id="class" title="Class"><span class="padkey a"></span>{{ class_label }}</button>
-        <button class="mini cyc" id="sort" title="Order"><span class="padkey a"></span>{{ sort_label }}</button>
+        <div class="ddwrap"><button class="mini cyc" id="hero" title="Character"><span class="padkey a"></span>{{ hero_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'hero'" class="ddlist" data-nav-scroll><button data-for="o : dd_hero" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+        <div class="ddwrap"><button class="mini cyc" id="class" title="Class"><span class="padkey a"></span>{{ class_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'class'" class="ddlist" data-nav-scroll><button data-for="o : dd_class" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+        <div class="ddwrap"><button class="mini cyc" id="sort" title="Order"><span class="padkey a"></span>{{ sort_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'sort'" class="ddlist" data-nav-scroll><button data-for="o : dd_sort" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
     </div>
 
     <div class="srow">
@@ -65,7 +66,7 @@
             <button data-if="!save_on" class="game-button" id="load" data-attrif-disabled="!can_load"><span class="padkey a"></span>Load</button>
             <button class="game-button" id="delete" data-attrif-disabled="!can_delete" title="Deletes the savegame file"><span class="padkey a"></span>Delete</button>
             <span data-class-good="msg_ok" data-class-bad="!msg_ok" class="grow msg small">{{ msg }}</span>
-            <button class="game-button" id="close"><span class="padkey a"></span>Back</button>
+            <button class="game-button" id="close"><span class="padkey b"></span>Back</button>
         </div>
     </div>
 </div>

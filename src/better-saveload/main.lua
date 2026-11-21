@@ -515,7 +515,7 @@ end
 local function details_model(s)
     local d = {pic = '', nopic = '', title = '', sub = '', fields = {}, note = ''}
     local url = picture_url(s)
-    d.pic = url or ''
+    d.pic = (url and url ~= '') and (url .. '?point') or ''       -- the big preview: nearest texel, not blurred by bilinear filtering
     if url == '' then d.nopic = 'no picture' end
     if not s then
         if view.mode == 'save' then
@@ -568,6 +568,7 @@ local function snapshot(preview)
     local m = {
         open = view.open ~= nil or preview == true, title = view.open == WND_MENUS and 'Load game' or 'Savegames',
         in_game = view.open == WND_GAME, load_on = view.mode == 'load', save_on = view.mode == 'save',
+        dd = view.dd or '', dd_hero = {}, dd_class = {}, dd_sort = {},
         hero_label = view.heroes[view.hero_i] or '', class_label = view.class_i == 1 and 'All classes' or (CLASS_LABEL[view.classes[view.class_i]] or ''),
         sort_label = SORTS[view.sort_i].label, count_text = ('%d of %d'):format(#view.shown, #view.all), no_rows = #view.shown == 0,
         search_kbd = (view.osk and view.osk.target == 'search') and 'Close' or 'Keyboard',
@@ -585,6 +586,15 @@ local function snapshot(preview)
     m.can_delete = s ~= nil
     if view.message and gear.time() < view.message_until then m.msg, m.msg_ok = view.message, view.message_ok end
     m.osk_title, m.osk_rows, m.shift_label = osk_model()
+    -- the open drop-down list of one of the three filters
+    -- (a list of its own for each: an element id must be unique in the document)
+    if view.dd == 'hero' then
+        for i, h in ipairs(view.heroes) do m.dd_hero[i] = {id = 'ddh' .. i, label = h, on = i == view.hero_i} end
+    elseif view.dd == 'class' then
+        for i, c in ipairs(view.classes) do m.dd_class[i] = {id = 'ddc' .. i, label = i == 1 and 'All classes' or (CLASS_LABEL[c] or c), on = i == view.class_i} end
+    elseif view.dd == 'sort' then
+        for i, s in ipairs(SORTS) do m.dd_sort[i] = {id = 'dds' .. i, label = s.label, on = i == view.sort_i} end
+    end
     m.d = details_model(s)
     -- the rows in view
     local rows = {}
@@ -646,9 +656,23 @@ local function load_doc()
         view.mode, view.confirm, view.osk, view.sel = 'save', nil, nil, 'new'
         apply_filters()
     end)
-    on('#hero', function() view.hero_i = view.hero_i % #view.heroes + 1; apply_filters() end)
-    on('#class', function() view.class_i = view.class_i % #view.classes + 1; apply_filters() end)
-    on('#sort', function() view.sort_i = view.sort_i % #SORTS + 1; apply_filters() end)
+    -- the three filters are drop-down lists: a click on the button opens (or closes) its list, a click on an entry picks it
+    local function toggle_dd(name) return function() view.dd = view.dd == name and '' or name end end
+    on('#hero', toggle_dd('hero'))
+    on('#class', toggle_dd('class'))
+    on('#sort', toggle_dd('sort'))
+    on('.opt', function(e)
+        local i = tonumber(tostring(e.current):match('^dd%a(%d+)$'))
+        local name = view.dd
+        view.dd = ''
+        if not i then return end
+        if name == 'hero' and view.heroes[i] then view.hero_i = i
+        elseif name == 'class' and view.classes[i] then view.class_i = i
+        elseif name == 'sort' and SORTS[i] then view.sort_i = i
+        else return end
+        apply_filters()
+    end)
+    on('#ddshade', function() view.dd = '' end)
     on('#search_kbd', function()
         view.focus = 'search'
         view.osk = not (view.osk and view.osk.target == 'search') and {shift = false, target = 'search'} or nil
@@ -798,6 +822,8 @@ end
 
 local function closed()
     view.open = nil
+    view.dd = ''
+
     view.confirm = nil
 
     ui.capture_keys(false)
@@ -806,7 +832,8 @@ end
 local function input()
     local back = ui.back_pressed() or ui.key_pressed('escape')
     if back then
-        if view.confirm then view.confirm = nil
+        if view.dd and view.dd ~= '' then view.dd = ''
+        elseif view.confirm then view.confirm = nil
         elseif view.osk then view.osk = nil
         elseif view.search ~= '' then set_search('') view.focus = 'name'      -- the first Back clears the search
         else close() end
@@ -861,6 +888,7 @@ gear.on('better-saveload.query', function(out)
     out.search, out.focus, out.page = view.search, view.focus, view.page
     out.osk_target = view.osk and view.osk.target or nil
     out.scroll_top = scroll_top
+    out.dd, out.hero_i, out.class_i, out.sort_i = view.dd, view.hero_i, view.class_i, view.sort_i
     out.order = {}
     for i, s in ipairs(view.shown) do out.order[i] = s.slot end
 end)

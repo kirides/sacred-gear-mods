@@ -52,6 +52,60 @@ gear.task(function()
     check('many savegames are listed', q.shown >= 30, q.shown)
     A.screenshot('pad-0-list')
 
+    -- The filters are drop-down lists: a click opens the list under the button, a click on an entry picks it and closes it, B closes it without.
+    local function click_rect(r, wait)
+        local x, y = A.ui_to_pixels(r.x + r.w / 2, r.y + r.h / 2)
+        A.move(x, y)
+        gear.wait(0.3)
+        A.click(x, y)
+        gear.wait(wait or 0.6)
+    end
+    local stops_closed = A.nav()
+    click_rect(rect('#sort'))
+    gear.wait(0.4)
+    check('the open list adds its entries as pad stops', A.nav() >= stops_closed + 5, tostring(stops_closed) .. ' -> ' .. tostring(A.nav()))
+    check('the order button opens its list', query().dd == 'sort', query().dd)
+    A.screenshot('pad-0b-dropdown')
+    local opt = rect('#dds3')
+    check('the list has entries', opt ~= nil)
+    if opt then click_rect(opt) end
+    q = query()
+    if q.sort_i ~= 3 then
+        gear.emit('better-saveload.press', {selector = '.opt', id = 'dds3'})      -- (what a click on the entry does: tells a handler that fails from a click that does not arrive)
+        gear.wait(0.3)
+        check('(the handler of an entry works)', query().sort_i == 3, tostring(query().sort_i))
+        gear.emit('better-saveload.set', {sort_i = 1})
+    end
+    check('an entry picks the order and closes the list', q.dd == '' and q.sort_i == 3, tostring(q.dd) .. ' ' .. tostring(q.sort_i) .. ' sel=' .. tostring(q.sel))
+    click_rect(rect('#hero'))
+    check('the character button opens its list', query().dd == 'hero', query().dd)
+    A.pad(0, 1, 0)                                                   -- B
+    gear.wait(0.5)
+    check('B closes the list and keeps the screen', query().dd == '' and query().open == WND_MENUS, tostring(query().dd))
+    A.pad(0, 0, 0)
+    local o3 = rect('#sort')
+    if o3 then
+        click_rect(o3)
+        local first = rect('#dds1')
+        if first then click_rect(first) end                          -- the newest-first order again
+    end
+
+    gear.emit('better-saveload.press', {selector = '#jump1'})        -- (the list to its top again after the clicks above)
+    gear.wait(0.8)
+    do
+        local lr = rect('#list')
+        if lr then
+            local lx, ly = A.ui_to_pixels(lr.x + lr.w / 2, lr.y + lr.h / 2)
+            A.move(lx, ly)
+            gear.wait(0.3)
+            for _ = 1, 60 do
+                if query().scroll_top <= 0 then break end
+                A.wheel(10)
+                gear.wait(0.15)
+            end
+        end
+    end
+
     -- Rows scrolled out of sight are no pad stops: the stops are the visible cards and the buttons around the list.
     local stops = A.nav()
     check('only the visible cards are pad stops', stops > 0 and stops <= 22, stops)

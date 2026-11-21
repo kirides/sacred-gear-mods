@@ -1,4 +1,4 @@
-#screen { position: absolute; left: 112px; top: 50px; width: 800px; height: 668px; }
+#screen { position: absolute; left: 86px; top: 19px; width: 800px; height: 668px; }       /* the frame adds 52 x 61: 852 x 729 in all, centred in the 1024 x 768 layout */
 .titlerow { height: 30px; text-align: center; }
 .ttl { font-family: "Sacred Game"; font-size: 20px; color: #ffd780; }
 .tool { display: flex; flex-direction: row; align-items: center; height: 40px; }
@@ -49,3 +49,11 @@ button.row.sel { background-color: #4a3f2a; border-color: #ffd780; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
+
+/* the drop-down lists of the filters: a button with a caret opens a list of entries under it; the shade behind it takes the click that closes it */
+#ddshade { position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; z-index: 5; }
+.ddwrap { position: relative; display: inline-block; z-index: 10; }
+.ddwrap button.cyc .caret { margin-left: 8px; color: #ffd780; }
+.ddlist { position: absolute; left: 0px; top: 28px; min-width: 150px; max-height: 300px; overflow-y: auto; z-index: 20; background-color: #0c0c14; border: 1px #ffd780; padding: 2px; }
+button.mini.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4px 10px; }
+button.mini.opt.on { color: #ffe030; border-color: #ffd780; }
