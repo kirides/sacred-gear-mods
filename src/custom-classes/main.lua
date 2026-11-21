@@ -327,7 +327,7 @@ gear.on('custom-classes.take', guard('take', function(id, profile_id)
     if c and c:is_hero() and p then take(c, p) end
 end))
 gear.on('custom-classes.select', guard('select', function(id) if win then win.select(id) end end))
-gear.on('custom-classes.window', guard('window', function(open) ui.show_panel('classes', open ~= false) end))
+gear.on('custom-classes.window', guard('window', function(open) if win then win.open(open ~= false) end end))
 gear.on('custom-classes.leave', guard('leave', function(id)
     local c = gear.world.object(id)
     if c and c:is_hero() then leave(c) end
@@ -347,16 +347,15 @@ gear.on('draw', guard('draw', function(s)
         if h and not store.data.asked and not assignment(h) and (h:level() or 1) <= 1 and next(state.profiles) then
             store.data.asked = true
             store:changed()
-            ui.show_panel('classes', true)
+            win.open(true)
         end
     end
     win.draw()
 end))
 
-ui.show_panel('classes', false)
-gear.keys.on('window', guard('key', function() ui.toggle_panel('classes') end))
+gear.keys.on('window', guard('key', function() win.toggle() end))
 if ui.menu_item then
-    pcall(ui.menu_item, 'classes', 'Class window (custom classes)', function() ui.toggle_panel('classes') end)
+    pcall(ui.menu_item, 'classes', 'Class window (custom classes)', function() win.toggle() end)
 end
 
 -- Used by tests and other mods: gear.mods.get('custom-classes') cannot expose functions, so the state is global to this mod only.

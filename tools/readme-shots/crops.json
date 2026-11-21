@@ -11,7 +11,7 @@
   "buildsharer.jpg":             {"src": "shot-srv-buildsharer/server-buildsharer", "box": [105, 40, 1080, 640]},
   "companions.jpg":              {"src": "shot-companions/companions-4-back", "box": [640, 0, 1600, 600]},
   "companions-portraits.png":    {"src": "shot-companions/companions-6-brought", "box": [1380, 0, 1600, 640]},
-  "custom-classes.jpg":          {"src": "shot-cc/cc-window-seraphim", "box": [295, 5, 1185, 700]},
+  "custom-classes.jpg":          {"src": "shot-cc/cc-window-seraphim", "box": [135, 5, 1360, 700]},
   "custom-classes-caster.jpg":   {"src": "shot-cc/cc-caster", "box": [300, 0, 1100, 560]},
   "custom-classes-chain.jpg":    {"src": "shot-cc/cc-chain", "box": [680, 300, 1320, 650]},
   "custom-classes-copy.jpg":     {"src": "shot-cc/cc-copy", "box": [650, 240, 1250, 600]},

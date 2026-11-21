@@ -1,0 +1,58 @@
+<rml>
+<head>
+    <title>Custom classes</title>
+    <link type="text/rcss" href="classes.rcss"/>
+</head>
+<body data-model="model">
+<div id="classes" class="window" data-panel="classes" data-title="Custom classes" data-if="open">
+    <div class="titlebar">Custom classes</div>
+    <div class="body">
+        <p data-if="nohero" class="muted">Start or load a game first.</p>
+        <div data-if="!nohero">
+            <div class="row space">
+                <span class="accent head">{{ head }}</span>
+                <button class="game-button" id="reload" title="Reads the class and art files again">Reload files</button>
+            </div>
+            <p data-if="no_profiles" class="muted">No class profiles found. Put them in mods\custom-classes\classes (see the mod's page).</p>
+            <div class="cols">
+                <div class="left">
+                    <button data-for="c : mine" class="crow" data-attr-id="c.id" data-class-on="c.on" data-attr-title="c.tip">
+                        <span class="cname">{{ c.mark }}{{ c.name }}</span><span class="cbody">{{ c.body }}, {{ c.count }}</span>
+                    </button>
+                    <p data-if="has_other" class="muted small">Other bodies</p>
+                    <button data-for="c : other" class="crow" data-attr-id="c.id" data-class-on="c.on" data-attr-title="c.tip">
+                        <span class="cname">{{ c.mark }}{{ c.name }}</span><span class="cbody">{{ c.body }}, {{ c.count }}</span>
+                    </button>
+                </div>
+                <div class="right">
+                    <p data-if="!sel" class="muted">Pick a class on the left.</p>
+                    <div data-if="sel">
+                        <p class="accent head">{{ d.title }}</p>
+                        <p class="wrap">{{ d.desc }}</p>
+                        <div data-if="d.has_skills">
+                            <p class="heading">Skills</p>
+                            <div class="skills"><span data-for="s : d.skills" class="skill" data-attr-title="s.tip">{{ s.name }}</span></div>
+                        </div>
+                        <p class="heading">Arts</p>
+                        <div data-for="a : d.arts" class="art">
+                            <img data-if="a.icon != ''" class="aicon" data-attr-src="a.icon" data-style-image-color="a.tint"/>
+                            <span class="atext" data-attr-title="a.tip"><span class="aname">{{ a.name }}</span><br/><span class="ahow muted">{{ a.how }}</span></span>
+                            <span class="tier" data-class-good="a.good" data-class-warn="a.warn" data-class-bad="a.bad" data-attr-title="a.tier_tip">{{ a.tier_text }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row space foot">
+                <button data-if="can_leave" class="game-button" id="leave" title="Keeps the arts the hero learned; the profile's skills, runes and routing stop">Back to the game's class</button>
+                <span data-if="!can_leave"></span>
+                <span data-if="sel">
+                    <span data-if="!usable" class="bad small">{{ not_usable }}</span>
+                    <button class="game-button" id="take" data-attr-title="take_tip" data-class-dim="!usable">Take this class</button>
+                </span>
+            </div>
+            <p data-if="problems != ''" class="bad small">{{ problems }}</p>
+        </div>
+    </div>
+</div>
+</body>
+</rml>
