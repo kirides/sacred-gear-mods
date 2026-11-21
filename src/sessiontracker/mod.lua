@@ -2,7 +2,7 @@
 return {
     id = 'sessiontracker',
     name = 'Session tracker',
-    version = '0.1.1',
+    version = '0.2.0',
     author = 'Sacred Gear',
     description = 'Time played, kills, gold and experience gained this session, with per-hour rates; lifetime totals and the last sessions are kept.',
     settings = {

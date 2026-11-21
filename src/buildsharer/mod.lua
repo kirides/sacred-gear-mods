@@ -2,7 +2,7 @@
 return {
     id = 'buildsharer',
     name = 'Build sharer',
-    version = '0.1.1',
+    version = '0.2.0',
     author = 'Sacred Gear',
     description = 'Publish your hero build to the game server and browse the builds other players shared. '
         .. 'Needs the Sacred.GameServer of the SacredEngineRemake with scripts-examples/build_sharer.lua; the server reads your skills and '

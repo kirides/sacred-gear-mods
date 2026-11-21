@@ -2,7 +2,7 @@
 return {
     id = 'bounty',
     name = 'Bounty board',
-    version = '0.4.1',
+    version = '0.5.0',
     author = 'Sacred Gear',
     description = 'Bounties to hunt, plus daily and weekly quests with streak rewards: in single player the mod posts, counts and pays them itself, in a network game it shows the '
         .. 'board of a Sacred.GameServer with scripts-examples/bounty_board.lua. Panel and a small tracker.',

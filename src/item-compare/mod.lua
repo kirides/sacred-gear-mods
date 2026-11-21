@@ -2,7 +2,7 @@
 return {
     id = 'item-compare',
     name = 'Item comparison',
-    version = '0.1.1',
+    version = '0.2.0',
     author = 'Sacred Gear',
     description = 'Hover an item (backpack, chest, shop, the pad\'s cursor too) and a panel beside the game\'s tooltip shows what it changes compared with the item your hero wears in that slot: green for better, red for worse. Optionally for your companions too.',
     settings = {
