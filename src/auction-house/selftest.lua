@@ -35,10 +35,10 @@ return function(M)
 
     -- Every draw of the panel goes through pcall here: a Lua error in any tab is counted and kept.
     local draws, errors = {}, {}
-    local real_panel = panel.panel
-    panel.panel = function(c, conf)
+    local real_panel = panel.draw
+    panel.draw = function(c, conf, st)
         local tab = panel.view.tab
-        local ok, err = pcall(real_panel, c, conf)
+        local ok, err = pcall(real_panel, c, conf, st)
         draws[tab] = (draws[tab] or 0) + 1
         if not ok then
             errors[#errors + 1] = tab .. ': ' .. tostring(err)
@@ -382,7 +382,8 @@ return function(M)
         if not check(online, 'the market answers (info)') then return finish() end
         check(client:wallet() == 0, 'the wallet starts empty: ' .. tostring(client:wallet()))
 
-        -- 1. deposit
+        -- 1. deposit (a run that gives the hero gold, the readme-shots 'gold' phase, may do it just now)
+        gear.wait_until(function() return (hero:gold() or 0) >= 100 end, 8)
         local g0 = hero:gold()
         out.gold_start = g0
         local DEP = math.min(1000, g0)
@@ -443,7 +444,7 @@ return function(M)
         end
 
         -- 4. the panel: every tab, a screenshot of each
-        gear.ui.show_panel('market', true)
+        panel.open()
         for _, tab in ipairs({'browse', 'sell', 'mine', 'mail'}) do
             panel.view.tab = tab
             if tab == 'browse' then panel.search(client, 1) end
@@ -513,7 +514,7 @@ return function(M)
             check(out.channel_received > 0, 'frames came back through the chat carrier: ' .. out.channel_received)
             mp.force_network(false)
             M.via_channel(false)
-            gear.ui.show_panel('market', false)
+            panel.close()
             gear.wait(1)
             A.screenshot('ah-lan-chat')     -- the chat box must show none of it
         end

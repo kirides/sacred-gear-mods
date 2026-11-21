@@ -176,7 +176,7 @@ end
 
 gear.on('settings.changed', function(id, value)
     if id == 'allow_special' then cfg.allow_special = value end
-    if id == 'hide_in_singleplayer' and value and not network_game() and ui.panel_open('market') then panel.close() end
+    if id == 'hide_in_singleplayer' and value and not network_game() and panel.is_open() then panel.close() end
     if market then market:set_rules(settings()) end
 end)
 
@@ -242,29 +242,24 @@ local function chest_window_open()
     return (w and w.drawn and hero and not hero:is_dead()) and true or false
 end
 
-ui.show_panel('market', false)
-ui.show_panel('open', true)
-if ui.persist_panel then ui.persist_panel('market', false); ui.persist_panel('osk', false) end   -- they open with a chest
-
 gear.on('draw', function(state)
     if hidden_here() then
-        if ui.panel_open('market') then panel.close() end
+        if panel.is_open() then panel.close() end
         -- the layout editor still shows the button so it can be placed
-        if state.mode == 'game' and not state.exclusive and ui.edit_mode() then panel.open_button(false, client) end
+        if state.mode == 'game' and not state.exclusive and ui.edit_mode() then panel.draw(client, cfg, {button = 'off', market = false}) end
         return
     end
     local open = state.mode == 'game' and not state.exclusive and (chest_window_open() or (gear.auto and cfg.selftest))
     if not open then
-        if ui.panel_open('market') then panel.close() end
-        if state.mode == 'game' and not state.exclusive and ui.edit_mode() then panel.open_button(false, client) end
+        if panel.is_open() then panel.close() end
+        if state.mode == 'game' and not state.exclusive and ui.edit_mode() then panel.draw(client, cfg, {button = 'off', market = false}) end
         return
     end
     if network_game() and not has_channel and not server_market then
-        panel.open_button(false, client)
+        panel.draw(client, cfg, {button = 'off', market = false})
         return
     end
-    panel.open_button(true, client)
-    panel.panel(client, cfg)
+    panel.draw(client, cfg, {button = ui.edit_mode() and 'off' or 'on', market = true})
 end)
 
 local M = {client = client, panel = panel, market = function() return market end, ensure_market = ensure_market, route = route,

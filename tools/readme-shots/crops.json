@@ -3,7 +3,7 @@
   "achievements.jpg":            {"src": "shot-srv-achievements/server-achievements", "box": [865, 25, 1400, 635]},
   "art-bars.jpg":                {"src": "shot-artbars/bars-3-picker", "box": [415, 100, 1065, 735]},
   "art-bars-cooldown.jpg":       {"src": "shot-artbars/bars-2-cooldown", "box": [525, 565, 1035, 735]},
-  "auction-house.jpg":           {"src": "shot-ah/ah-sp-browse", "box": [440, 0, 1360, 750]},
+  "auction-house.jpg":           {"src": "shot-ah/ah-sp-browse", "box": [225, 0, 1380, 760]},
   "autosave.jpg":                {"src": "shot-autosave/autosave-note", "box": [650, 45, 950, 125]},
   "better-saveload.jpg":         {"src": "shot-bsl/game_load", "box": [305, 35, 1295, 865]},
   "bounty.jpg":                  {"src": "shot-bounty/bounty-panel", "box": [525, 55, 1255, 480]},
