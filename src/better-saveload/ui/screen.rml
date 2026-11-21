@@ -7,11 +7,10 @@
 <div id="screen" class="thick-frame bg-fill-settings" data-panel="screen" data-title="Savegames (Better SaveLoad)" data-if="open">
     <div class="titlerow"><span class="ttl">{{ title }}</span></div>
 
+    <div data-if="in_game" class="tabbar">
+        <a class="link tab" id="mode-load" data-class-on="load_on">Load</a><span class="tab-sep"></span><a class="link tab" id="mode-save" data-class-on="save_on">Save</a>
+    </div>
     <div class="tool">
-        <span data-if="in_game" class="tabs">
-            <button class="game-button tab" id="mode-load" data-class-on="load_on"><span class="padkey a"></span>Load</button>
-            <button class="game-button tab" id="mode-save" data-class-on="save_on"><span class="padkey a"></span>Save</button>
-        </span>
         <button class="mini cyc" id="hero" title="Character"><span class="padkey a"></span>{{ hero_label }}</button>
         <button class="mini cyc" id="class" title="Class"><span class="padkey a"></span>{{ class_label }}</button>
         <button class="mini cyc" id="sort" title="Order"><span class="padkey a"></span>{{ sort_label }}</button>
