@@ -7,9 +7,7 @@
 <div id="main" class="window" data-panel="main" data-title="Build sharer" data-if="open">
     <div class="titlebar">{{ title }}</div>
     <div class="body">
-        <div class="tabs">
-            <button data-for="t : tabs" class="tab" data-attr-id="t.id" data-class-on="t.on"><span class="padkey a"></span>{{ t.name }}</button>
-        </div>
+        <div class="tabbar"><a data-for="t : tabs" class="link tab" data-attr-id="t.id" data-class-on="t.on">{{ t.name }}</a></div>
 
         <div data-if="tab == 1">
             <div class="row">

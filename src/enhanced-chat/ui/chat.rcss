@@ -11,3 +11,8 @@ button.newer { position: absolute; right: 18px; bottom: 2px; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
+
+/* the chat's tab bar is compact and has no line (its row has buttons at the right) */
+.tabbar.chat { border-bottom: 0; margin: 0; padding: 0; }
+.tabbar.chat a.link.tab { font-size: 13px; padding: 0 9px; }
+.tabbar.chat a.link.tab + a.link.tab { padding-left: 15px; }

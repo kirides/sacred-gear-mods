@@ -11,7 +11,7 @@
 <div id="market" class="window" data-panel="market" data-title="Auction house" data-if="market_open">
     <div class="titlebar">Auction house</div>
     <div class="body">
-        <div class="tabs"><button data-for="t : tabs" class="tab" data-attr-id="t.id" data-class-on="t.on"><span class="padkey a"></span>{{ t.name }}</button></div>
+        <div class="tabbar"><a data-for="t : tabs" class="link tab" data-attr-id="t.id" data-class-on="t.on">{{ t.name }}</a></div>
         <p data-class-bad="status_bad" class="muted small">{{ status }}</p>
 
         <div data-if="tab == 'browse'">
