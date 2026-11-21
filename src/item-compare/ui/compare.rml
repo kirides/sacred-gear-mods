@@ -1,0 +1,24 @@
+<rml>
+<head>
+    <title>Item comparison</title>
+    <link type="text/rcss" href="compare.rcss"/>
+</head>
+<body data-model="model">
+<!-- Beside the game's tooltip (placed by the mod every frame) ... -->
+<div id="cmp" class="window cmp" data-if="follow" data-style-left="left" data-style-top="top" data-style-width="width" data-style-height="height">
+    <div data-for="b : blocks" class="blk">
+        <div data-class-first="b.first" class="title" data-style-color="b.color">{{ b.title }}</div>
+        <div data-if="b.note != ''" class="note">{{ b.note }}</div>
+        <div data-for="r : b.rows" class="crow"><span data-for="s : r.segs" data-style-color="s.c">{{ s.t }}</span></div>
+    </div>
+</div>
+<!-- ... or a place of its own that the layout editor moves. -->
+<div id="cmpfixed" class="window cmp" data-panel="compare" data-title="Item comparison" data-if="!follow" data-style-width="width" data-style-height="height">
+    <div data-for="b : blocks" class="blk">
+        <div data-class-first="b.first" class="title" data-style-color="b.color">{{ b.title }}</div>
+        <div data-if="b.note != ''" class="note">{{ b.note }}</div>
+        <div data-for="r : b.rows" class="crow"><span data-for="s : r.segs" data-style-color="s.c">{{ s.t }}</span></div>
+    </div>
+</div>
+</body>
+</rml>

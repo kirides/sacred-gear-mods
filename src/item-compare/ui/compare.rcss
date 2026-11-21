@@ -1,0 +1,8 @@
+.cmp { position: absolute; padding: 6px; font-size: 12dp; color: #e6e6e6; }
+#cmpfixed { left: 330px; top: 120px; }
+.blk { padding: 0 6px; margin-bottom: 4px; }
+.blk .title { height: 15px; font-size: 12dp; }
+.blk .title.first { }
+.blk + .blk .title { border-top: 1px #ffffff40; padding-top: 1px; }
+.blk .note { height: 15px; margin-left: 6px; color: #a9a9b4; }
+.blk .crow { height: 15px; margin-left: 6px; white-space: nowrap; }

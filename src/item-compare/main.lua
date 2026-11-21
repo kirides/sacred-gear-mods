@@ -101,35 +101,6 @@ local function layout(blocks)
     return math.min(w, 420), h + PAD - 4, items
 end
 
-local function draw_items(x, y, w, h, items)
-    if NATIVE then
-        ui.native.frame(x, y, w, h, {layer = 'top'})
-    else
-        ui.rect(x, y, w, h, 0xE6100D0A, {layer = 'top'})
-        ui.frame(x, y, w, h, 0xFF6B5A3A, 1, {layer = 'top'})
-    end
-    local cy = y + PAD
-    for i, it in ipairs(items) do
-        if it.kind == 'title' then
-            if i > 1 then
-                ui.rect(x + 4, cy - 3, w - 8, 1, 0x40FFFFFF, {layer = 'top'})
-                cy = cy + 1
-            end
-            ui.text(it.text, x + PAD, cy, {size = SIZE, layer = 'top', color = it.color, shadow = true})
-        elseif it.kind == 'note' then
-            ui.text(it.text, x + PAD + 6, cy, {size = SIZE, layer = 'top', color = it.color})
-        else
-            local cx = x + PAD + 6
-            for _, seg in ipairs(it.row.segs) do
-                ui.text(seg[1], cx, cy, {size = SIZE, layer = 'top', color = SEG_COLOR[seg[2]] or TEXT})
-                cx = cx + text_width(seg[1])
-            end
-        end
-        cy = cy + ROW
-        if it.kind ~= 'title' and (not items[i + 1] or items[i + 1].kind == 'title') then cy = cy + 4 end
-    end
-end
-
 ---------------------------------------------------------------------------------------------------------------------------------
 -- Frames
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -166,6 +137,60 @@ local function sample_blocks()
         {segs = {{'Armor: ', false}, {'+3', 'good'}}}, {segs = {{'Resistance: ', false}, {'-2', 'bad'}, {'%', false}}}}}}
 end
 
+-- The panel is ui/compare.rml (the game theme): the game's own tooltip frame comes with the window class, the lines are spans in the
+-- colours of the comparison. The size comes from layout() (the measured text), so it can be put flush against the game's tooltip
+-- (ui.tooltip_anchor) before the document has been laid out.
+local doc
+local last = {}
+
+local function css_color(argb)
+    argb = argb or 0xFFFFFFFF
+    return ('#%02x%02x%02x%02x'):format(math.floor(argb / 65536) % 256, math.floor(argb / 256) % 256, argb % 256, math.floor(argb / 16777216) % 256)
+end
+
+local function blocks_model(blocks)
+    local out = {}
+    for i, b in ipairs(blocks) do
+        local m = {first = i == 1, title = '', color = css_color(DIM), note = '', rows = {}}
+        if b.empty then
+            m.title = b.hero_name .. ': nothing worn there'
+        else
+            m.title = (b.hero_name and (b.hero_name .. ': ') or 'Worn: ') .. b.name
+            m.color = css_color(b.color)
+            if #b.rows == 0 then m.note = 'the same stats' end
+            for r, row in ipairs(b.rows) do
+                local segs = {}
+                for s, seg in ipairs(row.segs) do segs[s] = {t = seg[1], c = css_color(SEG_COLOR[seg[2]] or TEXT)} end
+                m.rows[r] = {segs = segs}
+            end
+        end
+        out[i] = m
+    end
+    return out
+end
+
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+-- Writes what changed into the model and draws the document.
+local function show(m)
+    if not doc then
+        last = m
+        local err
+        doc, err = ui.rml.load('ui/compare.rml', {model = m})
+        if not doc then gear.log('item comparison: ui/compare.rml failed: ' .. tostring(err)) return end
+    else
+        for k, v in pairs(m) do
+            if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+        end
+    end
+    doc:draw({layer = 'top'})
+end
+
 gear.on('draw', guard('draw', function(state)
     if type(state) ~= 'table' or state.mode ~= 'game' or state.exclusive or state.escape_menu or state.message_box then return end
     local edit = ui.edit_mode and ui.edit_mode()
@@ -176,13 +201,13 @@ gear.on('draw', guard('draw', function(state)
     elseif edit then
         blocks = sample_blocks()
     else
-        -- nothing to show; keep the panel registered while the layout editor could ask for it
         return
     end
-    local w, h, items = layout(blocks)
+    local w, h = layout(blocks)
     local sl, st, sr, sb = ui.screen()
     local dx, dy = last_dx, last_dy
-    if follow and hover and hover.w and not edit then
+    follow = follow and not edit
+    if follow and hover and hover.w then
         if ui.tooltip_anchor then
             -- flush against the game's tooltip, corner ornaments touching; on its left near the screen's edge
             dx, dy = ui.tooltip_anchor(w, h)
@@ -193,12 +218,11 @@ gear.on('draw', guard('draw', function(state)
             dx = math.max(sl + 2 + OVER, math.min(dx, sr - w - 2 - OVER))
             dy = math.max(st + 2 + OVER, math.min(hover.y, sb - h - 2 - OVER))
         end
+        last_dx, last_dy = dx, dy
     end
-    local p = ui.panel('compare', 'Item comparison', dx, dy, w, h, {bare = true, min_width = w, min_height = h})
-    if not p.open then return end
-    local x, y = dx, dy
-    if not follow or edit then x, y = p.x, p.y; last_dx, last_dy = x, y end
-    draw_items(x, y, w, h, items)
+    -- the frame's bars are the box shrunk by the window class's 6 unit padding: the box starts 6 units before the bars
+    show({follow = follow, blocks = blocks_model(blocks), left = (dx - 6) .. 'px', top = (dy - 6) .. 'px',
+        width = (w - 2 * PAD + 2 * 6) .. 'px', height = (h - 2 * PAD + 2 * 6) .. 'px'})
 end))
 
 gear.keys.on('toggle', guard('key', function()
