@@ -30,7 +30,7 @@
                     <span class="muted">{{ rec_head }}</span>
                     <button class="mini" id="refresh">Refresh</button>
                 </div>
-                <div class="check-row"><span class="text">Show unnamed records</span><input id="unknown" type="checkbox" class="game-check" data-attr-checked="show_unknown"/></div>
+                <div class="check-row"><span class="text">Show unnamed records</span><input id="unknown" type="checkbox" class="game-check" data-checked="show_unknown"/></div>
                 <p data-if="rec_none" class="muted wrap">nothing to show (the server has no quest records of your hero, or they are hidden)</p>
                 <div class="rlist">
                     <div data-for="r : records" class="rec">
