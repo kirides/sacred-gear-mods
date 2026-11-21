@@ -1,0 +1,29 @@
+<rml>
+<head>
+    <title>Session</title>
+    <link type="text/rcss" href="tracker.rcss"/>
+</head>
+<body data-model="model">
+<div id="tracker" class="window" data-panel="tracker" data-title="Session">
+    <div class="titlebar">{{ title }}</div>
+    <div class="body">
+        <div class="stat"><span class="label">Time played</span><span class="value">{{ s.played }}</span></div>
+        <div class="stat"><span class="label">Kills</span><span class="value">{{ s.kills }}</span></div>
+        <div class="stat"><span class="label">Gold gained</span><span class="value gold">{{ s.gold }}</span></div>
+        <div class="stat"><span class="label">Gold spent</span><span class="value muted">{{ s.spent }}</span></div>
+        <div class="stat"><span class="label">Experience</span><span class="value xp">{{ s.xp }}</span></div>
+        <div class="stat"><span class="label">Levels gained</span><span class="value">{{ s.levels }}</span></div>
+        <p class="heading">Lifetime (with this session)</p>
+        <div class="stat"><span class="label">Time</span><span class="value">{{ life.played }}</span></div>
+        <div class="stat"><span class="label">Kills</span><span class="value">{{ life.kills }}</span></div>
+        <div class="stat"><span class="label">Gold gained</span><span class="value gold">{{ life.gold }}</span></div>
+        <div class="stat"><span class="label">Experience</span><span class="value xp">{{ life.xp }}</span></div>
+        <p class="heading">Last sessions</p>
+        <div data-for="h : history" class="muted hist">{{ h }}</div>
+        <div class="row right">
+            <button class="game-button" data-event-click="new_session" title="Ends this session (it goes to the history) and starts a new one">New session</button>
+        </div>
+    </div>
+</div>
+</body>
+</rml>

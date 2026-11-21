@@ -213,61 +213,73 @@ gear.on('frame', guard('frame', function(dt)
     end
 end))
 
----------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- The panel
 ---------------------------------------------------------------------------------------------------------------
-local GOLD = 0xFFFFD778
-local DIM = 0xFFB0B0B0
+-- ui/tracker.rml (the game theme): a model of ready-made strings; each frame writes what changed.
+local doc
+local shown = true
+local last = {}          -- what the model holds now, to write only what changed
 
-local function draw_panel()
-    local p = ui.panel('tracker', 'Session' .. key_hint('panel'), 16, 200, 270, 340, {})
-    if not p.open then return end
-    local x, y = p.content_x or 0, p.content_y or 0
-    local w = p.content_w or 250
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function sync(m)
+    for k, v in pairs(m) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+end
+
+local function snapshot()
     local s = session or new_stats()
-    local accent = ui.COLORS and ui.COLORS.accent
-    -- Labels left, values right (the value column is as wide as its widest value); the section headings span both.
-    local t = ui.table('stats', x, y, w, {columns = {'*', {width = 'auto', align = 'right'}}, spacing = {8, 0}, row_height = 18})
-    local function row(label, value, color)
-        t:row()
-        t:label(1, label, {color = DIM})
-        t:label(2, value, {color = color})
-    end
-    local function heading(id, text)
-        t:row(26)
-        t:label(1, text, {id = id, color = accent, span = 2, valign = 'bottom'})
-    end
-    row('Time played', fmt_time(s.played), 0xFFFFFFFF)
-    row('Kills', fmt_num(s.kills) .. '  (' .. fmt_rate(s.kills, s.played) .. ')', 0xFFFFFFFF)
-    row('Gold gained', fmt_num(s.gold_gained) .. '  (' .. fmt_rate(s.gold_gained, s.played) .. ')', GOLD)
-    row('Gold spent', fmt_num(s.gold_spent), DIM)
-    row('Experience', fmt_num(s.xp_gained) .. '  (' .. fmt_rate(s.xp_gained, s.played) .. ')', 0xFF9CD0FF)
-    row('Levels gained', fmt_num(s.levels), 0xFFFFFFFF)
-    heading('l-life', 'Lifetime (with this session)')
     local function life(f) return lifetime[f] + (s[f] or 0) end
-    row('Time', fmt_time(life('played')), 0xFFFFFFFF)
-    row('Kills', fmt_num(life('kills')), 0xFFFFFFFF)
-    row('Gold gained', fmt_num(life('gold_gained')), GOLD)
-    row('Experience', fmt_num(life('xp_gained')), 0xFF9CD0FF)
-    heading('l-hist', 'Last sessions')
+    local hist = {}
     for i = 1, 3 do
         local h = history[i]
         if h then
-            t:row(16)
-            t:label(1, ('%s  %s  k%s  g%s'):format(fmt_time(h.played), tostring(h.hero or '?'), fmt_num(h.kills), fmt_num(h.gold_gained)),
-                {color = DIM, span = 2})
+            hist[#hist + 1] = ('%s  %s  k%s  g%s'):format(fmt_time(h.played), tostring(h.hero or '?'), fmt_num(h.kills), fmt_num(h.gold_gained))
         end
     end
-    if ui.button('reset', x, y + t:height() + 12, 110, 22, 'New session', {tooltip = 'Ends this session (it goes to the history) and starts a new one'}) then
-        begin_session()
-    end
+    return {
+        title = 'Session' .. key_hint('panel'),
+        s = {
+            played = fmt_time(s.played),
+            kills = fmt_num(s.kills) .. '  (' .. fmt_rate(s.kills, s.played) .. ')',
+            gold = fmt_num(s.gold_gained) .. '  (' .. fmt_rate(s.gold_gained, s.played) .. ')',
+            spent = fmt_num(s.gold_spent),
+            xp = fmt_num(s.xp_gained) .. '  (' .. fmt_rate(s.xp_gained, s.played) .. ')',
+            levels = fmt_num(s.levels),
+        },
+        life = {
+            played = fmt_time(life('played')), kills = fmt_num(life('kills')),
+            gold = fmt_num(life('gold_gained')), xp = fmt_num(life('xp_gained')),
+        },
+        history = hist,
+    }
+end
+
+local function load_doc()
+    local err
+    local m = snapshot()
+    last = m
+    doc, err = gear.ui.rml.load('ui/tracker.rml', {model = m, calls = {
+        new_session = guard('new_session', function() begin_session() end),
+    }})
+    if not doc then gear.log('session tracker: ui/tracker.rml failed: ' .. tostring(err)) end
 end
 
 gear.on('draw', guard('draw', function(state)
     if type(state) ~= 'table' then return end
     ready_mode = state.mode == 'game' and not state.escape_menu and not state.exclusive
-    if state.mode == 'game' and not state.exclusive then draw_panel() end
+    if state.mode ~= 'game' or state.exclusive or not shown then return end
+    if not doc then load_doc() end
+    if not doc then return end
+    sync(snapshot())
+    doc:draw({layer = 'hud'})
 end))
 
-ui.show_panel('tracker', true)
-gear.keys.on('panel', guard('key', function() ui.toggle_panel('tracker') end))
+gear.keys.on('panel', guard('key', function() shown = not shown end))

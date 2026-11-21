@@ -100,6 +100,20 @@ local function make_gear(mod_dir, opts)
     function ui.show_panel(id, open) G.panels[id] = open end
     function ui.panel_open(id) return G.panels[id] end
     function ui.toggle_panel(id) G.panels[id] = not G.panels[id]; return G.panels[id] end
+    -- RmlUi documents: the model is recorded (G.models[path]), draw() flattens its strings into G.texts like the old text widgets
+    ui.rml = {}
+    function ui.rml.load(path, opts)
+        local doc = {model = opts.model or {}}
+        G.models = G.models or {}
+        G.models[path] = doc
+        G.rml_calls = opts.calls or {}
+        local function flat(v)
+            if type(v) == 'table' then for _, x in pairs(v) do flat(x) end
+            elseif v ~= nil then G.texts[#G.texts + 1] = tostring(v) end
+        end
+        function doc:draw() flat(self.model); return 0 end
+        return doc
+    end
     gear.ui = ui
     require_libs(gear)
     G.gear = gear
@@ -172,7 +186,7 @@ do
     ok(t:find('3 ', 1, true), 'tracker: 3 own kills')
     ok(t:find('50', 1, true), 'tracker: gold gained 50')
     ok(t:find('300', 1, true), 'tracker: xp gained 300')
-    ok(t:find('Levels gained'), 'tracker: levels row')
+    ok(G.models['ui/tracker.rml'].model.s.levels == '1', 'tracker: levels row')
     -- paused in a menu: no time
     fire(G, 'draw', {mode = 'game', escape_menu = true})
     frames(G, 10)
@@ -198,9 +212,8 @@ do
     -- short session: rate is "-"
     ok(joined(G):find('-', 1, true) ~= nil, 'tracker: short session has no rate')
     -- reset button
-    G.buttons_pressed.reset = true
+    G.rml_calls.new_session()
     fire(G, 'draw', {mode = 'game'})
-    G.buttons_pressed.reset = nil
     saved = G.gear.json.decode(G.files['session_totals.json'])
     ok(saved and #saved.history == 2, 'tracker: reset moved the session to history')
 end
