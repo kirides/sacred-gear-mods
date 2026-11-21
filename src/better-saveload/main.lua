@@ -7,7 +7,6 @@
 -- gear.game.save with `window = true`, gear.game.delete_save). If this mod is off or fails, the game's window shows.
 
 local ui, game = gear.ui, gear.game
-if ui.persist_panel then ui.persist_panel('screen', false) end   -- it follows the game's save / load window
 local S = gear.settings
 local C = ui.COLORS
 
@@ -425,228 +424,6 @@ local function move(d)
     view.follow = true
 end
 
----------------------------------------------------------------------------------------------------------------
--- Drawing
----------------------------------------------------------------------------------------------------------------
-
-local function picture(x, y, w, h, s)
-    ui.rect(x, y, w, h, 0xFF08080C, L())
-    local pic = s and s.picture and game.save_picture(s.slot)
-    if pic then
-        ui.image(pic, x, y, w, h, L({fit = 'contain'}))
-    else
-        ui.text('no picture', x, y, L({width = w, height = h, align = 'center', valign = 'middle', size = 11,
-            color = C.text_dim}))
-    end
-    ui.frame(x, y, w, h, C.edge_dim, 1, L())
-end
-
-local function row(id, x, y, w, s, selected)
-    local clicked = ui.button(id, x, y, w, ROW_H - 4, '', L())
-    if selected then
-        ui.rect(x, y, w, ROW_H - 4, 0x40FFD780, L())
-        ui.frame(x, y, w, ROW_H - 4, C.accent, 2, L())
-    end
-    if s then
-        picture(x + 4, y + 1, THUMB_W, THUMB_H, s)
-        -- the thumbnail's room | the title (cut to fit) | level, class (as wide as they are, at most 40%)
-        -- and, under both, the date and name
-        local tw = w - (THUMB_W + 12) - 6
-        local t = ui.table(id .. '#t', x, y, w - 6, {
-            columns = {THUMB_W + 12, '*', {width = 'auto', max = math.floor(tw * 0.4)}},
-            spacing = {0, 0}, row_heights = {26, 18}, layer = LAYER,
-        })
-        local sub = {}
-        if s.level > 0 then sub[#sub + 1] = 'Level ' .. s.level end
-        if class_label(s) then sub[#sub + 1] = class_label(s) end
-        if s.slot == 0 then sub[#sub + 1] = 'Quicksave' end
-        t:row()
-        t:label(2, hero_label(s), {size = 15, bold = true, color = s.compatible and C.accent or C.text_dim})
-        t:label(3, table.concat(sub, ' - '), {size = 12, halign = 'right', color = C.text})
-        local line2 = when(s)
-        if s.name ~= '' and s.name ~= 'QUICKSAVE' then line2 = line2 .. '   ' .. s.name end
-        if not s.compatible then line2 = 'another version of the game - ' .. line2 end
-        t:row()
-        t:label(2, line2, {span = 2, size = 12, color = C.text_dim})
-    else
-        local t = ui.table(id .. '#t', x, y, w, {columns = {10, 156, '*'}, spacing = {0, 0}, row_height = ROW_H - 4,
-            layer = LAYER})
-        t:row()
-        t:label(2, 'New savegame', {size = 15, bold = true, color = C.accent})
-        t:label(3, 'Saves into the first free number', {size = 12, color = C.text_dim})
-    end
-    return clicked
-end
-
-local function details(x, y, w, s)
-    local ph = math.floor(w * 3 / 4)
-    picture(x, y, w, ph, s)
-    y = y + ph + 10
-    -- hero, level and class, then "label  value" lines
-    local t = ui.table('details', x, y, w, {columns = {70, '*'}, spacing = {0, 0}, row_height = 17, layer = LAYER})
-    if not s then
-        if view.mode == 'save' then
-            local h = current_hero()
-            if h then
-                t:row(22)
-                t:label(1, h.name or '', {span = 2, size = 16, bold = true, color = C.accent})
-                t:row(24)
-                t:label(1, ('Level %d %s'):format(h.level or 0, CLASS_LABEL[h.class or ''] or ''), {span = 2, size = 13})
-            end
-            t:row()
-            t:label(1, 'A new savegame of the game as it is now.', {span = 2, size = 12, color = C.text_dim})
-        end
-        return
-    end
-    t:row(22)
-    t:label(1, hero_label(s), {span = 2, size = 16, bold = true, color = C.accent})
-    local line = {}
-    if s.level > 0 then line[#line + 1] = 'Level ' .. s.level end
-    if class_label(s) then line[#line + 1] = class_label(s) end
-    if #line > 0 then
-        t:row(20)
-        t:label(1, table.concat(line, ' '), {span = 2, size = 13})
-    end
-    local function field(label, value)
-        if not value or value == '' then return end
-        t:row()
-        t:label(1, label, {size = 12, color = C.text_dim})
-        t:label(2, value, {size = 12})
-    end
-    field('Saved', when(s))
-    field('In game', s.world_date)
-    field('Name', s.name ~= '' and s.name or nil)
-    field('File', ('%s (%.1f MB)'):format(s.file, s.size / 1048576))
-    if not s.compatible then field('Version', ('%d: this game cannot load it'):format(s.version)) end
-end
-
-local function toolbar(x, y, w)
-    -- In game: the Load / Save tabs; then the hero, class and order dropdowns, sharing what is left.
-    local in_game = view.open == WND_GAME
-    local share = {width = '*', min = 120, max = 200}
-    local cols = in_game and {132, share, share, share} or {share, share, share}
-    local t = ui.table('toolbar', x, y, w, {columns = cols, spacing = {8, 0}, row_height = 24, layer = LAYER})
-    t:row()
-    local c = 0
-    if in_game then
-        local idx = view.mode == 'load' and 1 or 2
-        local rx, ry = t:cell(1)
-        local changed, i = ui.radio_group('mode', rx, ry + 3, {'Load', 'Save'}, idx, L({horizontal = true, spacing = 14}))
-        if changed then
-            view.mode = i == 1 and 'load' or 'save'
-            view.confirm = nil
-            view.osk = nil
-            if view.mode == 'save' then view.sel = 'new' end
-            apply_filters()
-        end
-        c = 1
-    end
-    local labels = {}
-    for i, cl in ipairs(view.classes) do labels[i] = i == 1 and 'All classes' or CLASS_LABEL[cl] end
-    local sorts = {}
-    for i, s in ipairs(SORTS) do sorts[i] = s.label end
-    local changed, i = t:dropdown(c + 1, view.heroes, view.hero_i, {id = 'hero', tooltip = 'Character'})
-    if changed then view.hero_i = i apply_filters() end
-    changed, i = t:dropdown(c + 2, labels, view.class_i, {id = 'class', tooltip = 'Class'})
-    if changed then view.class_i = i apply_filters() end
-    changed, i = t:dropdown(c + 3, sorts, view.sort_i, {id = 'sort', tooltip = 'Order'})
-    if changed then view.sort_i = i apply_filters() end
-end
-
-local function buttons(x, y, w)
-    local bh = 26
-    if view.confirm then
-        -- the question, Yes, No
-        local t = ui.table('confirm', x, y, w, {columns = {'*', 100, 100}, spacing = {6, 0}, row_height = bh, layer = LAYER})
-        t:row()
-        t:label(1, view.confirm.text, {size = 13, color = C.accent})
-        if t:button(2, 'Yes', {id = 'yes'}) then
-            local yes = view.confirm.yes
-            view.confirm = nil
-            yes()
-        end
-        if t:button(3, 'No', {id = 'no'}) then view.confirm = nil end
-        return
-    end
-    local s = view.sel ~= 'new' and find(view.sel) or nil
-    -- Save / Load, Delete, the message, Back
-    local t = ui.table('buttons', x, y, w, {columns = {120, 100, '*', 100}, spacing = {8, 0}, row_height = bh, layer = LAYER})
-    t:row()
-    if view.mode == 'save' then
-        local label = view.sel == 'new' and 'Save' or 'Overwrite'
-        if t:button(1, label, {id = 'save', enabled = view.sel ~= nil}) then save_selected() end
-    else
-        if t:button(1, 'Load', {id = 'load', enabled = s ~= nil and s.compatible}) then load_selected() end
-    end
-    if t:button(2, 'Delete', {id = 'delete', enabled = s ~= nil, tooltip = 'Deletes the savegame file'}) then
-        delete_selected()
-    end
-    if view.message and gear.time() < view.message_until then
-        t:label(3, view.message, {size = 12, color = view.message_ok and 0xFF80FF80 or 0xFFFF8080})
-    end
-    if t:button(4, 'Back', {id = 'close'}) then close() end
-end
-
--- The name of the savegame to write: typed straight in (the keys go to it while the screen is open in save mode),
--- or with the on-screen keyboard (for a controller).
-local function name_row(x, y, w)
-    sync_name()
-    -- "Name" | the field (over two columns: its text sits 6 in) | the keyboard button
-    local t = ui.table('name', x, y, w, {columns = {50, 6, '*', 10, 120}, spacing = {0, 0}, row_height = 24, layer = LAYER})
-    t:row()
-    t:label(1, 'Name', {size = 13, color = C.text_dim})
-    local fx, fy, fw, fh = t:cell(2, 2)
-    ui.rect(fx, fy, fw, fh, 0xF0202030, L())
-    ui.frame(fx, fy, fw, fh, C.edge, 1, L())
-    local caret = (not view.confirm and math.floor(gear.time() * 2) % 2 == 0) and '|' or ''
-    -- the caret follows the text: cut the text, not the caret
-    t:label(3, view.name .. caret, {id = 'name-text', size = 13, ellipsis = false})
-    if t:button(5, (view.osk and view.osk.target == 'name') and 'Close keyboard' or 'Keyboard',
-        {id = 'kbd', tooltip = 'Type the name with an on-screen keyboard (for a controller)'}) then
-        view.osk = not (view.osk and view.osk.target == 'name') and {shift = false, target = 'name'} or nil
-        view.focus = 'name'
-    end
-end
-
--- The search: a field (a click gives it the keys in save mode; in load mode it always has them), the on-screen
--- keyboard for it, and the jumps through the list (page, start, end) that a controller needs for a long one.
-local function search_row(x, y, w)
-    local bh = 26
-    local jt = {'Top', 'Page up', 'Page down', 'End'}
-    local t = ui.table('search', x, y, w, {columns = {'*', 80, 44, 74, 74, 44}, spacing = {6, 0}, row_height = bh,
-        layer = LAYER})
-    t:row()
-    local active = typing_target() == 'search'
-    local fx, fy, fw = t:cell(1)
-    ui.rect(fx, fy, fw, bh, 0xF0202030, L())
-    ui.frame(fx, fy, fw, bh, active and C.accent or C.edge, 1, L())
-    if t:button(1, '', {id = 'search_field', tooltip = 'Search: hero, class, name, date, number'}) then
-        view.focus = 'search'
-    end
-    -- over the field: the text (or what to type) and the count at its right end
-    local inner = ui.table('search_in', fx + 8, fy, fw - 14, {columns = {'*', 96}, spacing = {0, 0}, row_height = bh,
-        layer = LAYER})
-    inner:row()
-    local caret = (active and math.floor(gear.time() * 2) % 2 == 0) and '|' or ''
-    if view.search == '' then
-        inner:label(1, active and '   Type to search' or 'Search', {id = 'search-hint', size = 13, color = C.text_dim})
-        if active then inner:label(1, caret, {id = 'search-caret', size = 13, ellipsis = false}) end
-    else
-        inner:label(1, view.search .. caret, {id = 'search-text', size = 13, ellipsis = false})
-    end
-    inner:label(2, ('%d of %d'):format(#view.shown, #view.all), {size = 12, halign = 'right', color = C.text_dim})
-    if t:button(2, (view.osk and view.osk.target == 'search') and 'Close' or 'Keyboard',
-        {id = 'search_kbd', tooltip = 'Type the search with an on-screen keyboard (for a controller)'}) then
-        view.focus = 'search'
-        view.osk = not (view.osk and view.osk.target == 'search') and {shift = false, target = 'search'} or nil
-    end
-    for i = 1, 4 do
-        if t:button(2 + i, jt[i], {id = 'jump' .. i, enabled = #view.shown > 0}) then
-            move(i == 1 and 'first' or i == 4 and 'last' or (i == 2 and -view.page or view.page))
-        end
-    end
-end
-
 local OSK_ROWS = {
     {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'ß'},
     {'q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'ü'},
@@ -668,123 +445,291 @@ local function osk_back()
     end
 end
 
--- The on-screen keyboard, in place of the list (view.osk holds its state while it is open).
-local function draw_keyboard(x, y, w, h)
+---------------------------------------------------------------------------------------------------------------
+-- The screen: ui/screen.rml (the game theme, the thick frame of the menu screens)
+---------------------------------------------------------------------------------------------------------------
+-- A model of ready-made values (only the rows in view: the list may hold thousands), rebuilt every frame; only what changed is written.
+-- The search and the name are text fields (data-value): the document takes the keys while one has the focus and hands the text back through
+-- on_change. Clicks are delegated listeners; the keyboard shortcuts (arrows, Enter, Delete ...) stay in input().
+local doc
+local last = {}
+local row_keys = {}          -- row element id -> slot | 'new'
+local scroll_top = 0
+
+local function picture_url(s)
+    local pic = s and s.picture and game.save_picture(s.slot)
+    return pic and ('gear:image/' .. pic) or ''
+end
+
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function row_model(s, key)
+    if not s then
+        return {id = 'rownew', sel = key == view.sel, ok = true, pic = '', nopic = '', title = 'New savegame', sub = '',
+            line2 = 'Saves into the first free number'}
+    end
+    local sub = {}
+    if s.level > 0 then sub[#sub + 1] = 'Level ' .. s.level end
+    if class_label(s) then sub[#sub + 1] = class_label(s) end
+    if s.slot == 0 then sub[#sub + 1] = 'Quicksave' end
+    local line2 = when(s)
+    if s.name ~= '' and s.name ~= 'QUICKSAVE' then line2 = line2 .. '   ' .. s.name end
+    if not s.compatible then line2 = 'another version of the game - ' .. line2 end
+    return {id = 'row' .. tostring(key), sel = key == view.sel, ok = s.compatible and true or false, pic = picture_url(s), nopic = 'no picture',
+        title = hero_label(s), sub = table.concat(sub, ' - '), line2 = line2}
+end
+
+local function details_model(s)
+    local d = {pic = '', nopic = '', title = '', sub = '', fields = {}, note = ''}
+    d.pic = picture_url(s)
+    if d.pic == '' then d.nopic = 'no picture' end
+    if not s then
+        if view.mode == 'save' then
+            local h = current_hero()
+            if h then
+                d.title = h.name or ''
+                d.sub = ('Level %d %s'):format(h.level or 0, CLASS_LABEL[h.class or ''] or '')
+            end
+            d.note = 'A new savegame of the game as it is now.'
+        end
+        return d
+    end
+    d.title = hero_label(s)
+    local line = {}
+    if s.level > 0 then line[#line + 1] = 'Level ' .. s.level end
+    if class_label(s) then line[#line + 1] = class_label(s) end
+    d.sub = table.concat(line, ' ')
+    local function field(label, value)
+        if value and value ~= '' then d.fields[#d.fields + 1] = {k = label, v = value} end
+    end
+    field('Saved', when(s))
+    field('In game', s.world_date)
+    field('Name', s.name ~= '' and s.name or nil)
+    field('File', ('%s (%.1f MB)'):format(s.file, s.size / 1048576))
+    if not s.compatible then field('Version', ('%d: this game cannot load it'):format(s.version)) end
+    return d
+end
+
+local function osk_model()
     local o = view.osk
-    ui.rect(x, y, w, h, 0xC0101018, L())
-    ui.text(view.osk.target == 'search' and 'On-screen keyboard: search' or 'On-screen keyboard: the name of the savegame', x + 8, y + 6, L({size = 13, color = C.accent}))
-    -- eleven equal keys a row, then Shift / Space / Backspace / Done in four equal ones
-    local keys = ui.table('osk', x + 8, y + 32, w - 16, {columns = {'*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*'},
-        spacing = {4, 6}, row_height = 30, layer = LAYER})
+    if not o then return '', {}, '' end
+    local rows = {}
     for r, rowkeys in ipairs(OSK_ROWS) do
-        keys:row()
+        local keys = {}
         for i, k in ipairs(rowkeys) do
             local label = k
             if o.shift then label = OSK_UPPER[k] or k:upper() end
-            if keys:button(i, label, {id = ('osk%d_%d'):format(r, i)}) then
-                osk_type(label)
+            keys[i] = {id = ('osk%d_%d'):format(r, i), label = label}
+        end
+        rows[r] = keys
+    end
+    return o.target == 'search' and 'On-screen keyboard: search' or 'On-screen keyboard: the name of the savegame', rows, o.shift and 'SHIFT' or 'Shift'
+end
+
+local ROW_H_UNITS = 54      -- a row (50) and its gap (4)
+local VIEW_ROWS = 8
+
+local function snapshot(preview)
+    local m = {
+        open = view.open ~= nil or preview == true, title = view.open == WND_MENUS and 'Load game' or 'Savegames',
+        in_game = view.open == WND_GAME, load_on = view.mode == 'load', save_on = view.mode == 'save',
+        hero_label = view.heroes[view.hero_i] or '', class_label = view.class_i == 1 and 'All classes' or (CLASS_LABEL[view.classes[view.class_i]] or ''),
+        sort_label = SORTS[view.sort_i].label, count_text = ('%d of %d'):format(#view.shown, #view.all), no_rows = #view.shown == 0,
+        search_kbd = (view.osk and view.osk.target == 'search') and 'Close' or 'Keyboard',
+        name_kbd = (view.osk and view.osk.target == 'name') and 'Close keyboard' or 'Keyboard',
+        osk = view.osk ~= nil, rows = {}, spacer_top = '0px', spacer_bot = '0px', empty_msg = '',
+        confirm = view.confirm ~= nil, confirm_text = view.confirm and view.confirm.text or '', msg = '', msg_ok = true,
+        can_primary = view.sel ~= nil, primary_label = view.sel == 'new' and 'Save' or 'Overwrite',
+        can_load = false, can_delete = false,
+        osk_title = '', osk_rows = {}, shift_label = 'Shift',
+        d = {pic = '', nopic = '', title = '', sub = '', fields = {}, note = ''},
+    }
+    if not view.open then return m end
+    local s = view.sel ~= 'new' and find(view.sel) or nil
+    m.can_load = s ~= nil and s.compatible
+    m.can_delete = s ~= nil
+    if view.message and gear.time() < view.message_until then m.msg, m.msg_ok = view.message, view.message_ok end
+    m.osk_title, m.osk_rows, m.shift_label = osk_model()
+    m.d = details_model(s)
+    -- the rows in view
+    local rows = {}
+    if view.mode == 'save' then rows[1] = false end   -- the "new savegame" row
+    for _, sv in ipairs(view.shown) do rows[#rows + 1] = sv end
+    local first = math.max(1, math.floor(scroll_top / ROW_H_UNITS) - 1)
+    local lastrow = math.min(#rows, first + VIEW_ROWS + 4)
+    row_keys = {}
+    for i = first, lastrow do
+        local sv = rows[i]
+        local key = sv and sv.slot or 'new'
+        local r = row_model(sv or nil, key)
+        row_keys[r.id] = key
+        m.rows[#m.rows + 1] = r
+    end
+    m.spacer_top = ((math.max(1, first) - 1) * ROW_H_UNITS) .. 'px'
+    m.spacer_bot = (math.max(0, #rows - lastrow) * ROW_H_UNITS) .. 'px'
+    view.rows_total = #rows
+    view.page = VIEW_ROWS
+    if #rows == 0 then m.empty_msg = #view.all == 0 and 'No savegames yet.' or 'No savegame matches the filters.' end
+    return m
+end
+
+local function set_field(key, value)
+    if doc then doc.model[key] = value; last[key] = value end
+end
+
+local pressers = {}       -- selector -> handler, for the self test's 'better-saveload.press'
+
+local function load_doc()
+    local m = snapshot()
+    m.q, m.name = view.search, view.name
+    last = m
+    local err
+    doc, err = ui.rml.load('ui/screen.rml', {model = m, on_change = function(_, model)
+        local q = tostring(model.q or '')
+        if q ~= view.search then
+            view.search = q:sub(1, 200)
+            apply_filters()
+        end
+        local name = tostring(model.name or '')
+        if name ~= view.name then view.name, view.name_edited = name, true end
+        last.q, last.name = model.q, model.name
+    end})
+    if not doc then gear.log('better-saveload: ui/screen.rml failed: ' .. tostring(err)) return end
+    local function on(sel, fn)
+        local guarded = gear.guard('click ' .. sel, fn)
+        pressers[sel] = guarded
+        doc:on(sel, 'click', guarded)
+    end
+    on('#mode-load', function()
+        view.mode, view.confirm, view.osk = 'load', nil, nil
+        apply_filters()
+    end)
+    on('#mode-save', function()
+        view.mode, view.confirm, view.osk, view.sel = 'save', nil, nil, 'new'
+        apply_filters()
+    end)
+    on('#hero', function() view.hero_i = view.hero_i % #view.heroes + 1; apply_filters() end)
+    on('#class', function() view.class_i = view.class_i % #view.classes + 1; apply_filters() end)
+    on('#sort', function() view.sort_i = view.sort_i % #SORTS + 1; apply_filters() end)
+    on('#search_kbd', function()
+        view.focus = 'search'
+        view.osk = not (view.osk and view.osk.target == 'search') and {shift = false, target = 'search'} or nil
+    end)
+    on('#kbd', function()
+        view.osk = not (view.osk and view.osk.target == 'name') and {shift = false, target = 'name'} or nil
+        view.focus = 'name'
+    end)
+    on('#search', function() view.focus = 'search' end)
+    on('#name', function() view.focus = 'name' end)
+    on('[id^=jump]', function(e)
+        local i = tonumber(tostring(e.current):match('^jump(%d)$'))
+        if not i or #view.shown == 0 then return end
+        move(i == 1 and 'first' or i == 4 and 'last' or (i == 2 and -view.page or view.page))
+    end)
+    on('.row', function(e)
+        local key = row_keys[tostring(e.current)]
+        if key == nil then return end
+        -- A second click on the same row soon after the first: Load / Save, as its button.
+        local now = gear.time()
+        local last_click = view.last_click
+        local activate = last_click ~= nil and last_click.key == key and now - last_click.at <= DOUBLE_CLICK
+        view.last_click = not activate and {key = key, at = now} or nil
+        view.sel = key
+        view.confirm = nil
+        if activate then primary() end
+    end)
+    on('#save', function() if view.sel ~= nil then save_selected() end end)
+    on('#load', load_selected)
+    on('#delete', delete_selected)
+    on('#close', close)
+    on('#yes', function()
+        if view.confirm then
+            local yes = view.confirm.yes
+            view.confirm = nil
+            yes()
+        end
+    end)
+    on('#no', function() view.confirm = nil end)
+    -- the on-screen keyboard
+    local function type_text(text)
+        if not view.osk then return end
+        if view.osk.target == 'search' then
+            add_to_search(text)
+            set_field('q', view.search)
+        else
+            add_to_name(text)
+            set_field('name', view.name)
+        end
+    end
+    on('[id^=osk]', function(e)
+        local id = tostring(e.current)
+        local o = view.osk
+        if not o then return end
+        if id == 'osk_shift' then o.shift = not o.shift
+        elseif id == 'osk_space' then type_text(' ')
+        elseif id == 'osk_back' then
+            osk_back()
+            set_field(o.target == 'search' and 'q' or 'name', o.target == 'search' and view.search or view.name)
+        elseif id == 'osk_done' then view.osk = nil
+        else
+            local r, i = id:match('^osk(%d+)_(%d+)$')
+            local k = r and OSK_ROWS[tonumber(r)] and OSK_ROWS[tonumber(r)][tonumber(i)]
+            if k then
+                type_text(o.shift and (OSK_UPPER[k] or k:upper()) or k)
                 o.shift = false
             end
         end
-    end
-    local t = ui.table('osk_keys', x + 8, y + 32 + keys:height() + 6, w - 16, {columns = {'*', '*', '*', '*'},
-        spacing = {4, 6}, row_height = 30, layer = LAYER})
-    t:row()
-    if t:button(1, o.shift and 'SHIFT' or 'Shift', {id = 'osk_shift'}) then o.shift = not o.shift end
-    if t:button(2, 'Space', {id = 'osk_space'}) then osk_type(' ') end
-    if t:button(3, 'Backspace', {id = 'osk_back'}) then osk_back() end
-    if t:button(4, 'Done', {id = 'osk_done'}) then view.osk = nil end
+    end)
+end
+
+-- Where the typed text goes by default when the screen opens: the name (save mode) or the search (load mode).
+local function focus_default()
+    if not doc then return end
+    local sel = view.mode == 'save' and '#name' or '#search'
+    local e = doc:query(sel)
+    if e then e:focus() end
 end
 
 local function screen(preview)
-    local l, t, r, b = ui.screen()
-    if not preview then
-        -- The game's window is not drawn: the whole screen is this one's.
-        ui.rect(l, t, r - l, b - t, 0xF00C0C10, L())
-        ui.region('blocker', l, t, r - l, b - t, L({nav = false}))
+    if not doc then load_doc() end
+    if not doc then return end
+    if not preview then sync_name() end
+    local m = snapshot(preview)
+    for k, v in pairs(m) do
+        if k ~= 'q' and k ~= 'name' and not same(v, last[k]) then doc.model[k] = v; last[k] = v end
     end
-    local title = view.open == WND_MENUS and 'Load game' or 'Savegames'
-    if preview then title = 'Savegames (Better SaveLoad)' end
-    local p = ui.panel('screen', title, 112, 50, 800, 668, L({resizable = true, min_width = 640, min_height = 470,
-        back = false}))
-    if not p.open then
-        ui.show_panel('screen', true)
-        if not preview then close() end
-        return
+    -- the name follows the selection until the player types (sync_name above): push it into the field when it changed from code
+    if view.name ~= last.name then set_field('name', view.name) end
+    if view.search ~= last.q then set_field('q', view.search) end
+    if view.focus_request then
+        view.focus_request = nil
+        focus_default()
     end
-    if preview then
-        ui.text('The savegame screen: move and resize it here.', p.content_x, p.content_y + 8,
-            L({size = 14, color = C.text_dim}))
-        return
-    end
-    local x, y, w, h = p.content_x, p.content_y, p.content_w, p.content_h
-    toolbar(x, y, w)
-    y = y + 32
-    search_row(x, y, w)
-    y = y + 34
-    local bottom = 34
-    local pw = math.floor(math.max(200, math.min(300, w * 0.36)))
-    local lw = w - pw - 14
-    if view.mode == 'save' then bottom = bottom + 32 end     -- the name row
-    local lh = h - 66 - bottom
-    view.page = math.max(1, math.floor(lh / ROW_H) - 1)
-    -- The list.
-    local rows = {}
-    if view.mode == 'save' then rows[1] = false end   -- the "new savegame" row
-    for _, s in ipairs(view.shown) do rows[#rows + 1] = s end
-    if view.follow then
-        view.follow = false
-        for i, s in ipairs(rows) do
-            if (s and s.slot or 'new') == view.sel then
-                local top = (i - 1) * ROW_H
-                local off = ui.scroll_offset('list')
-                if top < off then ui.scroll_to('list', top)
-                elseif top + ROW_H > off + lh then ui.scroll_to('list', top + ROW_H - lh) end
-                break
+    doc:draw({layer = LAYER, modal = not preview})
+    local list = doc:query('#list')
+    if list then
+        local top, height, client = list:scroll()
+        if top then
+            scroll_top = top
+            if view.follow then
+                view.follow = false
+                local rows = view.rows_total or 0
+                for i = 1, rows do
+                    local key = (view.mode == 'save' and i == 1) and 'new' or (view.shown[i - (view.mode == 'save' and 1 or 0)] or {}).slot
+                    if key == view.sel then
+                        local t = (i - 1) * ROW_H_UNITS
+                        if t < top then list:scroll(t)
+                        elseif t + ROW_H_UNITS > top + client then list:scroll(t + ROW_H_UNITS - client) end
+                        break
+                    end
+                end
             end
         end
-    end
-    if view.osk then
-        draw_keyboard(x, y, lw, lh)
-        details(x + lw + 14, y, pw, view.sel ~= 'new' and find(view.sel) or nil)
-        name_row(x, y + lh + 8, w)
-        buttons(x, y + lh + 40, w)
-        return
-    end
-    local area = ui.scroll_begin('list', x, y, lw, lh, L({step = ROW_H}))
-    local activate = false      -- a double click: the tab's action on the row (after drawing)
-    -- Only the rows in view are drawn (the list may hold thousands).
-    local first = math.max(1, math.floor((ui.scroll_offset('list')) / ROW_H))
-    local last = math.min(#rows, first + math.ceil(lh / ROW_H) + 2)
-    for i = first, last do
-        local s = rows[i]
-        local key = s and s.slot or 'new'
-        local cy = area.content_y + (i - 1) * ROW_H
-        if cy + ROW_H >= area.y and cy <= area.y + area.h then
-            if row('row' .. tostring(key), area.content_x, cy, area.w - 2, s or nil, key == view.sel) then
-                -- A second click on the same row soon after the first: Load / Save, as its button.
-                local now = gear.time()
-                local last_click = view.last_click
-                activate = last_click ~= nil and last_click.key == key and now - last_click.at <= DOUBLE_CLICK
-                view.last_click = not activate and {key = key, at = now} or nil
-                view.sel = key
-                view.confirm = nil
-            end
-        end
-    end
-    if #rows == 0 then
-        ui.text(#view.all == 0 and 'No savegames yet.' or 'No savegame matches the filters.', area.content_x + 8,
-            area.content_y + 8, L({size = 13, color = C.text_dim}))
-    end
-    ui.scroll_end(#rows * ROW_H)
-    if activate then primary() end
-    -- The selected savegame.
-    details(x + lw + 14, y, pw, view.sel ~= 'new' and find(view.sel) or nil)
-    if view.mode == 'save' then
-        name_row(x, y + lh + 8, w)
-        buttons(x, y + lh + 40, w)
-    else
-        buttons(x, y + lh + 8, w)
     end
 end
 
@@ -812,15 +757,16 @@ local function opened(name)
         apply_filters()
     end
     if view.mode == 'save' then view.sel = 'new' end
-    ui.show_panel('screen', true)
-    ui.nav_modal(true)
+    view.focus_request = true
+    scroll_top = 0
+    -- (the document is drawn modal: the game and the pad belong to it)
     ui.capture_keys(true)
 end
 
 local function closed()
     view.open = nil
     view.confirm = nil
-    ui.nav_modal(false)
+
     ui.capture_keys(false)
 end
 
@@ -833,21 +779,7 @@ local function input()
         else close() end
         return
     end
-    -- Typing goes into the name (save mode).
-    local typed = ui.typed()
-    if typing_target() then
-        if view.mode == 'save' then sync_name() end
-        if typed ~= '' then add_text(typed) end
-        if ui.key_down('backspace') then
-            local now = gear.time()
-            if not view.back_since or now - view.back_since > 0.45 then
-                view.back_since = view.back_since and now - 0.4 or now
-                pop_text()
-            end
-        else
-            view.back_since = nil
-        end
-    end
+    -- Typing goes into the text fields of the document (the search, the name).
     if view.confirm then
         if ui.key_pressed('enter') then
             local yes = view.confirm.yes
@@ -898,6 +830,10 @@ gear.on('better-saveload.query', function(out)
     out.order = {}
     for i, s in ipairs(view.shown) do out.order[i] = s.slot end
 end)
+-- gear.emit('better-saveload.press', {selector = '#close'}) runs the handler of a click on that selector (`id` is the element id for the row and
+-- key selectors): the self test's way to press a button without the mouse.
+gear.on('better-saveload.press', function(t) local fn = pressers[t.selector]; if fn then fn({current = t.id or tostring(t.selector):sub(2)}) t.done = true end end)
+gear.on('better-saveload.rect', function(out) out.rect = function(sel) local e = doc and doc:query(sel); return e and e:rect() or nil end end)   -- for the self test
 gear.on('better-saveload.stall', function(on) view.stall = on and true or nil end)
 gear.on('better-saveload.set', function(t)
     if t.hero_i then view.hero_i = t.hero_i end
@@ -922,7 +858,10 @@ gear.on('draw', function(state)
     end
     if name then
         input()
-        if view.open then screen(false) end
+        if view.open then
+            screen(false)
+            ui.capture_keys(true)      -- the game takes no keys while the screen is open (the document's own capture ends with its text focus)
+        end
         return
     end
     -- A note after a save from this screen.
@@ -935,5 +874,8 @@ gear.on('draw', function(state)
         end
     end
     -- The layout editor: the screen's panel can be moved and sized while nothing else is open.
-    if ui.edit_mode() and state.mode == 'game' and not state.exclusive then screen(true) end
+    if ui.edit_mode() and state.mode == 'game' and not state.exclusive then
+        view.open = nil
+        screen(true)
+    end
 end)

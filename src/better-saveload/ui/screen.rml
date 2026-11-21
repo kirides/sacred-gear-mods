@@ -1,0 +1,73 @@
+<rml>
+<head>
+    <title>Savegames</title>
+    <link type="text/rcss" href="screen.rcss"/>
+</head>
+<body data-model="model">
+<div id="screen" class="thick-frame bg-fill-settings" data-panel="screen" data-title="Savegames (Better SaveLoad)" data-if="open">
+    <div class="titlerow"><span class="ttl">{{ title }}</span></div>
+
+    <div class="tool">
+        <span data-if="in_game" class="tabs">
+            <button class="game-button tab" id="mode-load" data-class-on="load_on">Load</button>
+            <button class="game-button tab" id="mode-save" data-class-on="save_on">Save</button>
+        </span>
+        <button class="mini cyc" id="hero" title="Character">{{ hero_label }}</button>
+        <button class="mini cyc" id="class" title="Class">{{ class_label }}</button>
+        <button class="mini cyc" id="sort" title="Order">{{ sort_label }}</button>
+    </div>
+
+    <div class="srow">
+        <div class="sfield"><input id="search" type="text" class="field grow" data-value="q" maxlength="40" placeholder="Search: hero, class, name, date, number"/><span class="cnt">{{ count_text }}</span></div>
+        <button class="mini" id="search_kbd" title="Type the search with an on-screen keyboard (for a controller)">{{ search_kbd }}</button>
+        <button class="mini" id="jump1" data-attrif-disabled="no_rows">Top</button>
+        <button class="mini" id="jump2" data-attrif-disabled="no_rows">Page up</button>
+        <button class="mini" id="jump3" data-attrif-disabled="no_rows">Page down</button>
+        <button class="mini" id="jump4" data-attrif-disabled="no_rows">End</button>
+    </div>
+
+    <div class="main">
+        <div class="left">
+            <div data-if="!osk" id="list" data-class-save="save_on">
+                <div data-style-height="spacer_top"></div>
+                <button data-for="r : rows" class="row" data-attr-id="r.id" data-class-sel="r.sel" data-class-bad="!r.ok">
+                    <img data-if="r.pic != ''" class="thumb" data-attr-src="r.pic"/>
+                    <span data-if="r.pic == ''" class="thumb nopic">{{ r.nopic }}</span>
+                    <div class="rbody"><div class="rtop"><span class="rtitle" data-class-dim="!r.ok">{{ r.title }}</span><span class="rsub">{{ r.sub }}</span></div><div class="rline">{{ r.line2 }}</div></div>
+                </button>
+                <div data-style-height="spacer_bot"></div>
+                <p data-if="empty_msg != ''" class="muted pad">{{ empty_msg }}</p>
+            </div>
+            <div data-if="osk" class="osk" data-class-save="save_on">
+                <p class="accent">{{ osk_title }}</p>
+                <div data-for="row : osk_rows" class="orow"><button data-for="k : row" class="mini key" data-attr-id="k.id">{{ k.label }}</button></div>
+                <div class="orow"><button class="mini wide" id="osk_shift">{{ shift_label }}</button><button class="mini wide" id="osk_space">Space</button><button class="mini wide" id="osk_back">Backspace</button><button class="mini wide" id="osk_done">Done</button></div>
+            </div>
+        </div>
+        <div class="right">
+            <div class="pic"><img data-if="d.pic != ''" class="dpic" data-attr-src="d.pic"/><span data-if="d.pic == ''" class="nopic">{{ d.nopic }}</span></div>
+            <p data-if="d.title != ''" class="dtitle">{{ d.title }}</p>
+            <p data-if="d.sub != ''">{{ d.sub }}</p>
+            <div data-for="f : d.fields" class="dfield"><span class="dk">{{ f.k }}</span><span class="dv">{{ f.v }}</span></div>
+            <p data-if="d.note != ''" class="muted small">{{ d.note }}</p>
+        </div>
+    </div>
+
+    <div data-if="save_on &amp;&amp; in_game" class="namerow">
+        <span class="muted lab">Name</span><input id="name" type="text" class="field grow" data-value="name" maxlength="60"/>
+        <button class="mini" id="kbd" title="Type the name with an on-screen keyboard (for a controller)">{{ name_kbd }}</button>
+    </div>
+
+    <div class="btns">
+        <div data-if="confirm" class="confirm"><span class="accent grow">{{ confirm_text }}</span><button class="game-button" id="yes">Yes</button><button class="game-button" id="no">No</button></div>
+        <div data-if="!confirm" class="confirm">
+            <button data-if="save_on" class="game-button" id="save" data-attrif-disabled="!can_primary">{{ primary_label }}</button>
+            <button data-if="!save_on" class="game-button" id="load" data-attrif-disabled="!can_load">Load</button>
+            <button class="game-button" id="delete" data-attrif-disabled="!can_delete" title="Deletes the savegame file">Delete</button>
+            <span data-class-good="msg_ok" data-class-bad="!msg_ok" class="grow msg small">{{ msg }}</span>
+            <button class="game-button" id="close">Back</button>
+        </div>
+    </div>
+</div>
+</body>
+</rml>

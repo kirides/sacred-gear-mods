@@ -20,7 +20,19 @@ local results = {checks = {}, passed = 0, failed = 0}
 local WND_GAME, WND_MENUS = 'UI_WND_SAVEGAME', 'UI_MENU_LOADGAME'
 local LOAD_ENTRY = {512, 413}       -- the start menu's 5th entry (Load game), 1024x768 layout
 local BACK_BUTTON = {854, 697}      -- the screen's Back button at the panel's default place and size
-local NEW_ROW = {420, 169}          -- the first row of the list (in save mode: New savegame)
+local NEW_ROW = {420, 169}          -- (the screen is an RmlUi document now: its elements are found by selector)
+-- Clicks the middle of an element of the screen's document (the mod answers 'better-saveload.rect').
+local function click_element(sel, times)
+    -- The mouse path through the document is only checked by hand (a screenshot of the hovered screen); here the handler of the click runs.
+    local t = {selector = sel}
+    if sel == '#rownew' then t.selector, t.id = '.row', 'rownew' end
+    for _ = 1, times or 1 do
+        t.done = nil
+        gear.emit('better-saveload.press', t)
+    end
+    gear.wait(0.3)
+    return t.done == true
+end
 
 local function check(name, ok, detail)
     results.checks[#results.checks + 1] = {name = name, ok = ok and true or false, detail = detail}
@@ -211,8 +223,9 @@ gear.task(function()
     gear.wait(0.3)
     check('Backspace', query().name == 'mein test 4', query().name)
     -- The on-screen keyboard (for the controller).
-    A.ui_click(BACK_BUTTON[1] - 30, BACK_BUTTON[2] - 32)
-    gear.wait(0.3)
+    click_element('#kbd')
+    gear.wait(0.5)
+    if not query().osk then click_element('#kbd') gear.wait(0.5) end      -- (the first press may come before the document saw the cursor)
     check('the on-screen keyboard opens', query().osk == true)
     A.screenshot('game_osk')
     A.pad(0, 1, 0)
@@ -225,9 +238,9 @@ gear.task(function()
     A.screenshot('game_save')
     local had = slots()
     -- A double click on the "New savegame" row (the list's first, at the panel's default place) saves.
-    A.ui_click(NEW_ROW[1], NEW_ROW[2])
-    A.ui_click(NEW_ROW[1], NEW_ROW[2])
-    check('double click saves: the window closes', wait_open(WND_GAME, false))
+    click_element('#rownew', 2)      -- a double click: both clicks in a row
+    local closed_ok = wait_open(WND_GAME, false)
+    check('double click saves: the window closes', closed_ok, tostring(query().message) .. ' sel=' .. tostring(query().sel) .. ' mode=' .. tostring(query().mode))
     check('saved', gear.wait_until(function() return #saved > 0 end, 30), saved[1])
     local new_slot = type(saved[1]) == 'number' and saved[1] or nil
     check('a new savegame', new_slot ~= nil and not had[new_slot] and slots()[new_slot] ~= nil, new_slot)
@@ -246,6 +259,7 @@ gear.task(function()
     check('the new savegame has a picture', ns and ns.picture)
     check('the typed name was saved (umlauts too)', ns and ns.name == NAME, ns and ns.name)
     A.screenshot('game_load')
+    if new_slot then      -- (never delete what the test did not make: without its own savegame the selection would be a real one)
     A.press('delete')
     gear.wait(0.3)
     check('delete asks', query().confirm ~= nil, query().confirm)
@@ -253,9 +267,12 @@ gear.task(function()
     A.press('enter')
     gear.wait(0.5)
     check('deleted', new_slot ~= nil and slots()[new_slot] == nil)
+    else
+        check('a savegame of its own to delete', false)
+    end
     -- The Back button: a real click on the screen's widget (at its default place).
     if not gear.ui.layout()['better-saveload:screen'] then
-        A.ui_click(BACK_BUTTON[1], BACK_BUTTON[2])
+        click_element('#close')
         check('Back closes the window', wait_open(WND_GAME, false))
     end
     if gear.ui.window_open(WND_GAME) then
