@@ -1,4 +1,4 @@
-#open { position: absolute; left: 646px; top: 572px; width: 200px; }
+#open { position: absolute; left: 646px; top: 572px; width: 270px; }
 #open button { white-space: nowrap; }
 #stash { position: absolute; left: 646px; top: 6px; width: 372px; }
 .head { display: flex; flex-direction: row; justify-content: space-between; align-items: center; height: 24px; }
@@ -15,3 +15,6 @@ button.cell img.icon { position: absolute; left: 1px; top: 1px; }
 button.mini { padding: 0 8px; margin: 0 2px; }
 button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button.dis { opacity: 0.55; color: #8a8a8a; }
+
+/* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
+button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

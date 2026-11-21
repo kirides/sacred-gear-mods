@@ -37,3 +37,6 @@ button.pt { display: block; position: relative; width: 96px; height: 132px; padd
 .pt .beadbar { position: absolute; left: 7px; top: 105px; width: 73px; height: 9px; decorator: image(gear:image/66 scale-none left top); }
 .pt .beadfill { position: absolute; left: 1px; top: 1px; height: 7px; overflow: hidden; decorator: image(gear:image/67 scale-none left top); }
 .pt .plevel { position: absolute; left: 12px; top: 78px; color: #e8c878; font-size: 12dp; }
+
+/* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
+button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

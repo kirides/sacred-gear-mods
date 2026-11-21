@@ -5,7 +5,7 @@
 </head>
 <body data-model="model">
 <div id="open" class="window" data-panel="open" data-title="Shared stash" data-if="open_shown">
-    <button id="toggle" class="game-button" data-attrif-disabled="!open_enabled" data-attr-title="open_tip">{{ open_label }}</button>
+    <button id="toggle" class="game-button" data-attrif-disabled="!open_enabled" data-attr-title="open_tip"><span class="padkey a"></span>{{ open_label }}</button>
 </div>
 
 <div id="stash" class="window" data-panel="stash" data-title="Shared stash" data-if="stash_open">
@@ -14,11 +14,11 @@
         <p data-if="notice != ''" data-class-bad="notice_bad" class="muted wrap">{{ notice }}</p>
         <p data-if="notice2 != ''" class="muted small">{{ notice2 }}</p>
         <div data-if="ready">
-            <div class="head"><span class="accent">{{ stash_title }}</span><span class="pager"><button class="mini" id="sp-prev" data-attrif-disabled="!sp_prev">&lt;</button><span class="pn">{{ sp_n }}</span><button class="mini" id="sp-next" data-attrif-disabled="!sp_next">&gt;</button></span></div>
+            <div class="head"><span class="accent">{{ stash_title }}</span><span class="pager"><button class="mini" id="sp-prev" data-attrif-disabled="!sp_prev"><span class="padkey a"></span>&lt;</button><span class="pn">{{ sp_n }}</span><button class="mini" id="sp-next" data-attrif-disabled="!sp_next"><span class="padkey a"></span>&gt;</button></span></div>
             <div id="sgrid" class="grid">
                 <button data-for="c : scells" class="cell" data-attr-id="c.id" data-class-off="!c.enabled" data-style-left="c.x" data-style-top="c.y" data-style-width="c.w" data-style-height="c.h" data-style-border-color="c.color"><img class="icon" data-attr-src="c.src" data-style-width="c.iw" data-style-height="c.ih"/></button>
             </div>
-            <div class="head"><span class="accent">{{ src_title }}</span><span class="pager"><button class="mini" id="xp-prev" data-attrif-disabled="!xp_prev">&lt;</button><span class="pn">{{ xp_n }}</span><button class="mini" id="xp-next" data-attrif-disabled="!xp_next">&gt;</button></span></div>
+            <div class="head"><span class="accent">{{ src_title }}</span><span class="pager"><button class="mini" id="xp-prev" data-attrif-disabled="!xp_prev"><span class="padkey a"></span>&lt;</button><span class="pn">{{ xp_n }}</span><button class="mini" id="xp-next" data-attrif-disabled="!xp_next"><span class="padkey a"></span>&gt;</button></span></div>
             <div id="bgrid" class="grid">
                 <button data-for="c : bcells" class="cell" data-attr-id="c.id" data-class-off="!c.enabled" data-style-left="c.x" data-style-top="c.y" data-style-width="c.w" data-style-height="c.h" data-style-border-color="c.color"><img class="icon" data-attr-src="c.src" data-style-width="c.iw" data-style-height="c.ih"/></button>
             </div>

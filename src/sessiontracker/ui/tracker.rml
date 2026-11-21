@@ -21,7 +21,7 @@
         <p class="heading">Last sessions</p>
         <div data-for="h : history" class="muted hist">{{ h }}</div>
         <div class="row right">
-            <button class="game-button" data-event-click="new_session" title="Ends this session (it goes to the history) and starts a new one">New session</button>
+            <button class="game-button" data-event-click="new_session" title="Ends this session (it goes to the history) and starts a new one"><span class="padkey a"></span>New session</button>
         </div>
     </div>
 </div>

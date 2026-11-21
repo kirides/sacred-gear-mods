@@ -25,10 +25,10 @@
             </div>
             <div data-if="own" class="row space">
                 <span class="muted small">{{ own_line }}</span>
-                <button class="game-button" id="open-editor" title="Make your own bounties, start and stop them">Editor...</button>
+                <button class="game-button" id="open-editor" title="Make your own bounties, start and stop them"><span class="padkey a"></span>Editor...</button>
             </div>
         </div>
-        <div data-if="msg != '' &amp;&amp; own"><button class="game-button" id="open-editor2">Editor...</button></div>
+        <div data-if="msg != '' &amp;&amp; own"><button class="game-button" id="open-editor2"><span class="padkey a"></span>Editor...</button></div>
     </div>
 </div>
 </body>

@@ -18,7 +18,11 @@ function Prepare($names, $config) {
     Remove-Item $mods -Recurse -Force -ErrorAction SilentlyContinue
     New-Item $mods -ItemType Directory | Out-Null
     foreach ($n in $names) {
-        if ($n -eq 'theme') { Copy-Item (Join-Path $env:SACRED_BILD 'gear\examples\theme') (Join-Path $mods 'theme') -Recurse }
+        if ($n -eq 'theme') {
+            Copy-Item (Join-Path $env:SACRED_BILD 'gear\examples\theme') (Join-Path $mods 'theme') -Recurse
+            # SHOTS_PAD=1: the controller prompts of the buttons show in every picture (they only show while the pad was used last), to check that no label clips
+            if ($env:SHOTS_PAD) { Add-Content (Join-Path $mods 'theme\theme.rcss') '.padkey { display: inline-block; }' }
+        }
         elseif ($n -eq 'shots') { Copy-Item $PSScriptRoot (Join-Path $mods 'shots') -Recurse; Remove-Item (Join-Path $mods 'shots\run.ps1'), (Join-Path $mods 'shots\crop.py'), (Join-Path $mods 'shots\crops.json') }
         else { Copy-Item (Join-Path $repo "src\$n") (Join-Path $mods $n) -Recurse }
     }
@@ -81,7 +85,8 @@ if (-not $CropOnly) {
     Phase 'dt'       'drop-tuning' "{phase = 'modscreen', clicks = {{1005, 250}, {887, 707}}}"
     Phase 'dtmore'   'drop-tuning' "{phase = 'modscreen', clicks = {{1005, 250}, {1113, 213}}}"
     Phase 'keys'     'key-bindings' "{phase = 'modscreen', clicks = {{1106, 250}}}"
-    Phase 'realms'   'realms' "{phase = 'modscreen', realm = {id = 'private', name = 'Private realm', host = 'realm.example.com', port = 7066}, clicks = {{1005, 323}, {1113, 213}}}"
+    Phase 'realms'   'realms' "{phase = 'modscreen', realm = {id = 'private', name = 'Private realm', host = 'realm.example.com', port = 7066}, clicks = {{1005, 382}}}"
+    Phase 'autopage' 'autosave' "{phase = 'modscreen', clicks = {{1005, 250}, {1113, 213}}}"
     Phase 'spawn'    'spawn-rate' "{phase = 'modscreen', clicks = {{1005, 323}}}"
     Phase 'region'   'region-counter' "{phase = 'modscreen', clicks = {{1005, 323}}}"
     Phase 'twibase'  'twitch_integration' "{phase = 'modscreen', clicks = {}}" @('twi_sacred')

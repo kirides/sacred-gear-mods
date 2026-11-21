@@ -8,7 +8,7 @@
     <div class="titlebar">{{ title }}</div>
     <div class="body">
         <div class="tabs">
-            <button data-for="t : tabs" class="tab" data-attr-id="t.id" data-class-on="t.on">{{ t.name }}</button>
+            <button data-for="t : tabs" class="tab" data-attr-id="t.id" data-class-on="t.on"><span class="padkey a"></span>{{ t.name }}</button>
         </div>
 
         <div data-if="tab == 1">
@@ -24,11 +24,11 @@
 
         <div data-if="tab == 2">
             <p data-if="rec_msg != ''" data-class-warn="rec_warn" class="muted wrap">{{ rec_msg }}</p>
-            <div data-if="rec_msg != '' &amp;&amp; can_ask"><button class="game-button" id="ask">Refresh</button></div>
+            <div data-if="rec_msg != '' &amp;&amp; can_ask"><button class="game-button" id="ask"><span class="padkey a"></span>Refresh</button></div>
             <div data-if="has_state">
                 <div class="row space">
                     <span class="muted">{{ rec_head }}</span>
-                    <button class="mini" id="refresh">Refresh</button>
+                    <button class="mini" id="refresh"><span class="padkey a"></span>Refresh</button>
                 </div>
                 <div class="check-row"><span class="text">Show unnamed records</span><input id="unknown" type="checkbox" class="game-check" data-checked="show_unknown"/></div>
                 <p data-if="rec_none" class="muted wrap">nothing to show (the server has no quest records of your hero, or they are hidden)</p>

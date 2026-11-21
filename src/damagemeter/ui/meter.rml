@@ -20,12 +20,12 @@
         </div>
     </div>
     <div class="icons" data-if="!solo">
-        <button class="mini" data-event-click="next_view" title="Bigger view">^</button>
-        <button class="mini" data-event-click="reset" title="Clear the counters">x</button>
+        <button class="mini" data-event-click="next_view" title="Bigger view"><span class="padkey a"></span>^</button>
+        <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span>x</button>
     </div>
     <div class="icons" data-if="solo">
-        <button class="mini" data-event-click="next_view" title="Bigger view">^</button>
-        <button class="mini" data-event-click="reset" title="Clear the counters">x</button>
+        <button class="mini" data-event-click="next_view" title="Bigger view"><span class="padkey a"></span>^</button>
+        <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span>x</button>
     </div>
 </div>
 
@@ -73,8 +73,8 @@
             <div data-for="e : sources" class="kv"><span class="label">{{ e.name }}</span><span class="value">{{ e.v }}</span></div>
         </div>
         <div class="icons">
-            <button class="mini" data-event-click="next_view" data-attr-title="view_tip">{{ view_mark }}</button>
-            <button class="mini" data-event-click="reset" title="Clear the counters">x</button>
+            <button class="mini" data-event-click="next_view" data-attr-title="view_tip"><span class="padkey a"></span>{{ view_mark }}</button>
+            <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span>x</button>
         </div>
     </div>
 </div>

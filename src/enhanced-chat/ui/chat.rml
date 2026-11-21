@@ -6,16 +6,16 @@
 <body data-model="model">
 <div id="chat" class="bare" data-panel="chat" data-title="Chat" data-if="open" data-style-background-color="bg" data-style-height="box_h">
     <div class="tabs">
-        <button data-for="t : tabs" class="tab" data-attr-id="t.id" data-class-on="t.on">{{ t.label }}</button>
+        <button data-for="t : tabs" class="tab" data-attr-id="t.id" data-class-on="t.on"><span class="padkey a"></span>{{ t.label }}</button>
         <span class="grow"></span>
-        <button data-if="show_player" class="tab" id="player" title="Only the lines of this player">{{ player_label }}</button>
-        <button class="tab" id="min" data-attr-title="min_tip">{{ min_label }}</button>
+        <button data-if="show_player" class="tab" id="player" title="Only the lines of this player"><span class="padkey a"></span>{{ player_label }}</button>
+        <button class="tab" id="min" data-attr-title="min_tip"><span class="padkey a"></span>{{ min_label }}</button>
     </div>
     <div data-if="!minimized" class="lwrap">
         <div id="lines" data-style-font-size="fs">
             <div data-for="l : lines" data-attr-id="l.id" class="line" data-class-item="l.item"><span data-for="r : l.runs" data-style-color="r.c">{{ r.t }}</span></div>
         </div>
-        <button data-if="new_label != ''" id="newer" class="tab newer" title="To the newest line">{{ new_label }}</button>
+        <button data-if="new_label != ''" id="newer" class="tab newer" title="To the newest line"><span class="padkey a"></span>{{ new_label }}</button>
     </div>
 </div>
 </body>

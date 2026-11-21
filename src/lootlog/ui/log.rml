@@ -8,13 +8,13 @@
     <div class="titlebar">{{ title }}</div>
     <div class="body">
         <div class="row filters">
-            <button class="game-button" data-event-click="cycle_q" title="Lowest quality shown">{{ fq }}</button>
-            <button class="game-button" data-event-click="cycle_c" title="Category shown">{{ fc }}</button>
-            <button class="game-button" data-event-click="cycle_k" title="Dropped on the ground, picked up into the backpack, or acquired otherwise">{{ fk }}</button>
+            <button class="game-button" data-event-click="cycle_q" title="Lowest quality shown"><span class="padkey a"></span>{{ fq }}</button>
+            <button class="game-button" data-event-click="cycle_c" title="Category shown"><span class="padkey a"></span>{{ fc }}</button>
+            <button class="game-button" data-event-click="cycle_k" title="Dropped on the ground, picked up into the backpack, or acquired otherwise"><span class="padkey a"></span>{{ fk }}</button>
         </div>
         <div class="row space">
             <span class="label">{{ count }}</span>
-            <button class="game-button" data-event-click="clear" title="Empties the log (also the file)">Clear</button>
+            <button class="game-button" data-event-click="clear" title="Empties the log (also the file)"><span class="padkey a"></span>Clear</button>
         </div>
         <div class="rows">
             <div data-for="r : rows" class="entry">

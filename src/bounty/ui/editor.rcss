@@ -20,3 +20,6 @@ button.mini.wide { min-width: 200px; }
 .check-row { height: 36px; }
 .fscroll { max-height: 520px; overflow-y: auto; }
 .opts { max-height: 96px; }
+
+/* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
+button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

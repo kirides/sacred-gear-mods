@@ -13,7 +13,7 @@
         <span data-if="s.key != ''" class="key">{{ s.key }}</span>
     </button>
     <div class="side">
-        <button class="mini" id="edit" data-attr-title="edit_tip">{{ edit_mark }}</button>
+        <button class="mini" id="edit" data-attr-title="edit_tip"><span class="padkey a"></span>{{ edit_mark }}</button>
         <span data-if="paging" class="muted page">{{ page }}</span>
     </div>
 </div>
@@ -44,7 +44,7 @@
         <p data-if="!picking" class="muted">Choose a slot first: press the edit button next to the first bar, then click a slot.</p>
         <div data-if="picking">
             <div class="row space">
-                <span><button class="game-button" id="clear">Empty this slot</button><button class="game-button" id="close">Close</button></span>
+                <span><button class="game-button" id="clear"><span class="padkey a"></span>Empty this slot</button><button class="game-button" id="close"><span class="padkey a"></span>Close</button></span>
                 <span class="muted">{{ count }}</span>
             </div>
             <div class="plist">

@@ -31,7 +31,7 @@
             </div>
             <div data-if="own" class="row space">
                 <span data-class-accent="waiting" class="muted small">{{ own_line }}</span>
-                <button data-if="waiting" class="game-button" id="quest-claim" title="Pay the rewards of finished quests and streak bonuses now">Claim rewards</button>
+                <button data-if="waiting" class="game-button" id="quest-claim" title="Pay the rewards of finished quests and streak bonuses now"><span class="padkey a"></span>Claim rewards</button>
             </div>
         </div>
     </div>

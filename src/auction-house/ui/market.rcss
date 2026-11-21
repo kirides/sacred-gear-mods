@@ -1,4 +1,4 @@
-#open { position: absolute; left: 812px; top: 572px; width: 200px; }
+#open { position: absolute; left: 780px; top: 572px; width: 240px; }
 #open button { white-space: nowrap; }
 #market { position: absolute; left: 228px; top: 16px; width: 640px; }
 #osk { position: absolute; left: 300px; top: 260px; width: 470px; }
@@ -39,3 +39,6 @@ button.key { min-width: 34px; margin-right: 4px; text-align: center; }
 scrollbarvertical { width: 14px; }
 scrollbarvertical slidertrack { background-color: #0c0c14; }
 scrollbarvertical sliderbar { background-color: #8c7440; width: 14px; }
+
+/* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
+button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
