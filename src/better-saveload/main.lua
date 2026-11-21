@@ -531,7 +531,7 @@ local function osk_model()
     return o.target == 'search' and 'On-screen keyboard: search' or 'On-screen keyboard: the name of the savegame', rows, o.shift and 'SHIFT' or 'Shift'
 end
 
-local ROW_H_UNITS = 54      -- a row (50) and its gap (4)
+local ROW_H_UNITS = 56      -- a row (50 and its 1px border on both sides) and its gap (4)
 local VIEW_ROWS = 8
 
 local function snapshot(preview)
@@ -827,6 +827,7 @@ gear.on('better-saveload.query', function(out)
     out.name, out.osk = view.name, view.osk ~= nil
     out.search, out.focus, out.page = view.search, view.focus, view.page
     out.osk_target = view.osk and view.osk.target or nil
+    out.scroll_top = scroll_top
     out.order = {}
     for i, s in ipairs(view.shown) do out.order[i] = s.slot end
 end)

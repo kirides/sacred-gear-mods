@@ -27,7 +27,7 @@
 
     <div class="main">
         <div class="left">
-            <div data-if="!osk" id="list" data-class-save="save_on">
+            <div data-if="!osk" id="list" data-nav-scroll data-class-save="save_on">
                 <div data-style-height="spacer_top"></div>
                 <button data-for="r : rows" class="row" data-attr-id="r.id" data-class-sel="r.sel" data-class-bad="!r.ok">
                     <img data-if="r.pic != ''" class="thumb" data-attr-src="r.pic"/>
