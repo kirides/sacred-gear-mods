@@ -96,43 +96,6 @@ local function pack(cells)
     return math.max(1, #pages)
 end
 
--- A page of a grid of cells at (x, y): the cell backgrounds and, for each cell of `cells` on `page`, its item icon and
--- a region that takes the click. Returns the clicked cell. A cell: {w, h, icon (an item table or a type id), color,
--- tip, enabled, id}.
-local function grid(id, x, y, cells, page)
-    local gw, gh = COLS * CELL, ROWS * CELL
-    ui.rect(x, y, gw, gh, 0x60000000)
-    for cx = 0, COLS do ui.rect(x + cx * CELL, y, 1, gh, 0x30FFFFFF) end
-    for cy = 0, ROWS do ui.rect(x, y + cy * CELL, gw, 1, 0x30FFFFFF) end
-    local clicked
-    for _, c in ipairs(cells) do
-        if c.page == page + 1 then
-            local px, py, pw, ph = x + c.cx * CELL, y + c.cy * CELL, c.cw * CELL, c.ch * CELL
-            local r = ui.region(id .. c.id, px, py, pw, ph, {enabled = c.enabled})
-            local hot = r.hover and c.enabled
-            ui.rect(px + 1, py + 1, pw - 1, ph - 1, hot and 0x80506090 or 0x50203040)
-            ui.item_icon(c.icon, px + 2, py + 2, pw - 3, ph - 3)
-            ui.frame(px, py, pw + 1, ph + 1, hot and 0xFFFFFFFF or (c.color or 0xFF606060))
-            if not c.enabled then ui.rect(px + 1, py + 1, pw - 1, ph - 1, 0xA0000000) end
-            if r.clicked and c.enabled then clicked = c end
-            if r.hover then view.hover = c end
-        end
-    end
-    return clicked
-end
-
--- A section header: the title at the left, [<]  n / m  [>] at the right (18 high). Returns the page.
-local function header(id, x, y, w, title, color, page, pages)
-    page = math.max(0, math.min(page, pages - 1))
-    local t = ui.table(id, x, y - 1, w, {columns = {'*', 22, 48, 22}, spacing = {6, 0}, row_height = 18})
-    t:row()
-    t:label(1, title, {id = id .. '-title', color = color})
-    if t:button(2, '<', {id = id .. '-prev', enabled = page > 0}) then page = page - 1 end
-    t:label(3, ('%d / %d'):format(page + 1, pages), {id = id .. '-n', halign = 'center'})
-    if t:button(4, '>', {id = id .. '-next', enabled = page < pages - 1}) then page = page + 1 end
-    return page
-end
-
 local function entry_cells(list, hint)
     local cells = {}
     for _, e in ipairs(list) do
@@ -145,38 +108,49 @@ local function entry_cells(list, hint)
     return cells
 end
 
--- Whether the stash can be shown now; if not, a line that says why is drawn instead. In Closed Net the stash is the
--- server's (remote.lua), otherwise the file's (stash.lua). Returns ready, closed_net.
-local function check_ready(x, y, w)
+-- A cell of a grid as the document shows it: its box in the grid, the item model (a stash entry is an item type, a backpack / chest
+-- item is the live item), the quality colour as the border.
+local function css_color(argb)
+    argb = argb or 0xFF606060
+    return ('#%02x%02x%02x%02x'):format(math.floor(argb / 65536) % 256, math.floor(argb / 256) % 256, argb % 256, math.floor(argb / 16777216) % 256)
+end
+
+local function cell_model(c)
+    local icon
+    if type(c.icon) == 'table' then icon = 'gear:item/id/' .. tostring(c.icon.id) else icon = 'gear:item/' .. tostring(c.icon) end
+    return {id = c.id, x = (c.cx * CELL) .. 'px', y = (c.cy * CELL) .. 'px', w = (c.cw * CELL + 1) .. 'px', h = (c.ch * CELL + 1) .. 'px',
+        iw = (c.cw * CELL - 3) .. 'px', ih = (c.ch * CELL - 3) .. 'px', src = icon, color = css_color(c.color), enabled = c.enabled and true or false}
+end
+
+local function page_cells(cells, page)
+    local out = {}
+    for _, c in ipairs(cells) do
+        if c.page == page + 1 then out[#out + 1] = cell_model(c) end
+    end
+    return out
+end
+
+local function clamp_page(page, pages) return math.max(0, math.min(page, pages - 1)) end
+
+-- Whether the stash can be shown now; if not, a line that says why. In Closed Net the stash is the server's (remote.lua), otherwise the
+-- file's (stash.lua). Returns ready, closed_net, notice, notice2, bad.
+local function check_ready()
     local net = closed()
     if net then
         remote.refresh(false)
         local ok, why = remote.available()
-        if not ok then
-            ui.text('The shared stash is not available on this server.', x, y, {width = w, color = 0xFFFF8080, size = 13})
-            ui.text(tostring(why), x, y + 22, {width = w, color = 0xFFC0C0C0, size = 12})
-            return false
-        end
+        if not ok then return false, net, 'The shared stash is not available on this server.', tostring(why), true end
     else
         -- a network game that is not (yet) known to be Closed Net: ask the server first (it may keep the stash), then the file
-        if kind.mode() ~= 'single' and remote.probe() == 'wait' then
-            ui.text('Asking the server about the shared stash ...', x, y, {width = w, color = 0xFFC0C0C0, size = 12})
-            return false
-        end
-        if closed() then return false end                   -- the server said so meanwhile: the next frame draws the server's stash
+        if kind.mode() ~= 'single' and remote.probe() == 'wait' then return false, net, 'Asking the server about the shared stash ...', '', false end
+        if closed() then return false, net, '', '', false end                -- the server said so meanwhile: the next frame shows the server's stash
         stash.ensure()
     end
-    if not net and stash.problem then
-        ui.text(stash.problem, x, y, {width = w, color = 0xFFFF8080, size = 12})
-        return false
-    end
+    if not net and stash.problem then return false, net, stash.problem, '', true end
     local can, network = gear.inv.can_change()
     view.net = network
-    if not can then
-        ui.text('The shared stash cannot change your inventory right now.', x, y, {width = w, color = 0xFFFFC080, size = 12})
-        return false
-    end
-    return true, net
+    if not can then return false, net, 'The shared stash cannot change your inventory right now.', '', false end
+    return true, net, '', '', false
 end
 
 -- The cells of the backpack and chest grid (from refresh_sources).
@@ -239,65 +213,82 @@ local function deposit_source(s, net)
     refresh_sources(true)
 end
 
--- The stash panel: the stash's grid on top, the backpack and chest below, a status line, the hovered item's tooltip.
-local function panel()
-    local p = ui.panel('stash', 'Shared stash', 646, 6, 372, 500, {closable = true})
-    if not p.open then return end
-    view.hover = nil
-    local x, y, w = p.content_x + 4, p.content_y + 2, p.w - 16
-    local ready, net = check_ready(x, y, w)
-    if not ready then return end
+-- The window and the "Shared stash" button are ui/stash.rml (the game theme). The button is a layout panel of its own (Alt + Edit layout
+-- moves it); it is clickable only while the chest window is open, and shown (dimmed) in the layout editor so it can be placed without a chest.
+local doc
+local last = {}
+local stash_open = false
+local live = {}              -- cell id -> the cell (for the clicks and the hover)
+local hovered                -- the cell the cursor rests on
 
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function snapshot(chest_is_open)
+    local edit = ui.edit_mode()
+    local m = {
+        open_shown = chest_is_open or edit, open_enabled = chest_is_open and not edit,
+        open_label = stash_open and 'Close the stash' or 'Open the stash',
+        open_tip = (chest_is_open and not edit) and 'Items shared between your heroes' or 'Open a chest to use the stash',
+        stash_open = chest_is_open and stash_open, ready = false, notice = '', notice2 = '', notice_bad = false,
+        stash_title = '', sp_n = '', sp_prev = false, sp_next = false, scells = {},
+        src_title = '', xp_n = '', xp_prev = false, xp_next = false, bcells = {},
+        status = '', msg_ok = true,
+    }
+    live = {}
+    if not m.stash_open then return m end
+    local ready, net, notice, notice2, bad = check_ready()
+    m.ready, m.notice, m.notice2, m.notice_bad = ready, notice, notice2, bad
+    view.net_game = net
+    if not ready then return m end
     local items = net and remote.entries or stash.items()
     local scells = entry_cells(items, 'Click: take it into the backpack')
     local spages = pack(scells)
-    view.stash_page = header('sp', x, y, w,
-        ('In the stash: %d / %d'):format(#items, net and (remote.max or cfg.max_items) or cfg.max_items), ui.COLORS.accent,
-        view.stash_page, spages)
-    y = y + 22
-    local withdraw = grid('s', x, y, scells, view.stash_page)
-    y = y + ROWS * CELL + 8
-
+    view.stash_page = clamp_page(view.stash_page, spages)
+    m.stash_title = ('In the stash: %d / %d'):format(#items, net and (remote.max or cfg.max_items) or cfg.max_items)
+    m.sp_n, m.sp_prev, m.sp_next = ('%d / %d'):format(view.stash_page + 1, spages), view.stash_page > 0, view.stash_page < spages - 1
+    m.scells = page_cells(scells, view.stash_page)
     local cells = source_cells()
     local pages = pack(cells)
-    view.source_page = header('xp', x, y, w, ('Backpack and chest: %d'):format(#cells), ui.COLORS.accent, view.source_page, pages)
-    y = y + 22
-    local deposit = grid('b', x, y, cells, view.source_page)
-    y = y + ROWS * CELL
-
+    view.source_page = clamp_page(view.source_page, pages)
+    m.src_title = ('Backpack and chest: %d'):format(#cells)
+    m.xp_n, m.xp_prev, m.xp_next = ('%d / %d'):format(view.source_page + 1, pages), view.source_page > 0, view.source_page < pages - 1
+    m.bcells = page_cells(cells, view.source_page)
+    for _, c in ipairs(scells) do live[c.id] = c end
+    for _, c in ipairs(cells) do live[c.id] = c end
     if view.message and gear.time() < view.message_until then
-        ui.text(view.message, x, y + 6, {width = w, size = 12, color = view.message_ok and 0xFF80FF80 or 0xFFFF8080})
-    elseif view.hover then
-        ui.text(view.hover.hint, x, y + 6, {width = w, size = 12, color = 0xFFC0C0C0})
+        m.status, m.msg_ok = view.message, view.message_ok
+    elseif hovered and live[hovered.id] then
+        m.status = hovered.hint or ''
     end
-    if view.hover then hover_tooltip() end
-
-    -- Changes after drawing, so the grids above were consistent for the frame.
-    if withdraw then
-        withdraw_entry(withdraw.entry, net)
-    elseif deposit then
-        deposit_source(deposit.src, net)
-    end
+    return m
 end
 
--- The "Shared stash" button is a small panel of its own, so it is a layout panel like any other: Alt + Edit layout (the layout editor)
--- moves it and its place is kept in mods\gear_layout.json. Default: to the right of the chest and the inventory, below
--- the stash panel, clear of the game's buttons. It is clickable only while the chest window is open; in the layout
--- editor it is shown (greyed out) so it can be placed without a chest.
-local function open_button(chest_is_open)
-    local p = ui.panel('open', 'Shared stash', 646, 572, 160, 50, {closable = false})
-    if not p.open then return end
-    local open = ui.panel_open('stash')
-    local enabled = chest_is_open and not ui.edit_mode()
-    if ui.button('toggle', p.content_x + 2, p.content_y + 2, p.content_w - 4, 20, open and 'Close the stash' or 'Open the stash',
-        {enabled = enabled, tooltip = enabled and 'Items shared between your heroes' or 'Open a chest to use the stash'}) then
-        ui.show_panel('stash', not open)
-    end
+local function load_doc(m)
+    last = m
+    local err
+    doc, err = ui.rml.load('ui/stash.rml', {model = m})
+    if not doc then gear.log('shared stash: ui/stash.rml failed: ' .. tostring(err)) return end
+    local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
+    on('#toggle', function()
+        if transfer.chest_window_open() and not ui.edit_mode() then stash_open = not stash_open end
+    end)
+    on('#sp-prev', function() view.stash_page = math.max(0, view.stash_page - 1) end)
+    on('#sp-next', function() view.stash_page = view.stash_page + 1 end)
+    on('#xp-prev', function() view.source_page = math.max(0, view.source_page - 1) end)
+    on('#xp-next', function() view.source_page = view.source_page + 1 end)
+    on('.cell', function(e)
+        local c = live[tostring(e.current)]
+        if not (c and c.enabled) then return end
+        if c.entry then withdraw_entry(c.entry, view.net_game) elseif c.src then deposit_source(c.src, view.net_game) end
+    end)
+    doc:on('.cell', 'mouseover', function(e) hovered = live[tostring(e.current)] end)
+    doc:on('.cell', 'mouseout', function() hovered = nil end)
 end
-
-ui.show_panel('stash', false)
-ui.show_panel('open', true)
-if ui.persist_panel then ui.persist_panel('stash', false) end   -- it opens with a chest
 
 gear.on('draw', function(state)
     if closed() then remote.tick() end
@@ -305,13 +296,22 @@ gear.on('draw', function(state)
     -- walks away): closed with it, in the menus, in cinematics, with a dead hero.
     local chest_is_open = state.mode == 'game' and not state.exclusive and transfer.chest_window_open()
     if not chest_is_open then
-        ui.show_panel('stash', false)
-        if state.mode == 'game' and not state.exclusive and ui.edit_mode() then open_button(false) end
-        return
+        stash_open, hovered = false, nil
+        if not (state.mode == 'game' and not state.exclusive and ui.edit_mode()) then return end
     end
-    open_button(true)
-    panel()
+    local m = snapshot(chest_is_open)
+    if not doc then load_doc(m) end
+    if not doc then return end
+    for k, v in pairs(m) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+    doc:draw({layer = 'hud'})
+    view.hover = m.stash_open and hovered and live[hovered.id] or nil
+    if view.hover then hover_tooltip() end
 end)
+
+M.is_open = function() return stash_open end
+M.rect = function(sel) local e = doc and doc:query(sel); return e and e:rect() or nil end
 
 M.say = say
 remote.notify = say

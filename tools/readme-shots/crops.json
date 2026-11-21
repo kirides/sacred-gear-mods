@@ -32,7 +32,7 @@
   "serverfeed.jpg":              {"src": "shot-srv-serverfeed/server-serverfeed", "box": [930, 190, 1415, 310]},
   "sessiontracker.jpg":          {"src": "shot-fight/sessiontracker", "box": [195, 210, 560, 655]},
   "shared-stash.jpg":            {"src": "shot-stash-ui/chest-stash", "box": [935, 0, 1410, 760]},
-  "shared-stash-tooltip.jpg":    {"src": "shot-stash-ui/stash-tip-stash", "box": [935, 0, 1410, 620]},
+  "shared-stash-tooltip.jpg":    {"src": "shot-stash-ui/stash-tip-backpack", "box": [935, 0, 1410, 620]},
   "twi_sacred.jpg":              {"src": "shot-twitch/twitch", "box": [100, 320, 1560, 880]},
   "twitch_integration.jpg":      {"src": "shot-twibase/modscreen", "box": [400, 142, 1200, 757]},
   "world-events.jpg":            {"src": "shot-we/pill-alt", "box": [650, 25, 1075, 350]},

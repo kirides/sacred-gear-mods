@@ -262,7 +262,7 @@ return function(M, stash, transfer)
                 for _, p in ipairs(gear.ui.panels()) do if p.key == key then return p end end
             end
             local op = panel_of('shared-stash:open')
-            if op then gear.auto.ui_click(op.x + 80, op.y + 34) end
+            do local r = M.rect('#toggle'); if r then gear.auto.ui_click(r.x + r.w / 2, r.y + r.h / 2) end end
             gear.wait(1.5)
             local panel = panel_of('shared-stash:stash')
             check(panel ~= nil, 'the stash panel is open')
@@ -358,7 +358,7 @@ return function(M, stash, transfer)
                 for _, p in ipairs(gear.ui.panels()) do if p.key == key then return p end end
             end
             local op = panel_of('shared-stash:open')
-            if op then gear.auto.ui_click(op.x + 80, op.y + 34) end
+            do local r = M.rect('#toggle'); if r then gear.auto.ui_click(r.x + r.w / 2, r.y + r.h / 2) end end
             gear.wait(1)
             local t0, cycles, fails, maxid = gear.time(), 0, 0, 0
             local lastid = 0
@@ -465,9 +465,9 @@ return function(M, stash, transfer)
             local bp_panel
             for _, p in ipairs(gear.ui.panels()) do if p.key == 'shared-stash:open' then bp_panel = p end end
             check(bp_panel ~= nil, 'the button shows')
-            if bp_panel then A.ui_click(bp_panel.x + 80, bp_panel.y + 34) end
+            do local r = M.rect('#toggle'); if r then A.ui_click(r.x + r.w / 2, r.y + r.h / 2) end end
             gear.wait(2)
-            check(gear.ui.panel_open('stash'), 'the panel is open')
+            check(M.is_open(), 'the panel is open')
             A.screenshot('gating-closed')
             check(stash_touched() == 0, 'no access to stash files in Closed Net (' .. table.concat(touched, ', ') .. ')')
             A.network_mode('single')
@@ -606,7 +606,7 @@ return function(M, stash, transfer)
             gear.wait(1)
             local op
             for _, p in ipairs(gear.ui.panels()) do if p.key == 'shared-stash:open' then op = p end end
-            if op then gear.auto.ui_click(op.x + 80, op.y + 34) end
+            do local r = M.rect('#toggle'); if r then gear.auto.ui_click(r.x + r.w / 2, r.y + r.h / 2) end end
             gear.wait(6)
             local c = probe()
             note('next item id after 6 s of stash icons ' .. tostring(c))
@@ -646,13 +646,13 @@ return function(M, stash, transfer)
                 for _, p in ipairs(gear.ui.panels()) do if p.key == key then return p end end
             end
             local function click_button()
-                local p = panel_of('shared-stash:open')
-                if not p then return false end
-                gear.auto.ui_click(p.x + 80, p.y + 34)
+                local r = M.rect('#toggle')
+                if not r then return false end
+                gear.auto.ui_click(r.x + r.w / 2, r.y + r.h / 2)
                 gear.wait(1)
                 return true
             end
-            local function stash_open() return gear.ui.panel_open('stash') and panel_of('shared-stash:stash') ~= nil end
+            local function stash_open() return M.is_open() and panel_of('shared-stash:stash') ~= nil end
             gear.wait(1)
             check(not panel_of('shared-stash:open'), 'no button while the chest window is closed')
             check(not stash_open(), 'no stash panel while the chest window is closed')
@@ -694,15 +694,16 @@ return function(M, stash, transfer)
                 local panel = panel_of('shared-stash:stash')
                 if panel then
                     out.panel = gear.json.encode({x = panel.x, y = panel.y, w = panel.w, h = panel.h})
-                    local gx, gy = panel.x + 8, panel.y + 24 + 22 + 2
-                    local function hover(name, lx, ly)
-                        local px, py = gear.auto.ui_to_pixels(lx, ly)
+                    local function hover(name, sel)
+                        local r = M.rect(sel)
+                        if not r then return end
+                        local px, py = gear.auto.ui_to_pixels(r.x + r.w / 2, r.y + r.h / 2)
                         gear.auto.move(px, py)
                         gear.wait(1.5)
                         gear.auto.screenshot(name)
                     end
-                    hover('stash-tip-stash', gx + 16, gy + 16)
-                    hover('stash-tip-backpack', gx + 16, gy + 6 * 32 + 8 + 22 + 16)
+                    hover('stash-tip-stash', '#sgrid .cell')
+                    hover('stash-tip-backpack', '#bgrid .cell')
                 end
             end
         end
