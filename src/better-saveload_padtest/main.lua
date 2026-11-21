@@ -223,5 +223,9 @@ gear.task(function()
     local top_paged = query().scroll_top
     check('pressing the groove below the knob scrolls toward the cursor', top_paged > top_dragged + 50, ('%s -> %s'):format(top_dragged, top_paged))
     A.screenshot('pad-2-scrollbar')
+    -- The controller in use, the cursor on a card: no button shows a prompt but the one the pad is on (and the shortcut prompts of its own).
+    A.pad(1, 0, 0)
+    gear.wait(0.8)
+    A.screenshot('pad-3-prompts')
     finish()
 end)
