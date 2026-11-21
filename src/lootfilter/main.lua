@@ -393,6 +393,7 @@ if gear.auto then
         stats = stats,
         last_items = function() return last_items end,
         overlay_shown = function() return overlay_shown end,
-        rects = rects,
+        rect = function(sel) local e = doc and doc:query(sel); return e and e:rect() or nil end,
+        settings_open = function() return settings_open end,
     })
 end

@@ -149,32 +149,31 @@ return function(probe)
             tostring(p2 and p2.on_ground), tostring(w2 and w2.on_ground), W.pickup_refused() - before))
         check('the weapon stays on the ground', w2 and w2.on_ground)
 
-        -- The settings panel: opened from the overlay's button, a quality picked, a potion unticked, saved.
-        local oh = 18 + (7 + #probe.CATEGORIES) * 13
+        -- The settings window: opened from the overlay's button, the lowest quality stepped once, a potion unticked.
+        local function click_element(sel)
+            local r = probe.rect(sel)
+            if not r then return false end
+            A.ui_click(r.x + r.w / 2, r.y + r.h / 2)
+            return true
+        end
         A.key_down('alt')                           -- the overlay and its button show with the labels
         for _ = 1, 20 do
             if probe.overlay_shown() then break end
             gear.wait(0.1)
         end
-        gear.wait(0.2)
-        A.ui_click(cfg.overlay_x + 90, cfg.overlay_y + oh + 14)
+        gear.wait(0.5)
+        check('the overlay button is there', click_element('#open-settings'))
         A.key_up('alt')
         gear.wait(0.5)
-        check('settings panel opens', ui.panel_open('settings'))
-        check('it stays open without Alt', ui.panel_open('settings') and not probe.overlay_shown())
+        check('settings window opens', probe.settings_open())
+        check('it stays open without Alt', probe.settings_open() and not probe.overlay_shown())
         A.screenshot('lootfilter-settings')
-        local q = probe.rects.min_quality
-        check('quality dropdown rect known', q ~= nil)
-        A.ui_click(q[1] + q[3] / 2, q[2] + q[4] / 2)    -- the lowest quality dropdown
+        check('quality button known', click_element('#min_quality'))    -- normal -> magic
         gear.wait(0.5)
-        A.screenshot('lootfilter-settings-dropdown')
-        A.ui_click(q[1] + q[3] / 2, q[2] + q[4] + 1 + 18 + 9)  -- its second entry: magic
+        check('lowest quality stepped', cfg.min_quality == 'magic', cfg.min_quality)
+        check('stamina orb known', click_element('#potion-stamina'))
         gear.wait(0.5)
-        check('lowest quality from the dropdown', cfg.min_quality == 'magic', cfg.min_quality)
-        local sc = probe.rects.potion_stamina
-        A.ui_click(sc[1] + 7, sc[2] + sc[4] / 2)    -- the stamina checkbox
-        gear.wait(0.5)
-        check('potion checkbox', cfg.potions.stamina == false, tostring(cfg.potions.stamina))
+        check('potion check orb', cfg.potions.stamina == false, tostring(cfg.potions.stamina))
         A.screenshot('lootfilter-settings-saved')
         check('settings kept in the mod manager', S.get('min_quality') == 'magic' and S.get('potion_stamina') == false,
             tostring(S.get('min_quality')) .. ' ' .. tostring(S.get('potion_stamina')))
