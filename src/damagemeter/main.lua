@@ -477,208 +477,131 @@ local function characters()
     return rows
 end
 
-local function fit_name(name, max)
-    name = tostring(name or '?')
-    if #name > max then return name:sub(1, max - 1) .. '.' end
-    return name
-end
-
 ---------------------------------------------------------------------------------------------------------------
 -- The panel
 ---------------------------------------------------------------------------------------------------------------
-local DIM = 0xFFB0B0B0
-local RED = 0xFFFF8080
-local GREEN = 0xFF90E090
-local WHITE = 0xFFFFFFFF
-local GOLD = 0xFFFFE6A0
-local MAX_ROWS = 8
-local ROW = 17
+-- ui/meter.rml (the game theme): the compact view is a bare translucent panel, extended and detailed are a window. One model of
+-- ready-made strings; each frame writes what changed.
+local doc
+local shown = false
+local last = {}
 
--- A table of label (left) and value (right, as wide as its widest value) rows, `h` high each.
-local function kv_table(id, x, y, w, h)
-    local t = ui.table(id, x, y, w, {columns = {'*', {width = 'auto', align = 'right'}}, spacing = {8, 0}, row_height = h or 18})
-    return t, function(label, value, color)
-        t:row()
-        t:label(1, label, {color = DIM})
-        t:label(2, value, {color = color or WHITE})
-    end
-end
-
--- Height of a view's content, from the number of characters.
-local function content_height(n)
-    local rows = math.max(1, math.min(MAX_ROWS, n))
-    if view == 'compact' then return n <= 1 and not network_game() and 38 or rows * ROW + 4 end   -- without the button row
-    if view == 'extended' then return 16 + rows * ROW + 6 + 3 * ROW + 4 end
-    return 366
-end
-
--- Small icon buttons shared by every view, right-aligned at (right, y): ^ goes to the next (bigger) view (v from the
--- biggest back to compact), x clears the counters.
-local ICON = 14
-local function icon_buttons(right, y)
-    local up = view ~= 'detailed'
-    if ui.button('view', right - 2 * ICON - 3, y, ICON, ICON, up and '^' or 'v', {tooltip = up and 'Bigger view' or 'Back to the compact view'}) then
-        if view == 'detailed' then set_view('compact') else next_view() end
-    end
-    if ui.button('reset', right - ICON, y, ICON, ICON, 'x', {tooltip = 'Clear the counters'}) then reset() end
-end
-
-local function draw_compact(x, y, w, list)
-    if #list == 0 then
-        ui.text('no hero', x, y, {color = DIM})
-    elseif #list == 1 and not network_game() then
-        -- Alone: one line, the number big enough to read in a fight.
-        local e = list[1]
-        ui.text(fit_name(e.name, 16), x, y + 2, {color = DIM})
-        ui.text(num(e.dps), x, y, {width = w, align = 'right', color = e.fighting and GREEN or WHITE, size = 18})
-        ui.text('DPS', x, y + 20, {color = DIM, size = 11})
-    else
-        local t = ui.table('compact', x, y, w, {columns = {'*', {width = 'auto', align = 'right'}}, spacing = {8, 0}, row_height = ROW})
-        for i = 1, math.min(MAX_ROWS, #list) do
-            local e = list[i]
-            t:row()
-            t:label(1, e.ally and ('  ' .. e.name) or e.name, {color = e.ally and DIM or (e.mine and GOLD or WHITE)})
-            t:label(2, num(e.dps), {color = e.fighting and GREEN or DIM})
-        end
-    end
-end
-
-local function draw_extended(x, y, w, list)
-    if #list == 0 then
-        ui.text('no hero', x, y, {color = DIM})
-        return
-    end
-    -- Name, then three right-aligned number columns; the totals of the local hero under the list.
-    local t = ui.table('extended', x, y, w, {columns = {'*', 60, 60, 70}, spacing = {10, 0}, row_height = ROW})
-    t:row(16)
-    for c, title in ipairs({'DPS', 'Taken', 'Dealt'}) do
-        t:label(c + 1, title, {color = DIM, size = 11, halign = 'right'})
-    end
-    for i = 1, math.min(MAX_ROWS, #list) do
+local function sorted_rows(list)
+    local out = {}
+    for i = 1, math.min(8, #list) do
         local e = list[i]
-        t:row()
-        t:label(1, e.ally and ('  ' .. e.name) or e.name, {color = e.ally and DIM or (e.mine and GOLD or WHITE)})
-        t:label(2, num(e.dps), {color = e.fighting and GREEN or WHITE, halign = 'right'})
-        t:label(3, num(e.tdps), {color = RED, halign = 'right'})
-        t:label(4, short(e.dealt), {color = DIM, halign = 'right'})
+        out[i] = {name = tostring(e.name or '?'), dps = num(e.dps), taken = num(e.tdps), dealt = short(e.dealt),
+            ally = e.ally and true or false, mine = e.mine and true or false, fighting = e.fighting and true or false}
     end
-    local active = total_active()
-    local _, row = kv_table('extended_you', x, y + t:height() + 6, w, ROW)
-    row('Biggest hit (you)', num(T.max_dealt))
-    row('Fighting time (you)', num(active) .. ' s')
-    row('Average DPS (you)', active > 0 and num(T.dealt / active) or '-')
+    return out
 end
 
-local function draw_detailed(x, y, w)
-    local accent = ui.COLORS and ui.COLORS.accent
-    local f = T.fight
-    local fd, ft = fight_dps(f)
-    local t, row = kv_table('detail', x, y, w)
-    local function heading(id, text, h)
-        t:row(h)
-        t:label(1, text, {id = id, color = accent, span = 2, valign = 'bottom'})
-    end
-    heading('l-fight', f and 'Fight (running)' or 'Fight (last)', 18)
-    local last = T.fights[1]
-    if not f and last then fd, ft = last.dealt / last.dur, last.taken / last.dur end
-    row('Dealt DPS / taken DPS', num(fd) .. ' / ' .. num(ft))
-    row('Last ' .. num(setting('window', 10)) .. ' s', num(rolling(T.bucket_dealt)) .. ' / ' .. num(rolling(T.bucket_taken)))
-    heading('l-total', 'Since reset', 26)
-    row('Damage dealt', num(T.dealt) .. '  (' .. num(T.hits_dealt) .. ' hits)', GREEN)
-    row('Damage taken', num(T.taken) .. '  (' .. num(T.hits_taken) .. ' hits)', RED)
-    row('Biggest hit dealt / taken', num(T.max_dealt) .. ' / ' .. num(T.max_taken))
-    local avg = T.hits_dealt > 0 and T.dealt / T.hits_dealt or 0
-    row('Average hit dealt', num(avg))
-    local active = total_active()
-    row('Fighting time', num(active) .. ' s')
-    row('Average DPS while fighting', active > 0 and num(T.dealt / active) or '-')
-    row('Kills', num(T.kills) .. (active >= 10 and T.kills > 0 and ('  (' .. ('%.1f'):format(T.kills / active * 60) .. '/min)') or ''))
-
-    -- The last 30 seconds as bars: dealt up (green), taken down (red), scaled to the biggest second.
-    local gy, gh, gw = y + t:height() + 8, 44, math.min(w, 180)
-    ui.rect(x, gy, gw, gh, ui.rgba(0, 0, 0, 90))
-    local now = math.floor(clock)
-    local peak = 1
-    for s = now - 29, now do
-        local i = s % BUCKETS + 1
-        if T.bucket_stamp[i] == s then peak = math.max(peak, T.bucket_dealt[i] or 0, T.bucket_taken[i] or 0) end
-    end
-    local bw = gw / 30
-    for k = 0, 29 do
-        local s = now - 29 + k
-        local i = s % BUCKETS + 1
-        if T.bucket_stamp[i] == s then
-            local d = (T.bucket_dealt[i] or 0) / peak * (gh / 2)
-            local tk = (T.bucket_taken[i] or 0) / peak * (gh / 2)
-            if d >= 1 then ui.rect(x + k * bw, gy + gh / 2 - d, math.max(1, bw - 1), d, ui.rgba(120, 220, 120, 220)) end
-            if tk >= 1 then ui.rect(x + k * bw, gy + gh / 2, math.max(1, bw - 1), tk, ui.rgba(240, 100, 100, 220)) end
-        end
-    end
-    ui.text('30 s, peak ' .. num(peak), x + gw + 6, gy, {color = DIM})
-
-    local b, brow = kv_table('detail_top', x, gy + gh + 8, w, 16)
-    b:row(); b:label(1, 'Biggest targets', {id = 'l-top', color = accent, span = 2})
-    for _, e in ipairs(top(T.by_victim, 3)) do brow(e.name, num(e.damage) .. ' (' .. num(e.hits) .. ')') end
-    b:row(); b:label(1, 'Biggest damage sources', {id = 'l-src', color = accent, span = 2})
-    for _, e in ipairs(top(T.by_attacker, 2)) do brow(e.name, num(e.damage) .. ' (' .. num(e.hits) .. ')') end
-end
-
--- Panel width (layout units) per view; the height is the content plus the title bar and the buttons.
-local WIDTH = {compact = 140, extended = 290, detailed = 290}
-local CHROME = 56
-
-local THIN = 0x90806A3C            -- the compact panel's hairline frame
-local FILL = 0x90000000            -- translucent black behind the compact view
-
--- The compact view: a bare panel (no title bar, no window: clicks pass through to the game) drawn on a translucent
--- rectangle with a one-unit frame, rows of name and DPS, and the two small buttons in a thin row below. The layout editor
--- moves it; Ctrl+D shows and hides it.
-local function draw_compact_panel(list)
-    local pad = 6
-    local content_h = content_height(#list)
-    local h = content_h + pad * 2 + ICON + 2
-    local p = ui.panel('meter', 'Damage meter', 700, 200, WIDTH.compact, h, {bare = true})
-    if not p.open then return end
-    local x, y = p.content_x or 0, p.content_y or 0
-    local w = p.content_w or WIDTH.compact
-    local ph = p.content_h or h
-    ui.rect(x, y, w, ph, FILL)
-    ui.rect(x, y, w, 1, THIN); ui.rect(x, y + ph - 1, w, 1, THIN)
-    ui.rect(x, y, 1, ph, THIN); ui.rect(x + w - 1, y, 1, ph, THIN)
-    draw_compact(x + pad, y + pad, w - pad * 2, list)
-    icon_buttons(x + w - 3, y + pad + content_h + 1)
-end
-
-local function draw_panel()
+local function snapshot()
     local list = characters()
-    if view == 'compact' then return draw_compact_panel(list) end
-    local content_h = content_height(#list)
-    local p = ui.panel('meter', 'Damage meter' .. key_hint('panel'), 700, 200, WIDTH[view], content_h + CHROME, {})
-    if not p.open then return end
-    local x, y = p.content_x or 0, p.content_y or 0
-    local w = p.content_w or (WIDTH[view] - 20)
-    if view == 'extended' then
-        draw_extended(x, y, w, list)
-    elseif hero_type then
-        draw_detailed(x, y, w)
-    else
-        ui.text('no hero', x, y, {color = DIM})
+    local m = {
+        view = view,
+        nohero = #list == 0,
+        solo = #list == 1 and not network_game() and view == 'compact',
+        solo_name = '', solo_dps = '', solo_fighting = false,
+        rows = sorted_rows(list),
+        title = 'Damage meter' .. key_hint('panel'),
+        view_tip = view == 'detailed' and 'Back to the compact view' or 'Bigger view',
+        view_mark = view == 'detailed' and 'v' or '^',
+        you = {biggest = '', time = '', avg = ''},
+        d = {fight = '', fight_dps = '', window_label = '', window = '', dealt = '', taken = '', biggest = '', avg_hit = '',
+            time = '', avg_dps = '', kills = '', peak = ''},
+        bars = {}, targets = {}, sources = {},
+    }
+    if m.solo then
+        local e = list[1]
+        m.solo_name, m.solo_dps, m.solo_fighting = tostring(e.name or '?'), num(e.dps), e.fighting and true or false
     end
-    icon_buttons(x + w, y + content_h + 4)
+    if view == 'extended' then
+        local active = total_active()
+        m.you = {biggest = num(T.max_dealt), time = num(active) .. ' s', avg = active > 0 and num(T.dealt / active) or '-'}
+    elseif view == 'detailed' and hero_type then
+        local f = T.fight
+        local fd, ft = fight_dps(f)
+        local last_fight = T.fights[1]
+        if not f and last_fight then fd, ft = last_fight.dealt / last_fight.dur, last_fight.taken / last_fight.dur end
+        local active = total_active()
+        local avg = T.hits_dealt > 0 and T.dealt / T.hits_dealt or 0
+        local d = m.d
+        d.fight = f and 'Fight (running)' or 'Fight (last)'
+        d.fight_dps = num(fd) .. ' / ' .. num(ft)
+        d.window_label = 'Last ' .. num(setting('window', 10)) .. ' s'
+        d.window = num(rolling(T.bucket_dealt)) .. ' / ' .. num(rolling(T.bucket_taken))
+        d.dealt = num(T.dealt) .. '  (' .. num(T.hits_dealt) .. ' hits)'
+        d.taken = num(T.taken) .. '  (' .. num(T.hits_taken) .. ' hits)'
+        d.biggest = num(T.max_dealt) .. ' / ' .. num(T.max_taken)
+        d.avg_hit = num(avg)
+        d.time = num(active) .. ' s'
+        d.avg_dps = active > 0 and num(T.dealt / active) or '-'
+        d.kills = num(T.kills) .. (active >= 10 and T.kills > 0 and ('  (' .. ('%.1f'):format(T.kills / active * 60) .. '/min)') or '')
+        -- The last 30 seconds as bars: dealt up (green), taken down (red), scaled to the biggest second.
+        local now = math.floor(clock)
+        local peak = 1
+        for s = now - 29, now do
+            local i = s % BUCKETS + 1
+            if T.bucket_stamp[i] == s then peak = math.max(peak, T.bucket_dealt[i] or 0, T.bucket_taken[i] or 0) end
+        end
+        for k = 0, 29 do
+            local s = now - 29 + k
+            local i = s % BUCKETS + 1
+            local up, down = 0, 0
+            if T.bucket_stamp[i] == s then
+                up = math.floor((T.bucket_dealt[i] or 0) / peak * 22)
+                down = math.floor((T.bucket_taken[i] or 0) / peak * 22)
+            end
+            m.bars[k + 1] = {up = up, down = down}
+        end
+        d.peak = '30 s, peak ' .. num(peak)
+        for _, e in ipairs(top(T.by_victim, 3)) do m.targets[#m.targets + 1] = {name = e.name, v = num(e.damage) .. ' (' .. num(e.hits) .. ')'} end
+        for _, e in ipairs(top(T.by_attacker, 2)) do m.sources[#m.sources + 1] = {name = e.name, v = num(e.damage) .. ' (' .. num(e.hits) .. ')'} end
+    end
+    return m
+end
+
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+local function go_next_view()
+    if view == 'detailed' then set_view('compact') else next_view() end
+end
+
+local function load_doc()
+    local err
+    local m = snapshot()
+    last = m
+    doc, err = ui.rml.load('ui/meter.rml', {model = m, calls = {
+        next_view = guard('next_view', go_next_view),
+        reset = guard('reset', reset),
+    }})
+    if not doc then gear.log('damage meter: ui/meter.rml failed: ' .. tostring(err)) end
 end
 
 gear.on('draw', guard('draw', function(state)
     if type(state) ~= 'table' then return end
-    if state.mode == 'game' and not state.exclusive then draw_panel() end
+    if state.mode ~= 'game' or state.exclusive or not shown then return end
+    if not doc then load_doc() end
+    if not doc then return end
+    for k, v in pairs(snapshot()) do
+        if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
+    end
+    doc:draw({layer = 'hud'})
 end))
 
-ui.show_panel('meter', false)
-gear.keys.on('panel', guard('key', function() ui.toggle_panel('meter') end))
+local function toggle() shown = not shown end
+gear.keys.on('panel', guard('key', toggle))
 gear.keys.on('reset', guard('key', reset))
 gear.keys.on('view', guard('key', next_view))
 
 -- The controller reaches the same things through its mod menu.
 if ui.menu_item then
-    pcall(ui.menu_item, 'meter', 'Damage meter: show / hide', function() ui.toggle_panel('meter') end)
+    pcall(ui.menu_item, 'meter', 'Damage meter: show / hide', toggle)
     pcall(ui.menu_item, 'meter_view', 'Damage meter: next view', next_view)
 end

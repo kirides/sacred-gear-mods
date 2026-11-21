@@ -316,6 +316,7 @@ end
 -- Damage meter -----------------------------------------------------------------------------------------------
 do
     local G = load_mod('damagemeter', {settings = {view = 'detailed'}})
+    G.keys.panel()
     frames(G, 1)                                          -- learns the hero type (77)
     fire(G, 'damage', {damage = 100, victim_type = 5, attacker_type = 77})
     fire(G, 'damage', {damage = 300, victim_type = 5, attacker_type = 77})
@@ -345,9 +346,8 @@ do
     local dps_line_ok = t:find('Last 10 s', 1, true)
     ok(dps_line_ok, 'damage: rolling line')
     -- reset
-    G.buttons_pressed.reset = true
+    G.rml_calls.reset()
     fire(G, 'draw', {mode = 'game'})
-    G.buttons_pressed.reset = nil
     G.texts = {}
     fire(G, 'draw', {mode = 'game'})
     ok(joined(G):find('0  (0 hits)', 1, true), 'damage: reset clears')
@@ -359,26 +359,23 @@ end
 -- Damage meter: compact view (the default), view switching, party sharing
 do
     local G = load_mod('damagemeter')
+    G.keys.panel()
     frames(G, 1)
     fire(G, 'damage', {damage = 500, victim_type = 5, attacker_type = 77})
     frames(G, 1)
     G.texts = {}
     fire(G, 'draw', {mode = 'game'})
     local t = joined(G)
-    ok(t:find('Aria', 1, true) and t:find('DPS', 1, true), 'compact: name and DPS shown alone: ' .. t)
-    ok(not t:find('Biggest hit', 1, true), 'compact: nothing of the detailed view')
+    ok(t:find('Aria', 1, true) and G.models['ui/meter.rml'].model.solo, 'compact: name and DPS shown alone: ' .. t)
+    ok(G.models['ui/meter.rml'].model.d.dealt == '', 'compact: nothing of the detailed view')
     ok(#G.sent == 0, 'compact: nothing sent in single player')
     -- the View button cycles compact -> extended -> detailed -> compact
-    G.buttons_pressed.view = true
-    fire(G, 'draw', {mode = 'game'})
-    G.buttons_pressed.view = nil
+    G.rml_calls.next_view()
     G.texts = {}; fire(G, 'draw', {mode = 'game'})
-    ok(joined(G):find('Biggest hit (you)', 1, true), 'view: extended after one press: ' .. joined(G))
-    G.buttons_pressed.view = true
-    fire(G, 'draw', {mode = 'game'})
-    G.buttons_pressed.view = nil
+    ok(G.models['ui/meter.rml'].model.view == 'extended' and G.models['ui/meter.rml'].model.you.biggest == '500', 'view: extended after one press: ' .. joined(G))
+    G.rml_calls.next_view()
     G.texts = {}; fire(G, 'draw', {mode = 'game'})
-    ok(joined(G):find('Fight (', 1, true), 'view: detailed after the second press')
+    ok(joined(G):find('Fight (', 1, true) and G.models['ui/meter.rml'].model.view == 'detailed', 'view: detailed after the second press')
     G.keys.view()
     G.texts = {}; fire(G, 'draw', {mode = 'game'})
     ok(not joined(G):find('Fight (', 1, true) and joined(G):find('Aria', 1, true), 'view: key cycles back to compact')
@@ -388,6 +385,7 @@ end
 
 do
     local G = load_mod('damagemeter', {mp = {active = true}})
+    G.keys.panel()
     frames(G, 1)
     fire(G, 'damage', {damage = 900, victim_type = 5, attacker_type = 77})
     frames(G, 2)
@@ -416,6 +414,7 @@ end
 -- Damage meter: allies (Wilbur by name, a follower by walking along)
 do
     local G = load_mod('damagemeter')
+    G.keys.panel()
     local function creature(id, t, name) return {id = id, type = function() return t end, type_name = function() return name end} end
     G.nearby = {creature(900, 83, 'WILBUR.GRN'), creature(901, 120, 'MERC_WARRIOR.GRN')}
     frames(G, 3)
@@ -449,6 +448,7 @@ end
 -- Damage meter: no hero, bad data
 do
     local G = load_mod('damagemeter', {settings_throw = true})
+    G.keys.panel()
     G.hero_state.present = false
     fire(G, 'frame', 0.1)
     fire(G, 'damage', {damage = 10, victim_type = 1, attacker_type = 2})

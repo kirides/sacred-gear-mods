@@ -1,0 +1,82 @@
+<rml>
+<head>
+    <title>Damage meter</title>
+    <link type="text/rcss" href="meter.rcss"/>
+</head>
+<body data-model="model">
+
+<!-- Compact: a bare translucent panel (no frame, no title bar) with the names and DPS. -->
+<div id="compact" class="bare" data-panel="meter" data-title="Damage meter" data-if="view == 'compact'">
+    <div data-if="nohero" class="muted">no hero</div>
+    <div data-if="solo" class="solo">
+        <span class="name muted">{{ solo_name }}</span>
+        <span class="big" data-class-fighting="solo_fighting">{{ solo_dps }}</span>
+        <span class="small muted">DPS</span>
+    </div>
+    <div data-if="!solo &amp;&amp; !nohero">
+        <div data-for="r : rows" class="line">
+            <span class="name" data-class-ally="r.ally" data-class-mine="r.mine">{{ r.name }}</span>
+            <span class="dps" data-class-fighting="r.fighting">{{ r.dps }}</span>
+        </div>
+    </div>
+    <div class="icons" data-if="!solo">
+        <button class="mini" data-event-click="next_view" title="Bigger view">^</button>
+        <button class="mini" data-event-click="reset" title="Clear the counters">x</button>
+    </div>
+    <div class="icons" data-if="solo">
+        <button class="mini" data-event-click="next_view" title="Bigger view">^</button>
+        <button class="mini" data-event-click="reset" title="Clear the counters">x</button>
+    </div>
+</div>
+
+<!-- Extended and detailed: a window. -->
+<div id="full" class="window" data-panel="meter_full" data-title="Damage meter" data-if="view != 'compact'">
+    <div class="titlebar">{{ title }}</div>
+    <div class="body">
+        <div data-if="nohero" class="muted">no hero</div>
+        <div data-if="view == 'extended' &amp;&amp; !nohero">
+            <div class="line head"><span class="name"></span><span class="col">DPS</span><span class="col">Taken</span><span class="col wide">Dealt</span></div>
+            <div data-for="r : rows" class="line">
+                <span class="name" data-class-ally="r.ally" data-class-mine="r.mine">{{ r.name }}</span>
+                <span class="col" data-class-fighting="r.fighting">{{ r.dps }}</span>
+                <span class="col bad">{{ r.taken }}</span>
+                <span class="col wide muted">{{ r.dealt }}</span>
+            </div>
+            <div class="kv top"><span class="label">Biggest hit (you)</span><span class="value">{{ you.biggest }}</span></div>
+            <div class="kv"><span class="label">Fighting time (you)</span><span class="value">{{ you.time }}</span></div>
+            <div class="kv"><span class="label">Average DPS (you)</span><span class="value">{{ you.avg }}</span></div>
+        </div>
+        <div data-if="view == 'detailed' &amp;&amp; !nohero">
+            <p class="heading">{{ d.fight }}</p>
+            <div class="kv"><span class="label">Dealt DPS / taken DPS</span><span class="value">{{ d.fight_dps }}</span></div>
+            <div class="kv"><span class="label">{{ d.window_label }}</span><span class="value">{{ d.window }}</span></div>
+            <p class="heading">Since reset</p>
+            <div class="kv"><span class="label">Damage dealt</span><span class="value good">{{ d.dealt }}</span></div>
+            <div class="kv"><span class="label">Damage taken</span><span class="value bad">{{ d.taken }}</span></div>
+            <div class="kv"><span class="label">Biggest hit dealt / taken</span><span class="value">{{ d.biggest }}</span></div>
+            <div class="kv"><span class="label">Average hit dealt</span><span class="value">{{ d.avg_hit }}</span></div>
+            <div class="kv"><span class="label">Fighting time</span><span class="value">{{ d.time }}</span></div>
+            <div class="kv"><span class="label">Average DPS while fighting</span><span class="value">{{ d.avg_dps }}</span></div>
+            <div class="kv"><span class="label">Kills</span><span class="value">{{ d.kills }}</span></div>
+            <div class="graph">
+                <div class="bars">
+                    <div data-for="b : bars" class="slot">
+                        <div class="half up"><div class="fill" data-style-height="b.up + 'px'"></div></div>
+                        <div class="half down"><div class="fill" data-style-height="b.down + 'px'"></div></div>
+                    </div>
+                </div>
+                <span class="muted small">{{ d.peak }}</span>
+            </div>
+            <p class="heading">Biggest targets</p>
+            <div data-for="e : targets" class="kv"><span class="label">{{ e.name }}</span><span class="value">{{ e.v }}</span></div>
+            <p class="heading">Biggest damage sources</p>
+            <div data-for="e : sources" class="kv"><span class="label">{{ e.name }}</span><span class="value">{{ e.v }}</span></div>
+        </div>
+        <div class="icons">
+            <button class="mini" data-event-click="next_view" data-attr-title="view_tip">{{ view_mark }}</button>
+            <button class="mini" data-event-click="reset" title="Clear the counters">x</button>
+        </div>
+    </div>
+</div>
+</body>
+</rml>
