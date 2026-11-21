@@ -266,58 +266,70 @@ local function draw_ground(state)
     ui.text('cell ' .. sub, ax - 40, ay + 40, {size = 10, color = COLOR.cell, shadow = true, width = 80, align = 'center', height = 12})
 end
 
-local function draw_panel()
-    local p = ui.panel('panel', 'Sector tools', 16, 110, 312, 296, {closable = false, draggable = true, passive = true})
-    if not p or not p.open then return end
-    panel_rect = {x = p.x, y = p.y, w = p.w, h = p.h}
-    local x, y, w = p.content_x, p.content_y, p.content_w or 296
+local function same(a, b)
+    if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+    if #a ~= #b then return false end
+    for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+    return true
+end
+
+-- ui/panel.rml (the game theme): the buttons and the readout. The ground lines above stay immediate mode (they are drawn in the world).
+local doc
+local last = {}
+
+local function snapshot()
     local h = hero_now
-    local line = 0
-    local function text(t, opts, step) ui.text(t, x, y + line, opts); line = line + step end
+    local m = {
+        hero = h.x ~= nil, head = '', pos = '', region = '', region_known = false,
+        area = ('Area "%s"  (id %s)'):format(S.get('area_name'), core.slug(S.get('area_name'))),
+        rec_label = rec.on and 'Stop' or 'Start area', radius = S.get('radius'),
+        circle_label = ('Circle %d'):format(S.get('radius')), rec_on = rec.on,
+        lines_label = S.get('labels') and 'Lines: on' or 'Lines: off', status = gear.time() < status_until and status or '',
+    }
     if h.x then
-        text(('Sector %s   cell %d,%d   layer %d'):format(h.sector ~= 0 and h.sector or '?', h.cx, h.cy, h.layer),
-            {size = 13, bold = true, color = COLOR.id, shadow = true}, 18)
-        text(('x %d    y %d'):format(h.x, h.y), {size = 12, color = COLOR.cell}, 18)
-        text('Region: ' .. core.region_text(h.region, h.region_code, text_get()), {size = 12, color = h.region and COLOR.id or COLOR.cell, shadow = true}, 20)
-    else
-        text('No hero yet.', {size = 12}, 20)
+        m.head = ('Sector %s   cell %d,%d   layer %d'):format(h.sector ~= 0 and h.sector or '?', h.cx, h.cy, h.layer)
+        m.pos = ('x %d    y %d'):format(h.x, h.y)
+        m.region = 'Region: ' .. core.region_text(h.region, h.region_code, text_get())
+        m.region_known = h.region and true or false
     end
-    -- the recording: three buttons, the circle's radius (a slider over two thirds and a button), what was recorded
-    text(('Area "%s"  (id %s)'):format(S.get('area_name'), core.slug(S.get('area_name'))), {size = 12}, 18)
-    local t = ui.table('rec', x, y + line, w, {columns = {'*', '*', '*'}, spacing = {6, 6}, row_height = 24})
-    t:row()
-    if t:button(1, rec.on and 'Stop' or 'Start area', {id = 'rec', tooltip = 'Start: a new area; every sector you walk into is added'}) then
-        if rec.on then actions.stop() else actions.start() end
-    end
-    if t:button(2, 'Add sector', {id = 'add', tooltip = 'Add the sector you stand in'}) then actions.add() end
-    if t:button(3, 'Clear', {id = 'clear', tooltip = 'Forget the recorded sectors and the circle'}) then actions.clear() end
-    t:row()
-    local changed, radius = t:slider(1, 0, 8000, S.get('radius'), {id = 'radius', span = 2, step = 100, format = false, value_width = 0,
-        tooltip = 'Radius of the circle in world units (a tile is 54, a sector 3435)'})
-    if changed then
-        S.set('radius', radius)
-        if rec.circle then rec.circle.r = radius; touch() end
-    end
-    if t:button(3, ('Circle %d'):format(S.get('radius')), {id = 'circle', tooltip = 'A circle around where you stand with this radius (the slider), in world units'}) then actions.circle() end
-    line = line + t:height() + 6
     local compact = core.compact_text(core.compact(core.sorted(rec.ids)))
-    local summary = ('%d sectors%s: %s'):format(ids_count(), rec.circle and (' + circle r ' .. math.floor(rec.circle.r)) or '', compact ~= '' and compact or '-')
-    local lines = ui.text_wrap(summary, w, {size = 11})
-    local shown = math.min(#lines, 3)
-    for i = 1, shown do ui.text(lines[i], x, y + line + (i - 1) * 14, {size = 11, color = rec.on and COLOR.rec or COLOR.cell}) end
-    line = line + math.max(shown, 1) * 14 + 8
-    -- copying, and the ground lines
-    local c = ui.table('copy', x, y + line, w, {columns = {'7*', '5*', '6*'}, spacing = {6, 6}, row_height = 24})
-    c:row()
-    if c:button(1, 'Copy config', {id = 'copy', tooltip = 'Puts the line for world_events.lua on the clipboard'}) then actions.copy() end
-    if c:button(2, 'Copy id', {id = 'copyid', tooltip = 'The sector id you stand in'}) then actions.copy_id() end
-    if c:button(3, S.get('labels') and 'Lines: on' or 'Lines: off', {id = 'labels', tooltip = 'Sector boundaries on the ground'}) then
-        actions.labels()
+    m.summary = ('%d sectors%s: %s'):format(ids_count(), rec.circle and (' + circle r ' .. math.floor(rec.circle.r)) or '', compact ~= '' and compact or '-')
+    return m
+end
+
+local function load_doc()
+    local m = snapshot()
+    last = m
+    local err
+    doc, err = ui.rml.load('ui/panel.rml', {model = m, on_change = function(_, model)
+        local radius = tonumber(model.radius)
+        if radius and radius ~= S.get('radius') then
+            S.set('radius', radius)
+            if rec.circle then rec.circle.r = radius; touch() end
+        end
+    end})
+    if not doc then gear.log('sector tools: ui/panel.rml failed: ' .. tostring(err)) return end
+    local function on(id, fn) doc:on('#' .. id, 'click', gear.guard('click ' .. id, fn)) end
+    on('rec', function() if rec.on then actions.stop() else actions.start() end end)
+    on('add', actions.add)
+    on('clear', actions.clear)
+    on('circle', actions.circle)
+    on('copy', actions.copy)
+    on('copyid', actions.copy_id)
+    on('labels', actions.labels)
+    on('copyregion', actions.copy_region)
+end
+
+local function draw_panel()
+    if not doc then load_doc() end
+    if not doc then return end
+    for k, v in pairs(snapshot()) do
+        if k ~= 'radius' and not same(v, last[k]) then doc.model[k] = v; last[k] = v end
     end
-    c:row()
-    if c:button(1, 'Copy region line', {id = 'copyregion', span = 3, tooltip = 'regions = { id },  -- name: for an event or an area of world_events.lua, the region you stand in'}) then actions.copy_region() end
-    line = line + c:height() + 6
-    if gear.time() < status_until then ui.text(status, x, y + line, {size = 11, color = COLOR.ok, width = w, height = 28}) end
+    if tonumber(doc.model.radius) ~= S.get('radius') then doc.model.radius = S.get('radius') end
+    doc:draw({layer = 'hud'})
+    local r = doc:query('#panel'):rect()
+    panel_rect = r and {x = r.x, y = r.y, w = r.w, h = r.h} or nil
 end
 
 gear.on('draw', function(state)

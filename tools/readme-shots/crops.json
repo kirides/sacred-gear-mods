@@ -28,7 +28,7 @@
   "realms.jpg":                  {"src": "shot-realms/modscreen", "box": [400, 142, 1200, 748]},
   "region-counter.jpg":          {"src": "shot-region/modscreen", "box": [400, 142, 1200, 757]},
   "spawn-rate.jpg":              {"src": "shot-spawn/modscreen", "box": [400, 142, 1200, 757]},
-  "sector-tools.jpg":            {"src": "shot-st/st-recorded", "box": [195, 110, 610, 500]},
+  "sector-tools.jpg":            {"src": "shot-st/st-recorded", "box": [200, 100, 1010, 560]},
   "serverfeed.jpg":              {"src": "shot-srv-serverfeed/server-serverfeed", "box": [930, 190, 1415, 310]},
   "sessiontracker.jpg":          {"src": "shot-fight/sessiontracker", "box": [195, 210, 560, 655]},
   "shared-stash.jpg":            {"src": "shot-stash-ui/chest-stash", "box": [935, 0, 1410, 760]},

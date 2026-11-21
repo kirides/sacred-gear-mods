@@ -1,0 +1,39 @@
+<rml>
+<head>
+    <title>Sector tools</title>
+    <link type="text/rcss" href="panel.rcss"/>
+</head>
+<body data-model="model">
+<div id="panel" class="window" data-panel="panel" data-title="Sector tools">
+    <div class="titlebar">Sector tools</div>
+    <div class="body">
+        <p data-if="!hero" class="muted">No hero yet.</p>
+        <div data-if="hero">
+            <p class="head">{{ head }}</p>
+            <p class="muted">{{ pos }}</p>
+            <p data-class-accent="region_known" class="muted">{{ region }}</p>
+        </div>
+        <p class="area">{{ area }}</p>
+        <div class="row">
+            <button class="game-button" id="rec" title="Start: a new area; every sector you walk into is added">{{ rec_label }}</button>
+            <button class="game-button" id="add" title="Add the sector you stand in">Add sector</button>
+            <button class="game-button" id="clear" title="Forget the recorded sectors and the circle">Clear</button>
+        </div>
+        <div class="slider-row">
+            <input id="radius" type="range" class="game-slider" min="0" max="8000" step="100" data-value="radius" title="Radius of the circle in world units (a tile is 54, a sector 3435)"/>
+            <button class="game-button" id="circle" title="A circle around where you stand with this radius (the slider), in world units">{{ circle_label }}</button>
+        </div>
+        <p class="summary" data-class-rec="rec_on">{{ summary }}</p>
+        <div class="row">
+            <button class="game-button" id="copy" title="Puts the line for world_events.lua on the clipboard">Copy config</button>
+            <button class="game-button" id="copyid" title="The sector id you stand in">Copy id</button>
+            <button class="game-button" id="labels" title="Sector boundaries on the ground">{{ lines_label }}</button>
+        </div>
+        <div class="row">
+            <button class="game-button" id="copyregion" title="regions = { id },  -- name: for an event or an area of world_events.lua, the region you stand in">Copy region line</button>
+        </div>
+        <p data-if="status != ''" class="good small">{{ status }}</p>
+    </div>
+</div>
+</body>
+</rml>

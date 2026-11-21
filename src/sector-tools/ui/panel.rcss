@@ -1,0 +1,8 @@
+#panel { position: absolute; left: 16px; top: 110px; width: 470px; }
+.head { font-family: "Sacred Game"; color: #ffd780; }
+.area { margin: 8px 0 2px 0; }
+.summary { font-size: 13dp; color: #8c8c8c; white-space: pre-wrap; max-height: 3.6em; overflow: hidden; }
+.summary.rec { color: #ffd780; }
+button.game-button { min-width: 0; margin-right: 4px; padding: 0 38px 0 37px; font-size: 16px; }
+.small { font-size: 13dp; }
+input.game-slider { width: 220px; margin-right: 8px; }
