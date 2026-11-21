@@ -4,7 +4,7 @@
     <link type="text/rcss" href="screen.rcss"/>
 </head>
 <body data-model="model">
-<div id="screen" class="thick-frame bg-fill-settings" data-panel="screen" data-title="Savegames (Better SaveLoad)" data-if="open">
+<div id="screen" class="thick-frame bg-fill-settings" data-panel="savegames" data-title="Savegames (Better SaveLoad)" data-if="open">
     <div data-if="dd != ''" id="ddshade"></div>
     <div class="titlerow"><span class="ttl">{{ title }}</span></div>
 

@@ -114,6 +114,32 @@ gear.task(function()
         end
     end
 
+    -- A list scrolled to its top / bottom says so to the controller (+ 4 / + 8 on its kind): the D-pad leaves it there for the controls beyond.
+    local function has_kind(want)
+        for _, k in ipairs(A.nav_kinds()) do if k == want then return true end end
+        return false
+    end
+    do
+        local lr = rect('#list')
+        local lx, ly = A.ui_to_pixels(lr.x + lr.w / 2, lr.y + lr.h / 2)
+        A.move(lx, ly)
+        gear.wait(0.8)
+        check('the list at its top: the pad may leave it upward', has_kind(6), table.concat(A.nav_kinds(), ','))
+        for _ = 1, 80 do
+            local before = query().scroll_top
+            A.wheel(-10)
+            gear.wait(0.15)
+            if query().scroll_top == before then break end
+        end
+        gear.wait(0.5)
+        check('the list at its bottom: the pad may leave it downward', has_kind(10), table.concat(A.nav_kinds(), ','))
+        for _ = 1, 80 do
+            if query().scroll_top <= 0 then break end
+            A.wheel(10)
+            gear.wait(0.15)
+        end
+    end
+
     -- Rows scrolled out of sight are no pad stops: the stops are the visible cards and the buttons around the list.
     local stops = A.nav()
     check('only the visible cards are pad stops', stops > 0 and stops <= 22, stops)

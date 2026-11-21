@@ -271,7 +271,7 @@ gear.task(function()
         check('a savegame of its own to delete', false)
     end
     -- The Back button: a real click on the screen's widget (at its default place).
-    if not gear.ui.layout()['better-saveload:screen'] then
+    if not gear.ui.layout()['better-saveload:savegames'] then
         click_element('#close')
         check('Back closes the window', wait_open(WND_GAME, false))
     end
