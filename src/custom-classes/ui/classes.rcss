@@ -1,9 +1,9 @@
-#classes { position: absolute; left: 100px; top: 20px; width: 760px; }
+#classes { position: absolute; left: 100dp; top: 20dp; width: 760dp; }
 .head { font-family: "Sacred Game"; }
-.cols { display: flex; flex-direction: row; margin-top: 6px; }
-.left { width: 230px; height: 380px; overflow-y: auto; margin-right: 14px; }
-.right { flex: 1 1 auto; height: 380px; overflow-y: auto; }
-button.crow { display: block; width: 100%; margin: 0 0 3px 0; padding: 3px 8px; text-align: left; height: auto; background-color: #12121c; border: 1px #4a4030; }
+.cols { display: flex; flex-direction: row; margin-top: 6dp; }
+.left { width: 230dp; height: 380dp; overflow-y: auto; margin-right: 14dp; }
+.right { flex: 1 1 auto; height: 380dp; overflow-y: auto; }
+button.crow { display: block; width: 100%; margin: 0 0 3dp 0; padding: 3dp 8dp; text-align: left; height: auto; background-color: #12121c; border: 1px #4a4030; }
 button.crow.on { background-color: #4a3f2a; border-color: #ffd780; }
 button.crow:hover { border-color: #ffe030; }
 .cname { display: block; color: #ffd780; font-size: 14dp; }
@@ -12,16 +12,16 @@ button.crow:hover { border-color: #ffe030; }
 .wrap { white-space: pre-wrap; font-size: 14dp; }
 .skills { display: flex; flex-direction: row; flex-wrap: wrap; }
 .skill { width: 33%; font-size: 13dp; }
-.art { display: flex; flex-direction: row; align-items: center; padding: 2px 4px; border-bottom: 1px #2a2418; }
-.aicon { width: 40px; height: 40px; margin-right: 8px; }
+.art { display: flex; flex-direction: row; align-items: center; padding: 2dp 4dp; border-bottom: 1px #2a2418; }
+.aicon { width: 40dp; height: 40dp; margin-right: 8dp; }
 .atext { flex: 1 1 auto; }
 .aname { color: #ffd780; font-size: 14dp; }
 .ahow { font-size: 12dp; }
-.tier { font-size: 12dp; color: #b0a890; text-align: right; width: 110px; }
+.tier { font-size: 12dp; color: #b0a890; text-align: right; width: 110dp; }
 .tier.good { color: #60c060; }
 .tier.warn { color: #e0a030; }
 .tier.bad { color: #c04040; }
-.foot { margin-top: 8px; }
+.foot { margin-top: 8dp; }
 .small { font-size: 12dp; }
 button.game-button.dim { opacity: 0.55; }
 

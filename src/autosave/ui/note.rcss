@@ -1,2 +1,2 @@
-#note { position: absolute; top: 60px; left: 417px; width: 190px; padding: 3px 0; text-align: center; font-family: "Sacred Game"; font-size: 15dp; color: #a0ffa0; background-color: #000000b0; border: 1px #78c878c8; }
+#note { position: absolute; top: 60dp; left: 417dp; width: 190dp; padding: 3dp 0; text-align: center; font-family: "Sacred Game"; font-size: 15dp; color: #a0ffa0; background-color: #000000b0; border: 1px #78c878c8; }
 #note.bad { color: #ff9080; border-color: #dc6e5ac8; }

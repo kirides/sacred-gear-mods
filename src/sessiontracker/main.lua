@@ -266,7 +266,7 @@ local function load_doc()
     local err
     local m = snapshot()
     last = m
-    doc, err = gear.ui.rml.load('ui/tracker.rml', {model = m, calls = {
+    doc, err = gear.ui.rml.load('ui/tracker.rml', {dp = true, model = m, calls = {
         new_session = guard('new_session', function() begin_session() end),
     }})
     if not doc then gear.log('session tracker: ui/tracker.rml failed: ' .. tostring(err)) end

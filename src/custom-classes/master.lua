@@ -402,14 +402,14 @@ function M.new(env)
             for s = 0, 3 do
                 local k
                 for _, c in ipairs(combos) do if c.slot == s then k = c end end
-                m.slots[#m.slots + 1] = {id = 's' .. s, left = (17 + 124 * s) .. 'px', on = st.slot == s,
+                m.slots[#m.slots + 1] = {id = 's' .. s, left = (17 + 124 * s) .. 'dp', on = st.slot == s,
                     label = combo_label(s + 1) .. (k and (' (%d)'):format(#k.arts) or ''),
                     tip = k and ('Regeneration %.0f s'):format(k.total) or 'An empty combo slot'}
                 rml.rows['s' .. s] = s
             end
             for i = 1, 4 do
                 local id = st.draft[i]
-                local d = {id = 'd' .. i, left = (17 + 105 * (i - 1)) .. 'px', filled = id ~= nil, icon = '', tint = '#ffffffff', tip = game_text('draft_slot', 'Empty')}
+                local d = {id = 'd' .. i, left = (17 + 105 * (i - 1)) .. 'dp', filled = id ~= nil, icon = '', tint = '#ffffffff', tip = game_text('draft_slot', 'Empty')}
                 if id then
                     d.icon, d.tint = icon_of(id)
                     d.tip = ('%d. %s - click to remove'):format(i, name_of(id))
@@ -438,7 +438,7 @@ function M.new(env)
             m.n_picked = n
             for i = 1, 4 do
                 local p = picked[i]
-                local d = {id = 'p' .. i, left = (17 + 105 * (i - 1)) .. 'px', filled = p ~= nil, icon = '', tint = '#ffffffff', tip = game_text('swap_slots', 'Empty')}
+                local d = {id = 'p' .. i, left = (17 + 105 * (i - 1)) .. 'dp', filled = p ~= nil, icon = '', tint = '#ffffffff', tip = game_text('swap_slots', 'Empty')}
                 if p then
                     d.icon, d.tint = icon_of(p.art)
                     d.tip = name_of(p.art) .. ' - click to take back'
@@ -486,7 +486,7 @@ function M.new(env)
     local function rml_load()
         local m = snapshot(hero())
         rml.last = m
-        local doc, err = ui.rml.load('ui/master.rml', {model = m, origin = 'screen'})
+        local doc, err = ui.rml.load('ui/master.rml', {dp = true, model = m, origin = 'screen'})
         if not doc then
             gear.log('custom classes: ui/master.rml failed: ' .. tostring(err))
             rml.failed = true

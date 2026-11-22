@@ -137,7 +137,7 @@ function M.new(env)
         local m = snapshot()
         last = m
         local err
-        doc, err = ui.rml.load('ui/classes.rml', {model = m})
+        doc, err = ui.rml.load('ui/classes.rml', {dp = true, model = m})
         if not doc then gear.log('custom classes: ui/classes.rml failed: ' .. tostring(err)) return end
         local function on(sel_, fn) doc:on(sel_, 'click', gear.guard('click ' .. sel_, fn)) end
         on('.crow', function(e) local id = rows[tostring(e.current)]; if id then sel.id = id end end)

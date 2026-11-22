@@ -196,8 +196,8 @@ local function snapshot()
     local width = math.floor(setting('window_width', 420))
     local height = math.floor(setting('window_height', 200))
     local m = {
-        open = true, minimized = view.minimized, fs = fs .. 'px', bg = ('#000000%02x'):format(math.floor(setting('opacity', 140))),
-        box_h = (view.minimized and 24 or height) .. 'px', box_w = width .. 'px',
+        open = true, minimized = view.minimized, fs = fs .. 'dp', bg = ('#000000%02x'):format(math.floor(setting('opacity', 140))),
+        box_h = (view.minimized and 24 or height) .. 'dp', box_w = width .. 'dp',
         min_label = view.minimized and '+' or '-', min_tip = view.minimized and 'Show the lines' or 'Only the tabs',
         tabs = {}, show_player = names ~= nil, player_label = view.player_name or 'All players',
         lines = last.lines or {}, new_label = view.new_below > 0 and ('%d new \u{25BC}'):format(view.new_below) or '',
@@ -223,7 +223,7 @@ local function load_doc()
     local m = snapshot()
     last = m
     local err
-    doc, err = ui.rml.load('ui/chat.rml', {model = m})
+    doc, err = ui.rml.load('ui/chat.rml', {dp = true, model = m})
     if not doc then gear.log('Enhanced Chat: ui/chat.rml failed: ' .. tostring(err)) return end
     doc:style('#chat', 'width', m.box_w)
     local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end

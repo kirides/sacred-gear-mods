@@ -103,7 +103,7 @@ gear.on('draw', function(st)
         local m = snapshot()
         last = m
         local err
-        doc, err = ui.rml.load('ui/panel.rml', {model = m})
+        doc, err = ui.rml.load('ui/panel.rml', {dp = true, model = m})
         if not doc then gear.log('achievements: ui/panel.rml failed: ' .. tostring(err)) return end
     end
     for k, v in pairs(snapshot()) do

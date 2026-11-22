@@ -314,7 +314,7 @@ local function load_doc()
     local m = snapshot()
     last = m
     local err
-    doc, err = ui.rml.load('ui/board.rml', {model = m})
+    doc, err = ui.rml.load('ui/board.rml', {dp = true, model = m})
     if not doc then gear.log('bounty: ui/board.rml failed: ' .. tostring(err)) return end
     doc:on('#open-editor', 'click', gear.guard('editor', function() editor.open() end))
     doc:on('#open-editor2', 'click', gear.guard('editor', function() editor.open() end))

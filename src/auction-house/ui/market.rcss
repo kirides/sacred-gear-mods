@@ -1,42 +1,42 @@
 /* the opener: a plain small button (no window frame), still a layout panel the player moves while Alt is held */
-#open { position: absolute; left: 780px; top: 572px; width: 150px; }
-button.open-btn { display: block; border: 1px #8c7440; background-color: #14141f; color: #e8d8a8; font-family: "Sacred Game"; width: 100%; margin: 0; padding: 3px 0; text-align: center; font-size: 13dp; white-space: nowrap; flex: none; }
-#market { position: absolute; left: 228px; top: 16px; width: 640px; }
-#osk { position: absolute; left: 300px; top: 260px; width: 470px; }
-.tabs { display: flex; flex-direction: row; margin-bottom: 4px; }
-button.tab { margin-right: 4px; font-family: "Sacred Game"; }
+#open { position: absolute; left: 780dp; top: 572dp; width: 150dp; }
+button.open-btn { display: block; border: 1px #8c7440; background-color: #14141f; color: #e8d8a8; font-family: "Sacred Game"; width: 100%; margin: 0; padding: 3dp 0; text-align: center; font-size: 13dp; white-space: nowrap; flex: none; }
+#market { position: absolute; left: 228dp; top: 16dp; width: 640dp; }
+#osk { position: absolute; left: 300dp; top: 260dp; width: 470dp; }
+.tabs { display: flex; flex-direction: row; margin-bottom: 4dp; }
+button.tab { margin-right: 4dp; font-family: "Sacred Game"; }
 button.tab.on { border-color: #ffd780; color: #ffd780; }
-.frow { display: flex; flex-direction: row; align-items: center; margin: 3px 0; }
+.frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
 .grow { flex: 1 1 auto; }
-.lab { width: 46px; flex: none; }
+.lab { width: 46dp; flex: none; }
 .small { font-size: 12dp; }
 .gold { color: #ffe080; }
-.pn { width: 56px; text-align: center; }
-input.price { width: 150px; margin-right: 4px; }
-button.mini { padding: 0 8px; margin: 0 4px 0 0; font-size: 13dp; }
-button.mini.wide { min-width: 120px; }
+.pn { width: 56dp; text-align: center; }
+input.price { width: 150dp; margin-right: 4dp; }
+button.mini { padding: 0 8dp; margin: 0 4dp 0 0; font-size: 13dp; }
+button.mini.wide { min-width: 120dp; }
 button.mini.on { border-color: #ffd780; color: #ffd780; }
 button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
-button.game-button { min-width: 0; padding: 0 38px 0 37px; font-size: 16px; }
+button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; }
 button.game-button.dis { opacity: 0.55; color: #8a8a8a; }
-.lst { height: 300px; overflow-y: auto; }
-.listing { display: flex; flex-direction: row; align-items: center; padding: 2px 4px; margin-bottom: 2px; background-color: #12121c; border: 1px #2a2a38; }
+.lst { height: 300dp; overflow-y: auto; }
+.listing { display: flex; flex-direction: row; align-items: center; padding: 2dp 4dp; margin-bottom: 2dp; background-color: #12121c; border: 1px #2a2a38; }
 .listing.ret { background-color: #302020; }
 .listing:hover { border-color: #c8aa5a; }
-.mi { width: 32px; height: 32px; margin-right: 8px; }
+.mi { width: 32dp; height: 32dp; margin-right: 8dp; }
 .lbody { flex: 1 1 auto; }
 .lname { font-size: 14dp; }
-.lprice { width: 110px; text-align: right; margin-right: 6px; }
-.grid { position: relative; width: 352px; height: 160px; margin: 4px auto 6px auto; background-color: #00000060; border: 1px #ffffff30; }
+.lprice { width: 110dp; text-align: right; margin-right: 6dp; }
+.grid { position: relative; width: 352dp; height: 160dp; margin: 4dp auto 6dp auto; background-color: #00000060; border: 1px #ffffff30; }
 button.cell { box-sizing: border-box; position: absolute; padding: 0; margin: 0; border: 1px #606060; background-color: #203040; }
 button.cell:hover { background-color: #506090; }
 button.cell.sel { background-color: #806020a0; border-color: #ffe080; }
 button.cell.off { opacity: 0.4; }
 button.cell img.icon { position: absolute; left: 1px; top: 1px; }
-.foot { margin-top: 6px; min-height: 18px; border-top: 1px #ffffff40; padding-top: 3px; }
-.oskrow { display: flex; flex-direction: row; margin: 2px 0; }
-.oskline { height: 24px; padding: 2px 6px; background-color: #202030; margin-bottom: 4px; }
-button.key { min-width: 34px; margin-right: 4px; text-align: center; }
+.foot { margin-top: 6dp; min-height: 18dp; border-top: 1px #ffffff40; padding-top: 3dp; }
+.oskrow { display: flex; flex-direction: row; margin: 2dp 0; }
+.oskline { height: 24dp; padding: 2dp 6dp; background-color: #202030; margin-bottom: 4dp; }
+button.key { min-width: 34dp; margin-right: 4dp; text-align: center; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

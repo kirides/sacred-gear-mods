@@ -375,7 +375,7 @@ local function load_doc()
     local m = snapshot()
     last = m
     local err
-    doc, err = ui.rml.load('ui/quests.rml', {model = m})
+    doc, err = ui.rml.load('ui/quests.rml', {dp = true, model = m})
     if not doc then gear.log('quests: ui/quests.rml failed: ' .. tostring(err)) return end
     doc:on('#quest-claim', 'click', gear.guard('claim', function() pay_pending() end))
 end

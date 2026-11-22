@@ -303,8 +303,8 @@ local function sell_model(client, cfg, m)
     for _, c in ipairs(view.src_cells) do
         if c.page == s.page + 1 then
             ids['c' .. c.id] = c
-            m.cells[#m.cells + 1] = {id = 'c' .. c.id, x = (c.cx * CELL) .. 'px', y = (c.cy * CELL) .. 'px', w = (c.cw * CELL + 1) .. 'px',
-                h = (c.ch * CELL + 1) .. 'px', iw = (c.cw * CELL - 3) .. 'px', ih = (c.ch * CELL - 3) .. 'px', src = item_src(c.src.item),
+            m.cells[#m.cells + 1] = {id = 'c' .. c.id, x = (c.cx * CELL) .. 'dp', y = (c.cy * CELL) .. 'dp', w = (c.cw * CELL + 1) .. 'dp',
+                h = (c.ch * CELL + 1) .. 'dp', iw = (c.cw * CELL - 3) .. 'dp', ih = (c.ch * CELL - 3) .. 'dp', src = item_src(c.src.item),
                 color = css_color(QUALITY_COLOR[c.src.item.quality] or 0xFF606060), ok = c.ok and true or false, sel = sel ~= nil and sel.id == c.id}
         end
     end
@@ -447,7 +447,7 @@ local function load_doc(client, cfg, st)
     local m = snapshot(client, cfg, st)
     last = m
     local err
-    doc, err = ui.rml.load('ui/market.rml', {model = m, on_change = function(_, model)
+    doc, err = ui.rml.load('ui/market.rml', {dp = true, model = m, on_change = function(_, model)
         local q = tostring(model.q_text or '')
         if q ~= view.q.text then view.q.text = q; search_at = gear.time() + 0.7 end
         view.sell.price = tostring(model.price_in or '')

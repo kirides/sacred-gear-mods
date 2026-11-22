@@ -301,7 +301,7 @@ local function load_doc()
     local m = snapshot()
     last = m
     local err
-    doc, err = ui.rml.load('ui/panel.rml', {model = m, on_change = function(_, model)
+    doc, err = ui.rml.load('ui/panel.rml', {dp = true, model = m, on_change = function(_, model)
         local radius = tonumber(model.radius)
         if radius and radius ~= S.get('radius') then
             S.set('radius', radius)

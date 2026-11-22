@@ -261,7 +261,7 @@ local function load_doc()
     local m = snapshot()
     last = m
     local err
-    doc, err = gear.ui.rml.load('ui/main.rml', {model = m})
+    doc, err = gear.ui.rml.load('ui/main.rml', {dp = true, model = m})
     if not doc then gear.log('build sharer: ui/main.rml failed: ' .. tostring(err)) return end
     local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
     on('.tab', function(e) local i = pick_index(e.current, 'tab'); if i then view.tab = i end end)
