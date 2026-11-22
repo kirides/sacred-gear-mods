@@ -305,6 +305,7 @@ gear.task(function()
         gear.emit('custom-classes.master', 'add', 1058)
         gear.wait(1)
         A.screenshot('cc-master-combo2')
+        A.screenshot('cm-rml2-combo')
         gear.emit('custom-classes.master', 'make')
         gear.wait(1)
         local k
@@ -352,6 +353,34 @@ gear.task(function()
         for _, it in ipairs(gear.inv.container(gla.id):items()) do local a = gear.classes.rune_art_of_type(it.type) if a then runes_now[#runes_now + 1] = a end end
         check('four runes became one chosen custom rune', #runes_now == 1 and arts_known_custom(runes_now[1]), table.concat(runes_now, ','))
         check('the exchange fee was taken', gold0 - gla:gold() > 0, gold0 - gla:gold())
+        -- the same art's runes more than once: six identical runes, four of them exchanged (every rune of the backpack is its own cell in the list)
+        local function count_runes()
+            local total, by_type = 0, {}
+            for _, it in ipairs(gear.inv.container(gla.id):items()) do
+                if gear.classes.rune_art_of_type(it.type) then total = total + 1; by_type[it.type] = (by_type[it.type] or 0) + 1 end
+            end
+            return total, by_type
+        end
+        local total0 = count_runes()
+        local six = {}
+        for _ = 1, 6 do six[#six + 1] = give(gla, 5553) end
+        gear.wait(0.5)
+        local total1, types1 = count_runes()
+        check('six identical runes are in the backpack', #six == 6 and total1 == total0 + 6 and (types1[5553] or 0) >= 6, ('%d / %s'):format(total1 - total0, tostring(types1[5553])))
+        gear.emit('custom-classes.master', 'tab', 'exchange')
+        gear.wait(0.5)
+        local four = {six[1], six[2], six[3], six[4]}
+        gear.emit('custom-classes.master', 'pick', four)
+        gear.emit('custom-classes.master', 'choose', 1)
+        gear.wait(1)
+        A.screenshot('cm-rml2-exchange-dupes')
+        local gold1 = gla:gold()
+        gear.emit('custom-classes.master', 'exchange')
+        gear.wait(2.5)
+        local total2, types2 = count_runes()
+        check('four identical runes were taken, the other two stay', (types2[5553] or 0) == (types1[5553] or 0) - 4, ('%s -> %s'):format(tostring(types1[5553]), tostring(types2[5553])))
+        check('one new rune of an allowed art came for them', total2 == total1 - 4 + 1, ('%d -> %d'):format(total1, total2))
+        check('the fee of the four-rune exchange was taken', gold1 - gla:gold() > 0, gold1 - gla:gold())
         gear.emit('custom-classes.master', 'tab', 'combo')
         A.show_window('UI_WND_MASTER', false)
     end

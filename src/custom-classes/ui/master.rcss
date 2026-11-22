@@ -30,8 +30,8 @@
 .t10 { left: 576px; decorator: image(gear:image/2 scale-none left top); }
 
 /* the tabs: the game's pill with its two red gems (image 108, 95 x 43), stretched to the 128 x 47 of the game's tab */
-button.tabbtn { position: absolute; top: 0px; width: 128px; height: 47px; margin: 0; padding: 0 0 10px 0; border: 0; background-color: transparent;
-    decorator: image(gear:image/108 fill); font-family: "Sacred Game"; font-size: 18px; line-height: 37px; text-align: center; text-transform: uppercase;
+button.tabbtn { position: absolute; top: 0px; width: 128px; height: 47px; margin: 0; padding: 0; border: 0; background-color: transparent;
+    decorator: image(gear:image/108 fill); font-family: "Sacred Game"; font-size: 18px; line-height: 30px; text-align: center; text-transform: uppercase;
     color: #e8e0c0; cursor: pointer; transform: none; }
 button.tabbtn:hover, button.tabbtn:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
 button.tabbtn.on { color: #ffd040; }
@@ -68,14 +68,15 @@ div.rslot { left: 169px; top: 202px; cursor: default; }
 .sicon { position: absolute; left: 14px; top: 14px; width: 60px; height: 60px; }
 
 /* the exchange's result and the coin */
-.resinfo { position: absolute; left: 268px; top: 200px; width: 150px; }
+.resinfo { position: absolute; left: 268px; top: 200px; width: 158px; }
+.resinfo .muted { white-space: pre-line; font-size: 11px; line-height: 13px; }
 .rname { font-size: 16px; color: #ffd780; }
 .fee { margin-top: 2px; }
 .choose { margin-top: 2px; }
 .choose .cname { display: inline-block; width: 48px; text-align: center; font-size: 14px; vertical-align: middle; }
 button.coin { position: absolute; left: 433px; top: 213px; width: 60px; height: 59px; margin: 0; padding: 0; border: 0; background-color: transparent;
     decorator: image(gear:image/249 scale-none center center), image(gear:image/250 scale-none center center);
-    font-size: 11px; line-height: 14px; color: #f0e8c0; text-align: center; cursor: pointer; }
+    font-size: 10px; line-height: 59px; color: #f0e8c0; text-align: center; cursor: pointer; }
 button.coin:hover, button.coin:focus { color: #ffe030; image-color: #fff0c0; }
 button.coin:disabled { opacity: 0.5; }
 

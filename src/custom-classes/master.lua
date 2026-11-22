@@ -33,6 +33,40 @@ function M.new(env)
         return (a and gear.text.get(a.name_text)) or ('#' .. id)
     end
 
+    -- The game's own texts (global.res ids, +0x80000000 for gear.text.get), in the game's language, markup (\cRRGGBBAA, <colorw=..>, <n>)
+    -- stripped; `fallback` (English) where the game has no such text.
+    local TEXT = {combo = 0x5e68a18, exchange = 0x5494a8e8, combine = 0xd607cd3, exchange_runes = 0x4f22999, master = 0x44078f3,
+        create = 0x7ed40ddb, gold = 0x4404315, price = 0x440454b, no_gold = 0x4404313, ok = 0x44043f7, swap_button = 0x4f2299b,
+        swap_ratio = 0x4f2299d, draft_slot = 0x4f227dd, create_tip = 0x4f227de, swap_slot = 0x4f2299c, swap_slots = 0x4f2299a}
+    local game_cache = {}
+    local function game_text(key, fallback)
+        local c = game_cache[key]
+        if c == nil then
+            local t = gear.text.get(TEXT[key] + 0x80000000)
+            if t then
+                t = t:gsub('\\[cdlw]%x%x%x%x%x%x%x%x', ''):gsub('<color[^>]*>', ''):gsub('<n>', '\n')
+                t = t:gsub('^%s+', ''):gsub('%s+$', '')
+            end
+            c = (t and t ~= '') and t or false
+            game_cache[key] = c
+        end
+        return c or fallback
+    end
+    -- The first line of a game text ("Create Rune<n>Click here ..." gives "Create Rune").
+    local function game_first(key, fallback)
+        local t = game_text(key, nil)
+        return t and t:match('^[^\n]+') or fallback
+    end
+    -- The swap ratio's line from the game's text, n = 2, 3 or 4 ("2:1 = Produces random runes of all classes.").
+    local function game_ratio(n, fallback)
+        local t = game_text('swap_ratio', nil)
+        local line = t and t:match(n .. ':1%s*=%s*([^\n]+)')
+        return line and (line:gsub('%.$', '')) or fallback
+    end
+
+    local function title(t) return t:sub(1, 1) .. t:sub(2):lower() end
+    local function combo_label(n) return ('%s %d'):format(title(game_text('combo', 'Combo')), n) end
+
     local function say(text, good)
         st.message, st.good, st.message_time = text, good, gear.time()
         print('[custom-classes] master: ' .. text)
@@ -203,7 +237,7 @@ function M.new(env)
     local function do_exchange(h, picked, result)
         local c = gear.inv.container(h.id)
         local fee = fee_for(#picked, result)
-        if (h:gold() or 0) < fee then say(('Not enough gold: %d needed'):format(fee), false) return end
+        if (h:gold() or 0) < fee then say(game_text('no_gold', ('Not enough gold: %d needed'):format(fee)), false) return end
         gear.task(function()
             local new, err = give_rune(h, result.type)
             if not new then say('The exchange failed: ' .. tostring(err), false) return end
@@ -352,11 +386,15 @@ function M.new(env)
         local m = {open = true, nohero = h == nil, is_combo = st.tab == 'combo', is_exch = st.tab == 'exchange', hero = '', gold = '',
             message = '', good = false, slots = {}, draft = {}, arts = {}, no_arts = false, regen = '', can_make = false,
             picks = {}, runes = {}, no_runes = false, result = false, res_icon = '', res_tint = '#ffffffff', res_name = '', res_kind = '',
-            choose = false, choice_name = '', fee = '', fee_ok = true, can_exchange = false, hint = '', has_new = false, n_picked = 0}
+            choose = false, choice_name = '', fee = '', fee_ok = true, can_exchange = false, hint = '', has_new = false, n_picked = 0,
+            t_combo = game_text('combo', 'Combo'), t_exch = game_text('exchange', 'Exchange'), master = game_text('master', 'Combo master'),
+            line = st.tab == 'combo' and game_text('combine', 'Combine combat arts') or game_text('exchange_runes', 'Exchange combat art runes'),
+            t_create = game_text('create', 'Create combo'), t_swap = game_text('exchange', 'Exchange'), t_close = game_text('ok', 'OK'),
+            create_tip = game_text('create_tip', 'Writes the arts into the combo slot'), swap_tip = game_text('swap_button', 'Exchange')}
         rml.rows = {}
         if not h then return m end
         m.hero = h:name() or 'Hero'
-        m.gold = ('%d gold'):format(h:gold() or 0)
+        m.gold = ('%d %s'):format(h:gold() or 0, game_text('gold', 'gold'))
         if st.message and gear.time() - st.message_time < 6 then m.message, m.good = st.message, st.good or false end
         m.has_new = st.last_new ~= nil
         if st.tab == 'combo' then
@@ -365,13 +403,13 @@ function M.new(env)
                 local k
                 for _, c in ipairs(combos) do if c.slot == s then k = c end end
                 m.slots[#m.slots + 1] = {id = 's' .. s, left = (17 + 124 * s) .. 'px', on = st.slot == s,
-                    label = ('Combo %d%s'):format(s + 1, k and (' (%d)'):format(#k.arts) or ''),
+                    label = combo_label(s + 1) .. (k and (' (%d)'):format(#k.arts) or ''),
                     tip = k and ('Regeneration %.0f s'):format(k.total) or 'An empty combo slot'}
                 rml.rows['s' .. s] = s
             end
             for i = 1, 4 do
                 local id = st.draft[i]
-                local d = {id = 'd' .. i, left = (17 + 105 * (i - 1)) .. 'px', filled = id ~= nil, icon = '', tint = '#ffffffff', tip = 'Empty'}
+                local d = {id = 'd' .. i, left = (17 + 105 * (i - 1)) .. 'px', filled = id ~= nil, icon = '', tint = '#ffffffff', tip = game_text('draft_slot', 'Empty')}
                 if id then
                     d.icon, d.tint = icon_of(id)
                     d.tip = ('%d. %s - click to remove'):format(i, name_of(id))
@@ -400,7 +438,7 @@ function M.new(env)
             m.n_picked = n
             for i = 1, 4 do
                 local p = picked[i]
-                local d = {id = 'p' .. i, left = (17 + 105 * (i - 1)) .. 'px', filled = p ~= nil, icon = '', tint = '#ffffffff', tip = 'Empty'}
+                local d = {id = 'p' .. i, left = (17 + 105 * (i - 1)) .. 'px', filled = p ~= nil, icon = '', tint = '#ffffffff', tip = game_text('swap_slots', 'Empty')}
                 if p then
                     d.icon, d.tint = icon_of(p.art)
                     d.tip = name_of(p.art) .. ' - click to take back'
@@ -415,18 +453,18 @@ function M.new(env)
             end
             m.no_runes = #runes == 0
             if n < 2 then
-                m.hint = 'Put two to four runes in the exchange: 2 give a random rune of any class, 3 a random rune of your class, 4 a rune of your class you choose.'
+                m.hint = game_text('swap_ratio', 'Put two to four runes in the exchange: 2 give a random rune of any class, 3 a random rune of your class, 4 a rune of your class you choose.')
             elseif not result then
                 m.hint = 'No rune to get.'
             else
                 m.result = true
                 m.res_icon, m.res_tint = icon_of(result.art)
                 m.res_name = name_of(result.art)
-                m.res_kind = n == 4 and 'A rune of your class that you choose' or (n == 2 and 'A random rune of any class' or 'A random rune of your class')
+                m.res_kind = game_ratio(n, n == 4 and 'A rune of your class that you choose' or (n == 2 and 'A random rune of any class' or 'A random rune of your class'))
                 m.choose = n == 4 and #options > 1
                 m.choice_name = m.choose and ('%d / %d'):format(math.min(st.choice, #options), #options) or ''
                 local fee = fee_for(n, result)
-                m.fee = ('Price: %d gold'):format(fee)
+                m.fee = ('%s: %d %s'):format(game_text('price', 'Price'), fee, game_text('gold', 'gold'))
                 m.fee_ok = (h:gold() or 0) >= fee
                 m.can_exchange = m.fee_ok
             end

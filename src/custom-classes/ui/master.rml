@@ -16,20 +16,20 @@
     <div class="bt t6"></div><div class="bt t7"></div><div class="bt t8"></div><div class="bt t9"></div><div class="bt t10"></div>
 
     <!-- the two tabs -->
-    <button id="tab-combo" class="tabbtn t-combo" data-class-on="is_combo">Combo</button>
-    <button id="tab-exch" class="tabbtn t-exch" data-class-on="is_exch">Exchange</button>
+    <button id="tab-combo" class="tabbtn t-combo" data-class-on="is_combo">{{ t_combo }}</button>
+    <button id="tab-exch" class="tabbtn t-exch" data-class-on="is_exch">{{ t_exch }}</button>
 
     <div data-if="nohero" class="line muted">Start or load a game first.</div>
 
     <!-- Combo -->
     <div data-if="is_combo &amp;&amp; !nohero">
-        <div class="line">Combine combat arts</div>
+        <div class="line">{{ line }}</div>
         <button data-for="s : slots" class="cslot" data-attr-id="s.id" data-class-on="s.on" data-attr-title="s.tip" data-style-left="s.left">{{ s.label }}</button>
         <button data-for="d : draft" class="slotbtn dslot dtop" data-attr-id="d.id" data-class-filled="d.filled" data-attr-title="d.tip" data-style-left="d.left">
             <img data-if="d.filled" class="sicon" data-attr-src="d.icon" data-style-image-color="d.tint"/>
         </button>
         <div class="info regen">{{ regen }}</div>
-        <button id="make" class="game-button act a1" data-attrif-disabled="!can_make">Create combo</button>
+        <button id="make" class="game-button act a1" data-attrif-disabled="!can_make" data-attr-title="create_tip">{{ t_create }}</button>
         <button id="clear" class="game-button act a2">Empty slot</button>
         <div class="sub">Combat arts of the hero (click to add)</div>
         <div class="grid" data-nav-scroll>
@@ -42,7 +42,7 @@
 
     <!-- Exchange -->
     <div data-if="is_exch &amp;&amp; !nohero">
-        <div class="line">Exchange combat art runes</div>
+        <div class="line">{{ line }}</div>
         <button data-for="p : picks" class="slotbtn pslot ptop" data-attr-id="p.id" data-class-filled="p.filled" data-attr-title="p.tip" data-style-left="p.left">
             <img data-if="p.filled" class="sicon" data-attr-src="p.icon" data-style-image-color="p.tint"/>
         </button>
@@ -61,7 +61,7 @@
                 <button data-if="!choose" id="again" class="mini">Another one</button>
             </div>
         </div>
-        <button id="exchange" class="coin" data-attrif-disabled="!can_exchange">Exchange</button>
+        <button id="exchange" class="coin" data-attrif-disabled="!can_exchange" data-attr-title="swap_tip">{{ t_swap }}</button>
         <div class="sub">Runes in the backpack (click to put in the exchange)</div>
         <div class="grid" data-nav-scroll>
             <button data-for="r : runes" class="cell rcell" data-attr-id="r.id" data-class-on="r.on" data-attr-title="r.tip">
@@ -74,11 +74,11 @@
     <!-- the right panel (the game shows the combo master's portrait here) -->
     <div class="side-text">
         <div class="hname">{{ hero }}</div>
-        <div class="master">Combo master</div>
+        <div class="master">{{ master }}</div>
         <div class="gold">{{ gold }}</div>
         <div class="msg" data-class-good="good" data-class-bad="!good">{{ message }}</div>
         <button data-if="has_new" id="read" class="mini">Read the new rune</button>
-        <button id="close" class="mini closebtn">Close</button>
+        <button id="close" class="mini closebtn">{{ t_close }}</button>
     </div>
 </div>
 </body>
