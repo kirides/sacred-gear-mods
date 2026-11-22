@@ -1,0 +1,62 @@
+{
+  "achievements": [
+    "sacred-gear>=0.4.1"
+  ],
+  "art-bars": [
+    "sacred-gear>=0.4.1"
+  ],
+  "auction-house": [
+    "sacred-gear>=0.4.1"
+  ],
+  "autosave": [
+    "sacred-gear>=0.4.1"
+  ],
+  "better-saveload": [
+    "sacred-gear>=0.4.1"
+  ],
+  "bounty": [
+    "sacred-gear>=0.4.1"
+  ],
+  "buildsharer": [
+    "sacred-gear>=0.4.1"
+  ],
+  "companions": [
+    "sacred-gear>=0.4.1"
+  ],
+  "custom-classes": [
+    "sacred-gear>=0.4.1"
+  ],
+  "damagemeter": [
+    "sacred-gear>=0.4.1"
+  ],
+  "enhanced-chat": [
+    "sacred-gear>=0.4.1"
+  ],
+  "item-compare": [
+    "sacred-gear>=0.4.1"
+  ],
+  "lootfilter": [
+    "sacred-gear>=0.4.1"
+  ],
+  "lootlog": [
+    "sacred-gear>=0.4.1"
+  ],
+  "questhelper": [
+    "sacred-gear>=0.4.1"
+  ],
+  "realms": [
+    "sacred-gear>=0.4.1"
+  ],
+  "sacred-theme": [
+    "sacred-gear>=0.4.1"
+  ],
+  "sessiontracker": [
+    "sacred-gear>=0.4.1"
+  ],
+  "shared-stash": [
+    "sacred-gear>=0.4.1"
+  ],
+  "world-events": [
+    "sacred-gear>=0.4.1"
+  ]
+}
