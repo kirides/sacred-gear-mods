@@ -26,20 +26,18 @@ local function build()
             tip = ('.sprite-%d  %dx%d  %s  (code %03X)'):format(im.id, im.w, im.h, im.sheet, im.id)}
     end
     local first, last = cells[1] and tonumber(cells[1].n) or 0, cells[#cells] and tonumber(cells[#cells].n) or 0
-    local b = {cells = cells, title = ('Images %d to %d of %d  ·  page %d of %d'):format(first, last, #all, state.page, pages()), copied = state.copied or '',
-        view = state.view ~= nil}
-    local im = state.view and all[state.view]
-    if im then
-        b.v_title = ('sprite-%d'):format(im.id)
-        b.v_info = ('%dx%d  ·  %s  ·  code %03X  ·  %d of %d'):format(im.w, im.h, im.sheet, im.id, state.view, #all)
-        b.v_deco = ('image(gear:image/%d?dp contain)'):format(im.id)
-    else
-        b.v_title, b.v_info, b.v_deco = '', '', 'none'
-    end
-    return b
+    return {cells = cells, title = ('Images %d to %d of %d  ·  page %d of %d'):format(first, last, #all, state.page, pages()), copied = state.copied or ''}
 end
 
--- the preview box: open on a sprite (an index of the list), step through the sprites with the arrows, close by a click on the picture, C or the pad's B
+-- the pop-up (ui/preview.rml): a window over the Mods screen with the sprite large, scaled to fit
+local function preview_model()
+    local im = state.view and images()[state.view]
+    if not im then return {title = '', info = '', deco = 'none'} end
+    return {title = ('sprite-%d'):format(im.id), deco = ('image(gear:image/%d?dp contain)'):format(im.id),
+        info = ('%dx%d  ·  %s  ·  code %03X  ·  %d of %d'):format(im.w, im.h, im.sheet, im.id, state.view, #images())}
+end
+
+-- open the pop-up on a sprite (an index of the list), step through the sprites with the arrows; X, a click on the picture, Escape or the pad's B close it
 local function show(i)
     local n = #images()
     state.view = ((i - 1) % n) + 1
@@ -57,16 +55,12 @@ gear.mods.page_rml('ui/page.rml', {
         doc:on('#next', 'click', step(1))
         doc:on('#next10', 'click', step(10))
         doc:on('#last', 'click', function() state.page = pages() state.copied = '' end)
-        doc:on('.cell', 'click', function(e)
-            local n = tonumber(tostring(e.current):match('^sp(%d+)$'))
-            if n then
-                for i, im in ipairs(images()) do if im.id == n then show(i) break end end
-            end
-        end)
+        local function close() state.view = nil end
+        doc:on('#x', 'click', close)
+        doc:on('#vpic', 'click', close)
+        doc:on('#vclose', 'click', close)
         doc:on('#vprev', 'click', function() show(state.view - 1) end)
         doc:on('#vnext', 'click', function() show(state.view + 1) end)
-        doc:on('#vpic', 'click', function() state.view = nil end)
-        doc:on('#vclose', 'click', function() state.view = nil end)
         doc:on('#vcopy', 'click', function()
             local im = state.view and images()[state.view]
             if im then
@@ -74,18 +68,24 @@ gear.mods.page_rml('ui/page.rml', {
                 state.copied = 'Copied sprite-' .. im.id
             end
         end)
+        doc:on('.cell', 'click', function(e)
+            local n = tonumber(tostring(e.current):match('^sp(%d+)$'))
+            if n then
+                for i, im in ipairs(images()) do if im.id == n then show(i) break end end
+            end
+        end)
     end,
     update = function(doc)
         if state.view then
-            if gear.ui.key_pressed('c') or gear.ui.back_pressed() then state.view = nil end
+            if gear.ui.back_pressed() or gear.ui.key_pressed('escape') then state.view = nil end
             if state.view and gear.ui.key_pressed('left') then show(state.view - 1) end
             if state.view and gear.ui.key_pressed('right') then show(state.view + 1) end
         end
         local m = doc.model
         local b = build()
         if m.title ~= b.title then m.cells = b.cells m.title = b.title end
-        for _, k in ipairs({'copied', 'view', 'v_title', 'v_info', 'v_deco'}) do
-            if m[k] ~= b[k] then m[k] = b[k] end
-        end
+        local v = preview_model()
+        local want = {copied = b.copied, view = state.view ~= nil, v_title = v.title, v_info = v.info, v_deco = v.deco}
+        for k, val in pairs(want) do if m[k] ~= val then m[k] = val end end
     end,
 })
