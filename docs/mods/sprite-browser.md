@@ -10,7 +10,7 @@ All 1885 UI images of the game in a grid, each with its number and size. The num
 
 ## How to use it
 
-Open the Mods screen (**F11**), pick *Sprite browser* and its page. *Next*, *Previous*, *+10*, *-10*, *First* and *Last* turn the pages (24 pictures each; every button is a controller stop). Click a picture to copy its class name (`sprite-218`) to the clipboard; hover it for the class, size, sheet and hex code.
+Open the Mods screen (**F11**), pick *Sprite browser* and its page. *Next*, *Previous*, *+10*, *-10*, *First* and *Last* turn the pages (24 pictures each; every button is a controller stop). The pictures are scaled to fit the cell (the size under the number is the natural one). Click a picture to copy its class name (`sprite-218`) to the clipboard; hover it for the class, size, sheet and hex code.
 
 ## Development
 

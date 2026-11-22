@@ -1,5 +1,5 @@
 -- Sprite browser: all UI images of the game (gear.ui.images) in a grid with their numbers, 24 to a page, in the "Sprites" tab of the
--- mod's page in the Mods screen (ui/page.rml). Each picture is a `.sprite-N` class of the Sacred theme mod (add it to the mods that run the browser);
+-- mod's page in the Mods screen (ui/page.rml). Each picture is scaled to fit its cell; N is the `.sprite-N` class of the Sacred theme mod;
 -- a click copies the class name to the clipboard. The numbers are also the N of gear:image/N and of the \gffffffff00000XXX codes of names (XXX is N in hex).
 
 local PER = 24
@@ -22,7 +22,7 @@ local function build()
     local cells = {}
     for i = (state.page - 1) * PER + 1, math.min(state.page * PER, #all) do
         local im = all[i]
-        cells[#cells + 1] = {id = 'sp' .. im.id, n = tostring(im.id), cls = 'sprite sprite-' .. im.id, size = ('%dx%d'):format(im.w, im.h),
+        cells[#cells + 1] = {id = 'sp' .. im.id, n = tostring(im.id), deco = ('image(gear:image/%d?dp contain)'):format(im.id), size = ('%dx%d'):format(im.w, im.h),
             tip = ('.sprite-%d  %dx%d  %s  (code %03X)'):format(im.id, im.w, im.h, im.sheet, im.id)}
     end
     local first, last = cells[1] and tonumber(cells[1].n) or 0, cells[#cells] and tonumber(cells[#cells].n) or 0

@@ -19,7 +19,7 @@
     </div>
     <div class="grid">
         <button data-for="c : cells" class="cell" data-attr-id="c.id" data-attr-title="c.tip">
-            <div class="holder"><div data-attr-class="c.cls"></div></div>
+            <div class="holder" data-style-decorator="c.deco"></div>
             <div class="num">{{ c.n }}</div>
             <div class="dim">{{ c.size }}</div>
         </button>
