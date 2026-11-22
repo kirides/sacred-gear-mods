@@ -147,6 +147,41 @@ Buff files `buffs/<id>.json` (this mod or any installed mod that is on):
 `armor_factor`, `regen_factor`, `art_regen_factor`), `overlay` is `stone`, `flame` or `light`. They are registered as `custom-classes:<id>`.
 The hit rule rests on Gear's event `ability.hit` (a hit of a creature that has the art in flight); buffs end when a savegame is loaded.
 
+## Runes and the combo master
+
+**Every art copy and chain has a rune.** The mod makes an item of its own for each art file (art ids 2000 to 3799): it looks like the base art's rune,
+carries the copy's name, and works like the game's runes: it can drop, be carried, traded, stored and read. Reading it teaches the art (or
+levels it) when the class may: a hero with a class profile can read only the runes of the arts its profile lists, as with the game's own
+runes; a hero without a profile follows the art's class mask.
+
+```json
+"rune": { "enabled": true, "drop_weight": 200, "min_level": 1, "price": 3000, "combo_master": true }
+```
+
+| Field | Meaning |
+|---|---|
+| `enabled` | `false`: no rune for this art (default true). |
+| `drop_weight` | Chances in 10000 per equipment pick of a creature's loot that the pick is this rune instead (0: never dropped). The setting *Rune drops (%)* scales all of them. |
+| `min_level` | Creatures below this level do not drop it. |
+| `price` | Gold the combo master takes when this rune is what you get from an exchange (0: the usual fee, see below). |
+| `combo_master` | `true` (default): the combo master's rune exchange offers it. |
+
+**The combo master's window.** When art files exist, the window of the combo master (and of the rune exchange) is this mod's own, because the
+game's window lists the arts in a fixed layout per class and knows only its own runes. It has the game's two jobs:
+
+- **Combo:** up to four combat arts of the hero (custom arts and other classes' arts included) become a combo in one of four slots. The game works
+  out the combo's regeneration (at least the sum of its arts'), and the combo is used like an art (the first step ran as a custom art in the tests).
+- **Exchange:** two to four runes of the backpack become another rune, as in the game: 2 runes give a random rune of any class, 3 a random rune of
+  the hero's class, 4 a rune of the hero's class that you choose. The fee is the mod's own (settings, 500 / 2000 / 5000 gold; a custom rune with a
+  `price` costs that), because the game's price formula is not known. Custom runes (with `combo_master`) are among the offered ones; a hero with a
+  class is offered only what its profile lists. *Read the new rune now* learns the art at once.
+
+The window is controller-playable like all window widgets (D-pad, A). It replaces the game's window only while art files exist; setting
+*Combo master window with custom arts* turns that off.
+
+**Without the mod.** A savegame that holds a custom rune loads in a game without the mod (tested: the hero loads, the backpack opens). The item type
+is an empty record there, so the item cannot be used and is shown without a name; it works again when the mod is back.
+
 ## Settings and keys
 
 | Setting | What it does |

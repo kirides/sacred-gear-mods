@@ -12,6 +12,7 @@
 local profiles_lib = require('profiles')
 local arts = require('arts')
 local buffs = require('buffs')
+local master_lib = require('master')
 local window = require('window')
 local ui = gear.ui
 local guard = gear.guard
@@ -327,12 +328,13 @@ gear.on('party.control', guard('control', function() state.skills_for = nil end)
 gear.on('savegame.changed', guard('changed', function() reset() state.offered = false end))
 gear.on('unload', function() gear.classes.restore_hero_skills() end)
 
-local win
+local win, master
 -- Other mods (and the tests) give a hero a class with events: `gear.emit('custom-classes.take', hero_id, profile_id)` and
 -- `gear.emit('custom-classes.leave', hero_id)`.
 if gear.events and gear.events.declare then
     pcall(gear.events.declare, 'custom-classes.take', 'Give a hero a class: (hero id, profile id)')
     pcall(gear.events.declare, 'custom-classes.select', 'Select a class in the class window: (profile id)')
+    pcall(gear.events.declare, 'custom-classes.master', 'An action of the combo master window without a mouse: (command, argument)')
     pcall(gear.events.declare, 'custom-classes.window', 'Show (true) or hide (false) the class window')
     pcall(gear.events.declare, 'custom-classes.leave', "Take a hero's class away: (hero id)")
 end
@@ -341,12 +343,14 @@ gear.on('custom-classes.take', guard('take', function(id, profile_id)
     if c and c:is_hero() and p then take(c, p) end
 end))
 gear.on('custom-classes.select', guard('select', function(id) if win then win.select(id) end end))
+gear.on('custom-classes.master', guard('master', function(cmd, a) if master then master.command(cmd, a) end end))
 gear.on('custom-classes.window', guard('window', function(open) if win then win.open(open ~= false) end end))
 gear.on('custom-classes.leave', guard('leave', function(id)
     local c = gear.world.object(id)
     if c and c:is_hero() then leave(c) end
 end))
 
+master = master_lib.new({setting = setting, assignment = assignment})
 win = window.new({
     state = state, store = store, setting = setting, take = take, leave = leave, assignment = assignment,
     reload = function() reset() load_data() end,
@@ -365,6 +369,7 @@ gear.on('draw', guard('draw', function(s)
         end
     end
     win.draw()
+    if master then master.draw() end
 end))
 
 gear.keys.on('window', guard('key', function() win.toggle() end))
