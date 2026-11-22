@@ -4,6 +4,8 @@
 --   { "fx": [792], "min_level": 10, "max_level": 20,                 (all optional: no `fx` = every effect, no level = any)
 --     "hue": -120, "colorize": "#FF2020", "multiply": "#80FFFFFF", "alpha": 1, "speed": 0.5,
 --     "textures": {"PARTICLE_GLOW01.TGA": "PARTICLE_SMOKE01.TGA"} }
+-- Note: hue/colorize change the colours of the vertices; what a sprite has baked in stays (Poison Mist's flat green cloud, FX_GROUNDPOISON.TGA, is white vertices on a
+-- green texture, so it needs a `textures` swap, e.g. FX_BLOOD01.TGA for a red one; its smoke and sparks follow the hue).
 -- Each rule becomes a gear.pfx variant (an id of this mod's block, 200000 + art_id * 64 + rule number - 1) and a gear.pfx rule that picks it for
 -- the art's effects. The first rule of the list that matches an effect and a level wins (rules have falling priority). Only copies have effects: a
 -- chain makes the effects of its steps.

@@ -5,8 +5,8 @@
   "art_id": 2010,
   "base": 1052,
   "name": { "en": "Red Mist" },
-  "description": { "en": "Poison Mist with a red cloud (self test of the effect rules)." },
+  "description": { "en": "Poison Mist with a red cloud: the smoke turns red by the hue, the flat cloud has its green in the texture and takes a texture swap (self test of the effect rules)." },
   "fx": [
-    { "fx": [792, 867], "hue": -120 }
+    { "fx": [792, 867], "hue": -120, "textures": { "FX_GROUNDPOISON.TGA": "FX_BLOOD01.TGA" } }
   ]
 }
