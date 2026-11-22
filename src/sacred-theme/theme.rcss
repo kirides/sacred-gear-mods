@@ -56,7 +56,8 @@ button:disabled { color: #8c8c8c; border-color: #3c3c3c; transform: none; }
 /* Text fields and selects. A text field is the game's pill: a rounded frame with room at the ends, and the caret is the game's blinking underscore at the
    foot of the text (caret-style, a property of Sacred Gear's RmlUi; where it is unknown the usual thin vertical caret stays). The focused field has the gold edge. */
 input.field, select.field {
-    padding: 3px 16px;
+    padding: 2px 16px;
+    line-height: 26px;
     color: #f0f0f0;
     background-color: #0c0c14;
     border: 1px #6e5e3a;
