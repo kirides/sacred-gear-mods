@@ -1,7 +1,7 @@
-#screen { position: absolute; left: 86px; top: 19px; width: 800px; height: 668px; }       /* the frame adds 52 x 61: 852 x 729 in all, centred in the 1024 x 768 layout */
+#screen { position: absolute; left: 86px; top: 80px; width: 800px; }       /* no fixed height: the content sets it (the frame adds 52 x 61), so no empty strip under the buttons; top centres it in the 1024 x 768 layout */
 .titlerow { height: 30px; text-align: center; }
 .ttl { font-family: "Sacred Game"; font-size: 20px; color: #ffd780; }
-.tool { display: flex; flex-direction: row; align-items: center; height: 40px; }
+.tool { display: flex; flex-direction: row; align-items: center; height: 34px; }
 .tabs { margin-right: 10px; }
 button.tab.on { color: #ffe030; }
 button.mini { padding: 0 6px; margin: 0 3px 0 0; font-size: 13dp; }
@@ -43,7 +43,7 @@ button.row.sel { background-color: #4a3f2a; border-color: #ffd780; }
 .small { font-size: 12dp; }
 .namerow { display: flex; flex-direction: row; align-items: center; margin-top: 6px; }
 .lab { width: 50px; }
-.btns { margin-top: 8px; }
+.btns { margin-top: 6px; }
 .confirm { display: flex; flex-direction: row; align-items: center; }
 .msg { margin: 0 8px; }
 

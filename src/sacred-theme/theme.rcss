@@ -53,14 +53,27 @@ button.primary { border-color: #c8aa5a; color: #ffd780; }
 button.danger { border-color: #a84030; }
 button:disabled { color: #8c8c8c; border-color: #3c3c3c; transform: none; }
 
-/* Text fields and selects. */
+/* Text fields and selects. A text field is the game's pill: a rounded frame with room at the ends. RmlUi's caret is always a thin vertical bar (no CSS makes it
+   a bar under the text), so the pill's bottom edge is the cursor: while the field has the focus the frame is gold and its bottom edge blinks bright (the way
+   the game's own field shows a blinking underscore). The 2px bottom edge is there at rest too (dim), so focusing moves nothing. */
+@keyframes field-cursor {
+    0% { border-bottom-color: #fff0b0; }
+    49% { border-bottom-color: #fff0b0; }
+    50% { border-bottom-color: #7a5a14; }
+    99% { border-bottom-color: #7a5a14; }
+    100% { border-bottom-color: #fff0b0; }
+}
 input.field, select.field {
-    padding: 4px 8px;
+    padding: 3px 16px;
     color: #f0f0f0;
     background-color: #0c0c14;
     border: 1px #6e5e3a;
+    border-bottom-width: 2px;
+    border-radius: 16px;
 }
+input.field { caret-color: transparent; }
 input.field:focus, select.field:focus { border-color: #ffd780; }
+input.field:focus { animation: 1.1s linear infinite field-cursor; }
 
 /* Lists: .list holds .item rows (a thumbnail, a gold .name, grey .sub); .selected is the brown-gold chosen row. Make an item a button to make it a pad stop. */
 .list { margin: 4px 0; }

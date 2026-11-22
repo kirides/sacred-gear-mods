@@ -4,8 +4,8 @@
     <link type="text/rcss" href="stash.rcss"/>
 </head>
 <body data-model="model">
-<div id="open" class="window" data-panel="open" data-title="Shared stash" data-if="open_shown">
-    <button id="toggle" class="game-button" data-attrif-disabled="!open_enabled" data-attr-title="open_tip"><span class="padkey a"></span>{{ open_label }}</button>
+<div id="open" data-panel="open" data-title="Shared stash" data-if="open_shown">
+    <button id="toggle" class="open-btn" data-attrif-disabled="!open_enabled" data-attr-title="open_tip"><span class="padkey a"></span>{{ open_label }}</button>
 </div>
 
 <div id="stash" class="window" data-panel="stash" data-title="Shared stash" data-if="stash_open">

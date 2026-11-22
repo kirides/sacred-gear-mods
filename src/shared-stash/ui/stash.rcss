@@ -1,5 +1,6 @@
-#open { position: absolute; left: 646px; top: 572px; width: 270px; }
-#open button { white-space: nowrap; }
+/* the opener: a plain small button (no window frame), still a layout panel the player moves while Alt is held */
+#open { position: absolute; left: 646px; top: 572px; width: 130px; }
+button.open-btn { display: block; border: 1px #8c7440; background-color: #14141f; color: #e8d8a8; font-family: "Sacred Game"; width: 100%; margin: 0; padding: 3px 0; text-align: center; font-size: 13dp; white-space: nowrap; flex: none; }
 #stash { position: absolute; left: 646px; top: 6px; width: 372px; }
 .head { display: flex; flex-direction: row; justify-content: space-between; align-items: center; height: 24px; }
 .pager { display: flex; flex-direction: row; align-items: center; }
@@ -18,3 +19,4 @@ button.game-button.dis { opacity: 0.55; color: #8a8a8a; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
+button.open-btn:hover, button.open-btn:focus { border-color: #ffd780; color: #ffe030; background-color: #24243a; }
