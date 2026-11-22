@@ -1,20 +1,22 @@
-#open { position: absolute; left: 646px; top: 572px; width: 270px; }
-#open button { white-space: nowrap; }
-#stash { position: absolute; left: 646px; top: 6px; width: 372px; }
-.head { display: flex; flex-direction: row; justify-content: space-between; align-items: center; height: 24px; }
+/* the opener: a plain small button (no window frame), still a layout panel the player moves while Alt is held */
+#open { position: absolute; left: 646dp; top: 572dp; width: 130dp; }
+button.open-btn { display: block; border: 1px #8c7440; background-color: #14141f; color: #e8d8a8; font-family: "Sacred Game"; width: 100%; margin: 0; padding: 3dp 0; text-align: center; font-size: 13dp; white-space: nowrap; flex: none; }
+#stash { position: absolute; left: 646dp; top: 6dp; width: 372dp; }
+.head { display: flex; flex-direction: row; justify-content: space-between; align-items: center; height: 24dp; }
 .pager { display: flex; flex-direction: row; align-items: center; }
-.pn { width: 50px; text-align: center; }
-.grid { position: relative; width: 352px; height: 192px; margin-bottom: 8px; background-color: #00000060; border: 1px #ffffff30; }
+.pn { width: 50dp; text-align: center; }
+.grid { position: relative; width: 352dp; height: 192dp; margin-bottom: 8dp; background-color: #00000060; border: 1px #ffffff30; }
 button.cell { box-sizing: border-box; position: absolute; padding: 0; margin: 0; border: 1px #606060; background-color: #203040; }
 button.cell:hover { background-color: #506090; border-color: #ffffff; }
 button.cell.off { opacity: 0.4; }
 button.cell img.icon { position: absolute; left: 1px; top: 1px; }
-.status { min-height: 18px; margin-top: 4px; }
+.status { min-height: 18dp; margin-top: 4dp; }
 .wrap { white-space: pre-wrap; }
 .small { font-size: 13dp; }
-button.mini { padding: 0 8px; margin: 0 2px; }
+button.mini { padding: 0 8dp; margin: 0 2dp; }
 button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button.dis { opacity: 0.55; color: #8a8a8a; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
+button.open-btn:hover, button.open-btn:focus { border-color: #ffd780; color: #ffe030; background-color: #24243a; }

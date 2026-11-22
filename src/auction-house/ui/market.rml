@@ -4,8 +4,8 @@
     <link type="text/rcss" href="market.rcss"/>
 </head>
 <body data-model="model">
-<div id="open" class="window" data-panel="open" data-title="Auction house" data-if="open_shown">
-    <button id="ah-toggle" class="game-button" data-attrif-disabled="!open_enabled" data-attr-title="open_tip"><span class="padkey a"></span>{{ open_label }}</button>
+<div id="open" data-panel="open" data-title="Auction house" data-if="open_shown">
+    <button id="ah-toggle" class="open-btn" data-attrif-disabled="!open_enabled" data-attr-title="open_tip"><span class="padkey a"></span>{{ open_label }}</button>
 </div>
 
 <div id="market" class="window" data-panel="market" data-title="Auction house" data-if="market_open">

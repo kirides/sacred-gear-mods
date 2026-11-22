@@ -1,11 +1,11 @@
-#panel { position: absolute; left: 16px; top: 110px; width: 470px; }
+#panel { position: absolute; left: 16dp; top: 110dp; width: 470dp; }
 .head { font-family: "Sacred Game"; color: #ffd780; }
-.area { margin: 8px 0 2px 0; }
+.area { margin: 8dp 0 2dp 0; }
 .summary { font-size: 13dp; color: #8c8c8c; white-space: pre-wrap; max-height: 3.6em; overflow: hidden; }
 .summary.rec { color: #ffd780; }
-button.game-button { min-width: 0; margin-right: 4px; padding: 0 38px 0 37px; font-size: 16px; }
+button.game-button { min-width: 0; margin-right: 4dp; padding: 0 38dp 0 37dp; font-size: 16dp; }
 .small { font-size: 13dp; }
-input.game-slider { width: 220px; margin-right: 8px; }
+input.game-slider { width: 220dp; margin-right: 8dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

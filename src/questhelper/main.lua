@@ -183,7 +183,7 @@ local function load_doc()
     local m = snapshot()
     last = m
     local err
-    doc, err = gear.ui.rml.load('ui/main.rml', {model = m})
+    doc, err = gear.ui.rml.load('ui/main.rml', {dp = true, model = m})
     if not doc then gear.log('quest helper: ui/main.rml failed: ' .. tostring(err)) return end
     local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
     on('.tab', function(e) local i = tonumber(tostring(e.current):match('^tab(%d+)$')); if i then view.tab = i end end)

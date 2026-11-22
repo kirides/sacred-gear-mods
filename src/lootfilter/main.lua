@@ -272,7 +272,7 @@ local function snapshot(visible)
     if type(cfg.classes) == 'table' then for _, n in ipairs(cfg.classes) do picked[n] = true end end
     local mode = cfg.classes == 'own' and 1 or cfg.classes == false and 2 or 3
     local m = {
-        overlay_x = (cfg.overlay_x or 16) .. 'px', overlay_y = (cfg.overlay_y or 100) .. 'px', overlay_visible = visible, editing = editing_now, enabled = cfg.enabled == true, on_text = cfg.enabled and 'on' or 'off',
+        overlay_x = (cfg.overlay_x or 16) .. 'dp', overlay_y = (cfg.overlay_y or 100) .. 'dp', overlay_visible = visible, editing = editing_now, enabled = cfg.enabled == true, on_text = cfg.enabled and 'on' or 'off',
         settings_label = 'Settings' .. key_hint('panel'), olines = visible and olines() or {},
         settings_open = settings_open, mode = tostring(mode), min_quality = cfg.min_quality, classes = {}, cats = {}, potions = {},
         keep_set = cfg.keep_set == true, keep_quest = cfg.keep_quest ~= false, dim = cfg.dim_alpha,
@@ -312,7 +312,7 @@ local function load_doc()
     local m = snapshot(false)
     last = m
     local err
-    doc, err = ui.rml.load('ui/filter.rml', {model = m, on_change = function(_, model)
+    doc, err = ui.rml.load('ui/filter.rml', {dp = true, model = m, on_change = function(_, model)
         local dim = tonumber(model.dim)
         if dim and dim ~= cfg.dim_alpha then cfg.dim_alpha = dim; changed() end
     end})

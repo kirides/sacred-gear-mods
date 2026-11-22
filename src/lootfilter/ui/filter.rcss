@@ -1,10 +1,10 @@
-#overlay { position: absolute; left: 16px; top: 100px; width: 210px; padding: 5px 6px 8px 6px; background-color: #0000008c; border: 1px #c8aa5ac8; font-size: 12dp; }
+#overlay { position: absolute; left: 16dp; top: 100dp; width: 210dp; padding: 5dp 6dp 8dp 6dp; background-color: #0000008c; border: 1px #c8aa5ac8; font-size: 12dp; }
 .oh { display: flex; flex-direction: row; justify-content: space-between; }
 .ot { font-family: "Sacred Game"; font-size: 15dp; color: #ffd780; }
 .ot.off { color: #909090; }
 .ol { display: flex; flex-direction: row; }
 .ol span { color: #e0e0e0; width: 50%; }
-.ol span.sub { color: #b0b0b0; padding-left: 8px; }
+.ol span.sub { color: #b0b0b0; padding-left: 8dp; }
 .ol .ov { color: #efefef; }
 .ov.magic { color: #a0a0ff; }
 .ov.rare { color: #f0e040; }
@@ -13,17 +13,17 @@
 .ov.bad { color: #ff8080; }
 .good { color: #80ff80; }
 .good.bad { color: #ff8080; }
-#overlay button.game-button { min-width: 0; margin: 6px 0 0 0; padding: 0 30px 0 29px; font-size: 15px; }
-#settings { position: absolute; left: 240px; top: 40px; width: 560px; }
+#overlay button.game-button { min-width: 0; margin: 6dp 0 0 0; padding: 0 30dp 0 29dp; font-size: 15dp; }
+#settings { position: absolute; left: 240dp; top: 40dp; width: 560dp; }
 .classes { display: flex; flex-direction: row; flex-wrap: wrap; }
-.cls { display: flex; flex-direction: row; align-items: center; width: 25%; height: 34px; }
-.cls3 { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 31%; height: 34px; margin-right: 2%; }
+.cls { display: flex; flex-direction: row; align-items: center; width: 25%; height: 34dp; }
+.cls3 { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 31%; height: 34dp; margin-right: 2%; }
 .cats { display: flex; flex-direction: row; flex-wrap: wrap; }
-.cat { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 48%; margin: 2px 1%; }
+.cat { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 48%; margin: 2dp 1%; }
 .text.small, .small { font-size: 14dp; }
-input.game-check.small { width: 36px; height: 36px; margin-right: 4px; }
-button.catb { min-width: 90px; }
-button.mini { padding: 0 8px; margin: 0; }
+input.game-check.small { width: 36dp; height: 36dp; margin-right: 4dp; }
+button.catb { min-width: 90dp; }
+button.mini { padding: 0 8dp; margin: 0; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

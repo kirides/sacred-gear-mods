@@ -311,7 +311,7 @@ end
 
 local function load_doc()
     local err
-    doc, err = ui.rml.load('ui/log.rml', {model = build(), calls = {
+    doc, err = ui.rml.load('ui/log.rml', {dp = true, model = build(), calls = {
         cycle_q = guard('cycle_q', cycle('q', Q_OPTIONS)),
         cycle_c = guard('cycle_c', cycle('c', C_OPTIONS)),
         cycle_k = guard('cycle_k', cycle('k', K_OPTIONS)),

@@ -193,14 +193,14 @@ local function snapshot()
     local size = setting('size', 44)
     local slots = setting('slots', 8)
     local n = h and bar_count() or 0
-    local m = {px = size .. 'px', ipx = (size - 6) .. 'px', edit = state.edit, edit_mark = state.edit and 'x' or 'e',
+    local m = {px = size .. 'dp', ipx = (size - 6) .. 'dp', edit = state.edit, edit_mark = state.edit and 'x' or 'e',
         edit_tip = 'Fill the slots: click a slot, choose an ability', paging = setting('paging', false),
         page = ('%d/%d'):format(state.page, 3), picker_open = state.picker and true or false, picking = false,
         picker_title = 'Art bars', count = '', abilities = {}}
     local w = slots * (size + 4) + 4
     local height = size + 8
     for i = 1, 3 do
-        local b = {show = i <= n, left = cfg.bar_x .. 'px', top = (cfg.bar_y - (i - 1) * (height + 6)) .. 'px', width = w .. 'px', slots = {}}
+        local b = {show = i <= n, left = cfg.bar_x .. 'dp', top = (cfg.bar_y - (i - 1) * (height + 6)) .. 'dp', width = w .. 'dp', slots = {}}
         if b.show then
             local bar = setting('paging', false) and state.page or i
             for s = 1, slots do b.slots[s] = slot_model(h, bar, s, i) end
@@ -244,7 +244,7 @@ local function load_doc()
     local m = snapshot()
     last = m
     local err
-    doc, err = ui.rml.load('ui/bars.rml', {model = m})
+    doc, err = ui.rml.load('ui/bars.rml', {dp = true, model = m})
     if not doc then gear.log('art-bars: ui/bars.rml failed: ' .. tostring(err)) return end
     doc:on('.slot', 'click', guard('slot click', function(e)
         local bar, slot = slot_of(e.current)

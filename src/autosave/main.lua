@@ -251,7 +251,7 @@ local function draw_note(s)
     end
     if not note_doc then
         local err
-        note_doc, err = ui.rml.load('ui/note.rml', {model = {text = note.text, ok = note.ok and true or false}})
+        note_doc, err = ui.rml.load('ui/note.rml', {dp = true, model = {text = note.text, ok = note.ok and true or false}})
         if not note_doc then
             print('autosave: ui/note.rml failed: ' .. tostring(err))
             return
@@ -259,7 +259,7 @@ local function draw_note(s)
     end
     note_doc.model.text = note.text
     note_doc.model.ok = note.ok and true or false
-    note_doc:style('#note', 'top', cfg.note_y .. 'px')
+    note_doc:style('#note', 'top', cfg.note_y .. 'dp')
     note_doc:draw({layer = 'top'})
 end
 

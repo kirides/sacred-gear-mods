@@ -1,21 +1,21 @@
-#bar { position: absolute; left: 402px; top: 40px; width: 220px; }
-#boss { position: absolute; left: 302px; top: 170px; width: 420px; }
-.pill { position: relative; height: 46px; margin-bottom: 4px; border-radius: 23px; }
-.rings { position: absolute; left: 2px; top: 2px; width: 42px; height: 42px; }
+#bar { position: absolute; left: 402dp; top: 40dp; width: 220dp; }
+#boss { position: absolute; left: 302dp; top: 170dp; width: 420dp; }
+.pill { position: relative; height: 46dp; margin-bottom: 4dp; border-radius: 23dp; }
+.rings { position: absolute; left: 2dp; top: 2dp; width: 42dp; height: 42dp; }
 .rings gear-ring { position: absolute; left: 0px; top: 0px; }
-.rings gear-ring.outer { width: 42px; height: 42px; }
-.rings gear-ring.inner { left: 5px; top: 5px; width: 32px; height: 32px; }
-.pct { position: absolute; left: 0px; right: 0px; top: 14px; text-align: center; font-size: 11dp; font-weight: bold; color: #fff2d0; }
-.txt { position: absolute; left: 52px; right: 10px; top: 5px; }
-.l1 { height: 17px; white-space: nowrap; overflow: hidden; }
-.ptitle { font-size: 12dp; font-weight: bold; color: #f2d58a; margin-right: 6px; }
+.rings gear-ring.outer { width: 42dp; height: 42dp; }
+.rings gear-ring.inner { left: 5dp; top: 5dp; width: 32dp; height: 32dp; }
+.pct { position: absolute; left: 0px; right: 0px; top: 14dp; text-align: center; font-size: 11dp; font-weight: bold; color: #fff2d0; }
+.txt { position: absolute; left: 52dp; right: 10dp; top: 5dp; }
+.l1 { height: 17dp; white-space: nowrap; overflow: hidden; }
+.ptitle { font-size: 12dp; font-weight: bold; color: #f2d58a; margin-right: 6dp; }
 .parea { font-size: 11dp; color: #d2ccbe; }
-.l2 { height: 15px; white-space: nowrap; font-size: 11dp; }
-.count { color: #d2ccbe; margin-right: 6px; }
+.l2 { height: 15dp; white-space: nowrap; font-size: 11dp; }
+.count { color: #d2ccbe; margin-right: 6dp; }
 .timer { color: #9ccbf5; }
-.more { font-size: 11dp; color: #d2ccbe; margin-left: 12px; }
-.boss { height: 40px; margin-bottom: 4px; }
-.bname { height: 17px; text-align: center; font-size: 14dp; font-weight: bold; color: #f2d58a; }
-.bbar { position: relative; height: 21px; margin-top: 2px; background-color: #0c0c10c0; border: 1px #4a3a2a; }
-.bfill { position: absolute; left: 0px; top: 0px; height: 19px; }
-.btext { position: absolute; left: 0px; right: 0px; top: 2px; text-align: center; font-size: 11dp; font-weight: bold; color: #f4eedf; }
+.more { font-size: 11dp; color: #d2ccbe; margin-left: 12dp; }
+.boss { height: 40dp; margin-bottom: 4dp; }
+.bname { height: 17dp; text-align: center; font-size: 14dp; font-weight: bold; color: #f2d58a; }
+.bbar { position: relative; height: 21dp; margin-top: 2dp; background-color: #0c0c10c0; border: 1px #4a3a2a; }
+.bfill { position: absolute; left: 0px; top: 0px; height: 19dp; }
+.btext { position: absolute; left: 0px; right: 0px; top: 2dp; text-align: center; font-size: 11dp; font-weight: bold; color: #f4eedf; }

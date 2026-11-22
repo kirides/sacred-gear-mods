@@ -169,7 +169,7 @@ local function load_doc()
     local m = snapshot()
     last = m
     local err
-    doc, err = ui.rml.load('ui/editor.rml', {model = m, on_change = function(_, model)
+    doc, err = ui.rml.load('ui/editor.rml', {dp = true, model = m, on_change = function(_, model)
         local f = form
         if not f then return end
         f.title = tostring(model.f_title or f.title):sub(1, 60)

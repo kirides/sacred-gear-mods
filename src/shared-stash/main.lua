@@ -118,8 +118,8 @@ end
 local function cell_model(c)
     local icon
     if type(c.icon) == 'table' then icon = 'gear:item/id/' .. tostring(c.icon.id) else icon = 'gear:item/' .. tostring(c.icon) end
-    return {id = c.id, x = (c.cx * CELL) .. 'px', y = (c.cy * CELL) .. 'px', w = (c.cw * CELL + 1) .. 'px', h = (c.ch * CELL + 1) .. 'px',
-        iw = (c.cw * CELL - 3) .. 'px', ih = (c.ch * CELL - 3) .. 'px', src = icon, color = css_color(c.color), enabled = c.enabled and true or false}
+    return {id = c.id, x = (c.cx * CELL) .. 'dp', y = (c.cy * CELL) .. 'dp', w = (c.cw * CELL + 1) .. 'dp', h = (c.ch * CELL + 1) .. 'dp',
+        iw = (c.cw * CELL - 3) .. 'dp', ih = (c.ch * CELL - 3) .. 'dp', src = icon, color = css_color(c.color), enabled = c.enabled and true or false}
 end
 
 local function page_cells(cells, page)
@@ -271,7 +271,7 @@ end
 local function load_doc(m)
     last = m
     local err
-    doc, err = ui.rml.load('ui/stash.rml', {model = m})
+    doc, err = ui.rml.load('ui/stash.rml', {dp = true, model = m})
     if not doc then gear.log('shared stash: ui/stash.rml failed: ' .. tostring(err)) return end
     local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
     on('#toggle', function()

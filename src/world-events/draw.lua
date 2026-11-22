@@ -82,7 +82,7 @@ local function show(slot, path, model)
     if not slot.doc then
         local err
         slot.last = model
-        slot.doc, err = ui.rml.load(path, {model = model})
+        slot.doc, err = ui.rml.load(path, {dp = true, model = model})
         if not slot.doc then gear.log('world events: ' .. path .. ' failed: ' .. tostring(err)) return nil end
         slot.doc:on('.pill', 'mouseover', function(e) slot.hover = tostring(e.current) end)
         slot.doc:on('.pill', 'mouseout', function() slot.hover = nil end)

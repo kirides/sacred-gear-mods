@@ -577,7 +577,7 @@ local function load_doc()
     local err
     local m = snapshot()
     last = m
-    doc, err = ui.rml.load('ui/meter.rml', {model = m, calls = {
+    doc, err = ui.rml.load('ui/meter.rml', {dp = true, model = m, calls = {
         next_view = guard('next_view', go_next_view),
         reset = guard('reset', reset),
     }})

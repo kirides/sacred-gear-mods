@@ -61,8 +61,8 @@
             <div class="graph">
                 <div class="bars">
                     <div data-for="b : bars" class="slot">
-                        <div class="half up"><div class="fill" data-style-height="b.up + 'px'"></div></div>
-                        <div class="half down"><div class="fill" data-style-height="b.down + 'px'"></div></div>
+                        <div class="half up"><div class="fill" data-style-height="b.up + 'dp'"></div></div>
+                        <div class="half down"><div class="fill" data-style-height="b.down + 'dp'"></div></div>
                     </div>
                 </div>
                 <span class="muted small">{{ d.peak }}</span>

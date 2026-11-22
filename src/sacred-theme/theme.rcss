@@ -41,6 +41,7 @@ body { font-size: 15dp; color: #f0f0f0; }
 button {
     margin-right: 8px;
     padding: 4px 14px;
+    line-height: 1.5;                  /* tall enough that the descenders of a label are not cut (small buttons set their own padding) */
     color: #f0f0f0;
     background-color: #14141f;
     border: 1px #8c7440;
@@ -53,13 +54,17 @@ button.primary { border-color: #c8aa5a; color: #ffd780; }
 button.danger { border-color: #a84030; }
 button:disabled { color: #8c8c8c; border-color: #3c3c3c; transform: none; }
 
-/* Text fields and selects. */
+/* Text fields and selects. A text field is the game's pill: a rounded frame with room at the ends, and the caret is the game's blinking underscore at the
+   foot of the text (caret-style, a property of Sacred Gear's RmlUi; where it is unknown the usual thin vertical caret stays). The focused field has the gold edge. */
 input.field, select.field {
-    padding: 4px 8px;
+    padding: 2px 16px;
+    line-height: 26px;
     color: #f0f0f0;
     background-color: #0c0c14;
     border: 1px #6e5e3a;
+    border-radius: 16px;
 }
+input.field { caret-style: underscore; caret-color: #ffd780; }
 input.field:focus, select.field:focus { border-color: #ffd780; }
 
 /* Lists: .list holds .item rows (a thumbnail, a gold .name, grey .sub); .selected is the brown-gold chosen row. Make an item a button to make it a pad stop. */

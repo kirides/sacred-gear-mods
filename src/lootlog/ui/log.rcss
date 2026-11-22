@@ -1,8 +1,8 @@
-#log { position: absolute; left: 340px; top: 200px; width: 640px; }
-.filters button.game-button { font-size: 15px; margin-right: 4px; }
-.rows { height: 230px; overflow-y: auto; margin-top: 6px; }
+#log { position: absolute; left: 340dp; top: 200dp; width: 640dp; }
+.filters button.game-button { font-size: 15dp; margin-right: 4dp; }
+.rows { height: 230dp; overflow-y: auto; margin-top: 6dp; }
 .entry { display: flex; flex-direction: row; padding: 1px 0; font-size: 14dp; }
-.when { width: 90px; color: #808080; }
+.when { width: 90dp; color: #808080; }
 .name { flex: 1 1 auto; color: #efefef; }
 .name.magic { color: #a0a0ff; }
 .name.rare { color: #f0e040; }

@@ -87,7 +87,7 @@ function M.new(env)
 
     local function image_url(id) return id and ('gear:image/' .. id) or '' end
 
-    local function px(n) return ('%dpx'):format(math.floor(n + 0.5)) end
+    local function px(n) return ('%ddp'):format(math.floor(n + 0.5)) end
 
     -- Where the column goes: under the game's own portraits (its UI_WND_MERC at the screen's right edge).
     local placed_at
@@ -129,7 +129,7 @@ function M.new(env)
             by_id[id] = c
             m.portraits[#m.portraits + 1] = {
                 id = id, dead = dead, image = image_url(c:portrait()), level = tostring(c:level() or ''),
-                xp = px(71 * xp_fraction(c)), red_top = px(top * RH), red_h = frac > 0 and px(RH - top * RH) or '0px',
+                xp = px(71 * xp_fraction(c)), red_top = px(top * RH), red_h = frac > 0 and px(RH - top * RH) or '0dp',
                 tip = name_of(c) .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level())
                     .. ')\n' .. (dead and 'Fallen' or ('Click to play' .. key_hint('next'))),
             }
@@ -240,7 +240,7 @@ function M.new(env)
     end
 
     local function snapshot()
-        local m = {portraits_on = false, px = '932px', py = '260px', portraits = {}, open = false, title = '', msg = '', heroes = {},
+        local m = {portraits_on = false, px = '932dp', py = '260dp', portraits = {}, open = false, title = '', msg = '', heroes = {},
             class_name = '', full = false, companions_text = '', no_files = true, file_label = '', can_bring = false, bring_tip = '', maybe = false,
             picked = '', keep_label = '', merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
             tac_on = false, tac = {title = '', style = '', style_tip = '', none = false, abilities = {}}}
@@ -256,7 +256,7 @@ function M.new(env)
         local m = snapshot()
         last = m
         local err
-        doc, err = ui.rml.load('ui/party.rml', {model = m})
+        doc, err = ui.rml.load('ui/party.rml', {dp = true, model = m})
         if not doc then gear.log('companions: ui/party.rml failed: ' .. tostring(err)) return end
         local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
         local function target(e) return by_id[tostring(e.current)] end

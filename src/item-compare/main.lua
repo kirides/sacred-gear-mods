@@ -181,7 +181,7 @@ local function show(m)
     if not doc then
         last = m
         local err
-        doc, err = ui.rml.load('ui/compare.rml', {model = m})
+        doc, err = ui.rml.load('ui/compare.rml', {dp = true, model = m})
         if not doc then gear.log('item comparison: ui/compare.rml failed: ' .. tostring(err)) return end
     else
         for k, v in pairs(m) do
@@ -221,8 +221,8 @@ gear.on('draw', guard('draw', function(state)
         last_dx, last_dy = dx, dy
     end
     -- the frame's bars are the box shrunk by the window class's 6 unit padding: the box starts 6 units before the bars
-    show({follow = follow, blocks = blocks_model(blocks), left = (dx - 6) .. 'px', top = (dy - 6) .. 'px',
-        width = (w - 2 * PAD + 2 * 6) .. 'px', height = (h - 2 * PAD + 2 * 6) .. 'px'})
+    show({follow = follow, blocks = blocks_model(blocks), left = (dx - 6) .. 'dp', top = (dy - 6) .. 'dp',
+        width = (w - 2 * PAD + 2 * 6) .. 'dp', height = (h - 2 * PAD + 2 * 6) .. 'dp'})
 end))
 
 gear.keys.on('toggle', guard('key', function()
