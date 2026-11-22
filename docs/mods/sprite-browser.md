@@ -2,6 +2,8 @@
 
 ![Sprite browser](../images/sprite-browser.jpg)
 
+![The preview box](../images/sprite-browser-preview.jpg)
+
 All 1885 UI images of the game in a grid, each with its number and size. The number is the `N` of:
 
 - the **`.sprite-N` classes** of the [Sacred theme](../../src/sacred-theme/README.md): `<span class="sprite sprite-218"></span>` draws image 218 (the skull) at its natural size in any RmlUi document of a mod, with no image path to look up;
@@ -10,7 +12,7 @@ All 1885 UI images of the game in a grid, each with its number and size. The num
 
 ## How to use it
 
-Open the Mods screen (**F11**), pick *Sprite browser* and its page. *Next*, *Previous*, *+10*, *-10*, *First* and *Last* turn the pages (24 pictures each; every button is a controller stop). The pictures are scaled to fit the cell (the size under the number is the natural one). Click a picture to copy its class name (`sprite-218`) to the clipboard; hover it for the class, size, sheet and hex code.
+Open the Mods screen (**F11**), pick *Sprite browser* and its page. *Next*, *Previous*, *+10*, *-10*, *First* and *Last* turn the pages (24 pictures each; every button is a controller stop). The pictures are scaled to fit the cell (the size under the number is the natural one). A click on a picture opens a larger preview with the class name, size, sheet and hex code: *Previous* and *Next* (or the Left and Right keys) step through the sprites, *Copy class* puts `sprite-218` on the clipboard, and a click on the picture, **C** or the controller's **B** closes it. Hover a picture in the grid for the same details.
 
 ## Development
 
