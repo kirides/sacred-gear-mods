@@ -5,6 +5,7 @@
 const DATA = window.NAME_EDITOR_DATA;
 const ICPFX = '\\gffffffff00000', CPFX = '\\cff';
 const TABS = ['col', 'ico', 'grd'];
+const MAXRAW = 63;      // what the character creation's name field takes (measured in the game)
 const st = {toks: [], caret: 0, recent: [], tab: 0, gA: 'ED1C24', gB: 'FFF14E', slot: 'A', scope: 'all', selhex: null, marks: true};
 const $ = (s) => document.querySelector(s);
 let blinkOn = true;
@@ -81,7 +82,9 @@ function refresh() {
   if (!st.toks.length) pill += '<span class="ph">Type a name\u2026</span>';
   $('#ne-pill').innerHTML = pill;
   const chars = st.toks.filter(k => k.t === 'ch').length, icons = st.toks.filter(k => k.t === 'ic').length;
-  $('#ne-info').textContent = `Characters ${chars}  ·  Icons ${icons}  ·  Raw length ${serialize().length}  ·  Max length: unknown`;
+  const rawLen = serialize().length;
+  $('#ne-info').textContent = `Characters ${chars}  ·  Icons ${icons}  ·  Raw length ${rawLen} of ${MAXRAW}${rawLen > MAXRAW ? ' (too long for the name field)' : ''}`;
+  cls('#ne-info', 'over', rawLen > MAXRAW);
   blinkOn = true; markSelected(); paintGradient();
 }
 function insert(list) { st.toks.splice(st.caret, 0, ...list); st.caret += list.length; refresh(); }

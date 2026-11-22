@@ -25,6 +25,7 @@ end
 local ICPFX, CPFX = '\\gffffffff00000', '\\cff'
 local ICPAT, CPAT = '^%\\gffffffff00000(%x%x%x)', '^%\\cff(%x%x%x%x%x%x)'     -- the same as patterns (% escapes the backslash)
 local TABS = {'col', 'ico', 'grd'}
+local MAXRAW = 63      -- what the character creation's name field takes (measured in the game: 63 characters, the codes count as typed)
 
 local st = {
     toks = {}, caret = 0, recent = {}, tab = 1,
@@ -218,7 +219,9 @@ local function refresh()
     for _, k in ipairs(st.toks) do
         if k.t == 'ch' then chars = chars + 1 elseif k.t == 'ic' then icons = icons + 1 end
     end
-    doc:text('#ne-info', ('Characters %d  ·  Icons %d  ·  Raw length %d  ·  Max length: unknown'):format(chars, icons, #serialize()))
+    local raw_len = #serialize()
+    doc:text('#ne-info', ('Characters %d  ·  Icons %d  ·  Raw length %d of %d%s'):format(chars, icons, raw_len, MAXRAW, raw_len > MAXRAW and ' (too long for the name field)' or ''))
+    set_class('#ne-info', 'over', raw_len > MAXRAW)
     blink_on = true
     mark_selected()
     paint_gradient()

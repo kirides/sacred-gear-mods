@@ -28,6 +28,7 @@
 .ic { display: inline-block; width: 24dp; height: 26dp; vertical-align: middle; }
 .ne-prev .ic { margin: 0 2dp; }
 .ne-info { margin: 4dp 0 0 0; font-size: 12dp; color: #8a7e68; }
+.ne-info.over { color: #e06060; }
 
 /* buttons of the editor (the theme's game-button is for the big ones) */
 .ne-btn { display: inline-block; flex: none; margin: 0 6dp 0 0; padding: 4dp 12dp; font-size: 14dp; line-height: 20dp; white-space: nowrap; text-align: center; color: #e4dcc0; background-color: #1c160e; border: 1px #6b5428; cursor: pointer; }

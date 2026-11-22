@@ -32,7 +32,7 @@ Press **Ctrl+Shift+N** (or pick *Name editor* in the controller's mod menu). The
 | `\cffRRGGBB` | the letters after it have this color (it stays until the next code) |
 | `\gffffffff00000XXX` | a UI image; `XXX` is its id in hex (`0DA` is image 218, a skull). The game draws it in the line like a letter |
 
-A gradient costs 9 raw characters per colored letter. How long a name may be in the game is not verified yet; the editor shows the raw length.
+A gradient costs 9 raw characters per colored letter. The character creation's name field takes at most **63 characters** (measured in the game by typing into it; the codes count as typed characters), so the editor shows the raw length against 63 and turns the line red when it is longer. A fully colored name has room for about six letters.
 
 ## Keys
 

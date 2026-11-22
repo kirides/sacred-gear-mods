@@ -68,6 +68,7 @@ body.pad .padkey { display: inline-block; }
 .ic { display: inline-block; width: 24px; height: 26px; vertical-align: middle; }
 .ne-prev .ic { margin: 0 2px; }
 .ne-info { margin: 4px 0 0 0; font-size: 12px; color: #8a7e68; }
+.ne-info.over { color: #e06060; }
 
 /* buttons of the editor (the theme's game-button is for the big ones) */
 .ne-btn { display: inline-block; flex: none; margin: 0 6px 0 0; padding: 4px 12px; font-size: 14px; line-height: 20px; white-space: nowrap; text-align: center; color: #e4dcc0; background-color: #1c160e; border: 1px #6b5428; cursor: pointer; }
@@ -173,6 +174,7 @@ window.NAME_EDITOR_ATLAS = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYAAAA
 const DATA = window.NAME_EDITOR_DATA;
 const ICPFX = '\\gffffffff00000', CPFX = '\\cff';
 const TABS = ['col', 'ico', 'grd'];
+const MAXRAW = 63;      // what the character creation's name field takes (measured in the game)
 const st = {toks: [], caret: 0, recent: [], tab: 0, gA: 'ED1C24', gB: 'FFF14E', slot: 'A', scope: 'all', selhex: null, marks: true};
 const $ = (s) => document.querySelector(s);
 let blinkOn = true;
@@ -249,7 +251,9 @@ function refresh() {
   if (!st.toks.length) pill += '<span class="ph">Type a name\u2026</span>';
   $('#ne-pill').innerHTML = pill;
   const chars = st.toks.filter(k => k.t === 'ch').length, icons = st.toks.filter(k => k.t === 'ic').length;
-  $('#ne-info').textContent = `Characters ${chars}  ·  Icons ${icons}  ·  Raw length ${serialize().length}  ·  Max length: unknown`;
+  const rawLen = serialize().length;
+  $('#ne-info').textContent = `Characters ${chars}  ·  Icons ${icons}  ·  Raw length ${rawLen} of ${MAXRAW}${rawLen > MAXRAW ? ' (too long for the name field)' : ''}`;
+  cls('#ne-info', 'over', rawLen > MAXRAW);
   blinkOn = true; markSelected(); paintGradient();
 }
 function insert(list) { st.toks.splice(st.caret, 0, ...list); st.caret += list.length; refresh(); }
