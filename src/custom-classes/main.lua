@@ -12,6 +12,7 @@
 local profiles_lib = require('profiles')
 local arts = require('arts')
 local buffs = require('buffs')
+local fx = require('fx')
 local master_lib = require('master')
 local window = require('window')
 local ui = gear.ui
@@ -199,6 +200,7 @@ end
 -- ability.route: a hero of a profile uses an art another class's handler knows: that handler runs it.
 local route_cache = {}
 gear.on('ability.route', guard('route', function(type_id, art, vanilla, action, id)
+    fx.used(art)
     if arts.chains[art] then start_chain(id, art) end
     if buffs.rules[art] then
         local who = gear.world.object(id)

@@ -42,6 +42,10 @@ ok(fx.variant_id(2010, 1) == 200000 + 2010 * 64 and fx.variant_id(2010, 3) == fx
 ok(fx.variant_id(2010, 64) < fx.variant_id(2011, 1), 'blocks do not overlap')
 
 -- ---- apply and clear against a recording fake of gear.pfx ----
+local now = 100
+gear.time = function() return now end
+local route_handlers = {}
+gear.on = function(event, fn) route_handlers[event] = fn; return {event = event} end
 local rec = {defs = {}, rules = {}, removed = {}, undefined = {}}
 gear.pfx = {
     define = function(def)
@@ -65,8 +69,20 @@ local list = {
 local made, probs = fx.apply(2010, list, 'm/arts/mist.json')
 ok(made == 3 and #probs == 0, 'three rules made')
 local r1, r2, r3 = rec.rules[1].rule, rec.rules[2].rule, rec.rules[3].rule
-ok(r1.ability == 2010 and r1.fx[1] == 792 and r1.min_level == 10 and r1.use == fx.variant_id(2010, 1), 'rule 1: ability, type, level, variant')
-ok(r2.fx == nil and r2.min_level == nil and r2.use == fx.variant_id(2010, 2), 'rule 2 applies to every effect')
+ok(r1.fx[1] == 792 and r1.min_level == 10 and r1.select ~= nil, 'rule 1: type, level, select function')
+ok(r1.select({fx = 792, ability = 2010, creature = {}}) == fx.variant_id(2010, 1), 'the art in flight gets variant 1')
+ok(r1.select({fx = 792, ability = 1052}) == nil, 'another art does not')
+ok(r1.select({fx = 792}) == nil, 'a creature-less effect without a recent use of the art does not')
+fx.used(2010)
+ok(r1.select({fx = 792, level = 5}) == fx.variant_id(2010, 1), 'a creature-less effect of a named type right after a use gets it')
+ok(r2.select({fx = 100}) == nil, 'a rule without types does not take creature-less effects')
+ok(r1.select({fx = 792, creature = {id = 3}}) == nil, 'an effect of another creature without the ability does not')
+now = now + 5
+ok(r1.select({fx = 792}) == nil, 'the window has closed')
+fx.used(1052)
+now = now + 1
+ok(r1.select({fx = 792}) == nil, 'the use of an art without rules is not noted')
+ok(r2.fx == nil and r2.min_level == nil and r2.select({fx = 5, ability = 2010}) == fx.variant_id(2010, 2), 'rule 2 applies to every effect of the art in flight')
 ok(r3.fx == nil, 'an empty type list means every effect')
 ok(r1.priority > r2.priority and r2.priority > r3.priority, 'the first rule has the highest priority')
 ok(rec.defs[fx.variant_id(2010, 2)].colorize == 0x40D0FF, 'variant 2 defined')

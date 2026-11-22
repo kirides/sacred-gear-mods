@@ -4,15 +4,23 @@
 --   { "fx": [792], "min_level": 10, "max_level": 20,                 (all optional: no `fx` = every effect, no level = any)
 --     "hue": -120, "colorize": "#FF2020", "multiply": "#80FFFFFF", "alpha": 1, "speed": 0.5,
 --     "textures": {"PARTICLE_GLOW01.TGA": "PARTICLE_SMOKE01.TGA"} }
--- Each rule becomes a gear.pfx variant (an id of this mod's block, 200000 + art_id * 64 + rule number - 1) and a gear.pfx rule for the art's own
--- id. The first rule of the list that matches an effect and a level wins (rules have falling priority). Only copies have effects: a chain
--- makes the effects of its steps. The look is local (other players of a network game see the engine's effect). The editor makes these
+-- Each rule becomes a gear.pfx variant (an id of this mod's block, 200000 + art_id * 64 + rule number - 1) and a gear.pfx rule that picks it for
+-- the art's effects. The first rule of the list that matches an effect and a level wins (rules have falling priority). Only copies have effects: a
+-- chain makes the effects of its steps.
+--
+-- Which effects are "the art's": the effects made with the art in flight (ctx.ability is the art's id) always; but some effects (a spell's cloud
+-- or projectile, the effects of a hit) are made by the engine with no caster and no ability. For those a rule that NAMES effect types also takes
+-- the effects of those types that appear within WINDOW seconds after the art was used by a hero (main.lua tells it from the `ability.route` question the engine asks); another hero's creature-less effect of the same type in that time gets the look too. A rule without types does not do that. The look is local (other players of a network game see the engine's effect). The editor makes these
 -- files and shows what the rules look like (Effects screen of the Sacred Class Editor).
 
 local M = {}
 M.MAX_RULES = 64
 M.TYPE_MIN, M.TYPE_MAX = 0x300, 0x49D
 local BLOCK_BASE = 200000
+M.WINDOW = 4.0
+
+local watched = {}      -- art id -> true while the art has rules
+local used_at = {}      -- art id -> gear.time() of the last time a hero had it in flight
 
 local handles = {}      -- list of {rule = handle, id = variant id}
 
@@ -81,6 +89,25 @@ end
 -- The variant id of rule `index` (1..64) of an art.
 function M.variant_id(art_id, index) return BLOCK_BASE + art_id * M.MAX_RULES + (index - 1) end
 
+-- Notes that a hero has an art in flight (main.lua calls it from its ability.route handler, which the engine asks for every use of an art);
+-- only arts that have rules are noted.
+function M.used(art_id)
+    if watched[art_id] then used_at[art_id] = gear.time() end
+end
+
+-- Whether a creature-less effect belongs to a recent use of the art.
+function M.recent(art_id)
+    local t = used_at[art_id]
+    return t ~= nil and gear.time() - t <= M.WINDOW
+end
+
+-- The decision of a rule for an effect (gear.pfx select): the variant id, or nil.
+function M.select(art_id, id, ctx, by_window)
+    if ctx.ability == art_id then return id end
+    if by_window and ctx.ability == nil and ctx.creature == nil and M.recent(art_id) then return id end
+    return nil
+end
+
 -- Removes every rule and variant this mod made.
 function M.clear()
     if gear.pfx then
@@ -90,12 +117,15 @@ function M.clear()
         end
     end
     handles = {}
+    for k in pairs(watched) do watched[k] = nil end
+    for k in pairs(used_at) do used_at[k] = nil end
 end
 
 -- Defines the variants and rules of an art (a checked list). Returns the number of rules made and the problems.
 function M.apply(art_id, list, where)
     local made, problems = 0, {}
     if not gear.pfx then return 0, {where .. ': this version of Sacred Gear has no gear.pfx (skill effects), the fx rules are not used'} end
+    watched[art_id] = true
     for i, r in ipairs(list) do
         local id = M.variant_id(art_id, i)
         local ok, err = pcall(gear.pfx.define, M.definition(id, r))
@@ -103,7 +133,9 @@ function M.apply(art_id, list, where)
             problems[#problems + 1] = ('%s: fx[%d]: %s'):format(where, i, tostring(err))
         else
             local types = (r.fx and #r.fx > 0) and r.fx or nil
-            local rule = {fx = types, ability = art_id, min_level = r.min_level, max_level = r.max_level, use = id, priority = M.MAX_RULES - i}
+            local by_window = types ~= nil
+            local rule = {fx = types, min_level = r.min_level, max_level = r.max_level, priority = M.MAX_RULES - i,
+                select = function(ctx) return M.select(art_id, id, ctx, by_window) end}
             local ok2, h = pcall(gear.pfx.rule, rule)
             if ok2 then
                 handles[#handles + 1] = {rule = h, id = id}
