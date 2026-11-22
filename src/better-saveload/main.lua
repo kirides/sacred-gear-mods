@@ -573,7 +573,7 @@ local function snapshot(preview)
         sort_label = SORTS[view.sort_i].label, count_text = ('%d of %d'):format(#view.shown, #view.all), no_rows = #view.shown == 0,
         search_kbd = (view.osk and view.osk.target == 'search') and 'Close' or 'Keyboard',
         name_kbd = (view.osk and view.osk.target == 'name') and 'Close keyboard' or 'Keyboard',
-        osk = view.osk ~= nil, rows = {}, spacer_top = '0px', spacer_bot = '0px', empty_msg = '',
+        osk = view.osk ~= nil, rows = {}, spacer_top = '0dp', spacer_bot = '0dp', empty_msg = '',
         confirm = view.confirm ~= nil, confirm_text = view.confirm and view.confirm.text or '', msg = '', msg_ok = true,
         can_primary = view.sel ~= nil, primary_label = view.sel == 'new' and 'Save' or 'Overwrite',
         can_load = false, can_delete = false,
@@ -614,8 +614,8 @@ local function snapshot(preview)
         row_keys[r.id] = key
         m.rows[#m.rows + 1] = r
     end
-    m.spacer_top = ((math.max(1, first) - 1) * ROW_H_UNITS) .. 'px'
-    m.spacer_bot = (math.max(0, #rows - lastrow) * ROW_H_UNITS) .. 'px'
+    m.spacer_top = ((math.max(1, first) - 1) * ROW_H_UNITS) .. 'dp'
+    m.spacer_bot = (math.max(0, #rows - lastrow) * ROW_H_UNITS) .. 'dp'
     view.rows_total = #rows
     view.page = VIEW_ROWS
     if #rows == 0 then m.empty_msg = #view.all == 0 and 'No savegames yet.' or 'No savegame matches the filters.' end
@@ -633,7 +633,7 @@ local function load_doc()
     m.q, m.name = view.search, view.name
     last = m
     local err
-    doc, err = ui.rml.load('ui/screen.rml', {model = m, on_change = function(_, model)
+    doc, err = ui.rml.load('ui/screen.rml', {dp = true, model = m, on_change = function(_, model)
         local q = tostring(model.q or '')
         if q ~= view.search then
             view.search = q:sub(1, 200)
