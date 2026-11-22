@@ -1,0 +1,12 @@
+{
+  "format": 3,
+  "id": "red-mist",
+  "kind": "copy",
+  "art_id": 2010,
+  "base": 1052,
+  "name": { "en": "Red Mist" },
+  "description": { "en": "Poison Mist with a red cloud (self test of the effect rules)." },
+  "fx": [
+    { "fx": [792, 867], "hue": -120 }
+  ]
+}

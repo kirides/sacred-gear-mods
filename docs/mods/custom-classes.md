@@ -147,6 +147,30 @@ Buff files `buffs/<id>.json` (this mod or any installed mod that is on):
 `armor_factor`, `regen_factor`, `art_regen_factor`), `overlay` is `stone`, `flame` or `light`. They are registered as `custom-classes:<id>`.
 The hit rule rests on Gear's event `ability.hit` (a hit of a creature that has the art in flight); buffs end when a savegame is loaded.
 
+## Effects of arts
+
+An art file of format 3 can list `fx` rules: what the particle effects of a **copy** look like, by effect type and cast level (`gear.pfx` of
+Sacred Gear, [GearPfx.md](https://github.com/kirides/sacred-bild/blob/main/docs/GearPfx.md)). The Sacred Class Editor has an Effects screen
+that designs them with an animated preview; the file looks like this:
+
+```json
+{ "format": 3, "id": "green-mist", "kind": "copy", "art_id": 2010, "base": 1052, "name": {"en": "Green Mist"},
+  "fx": [
+    { "fx": [792], "min_level": 10, "max_level": 30, "hue": -120 },
+    { "colorize": "#40D0FF", "speed": 0.5, "textures": { "PARTICLE_CLOUD01.TGA": "PARTICLE_SMOKE01.TGA" } }
+  ] }
+```
+
+Every key of a rule is optional. `fx` lists effect types (0x300..0x49D, written as decimal numbers; none = every effect the art makes), `min_level` and
+`max_level` the cast level (1..200). The look: `hue` (degrees, -360..360), `colorize` (`"#RRGGBB"`), `multiply` (`"#AARRGGBB"`), `alpha` (0..4),
+`speed` (0.01..100; 0.5 lasts twice as long) and `textures` (a sprite of the game's effect list to another one). The first rule of the list
+that matches an effect and a level wins; at most 64 rules per art. A problem in the list is logged and the effects of that art keep the
+game's look (the art itself is still made). Chains have no effects of their own: a chain makes the effects of its steps.
+
+Each rule becomes a `gear.pfx` variant (id `200000 + art_id * 64 + rule number - 1`) and a rule for the art's own id. The effect is local: in a network game the
+other players see the game's own look. Which effect types an art makes is only known from casting it; the editor ships the table of Gear's
+cast run. Not possible: new shapes, particle counts, a texture of your own.
+
 ## Runes and the combo master
 
 **Every art copy and chain has a rune.** The mod makes an item of its own for each art file (art ids 2000 to 3799): it looks like the base art's rune,

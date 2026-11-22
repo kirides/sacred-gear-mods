@@ -1,0 +1,11 @@
+{
+  "format": 1,
+  "id": "fxtest",
+  "name": { "en": "Effect test" },
+  "description": { "en": "A Seraphim that casts Poison Mist and its red copy." },
+  "body": "seraphim",
+  "arts": [
+    { "id": 1052, "learn": "start", "level": 5 },
+    { "id": 2010, "learn": "start", "level": 5 }
+  ]
+}
