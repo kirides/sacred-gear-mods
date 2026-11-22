@@ -41,6 +41,7 @@ body { font-size: 15dp; color: #f0f0f0; }
 button {
     margin-right: 8px;
     padding: 4px 14px;
+    line-height: 1.5;                  /* tall enough that the descenders of a label are not cut (small buttons set their own padding) */
     color: #f0f0f0;
     background-color: #14141f;
     border: 1px #8c7440;
