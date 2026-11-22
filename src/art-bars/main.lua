@@ -136,9 +136,10 @@ local function same(a, b)
     return true
 end
 
-local function icon_of(id)
+-- The game's own sprite for the state: 'disabled' (not learned: the grey disc), 'cooldown' (regenerating), 'available'.
+local function icon_of(id, state)
     if is_combo(id) then return '', 0xFFFFFFFF end
-    local image, tint = gear.classes.art_icon(id)
+    local image, tint = gear.classes.art_icon(id, state)
     if image then return 'gear:image/' .. image, tint or 0xFFFFFFFF end
     return '', 0xFFFFFFFF
 end
@@ -164,16 +165,17 @@ local function slot_model(h, bar, slot, i)
     if label ~= '' then tip = tip .. '\nKey: ' .. label end
     local m = {id = ('b%ds%d'):format(i, slot), tip = tip, known = known and true or false, icon = '', tint = '#ffffffff', label = '', cd = 0, cdn = '', key = ''}
     if id then
-        if is_combo(id) then
-            m.label = 'C' .. (id - 0x200 + 1)
-        else
-            local src, tint = icon_of(id)
-            if src ~= '' then m.icon, m.tint = src, css_color(tint) else m.label = '?' end
-        end
         local a = (not is_combo(id)) and h:ability(id) or (function()
             for _, k in ipairs(h:combos() or {}) do if k.id == id then return {regen = math.max(0, k.total - k.charge), regen_max = k.total} end end
         end)()
-        if a and a.regen and a.regen > 0.05 then
+        local cooling = a and a.regen and a.regen > 0.05
+        if is_combo(id) then
+            m.label = 'C' .. (id - 0x200 + 1)
+        else
+            local src, tint = icon_of(id, not known and 'disabled' or cooling and 'cooldown' or 'available')
+            if src ~= '' then m.icon, m.tint = src, css_color(tint) else m.label = '?' end
+        end
+        if cooling then
             m.cd = math.floor(math.min(1, a.regen / math.max(0.1, a.regen_max or a.regen)) * 100)
             m.cdn = ('%.0f'):format(a.regen)
         end

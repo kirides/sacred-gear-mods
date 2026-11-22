@@ -315,8 +315,8 @@ function M.new(env)
         return ('#%02x%02x%02x%02x'):format(math.floor(argb / 65536) % 256, math.floor(argb / 256) % 256, argb % 256, math.floor(argb / 16777216) % 256)
     end
 
-    local function icon_of(id)
-        local image, tint = gear.classes.art_icon(id)
+    local function icon_of(id, state)
+        local image, tint = gear.classes.art_icon(id, state)
         if not image then return '', '#ffffffff' end
         return 'gear:image/' .. image, css_color(tint)
     end
@@ -387,7 +387,7 @@ function M.new(env)
             local list = combinable(h)
             m.no_arts = #list == 0
             for n, a in ipairs(list) do
-                local icon, tint = icon_of(a.id)
+                local icon, tint = icon_of(a.id, #st.draft >= 4 and 'disabled' or 'available')
                 local rec = gear.data.abilities[a.id]
                 local desc = gear.text.get((rec or {}).description_text or 0)
                 m.arts[n] = {id = 'a' .. n, icon = icon, tint = tint, full = #st.draft >= 4,
@@ -448,7 +448,7 @@ function M.new(env)
     local function rml_load()
         local m = snapshot(hero())
         rml.last = m
-        local doc, err = ui.rml.load('ui/master.rml', {model = m})
+        local doc, err = ui.rml.load('ui/master.rml', {model = m, origin = 'screen'})
         if not doc then
             gear.log('custom classes: ui/master.rml failed: ' .. tostring(err))
             rml.failed = true

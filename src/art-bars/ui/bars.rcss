@@ -2,7 +2,6 @@
 .bar .slot { box-sizing: border-box; position: relative; display: inline-block; margin: 4px 0 0 4px; padding: 0; border: 1px #6e5e3a; background-color: #2a2418; }
 .bar .slot.edit { border-color: #ffd780; }
 .bar .slot:hover, .bar .slot:focus { border-color: #ffe030; }
-.bar .slot.dim .icon { opacity: 0.4; }
 .slot .icon { position: absolute; left: 3px; top: 3px; }
 .slot .glyph { position: absolute; left: 0px; right: 0px; top: 30%; text-align: center; color: #e8c878; font-size: 18dp; }
 .slot .cd { position: absolute; left: 3px; right: 3px; top: 3px; background-color: #000000a0; }
