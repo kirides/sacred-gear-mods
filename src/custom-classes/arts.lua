@@ -18,7 +18,9 @@
 -- regeneration seconds, whole seconds for spells), so it can never be cheaper than the parts. The steps are learned with the chain.
 
 local buffs = require('buffs')
+local fx = require('fx')
 local M = {}
+M.fx_rules = {}    -- art id -> number of effect rules made
 M.runes = {}       -- art id -> {type, drop_weight, min_level, price, combo_master}: the rune items of the art files
 
 -- The installed mods that are switched on (data of a mod that is off is not read).
@@ -170,6 +172,8 @@ function M.load()
     for id in pairs(chains) do chains[id] = nil end
     for id in pairs(buffs.rules) do buffs.rules[id] = nil end
     for id in pairs(M.runes) do M.runes[id] = nil end
+    fx.clear()
+    for id in pairs(M.fx_rules) do M.fx_rules[id] = nil end
     local problems = {}
     local pending = {}
     for _, m in ipairs(active_mods()) do
@@ -177,8 +181,8 @@ function M.load()
             if name:lower():match('%.json$') then
                 local where = m.id .. '/arts/' .. name
                 local ok, d = pcall(gear.json.decode, gear.mods.read(m.id, 'arts/' .. name) or '')
-                if not ok or type(d) ~= 'table' or (d.format ~= 1 and d.format ~= 2) or (d.kind ~= 'copy' and d.kind ~= 'chain') then
-                    problems[#problems + 1] = where .. ': not an art file of format 1 or 2 (kind copy or chain)'
+                if not ok or type(d) ~= 'table' or (d.format ~= 1 and d.format ~= 2 and d.format ~= 3) or (d.kind ~= 'copy' and d.kind ~= 'chain') then
+                    problems[#problems + 1] = where .. ': not an art file of format 1 to 3 (kind copy or chain)'
                 else
                     pending[#pending + 1] = {d = d, where = where}
                 end
@@ -205,6 +209,18 @@ function M.load()
                     if why_rune then problems[#problems + 1] = why_rune end
                     if rune then M.runes[p.d.art_id] = rune end
                     ids[p.d.art_id] = {id = p.d.id, kind = p.d.kind, name = text(p.d.name, p.d.id)}
+                    if p.d.fx ~= nil then
+                        -- effect rules: a problem is reported, the art itself is still made
+                        local why_fx = fx.check(p.d.fx)
+                        if not why_fx and p.d.kind ~= 'copy' then why_fx = 'fx is ignored: a chain makes the effects of its steps' end
+                        if why_fx then
+                            problems[#problems + 1] = p.where .. ': ' .. why_fx
+                        elseif #p.d.fx > 0 then
+                            local n, fx_problems = fx.apply(p.d.art_id, p.d.fx, p.where)
+                            for _, t in ipairs(fx_problems) do problems[#problems + 1] = t end
+                            if n > 0 then M.fx_rules[p.d.art_id] = n end
+                        end
+                    end
                 else problems[#problems + 1] = p.where .. ': ' .. tostring(why) end
             end
         end
