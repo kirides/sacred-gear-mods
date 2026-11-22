@@ -1,0 +1,5 @@
+/* Where the window sits in the game (the web page has its own frame). */
+#ne-win { position: absolute; left: 202dp; top: 60dp; width: 620dp; }
+#ne-win > .body { background-color: #100d0a; }
+#ne-win .tabbar { margin: 8dp 0 6dp 0; }
+button.game-button { flex: none; white-space: nowrap; }

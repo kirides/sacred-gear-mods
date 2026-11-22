@@ -1,0 +1,68 @@
+<rml>
+<head>
+    <title>Name editor</title>
+    <link type="text/rcss" href="fragment.rcss"/>
+    <link type="text/rcss" href="window.rcss"/>
+</head>
+<body>
+<!-- The window: only the game's frame around the fragment. The fragment between the markers is shared with the standalone web page
+     (tools/make_name_editor_web.py puts it into docs/name-editor/index.html); keep it plain markup (ids, classes, no data binding). -->
+<div id="ne-win" class="window" data-panel="name-editor" data-title="Name editor">
+    <div class="titlebar">Name editor</div>
+    <div class="body">
+<!--fragment-->
+<div id="ne">
+    <div id="ne-prev" class="ne-prev"></div>
+    <div class="ne-rawrow">
+        <div id="ne-raw" class="ne-raw"></div>
+        <button id="act-copy" class="ne-btn" title="Copy the raw text">Copy</button>
+        <button id="act-paste" class="ne-btn" title="Replace the name with the raw text on the clipboard">Paste</button>
+    </div>
+    <div class="ne-fieldrow">
+        <div id="ne-pill" class="ne-pill" tabindex="0"></div>
+        <button id="act-left" class="ne-btn ne-sq" title="Cursor left">&lt;</button>
+        <button id="act-right" class="ne-btn ne-sq" title="Cursor right">&gt;</button>
+        <button id="act-back" class="ne-btn ne-sq" title="Backspace">&#9003;</button>
+    </div>
+    <div id="ne-info" class="ne-info"></div>
+    <div class="tabbar">
+        <span id="ne-lb" class="padkey lb"></span>
+        <a id="tab-col" class="link tab on" tabindex="0">Colors</a><span class="tab-sep"></span>
+        <a id="tab-ico" class="link tab" tabindex="0">Icons</a><span class="tab-sep"></span>
+        <a id="tab-grd" class="link tab" tabindex="0">Gradient</a>
+        <span id="ne-rb" class="padkey rb"></span>
+        <span class="ne-sp"></span>
+        <button id="act-example" class="ne-btn ne-sm" title="Fill in an example name">Example</button>
+        <button id="act-clear" class="ne-btn ne-sm" title="Empty the name">Clear</button>
+    </div>
+    <div id="ne-p-col" class="ne-panel">
+        <div id="ne-colors" class="ne-grid"></div>
+        <div class="ne-recent"><span class="ne-hint">Recent colors</span><span id="ne-recent"></span></div>
+    </div>
+    <div id="ne-p-ico" class="ne-panel ne-hide">
+        <div id="ne-icons" class="ne-igrid" data-nav-scroll=""></div>
+    </div>
+    <div id="ne-p-grd" class="ne-panel ne-hide">
+        <div id="ne-gbar" class="ne-gbar"></div>
+        <div class="ne-grow">
+            <button id="slot-A" class="ne-btn ne-slot" title="Pick the start color below"><span id="slot-A-dot" class="ne-dot"></span><span id="slot-A-txt"></span></button>
+            <button id="slot-B" class="ne-btn ne-slot" title="Pick the end color below"><span id="slot-B-dot" class="ne-dot"></span><span id="slot-B-txt"></span></button>
+            <button id="act-swap" class="ne-btn" title="Swap start and end">Swap</button>
+            <button id="scope-all" class="ne-btn on" title="Color every letter of the name">Whole name</button>
+            <button id="scope-cursor" class="ne-btn" title="Color the letters after the cursor">From cursor</button>
+        </div>
+        <div id="ne-presets" class="ne-presets"></div>
+        <div id="ne-gcolors" class="ne-grid"></div>
+        <div class="ne-grow">
+            <button id="act-apply" class="ne-btn ne-go" title="One color code per letter, spaces skipped">Apply gradient</button>
+            <button id="act-nocol" class="ne-btn" title="Take every color code out of the name">Remove colors</button>
+            <span id="ne-gcost" class="ne-hint"></span>
+        </div>
+    </div>
+</div>
+<!--/fragment-->
+        <div class="ne-grow ne-close"><button id="act-close" class="game-button"><span class="padkey b"></span>Close</button></div>
+    </div>
+</div>
+</body>
+</rml>

@@ -1,0 +1,71 @@
+/* The name editor's stylesheet, shared by the game (RmlUi, dp = true) and the standalone web page (tools/make_name_editor_web.py turns dp into px).
+   Only what RmlUi can do: boxes, flex rows, borders, colors. The game's theme (sacred-theme) supplies .tabbar, .link, .padkey and game-button;
+   the web page brings a small stand-in for them. */
+
+#ne { width: 580dp; }
+.ne-hide { display: none; }
+
+/* the preview: the name on the dark ground of the character list */
+.ne-prev { height: 38dp; padding: 4dp 14dp; background-color: #0e0c09; border: 1px #2a2113; font-family: "Sacred Game"; font-size: 22dp; line-height: 30dp; color: #d8c9a0; overflow: hidden; white-space: nowrap; }
+
+/* the raw text under it, to copy */
+.ne-rawrow { display: flex; flex-direction: row; align-items: stretch; margin: 6dp 0 0 0; }
+.ne-raw { flex: 1 1 auto; min-height: 30dp; padding: 4dp 10dp; margin-right: 6dp; background-color: #0a0806; border: 1px #3a2e1a; font-size: 13dp; line-height: 20dp; color: #cbbf9d; word-break: break-all; }
+.ne-raw .k { color: #e0a14a; }
+.ne-raw .g { color: #7fc4d8; }
+.ne-raw .h { color: #b49ad8; }
+.ne-raw .e { color: #5d5442; }
+
+/* the name: a pill with the game's blinking underscore */
+.ne-fieldrow { display: flex; flex-direction: row; align-items: center; margin: 8dp 0 0 0; }
+.ne-pill { flex: 1 1 auto; min-height: 28dp; padding: 7dp 18dp; margin-right: 6dp; background-color: #0a0806; border: 1px #3a2e1a; border-radius: 22dp; font-size: 18dp; line-height: 28dp; color: #e8e0c8; cursor: text; white-space: pre-wrap; }
+.ne-pill.on { border-color: #ffd54a; }
+.ne-pill .ph { color: #5d5442; }
+.ne-pill .cur { color: #ffd54a; }
+.ne-pill .cur.off { color: transparent; }
+.ne-pill .cm { display: inline-block; width: 5dp; height: 5dp; margin: 0 1dp; border-radius: 3dp; border: 1px #000000; }
+.ne-pill.nomarks .cm { display: none; }
+.ic { display: inline-block; width: 24dp; height: 26dp; vertical-align: middle; }
+.ne-prev .ic { margin: 0 2dp; }
+.ne-info { margin: 4dp 0 0 0; font-size: 12dp; color: #8a7e68; }
+
+/* buttons of the editor (the theme's game-button is for the big ones) */
+.ne-btn { display: inline-block; flex: none; margin: 0 6dp 0 0; padding: 4dp 12dp; font-size: 14dp; line-height: 20dp; white-space: nowrap; text-align: center; color: #e4dcc0; background-color: #1c160e; border: 1px #6b5428; cursor: pointer; }
+.ne-btn:hover, .ne-btn:focus { color: #ffd54a; border-color: #ffd54a; background-color: #2a2113; }
+.ne-btn.on { color: #ffd54a; border-color: #c9a24a; }
+.ne-sp { flex: 1 1 auto; }
+.ne-btn.ne-sm { padding: 1dp 10dp; margin: 0 0 0 6dp; font-size: 13dp; }
+.ne-btn.ne-sq { width: 34dp; padding: 4dp 0; margin-right: 4dp; }
+.ne-btn.ne-go { border-color: #c9a24a; color: #ffd54a; }
+
+/* palettes */
+.ne-panel { margin: 2dp 0 0 0; }
+.ne-grid { display: flex; flex-direction: row; flex-wrap: wrap; width: 576dp; }
+.sw, .ib, .pre, .ne-btn { transform: none; }
+.sw:hover, .sw:focus, .ib:hover, .ib:focus, .pre:hover, .pre:focus, .ne-btn:hover, .ne-btn:focus { transform: none; }
+.sw { display: block; flex: none; width: 42dp; height: 30dp; margin: 0 4dp 4dp 0; padding: 0; border: 1px #000000; cursor: pointer; }
+.sw:hover, .sw:focus { border: 2dp #ffd54a; }
+.sw.sel { border: 2dp #ffffff; }
+.ne-recent { margin: 2dp 0 0 0; min-height: 34dp; display: flex; flex-direction: row; align-items: center; }
+.ne-recent .sw { width: 34dp; height: 24dp; display: inline-block; }
+.ne-hint { flex: none; font-size: 12dp; color: #8a7e68; margin-right: 12dp; }
+/* the swatches, icons and presets are too small for the confirm prompt the theme puts into every button */
+body.pad .sw:focus > .padkey.a, body.pad .sw:hover > .padkey.a, body.pad .ib:focus > .padkey.a, body.pad .ib:hover > .padkey.a, body.pad .pre:focus > .padkey.a, body.pad .pre:hover > .padkey.a { display: none; }
+.ne-igrid { display: flex; flex-direction: row; flex-wrap: wrap; width: 576dp; height: 210dp; overflow-y: auto; }
+.ib { display: block; flex: none; width: 44dp; height: 44dp; margin: 0 4dp 4dp 0; padding: 8dp 10dp; background-color: #0d0a07; border: 1px #2e2416; cursor: pointer; }
+.ib:hover, .ib:focus { border-color: #ffd54a; background-color: #1d1710; }
+.ib .ic { display: block; }
+
+/* the gradient: a bar of 32 slices, the two ends, the presets */
+.ne-gbar { display: flex; flex-direction: row; height: 26dp; width: 576dp; border: 1px #000000; margin: 0 0 8dp 0; }
+.ne-gbar .sl { display: block; flex: 1 1 0; height: 26dp; }
+.ne-grow { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; margin: 4dp 0 6dp 0; }
+.ne-slot { padding: 4dp 12dp 4dp 6dp; }
+.ne-slot.on { border-color: #ffd54a; }
+.ne-dot { display: inline-block; width: 20dp; height: 20dp; margin-right: 8dp; vertical-align: middle; border: 1px #000000; border-radius: 10dp; }
+.ne-presets { display: flex; flex-direction: row; flex-wrap: wrap; margin: 0 0 8dp 0; }
+.pre { display: flex; flex-direction: row; flex: none; width: 86dp; height: 22dp; margin: 0 6dp 6dp 0; padding: 0; border: 1px #000000; cursor: pointer; }
+.pre:hover, .pre:focus { border: 2dp #ffd54a; }
+.pre .sl { display: block; flex: 1 1 0; height: 100%; }
+.ne-foot { margin: 8dp 0 0 0; }
+.ne-close { justify-content: flex-end; margin: 6dp 0 0 0; }

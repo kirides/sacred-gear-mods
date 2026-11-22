@@ -1,0 +1,33 @@
+/* The web page's stand-in for what the game supplies around the fragment: the window frame, the tab bar, the controller prompts, the fonts. */
+/* (no box-sizing: RmlUi sizes the content box, so the page does too) */
+html { background: #0d0b09; min-height: 100%; }
+body { margin: 0; padding: 24px 16px 60px; min-height: 100vh; color: #d8cdb4; font: 15px/1.4 "Segoe UI", Inter, system-ui, sans-serif;
+       background: radial-gradient(1200px 700px at 50% -10%, #2a2016, #0d0b09 70%) fixed; }
+button, a { font: inherit; }
+button { color: inherit; }
+.window { width: 620px; margin: 0 auto; padding: 6px; background: linear-gradient(#1a150f, #120f0b); border: 2px solid #6b5428; border-radius: 4px;
+          box-shadow: 0 0 0 1px #000, inset 0 0 0 1px #000, 0 12px 40px rgba(0, 0, 0, .6); }
+.window > .titlebar { font-family: "Sacred Game", "Palatino Linotype", "Book Antiqua", Georgia, serif; letter-spacing: .12em; text-transform: uppercase; text-align: center; padding: 6px 10px; background: #302418; color: #f0c860; }
+.window > .body { padding: 10px 14px 12px 14px; }
+.ne-prev, .ne-pill { font-family: "Sacred Game", "Palatino Linotype", "Book Antiqua", Georgia, serif; }
+.ne-raw { font-family: Consolas, "Cascadia Mono", monospace; user-select: all; }
+.ne-btn, .ne-btn:focus-visible, .sw, .ib, .pre, a.tab { outline: none; }
+.sw:focus-visible, .ib:focus-visible, .pre:focus-visible, .ne-btn:focus-visible, a.tab:focus-visible { outline: 2px solid #ffd54a; outline-offset: 1px; }
+.ne-pill { outline: none; }
+.sw, .ib, .pre { appearance: none; }
+.ne-btn { font-family: inherit; }
+.ic { background-size: auto; }
+
+/* the theme's tab bar (link-style headers, thin separators) */
+.tabbar { display: flex; flex-direction: row; align-items: center; padding: 0 0 4px 0; margin: 8px 0 6px 0; border-bottom: 1px solid #8c7440c0; }
+.tabbar a.link.tab { padding: 3px 14px; font-family: "Sacred Game", "Palatino Linotype", Georgia, serif; font-size: 17px; color: #e8d8a8; cursor: pointer; text-align: center; }
+.tabbar a.link.tab:hover, .tabbar a.link.tab:focus { color: #fff6d0; text-shadow: 0 0 8px #ffb840; }
+.tabbar a.link.tab.on { color: #ffcf40; border-bottom: 2px solid #ffcf40; margin-bottom: -5px; padding-bottom: 5px; }
+.tabbar .tab-sep { width: 1px; height: 20px; margin: 0 6px; background: #8c744099; }
+/* controller prompts: the shoulder buttons show while a gamepad is connected */
+.padkey { display: none; min-width: 26px; height: 20px; margin: 0 10px; padding: 0 6px; border: 1px solid #6b5428; border-radius: 10px; font-size: 11px; line-height: 18px; text-align: center; color: #ffd54a; background: #0b0906; }
+.padkey.lb::before { content: "LB"; }
+.padkey.rb::before { content: "RB"; }
+body.pad .padkey { display: inline-block; }
+.hint { max-width: 640px; margin: 14px auto 0; color: #8a7e68; font-size: 13px; }
+.hint code { color: #cbbf9d; }
