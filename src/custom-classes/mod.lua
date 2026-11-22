@@ -10,6 +10,8 @@ return {
     settings = {
         {id = 'ask_new', type = 'bool', label = 'Offer a class to a new hero', default = true, section = 'Classes',
             tooltip = 'A hero at level 1 without a class gets the class window when the game starts'},
+        {id = 'rune_drops', type = 'number', label = 'Rune drops (%)', min = 0, max = 300, step = 10, default = 100, section = 'Runes',
+            tooltip = 'How often creatures drop the runes of custom arts (their drop weight in the art file times this; 0: never)'},
         {id = 'auto_remap', type = 'bool', label = 'Play another clip where the body has none', default = true, section = 'Classes',
             tooltip = 'A body without a clip for an art or spell plays one of its own (or the profile\'s motion remap); off: the art does nothing visible'},
         {id = 'debug', type = 'bool', label = 'Log the decisions', default = false, section = 'Classes'},

@@ -19,6 +19,7 @@
 
 local buffs = require('buffs')
 local M = {}
+M.runes = {}       -- art id -> {type, drop_weight, min_level, price, combo_master}: the rune items of the art files
 
 -- The installed mods that are switched on (data of a mod that is off is not read).
 local function active_mods()
@@ -137,12 +138,38 @@ local function make_chain(d, where)
     return true
 end
 
+-- The rune of an art file: `"rune": {"enabled": true, "drop_weight": 20, "min_level": 10, "price": 5000, "combo_master": true}`; every art copy and chain has a
+-- rune item (enabled by default). Returns the rune table, or nil (no rune), or nil and a problem text.
+function M.make_rune(d, where)
+    local cfg = {enabled = true, drop_weight = 0, min_level = 1, price = 0, combo_master = true}
+    local r = d.rune
+    if r ~= nil then
+        if type(r) ~= 'table' then return nil, where .. ': rune must be an object' end
+        if r.enabled ~= nil and type(r.enabled) ~= 'boolean' then return nil, where .. ': rune.enabled must be true or false' end
+        if r.combo_master ~= nil and type(r.combo_master) ~= 'boolean' then return nil, where .. ': rune.combo_master must be true or false' end
+        for _, k in ipairs({{'drop_weight', 0, 1000}, {'min_level', 1, 200}, {'price', 0, 100000000}}) do
+            local v = r[k[1]]
+            if v ~= nil and (type(v) ~= 'number' or v < k[2] or v > k[3]) then
+                return nil, ('%s: rune.%s must be a number %d..%d'):format(where, k[1], k[2], k[3])
+            end
+        end
+        for k, v in pairs(r) do cfg[k] = v end
+    end
+    if cfg.enabled == false then return nil end
+    if d.art_id < 2000 or d.art_id > 3799 then return nil, where .. ': runes exist for art ids 2000..3799' end
+    local type_id, err = gear.classes.define_rune(d.art_id)
+    if not type_id then return nil, where .. ': rune: ' .. tostring(err) end
+    cfg.type = type_id
+    return cfg
+end
+
 -- Reads every art file; returns the problems. After it, ids() has every id the files made.
 function M.load()
     for id in pairs(ids) do gear.classes.remove_ability(id) end
     ids = {}
     for id in pairs(chains) do chains[id] = nil end
     for id in pairs(buffs.rules) do buffs.rules[id] = nil end
+    for id in pairs(M.runes) do M.runes[id] = nil end
     local problems = {}
     local pending = {}
     for _, m in ipairs(active_mods()) do
@@ -174,6 +201,9 @@ function M.load()
                 end
                 if made then
                     if rules and #rules > 0 then buffs.rules[p.d.art_id] = rules end
+                    local rune, why_rune = M.make_rune(p.d, p.where)
+                    if why_rune then problems[#problems + 1] = why_rune end
+                    if rune then M.runes[p.d.art_id] = rune end
                     ids[p.d.art_id] = {id = p.d.id, kind = p.d.kind, name = text(p.d.name, p.d.id)}
                 else problems[#problems + 1] = p.where .. ': ' .. tostring(why) end
             end

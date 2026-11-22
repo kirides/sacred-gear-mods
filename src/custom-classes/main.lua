@@ -222,6 +222,20 @@ gear.on('ability.route', guard('route', function(type_id, art, vanilla, action, 
     return answer or nil
 end))
 
+-- drops.select: a creature's loot may be the rune of an art of the art files instead of the engine's pick (`rune.drop_weight` of the art file:
+-- chances in 10000 per equipment pick, times the setting "Rune drops" in percent, for creatures of at least `rune.min_level`).
+gear.on('drops.select', guard('drops', function(ev)
+    local scale = setting('rune_drops', 100) / 100
+    if scale <= 0 or ev.type then return end
+    for art, r in pairs(arts.runes) do
+        if r.drop_weight > 0 and ((ev.level or 0) <= 0 or ev.level >= r.min_level) and math.random() * 10000 < r.drop_weight * scale then
+            ev.type = r.type
+            log('rune %d dropped by a creature of level %d', art, ev.level or 0)
+            return
+        end
+    end
+end))
+
 -- ability.hit: the art hit a creature: its buff rules
 gear.on('ability.hit', guard('hit', function(attacker, victim, art)
     if buffs.rules[art] then buffs.hit(attacker, victim, art) end

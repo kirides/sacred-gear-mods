@@ -227,5 +227,52 @@ gear.task(function()
         gear.classes.remove_ability(2390)
         check('removing the copy frees the spell alias', gear.data.abilities[alias] == nil or gear.classes.linked_spell(2390) == nil)
     end
+    -- runes of art copies: a real item type, readable by a class that has the art, refused by one that does not, dropped by creatures
+    do
+        local rt = gear.classes.rune_type_of(2001)
+        check('the copy has a rune item type', rt ~= nil and rt >= 6200 and rt <= 7999, rt)
+        local shown = rt and gear.data.object_types:display_name(rt)
+        check('the rune is named like the copy', shown ~= nil and shown ~= '' and shown == gear.text.get((gear.data.abilities[2001] or {}).name_text or 0), shown)
+        local function rune_for(hero)
+            local x, y = hero:position()
+            gear.world.spawn(rt, x + 40, y, {})
+            gear.wait(0.5)
+            local item
+            for _, it in ipairs(gear.world.items_near(x, y, 300, {})) do if it.type == rt then item = it end end
+            if not item then return nil end
+            local new = gear.inv.add(gear.inv.container(hero.id), gear.inv.export(item.id))
+            gear.inv.destroy(item.id)
+            return new
+        end
+        gla:forget(2001)
+        local item = rune_for(gla)
+        check('a rune of the copy is in the Gladiator backpack', item ~= nil)
+        if item then
+            local ok, why = gla:use_item(item)
+            gear.wait(3)
+            check('the Gladiator class reads it: the art is learned', ok and gla:ability(2001) ~= nil, why)
+        end
+        local item2 = rune_for(ser)
+        if item2 then
+            local ok, why = ser:use_item(item2)
+            gear.wait(3)
+            check('the Seraphim class refuses it (not in its profile)', not ok and ser:ability(2001) == nil, why)
+        else
+            check('a rune in the Seraphim backpack', false)
+        end
+        -- drops: creatures' loot picks the rune now and then (weight 200 of 10000 per equipment pick)
+        gear.drops.reset_stats()
+        local x, y, layer = gla:position()
+        local foe
+        for _, c in ipairs(gear.world.creatures_near(x, y, 4000, {layer = layer})) do
+            if not c:is_hero() then foe = c break end
+        end
+        if foe then
+            local sim_ok, sim_why = gear.drops.simulate(foe:type(), 1500, 0, 0)
+            for _ = 1, 100 do gear.wait(0.5) local done, queued = gear.drops.simulation_progress() if (done or 0) >= (queued or 0) then break end end
+            local st = gear.drops.stats()
+            check('creature loot dropped runes of custom arts (drops.select)', (st.overridden or 0) > 0, ('picks %s overridden %s'):format(tostring(st.picks), tostring(st.overridden)))
+        end
+    end
     finish()
 end)
