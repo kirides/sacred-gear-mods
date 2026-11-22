@@ -41,6 +41,9 @@
   "lootlog": [
     "sacred-gear>=0.4.1"
   ],
+  "name-editor": [
+    "sacred-gear>=0.4.1"
+  ],
   "questhelper": [
     "sacred-gear>=0.4.1"
   ],

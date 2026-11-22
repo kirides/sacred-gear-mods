@@ -26,6 +26,7 @@ The pictures are screenshots from the game, taken by a script ([how](docs/Screen
 | [**Loot filter**](docs/mods/lootfilter.md) | <img src="docs/images/lootfilter.jpg" width="220" alt="Loot filter"> | Picks up only the items you want and dims the rest on the ground. F5. |
 | [**Loot log**](docs/mods/lootlog.md) | <img src="docs/images/lootlog.jpg" width="220" alt="Loot log"> | A list of what dropped and what you picked up. F3. |
 | [**Companions**](docs/mods/companions.md) | <img src="docs/images/companions.jpg" width="220" alt="Companions"> | A party of heroes in single player: recruit companions of any class with their own gear, skills and experience, play any of them (click a portrait, PageDown), the others follow and fight with their combat arts, spells and combos. Home. |
+| [**Name editor**](docs/mods/name-editor.md) | <img src="docs/images/name-editor.jpg" width="220" alt="Name editor"> | Build character names with colors, icons and gradients; copy the raw text Sacred stores. Ctrl+Shift+N. Also a [web page](docs/name-editor/index.html). |
 | [**Custom classes**](docs/mods/custom-classes.md) | <img src="docs/images/custom-classes.jpg" width="220" alt="Custom classes"> | Heroes with a class of your own: a Seraphim with Battle Mage fire, a Gladiator that casts. A class is a profile on one of the eight hero bodies (skills, arts from any class, runes), written by the Sacred Class Editor or by hand. Ctrl+Shift+C. |
 | [**Art bars**](docs/mods/art-bars.md) | <img src="docs/images/art-bars.jpg" width="220" alt="Art bars"> | Extra bars of slots for your combat arts, spells and combos (also the copies and chains of Custom classes), with keys (Ctrl+1 ...), cooldowns and the controller. |
 | [**Item comparison**](docs/mods/item-compare.md) | <img src="docs/images/item-compare.jpg" width="220" alt="Item comparison"> | Hover an item and see, in green and red, what it changes compared with what your hero (or a companion) wears in that slot. Works with the controller's cursor too. |
@@ -107,6 +108,7 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/layout` | Layout editor: move the game's windows and mod panels |
 | `src/realms` | Realm picker for the online play server |
 | `src/twitch_integration`, `src/twi_sacred` | Twitch Integration: the connector's pipe and the actions (monsters, gold, heal, teleport) |
+| `src/name-editor`, `src/name-editor_selftest` | Name editor: colors, icons and gradients for character names; its window and the web page (`tools/make_name_editor_web.py`) share one fragment. [Doc](docs/mods/name-editor.md) |
 | `src/sacred-theme` | The shared RmlUi look (game frame, buttons, orbs, sliders, tab bars, controller prompts); optional: the mods look plainer without it |
 | `src/sessiontracker`, `src/lootlog`, `src/damagemeter` | Session mods. [Doc](docs/SessionMods.md); logic test `tests/session_mods_test.lua` |
 | `src/item-compare`, `src/item-compare_selftest` | Item comparison tooltips and its self test. [Doc](docs/mods/item-compare.md) |
