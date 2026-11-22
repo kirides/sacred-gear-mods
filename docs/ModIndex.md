@@ -159,6 +159,14 @@ The download URL defaults to the `releases/latest/download/mods.zip` of the `ori
 taken from `thumbnail.png|jpg|webp` inside the mod folder, or from `docs/images/<id>.png|jpg|webp` when `--thumb-base`
 is given.
 
+### Minimum versions of requirements
+
+An entry of `requires` may carry a minimum version: `"sacred-gear>=0.4.1"`. The manager updates the requirement first, or refuses to install and to switch the mod
+on when nothing new enough is available (see the manager's `docs/ModIndex.md`, "Minimum versions"). Sacred Gear reads `requires` in `mod.lua` as exact ids, so such
+a constraint lives only in the index: write it in `tools/index-requires.json` (`{"mod-id": ["sacred-gear>=0.4.1"]}`), which the generator merges into the
+`requires` it copies from `mod.lua` (`--extra-requires` names another file). The RmlUi mods list `sacred-gear>=0.4.1` because their documents use the `dp`
+layout mode.
+
 ## Example
 
 ```json

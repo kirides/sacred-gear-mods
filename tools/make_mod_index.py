@@ -94,6 +94,17 @@ def parse_manifest(text):
     return res
 
 
+def merge_requires(plain, extra):
+    """mod.lua's plain ids, with the index-only entries of `extra` (`id` or `id>=version`) added; an entry of `extra` replaces the plain id it names.
+    Sacred Gear reads mod.lua's requires as exact ids, so a minimum version can only live in the index."""
+    out = list(plain or [])
+    for r in extra or []:
+        rid = re.split(r'\s*>=', r, maxsplit=1)[0].strip()
+        out = [x for x in out if re.split(r'\s*>=', x, maxsplit=1)[0].strip() != rid]
+        out.append(r)
+    return out or None
+
+
 def git_remote():
     try:
         url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'], stderr=subprocess.DEVNULL, text=True).strip()
@@ -108,6 +119,7 @@ def main():
     for f in ('src', 'prefix', 'out', 'name', 'author', 'description', 'homepage', 'download-url', 'version', 'thumb-base', 'asset'):
         a.add_argument('--' + f, default={'src': 'src', 'prefix': 'mods', 'out': 'mod-index.json', 'asset': 'mods.zip'}.get(f))
     a.add_argument('--exclude', action='append', help='folder glob to skip (repeatable); default: any folder whose name ends with "test" (case-insensitive) and sector-tools')
+    a.add_argument('--extra-requires', default='tools/index-requires.json', help='JSON file {"mod id": ["other-id>=1.2.0", ...]}: requirements (with minimum versions) that only the index states, merged into the mod.lua ones; skipped when missing')
     a.add_argument('--check', action='store_true', help='write nothing; exit 1 when the file differs')
     o = a.parse_args()
     excl = o.exclude or ['*test', 'sector-tools']
@@ -137,6 +149,10 @@ def main():
     idx.setdefault('name', remote[1] if remote else 'Mods')
     idx.setdefault('author', remote[0] if remote else 'unknown')
     old_mods = {m.get('id'): m for m in old.get('mods', [])}
+    extra = {}
+    if o.extra_requires and os.path.exists(o.extra_requires):
+        with open(o.extra_requires, encoding='utf-8-sig') as fh:
+            extra = json.load(fh)
     mods = []
     for folder in sorted(os.listdir(o.src)):
         mp = os.path.join(o.src, folder, 'mod.lua')
@@ -152,6 +168,7 @@ def main():
                'description': f.get('description'), 'requires': f.get('requires')}
         if f.get('enabled') is False:
             gen['defaultEnabled'] = False
+        gen['requires'] = merge_requires(f.get('requires'), extra.get(f['id']))
         e = dict(old_mods.get(f['id'], {}))
         for k in ('author', 'description', 'requires'):  # regenerated fields win, even by disappearing
             e.pop(k, None)
