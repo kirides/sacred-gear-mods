@@ -97,6 +97,7 @@ if (-not $CropOnly) {
     Phase 'keys'     'key-bindings' "{phase = 'modscreen', open = {mod = 'key-bindings', tab = 'keys'}}"
     Phase 'realms'   'realms' "{phase = 'modscreen', realm = {id = 'private', name = 'Private realm', host = 'realm.example.com', port = 7066}, open = {mod = 'realms'}}"
     Phase 'autopage' 'autosave' "{phase = 'modscreen', open = {mod = 'autosave', tab = 'page'}}"
+    Phase 'sprites'  'sprite-browser' "{phase = 'modscreen', open = {mod = 'sprite-browser', tab = 'page'}}" @() '-'
     Phase 'spawn'    'spawn-rate' "{phase = 'modscreen', open = {mod = 'spawn-rate'}}"
     Phase 'region'   'region-counter' "{phase = 'modscreen', open = {mod = 'region-counter'}}"
     Phase 'twibase'  'twitch_integration' "{phase = 'modscreen', clicks = {}}" @('twi_sacred')

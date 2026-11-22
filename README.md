@@ -107,6 +107,7 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/layout` | Layout editor: move the game's windows and mod panels |
 | `src/realms` | Realm picker for the online play server |
 | `src/twitch_integration`, `src/twi_sacred` | Twitch Integration: the connector's pipe and the actions (monsters, gold, heal, teleport) |
+| `src/sprite-browser` | All UI images with their numbers in the mod's page; the `.sprite-N` classes of the theme. [Doc](docs/mods/sprite-browser.md) |
 | `src/sacred-theme` | The shared RmlUi look (game frame, buttons, orbs, sliders, tab bars, controller prompts); optional: the mods look plainer without it |
 | `src/sessiontracker`, `src/lootlog`, `src/damagemeter` | Session mods. [Doc](docs/SessionMods.md); logic test `tests/session_mods_test.lua` |
 | `src/item-compare`, `src/item-compare_selftest` | Item comparison tooltips and its self test. [Doc](docs/mods/item-compare.md) |

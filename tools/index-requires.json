@@ -56,6 +56,9 @@
   "shared-stash": [
     "sacred-gear>=0.4.1"
   ],
+  "sprite-browser": [
+    "sacred-gear>=0.4.1"
+  ],
   "world-events": [
     "sacred-gear>=0.4.1"
   ]

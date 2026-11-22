@@ -1,0 +1,29 @@
+<rml>
+<head>
+    <title>Sprites</title>
+    <link type="text/rcss" href="page.rcss"/>
+</head>
+<body data-model="model">
+<div id="page">
+    <div class="row space">
+        <span class="accent">{{ title }}</span>
+        <span class="good">{{ copied }}</span>
+    </div>
+    <div class="row">
+        <button id="first" class="nav">First</button>
+        <button id="prev10" class="nav">-10</button>
+        <button id="prev" class="nav">Previous</button>
+        <button id="next" class="nav">Next</button>
+        <button id="next10" class="nav">+10</button>
+        <button id="last" class="nav">Last</button>
+    </div>
+    <div class="grid">
+        <button data-for="c : cells" class="cell" data-attr-id="c.id" data-attr-title="c.tip">
+            <div class="holder"><div data-attr-class="c.cls"></div></div>
+            <div class="num">{{ c.n }}</div>
+            <div class="dim">{{ c.size }}</div>
+        </button>
+    </div>
+</div>
+</body>
+</rml>

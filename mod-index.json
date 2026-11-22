@@ -378,6 +378,17 @@
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/spawn-rate.jpg"
     },
     {
+      "id": "sprite-browser",
+      "path": "mods/sprite-browser",
+      "name": "Sprite browser",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "Every UI image of the game in a grid with its number, in the mod's page of the Mods screen. The numbers are the N of the .sprite-N classes of the Sacred theme and of gear:image/N: a quick lookup for modders. Click a picture to copy its class.",
+      "requires": [
+        "sacred-gear>=0.4.1"
+      ]
+    },
+    {
       "id": "twi_sacred",
       "path": "mods/twi_sacred",
       "name": "Twitch Integration: actions",
