@@ -5,24 +5,24 @@
 </head>
 <body data-model="model">
 <div id="page">
+    <div data-if="view" id="pop" class="window">
+        <div class="titlebar"><span class="tt">{{ v_title }}</span><button id="x" class="xbtn" title="Close">X</button></div>
+        <div class="body">
+            <div class="info">{{ v_info }}</div>
+            <button id="vpic" class="big" title="Click to close"><div class="bigpic" data-style-decorator="v_deco"></div></button>
+            <div class="row">
+                <button id="vprev" class="nav"><span class="padkey a"></span>&lt; Previous</button>
+                <button id="vnext" class="nav"><span class="padkey a"></span>Next &gt;</button>
+                <button id="vcopy" class="nav"><span class="padkey a"></span>Copy class</button>
+                <button id="vclose" class="nav"><span class="padkey b"></span>Close</button>
+            </div>
+        </div>
+    </div>
     <div class="row space">
         <span class="accent">{{ title }}</span>
         <span class="good">{{ copied }}</span>
     </div>
-    <div data-if="view" class="preview">
-        <div class="row space">
-            <span class="accent">{{ v_title }}</span>
-            <span class="dim">{{ v_info }}</span>
-        </div>
-        <button id="vpic" class="big" title="Click to close (C or B too)"><div class="bigpic" data-style-decorator="v_deco"></div></button>
-        <div class="row">
-            <button id="vprev" class="nav"><span class="padkey a"></span>&lt; Previous</button>
-            <button id="vnext" class="nav"><span class="padkey a"></span>Next &gt;</button>
-            <button id="vcopy" class="nav"><span class="padkey a"></span>Copy class</button>
-            <button id="vclose" class="nav"><span class="padkey a"></span>Close (C)</button>
-        </div>
-    </div>
-    <div data-if="!view" class="row">
+    <div class="row">
         <button id="first" class="nav">First</button>
         <button id="prev10" class="nav">-10</button>
         <button id="prev" class="nav">Previous</button>
@@ -30,7 +30,7 @@
         <button id="next10" class="nav">+10</button>
         <button id="last" class="nav">Last</button>
     </div>
-    <div data-if="!view" class="grid">
+    <div class="grid">
         <button data-for="c : cells" class="cell" data-attr-id="c.id" data-attr-title="c.tip">
             <div class="holder" data-style-decorator="c.deco"></div>
             <div class="num">{{ c.n }}</div>
