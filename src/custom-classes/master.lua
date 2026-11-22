@@ -303,6 +303,220 @@ function M.new(env)
     end
 
     ---------------------------------------------------------------------------------------------------------------------
+    -- The window as an RmlUi document (ui/master.rml): the look of the game's own combo master window (the thin metal bars, the
+    -- rune slot frames of GUI_main_10 / 15, the orb buttons). A model of ready-made strings, rebuilt every frame, only what changed
+    -- is written; clicks are delegated listeners. Every control is a button, so the controller's D-pad reaches it.
+    ---------------------------------------------------------------------------------------------------------------------
+    local rml = {doc = nil, last = {}, failed = false, rows = {}}
+    local command
+
+    local function css_color(argb)
+        argb = argb or 0xFFFFFFFF
+        return ('#%02x%02x%02x%02x'):format(math.floor(argb / 65536) % 256, math.floor(argb / 256) % 256, argb % 256, math.floor(argb / 16777216) % 256)
+    end
+
+    local function icon_of(id)
+        local image, tint = gear.classes.art_icon(id)
+        if not image then return '', '#ffffffff' end
+        return 'gear:image/' .. image, css_color(tint)
+    end
+
+    -- What the exchange has: the runes of the backpack, the picked ones, the options and the result.
+    local function exchange_state(h)
+        local runes = backpack_runes(h)
+        local picked = {}
+        for _, r in ipairs(runes) do if st.picks[r.item.id] then picked[#picked + 1] = r end end
+        local n = #picked
+        local options = n >= 4 and pool(h, true) or {}
+        local result
+        if n == 4 then
+            result = options[math.min(st.choice, #options)]
+        elseif n >= 2 then
+            local ids = {}
+            for _, r in ipairs(picked) do ids[#ids + 1] = r.item.id end
+            table.sort(ids)
+            local key = n .. ':' .. table.concat(ids, ',')
+            if st.roll_key ~= key then
+                st.roll_key = key
+                local candidates = pool(h, n == 3)
+                st.roll = candidates[math.random(#candidates)]
+            end
+            result = st.roll
+        else
+            st.roll_key = nil
+        end
+        return runes, picked, options, result
+    end
+
+    local function snapshot(h)
+        local m = {open = true, nohero = h == nil, is_combo = st.tab == 'combo', is_exch = st.tab == 'exchange', hero = '', gold = '',
+            message = '', good = false, slots = {}, draft = {}, arts = {}, no_arts = false, regen = '', can_make = false,
+            picks = {}, runes = {}, no_runes = false, result = false, res_icon = '', res_tint = '#ffffffff', res_name = '', res_kind = '',
+            choose = false, choice_name = '', fee = '', fee_ok = true, can_exchange = false, hint = '', has_new = false, n_picked = 0}
+        rml.rows = {}
+        if not h then return m end
+        m.hero = h:name() or 'Hero'
+        m.gold = ('%d gold'):format(h:gold() or 0)
+        if st.message and gear.time() - st.message_time < 6 then m.message, m.good = st.message, st.good or false end
+        m.has_new = st.last_new ~= nil
+        if st.tab == 'combo' then
+            local combos = h:combos() or {}
+            for s = 0, 3 do
+                local k
+                for _, c in ipairs(combos) do if c.slot == s then k = c end end
+                m.slots[#m.slots + 1] = {id = 's' .. s, left = (17 + 124 * s) .. 'px', on = st.slot == s,
+                    label = ('Combo %d%s'):format(s + 1, k and (' (%d)'):format(#k.arts) or ''),
+                    tip = k and ('Regeneration %.0f s'):format(k.total) or 'An empty combo slot'}
+                rml.rows['s' .. s] = s
+            end
+            for i = 1, 4 do
+                local id = st.draft[i]
+                local d = {id = 'd' .. i, left = (17 + 105 * (i - 1)) .. 'px', filled = id ~= nil, icon = '', tint = '#ffffffff', tip = 'Empty'}
+                if id then
+                    d.icon, d.tint = icon_of(id)
+                    d.tip = ('%d. %s - click to remove'):format(i, name_of(id))
+                end
+                m.draft[i] = d
+                rml.rows['d' .. i] = i
+            end
+            local sum = 0
+            for _, id in ipairs(st.draft) do local a = h:ability(id) sum = sum + (a and a.regen_max or 0) end
+            m.regen = #st.draft == 0 and 'Add arts from the list below.' or
+                ('Regeneration of the arts together: %.1f s (the combo takes at least that long)'):format(sum)
+            m.can_make = #st.draft >= 1
+            local list = combinable(h)
+            m.no_arts = #list == 0
+            for n, a in ipairs(list) do
+                local icon, tint = icon_of(a.id)
+                local rec = gear.data.abilities[a.id]
+                local desc = gear.text.get((rec or {}).description_text or 0)
+                m.arts[n] = {id = 'a' .. n, icon = icon, tint = tint, full = #st.draft >= 4,
+                    tip = name_of(a.id) .. ('\nregen %.1f s'):format(a.regen_max or 0) .. ((desc and desc ~= '') and ('\n' .. desc) or '')}
+                rml.rows['a' .. n] = a.id
+            end
+        else
+            local runes, picked, options, result = exchange_state(h)
+            local n = #picked
+            m.n_picked = n
+            for i = 1, 4 do
+                local p = picked[i]
+                local d = {id = 'p' .. i, left = (17 + 105 * (i - 1)) .. 'px', filled = p ~= nil, icon = '', tint = '#ffffffff', tip = 'Empty'}
+                if p then
+                    d.icon, d.tint = icon_of(p.art)
+                    d.tip = name_of(p.art) .. ' - click to take back'
+                    rml.rows['p' .. i] = p.item.id
+                end
+                m.picks[i] = d
+            end
+            for k, r in ipairs(runes) do
+                local icon, tint = icon_of(r.art)
+                m.runes[k] = {id = 'r' .. k, icon = icon, tint = tint, on = st.picks[r.item.id] == true, tip = name_of(r.art)}
+                rml.rows['r' .. k] = r.item.id
+            end
+            m.no_runes = #runes == 0
+            if n < 2 then
+                m.hint = 'Put two to four runes in the exchange: 2 give a random rune of any class, 3 a random rune of your class, 4 a rune of your class you choose.'
+            elseif not result then
+                m.hint = 'No rune to get.'
+            else
+                m.result = true
+                m.res_icon, m.res_tint = icon_of(result.art)
+                m.res_name = name_of(result.art)
+                m.res_kind = n == 4 and 'A rune of your class that you choose' or (n == 2 and 'A random rune of any class' or 'A random rune of your class')
+                m.choose = n == 4 and #options > 1
+                m.choice_name = m.choose and ('%d / %d'):format(math.min(st.choice, #options), #options) or ''
+                local fee = fee_for(n, result)
+                m.fee = ('Price: %d gold'):format(fee)
+                m.fee_ok = (h:gold() or 0) >= fee
+                m.can_exchange = m.fee_ok
+            end
+            rml.exchange = {options = options, n = n}
+        end
+        return m
+    end
+
+    local function same(a, b)
+        if type(a) ~= 'table' or type(b) ~= 'table' then return a == b end
+        local ca, cb = 0, 0
+        for _ in pairs(a) do ca = ca + 1 end
+        for _ in pairs(b) do cb = cb + 1 end
+        if ca ~= cb then return false end
+        for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+        return true
+    end
+
+    local function rml_load()
+        local m = snapshot(hero())
+        rml.last = m
+        local doc, err = ui.rml.load('ui/master.rml', {model = m})
+        if not doc then
+            gear.log('custom classes: ui/master.rml failed: ' .. tostring(err))
+            rml.failed = true
+            return
+        end
+        rml.doc = doc
+        local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
+        on('#tab-combo', function() local h = hero() st.tab = 'combo' if h then load_draft(h) end end)
+        on('#tab-exch', function() st.tab = 'exchange' end)
+        on('.cslot', function(e) local s = rml.rows[tostring(e.current)] local h = hero() if s and h then st.slot = s load_draft(h) end end)
+        on('.dslot', function(e) local i = rml.rows[tostring(e.current)] if i then table.remove(st.draft, i) end end)
+        on('.acell', function(e) local id = rml.rows[tostring(e.current)] if id and #st.draft < 4 then st.draft[#st.draft + 1] = id end end)
+        on('#make', function()
+            local h = hero()
+            if not h then return end
+            local ok, why = h:set_combo(st.slot, st.draft)
+            say(ok and ('Combo %d created'):format(st.slot + 1) or ('Not possible: ' .. tostring(why)), ok)
+        end)
+        on('#clear', function()
+            local h = hero()
+            if not h then return end
+            local ok, why = h:set_combo(st.slot, {})
+            st.draft = {}
+            say(ok and ('Combo %d emptied'):format(st.slot + 1) or tostring(why), ok)
+        end)
+        on('.pslot', function(e) local id = rml.rows[tostring(e.current)] if id then st.picks[id] = nil end end)
+        on('.rcell', function(e)
+            local id = rml.rows[tostring(e.current)]
+            if not id then return end
+            if st.picks[id] then st.picks[id] = nil return end
+            local count = 0
+            for _ in pairs(st.picks) do count = count + 1 end
+            if count < 4 then st.picks[id] = true end
+        end)
+        on('#prev', function() if st.choice > 1 then st.choice = st.choice - 1 end end)
+        on('#next', function() local n = rml.exchange and #rml.exchange.options or 0 if st.choice < n then st.choice = st.choice + 1 end end)
+        on('#again', function() st.roll_key = nil end)
+        on('#exchange', function() command('exchange') end)
+        on('#read', function()
+            local h = hero()
+            if not (h and st.last_new) then return end
+            local ok, why = h:use_item(st.last_new)
+            say(ok and 'The art is learned' or ('Not possible: ' .. tostring(why)), ok)
+            if ok then st.last_new = nil end
+        end)
+        on('#close', function() ui.close_window(NAME) end)
+    end
+
+    -- True when the document drew the window (the caller falls back to the plain window otherwise).
+    local function draw_rml()
+        if rml.failed or not (ui.rml and ui.rml.load and setting('master_native', true)) then return false end
+        local h = hero()
+        if st.loaded_for ~= (h and h.id) then
+            st.loaded_for = h and h.id
+            if h then load_draft(h) end
+            st.picks = {}
+            st.last_new = nil
+        end
+        if not rml.doc then rml_load() end
+        if not rml.doc then return false end
+        for k, v in pairs(snapshot(h)) do
+            if not same(v, rml.last[k]) then rml.doc.model[k] = v; rml.last[k] = v end
+        end
+        rml.doc:draw({layer = 'hud'})
+        return true
+    end
+
+    ---------------------------------------------------------------------------------------------------------------------
     local function draw()
         if not M.active() then return end
         if not st.registered then
@@ -310,6 +524,7 @@ function M.new(env)
             ui.replace_window(NAME, true)
         end
         if not ui.replaced(NAME) then return end
+        if draw_rml() then return end
         local p = ui.panel('master', 'Combo master', 40, 20, W, H, {resizable = true, min_width = 560, min_height = 380, back = true})
         if not p.open then
             ui.close_window(NAME)
@@ -333,7 +548,7 @@ function M.new(env)
 
     -- For tests and other mods: the window's actions without a mouse.
     --   command('tab', 'combo'|'exchange'), ('slot', 0..3), ('add', art id), ('make'), ('pick', {item ids}), ('choose', index), ('exchange')
-    local function command(cmd, a)
+    command = function(cmd, a)
         local h = hero()
         if not h then return end
         if cmd == 'tab' then st.tab = a if a == 'combo' then load_draft(h) end

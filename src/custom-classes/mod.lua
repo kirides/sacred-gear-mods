@@ -14,6 +14,8 @@ return {
             tooltip = 'How often creatures drop the runes of custom arts (their drop weight in the art file times this; 0: never)'},
         {id = 'replace_master', type = 'bool', label = 'Combo master window with custom arts', default = true, section = 'Runes',
             tooltip = "When art files exist, the combo master shows this mod's window (combos and rune exchange with custom arts) instead of the game's"},
+        {id = 'master_native', type = 'bool', label = 'Combo master in the look of the game', default = true, section = 'Runes',
+            tooltip = "The combo master window is drawn like the game's own (frame, rune slots, buttons); off: the plain mod window"},
         {id = 'exchange_fee_2', type = 'number', label = 'Exchange fee for 2 runes (gold)', min = 0, max = 1000000, step = 100, default = 500, section = 'Runes'},
         {id = 'exchange_fee_3', type = 'number', label = 'Exchange fee for 3 runes (gold)', min = 0, max = 1000000, step = 100, default = 2000, section = 'Runes'},
         {id = 'exchange_fee_4', type = 'number', label = 'Exchange fee for 4 runes (gold)', min = 0, max = 1000000, step = 100, default = 5000, section = 'Runes'},

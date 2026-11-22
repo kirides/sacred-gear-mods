@@ -1,0 +1,111 @@
+/* The combo master window in the look of the game's own (cUI_MasterCombo): measured from the game's window at 1600x900 (the layout is
+   1024x768: the window is 640 wide, the main panel 512, the right panel 128 for the master's portrait, the bars 6 thick).
+   Taller than the game's (520 instead of 336) for the list of arts / runes. Images are the game's own (gear:image/<id>):
+   21 / 34 the bars (32x6 / 6x32), 1 to 4 the bottom bar, 54 / 55 the ornaments, 246 the empty rune slot, 247 the full one, 356 the blank
+   frame, 248 to 250 the coin of the exchange. */
+#cm { position: absolute; left: 0px; top: 0px; width: 640px; height: 520px; font-family: "Sacred Game"; color: #e4e4e4; }
+#cm * { box-sizing: border-box; }
+
+.fill { position: absolute; background-color: #00000070; }
+.fill.main { left: 0px; top: 53px; width: 512px; height: 447px; }
+.fill.side { left: 517px; top: 22px; width: 122px; height: 478px; }
+.bar-top { position: absolute; left: 0px; top: 47px; width: 512px; height: 6px; decorator: image(gear:image/21 repeat-x); }
+.bar-top.side-top { left: 549px; top: 17px; width: 64px; }
+.bar-v { position: absolute; top: 22px; width: 6px; height: 478px; decorator: image(gear:image/34 repeat-y); }
+.bar-v.v1 { left: 511px; }
+.bar-v.v2 { left: 634px; }
+.orn { position: absolute; width: 38px; }
+.orn.o1 { left: 511px; top: 11px; height: 20px; decorator: image(gear:image/54 scale-none left top); }
+.orn.o2 { left: 602px; top: 10px; height: 18px; decorator: image(gear:image/55 scale-none left top); }
+.bt { position: absolute; top: 500px; width: 64px; height: 20px; }
+.t1 { left: 0px;   decorator: image(gear:image/1 scale-none left top); }
+.t2 { left: 64px;  decorator: image(gear:image/2 scale-none left top); }
+.t3 { left: 128px; decorator: image(gear:image/3 scale-none left top); }
+.t4 { left: 192px; decorator: image(gear:image/4 scale-none left top); }
+.t5 { left: 256px; decorator: image(gear:image/1 scale-none left top); }
+.t6 { left: 320px; decorator: image(gear:image/2 scale-none left top); }
+.t7 { left: 384px; decorator: image(gear:image/3 scale-none left top); }
+.t8 { left: 448px; decorator: image(gear:image/4 scale-none left top); }
+.t9 { left: 512px; decorator: image(gear:image/1 scale-none left top); }
+.t10 { left: 576px; decorator: image(gear:image/2 scale-none left top); }
+
+/* the tabs: the game's pill with its two red gems (image 108, 95 x 43), stretched to the 128 x 47 of the game's tab */
+button.tabbtn { position: absolute; top: 0px; width: 128px; height: 47px; margin: 0; padding: 0 0 10px 0; border: 0; background-color: transparent;
+    decorator: image(gear:image/108 fill); font-family: "Sacred Game"; font-size: 18px; line-height: 37px; text-align: center; text-transform: uppercase;
+    color: #e8e0c0; cursor: pointer; transform: none; }
+button.tabbtn:hover, button.tabbtn:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
+button.tabbtn.on { color: #ffd040; }
+button.t-combo { left: 0px; }
+button.t-exch { left: 143px; }
+
+/* text */
+.line { position: absolute; left: 17px; top: 58px; width: 480px; font-size: 17px; color: #ffff90; }
+.line.muted { color: #9a9a9a; }
+.sub { position: absolute; left: 17px; top: 292px; width: 480px; font-size: 15px; color: #ffff90; }
+.info { position: absolute; left: 17px; width: 490px; font-size: 13px; color: #b8b8b8; }
+.info.regen { top: 216px; }
+.muted { color: #9a9a9a; }
+.small { font-size: 12px; }
+.good { color: #60d060; }
+.bad { color: #e04848; }
+.pad { padding: 8px; }
+
+/* combo slots (the four of the hero) */
+button.cslot { position: absolute; top: 84px; width: 118px; height: 30px; margin: 0; padding: 0; text-align: center; font-size: 14px; line-height: 28px;
+    color: #cfcfcf; background-color: #00000060; border: 1px #6a6a6a; cursor: pointer; }
+button.cslot:hover, button.cslot:focus { color: #ffe030; border-color: #ffe030; }
+button.cslot.on { color: #ffd040; border-color: #c8aa5a; background-color: #3a301880; }
+
+/* rune slots: the game's frames (the empty one with the grey rune, the full one with the green glow), the icon inside */
+button.slotbtn, div.slotbtn { position: absolute; width: 89px; height: 88px; margin: 0; padding: 0; border: 0; background-color: transparent;
+    decorator: image(gear:image/246 scale-none left top); cursor: pointer; }
+button.slotbtn.filled, div.slotbtn.filled { decorator: image(gear:image/247 scale-none left top); }
+button.slotbtn:hover, button.slotbtn:focus { image-color: #ffffd0; opacity: 1; }
+button.slotbtn:hover, button.slotbtn:focus { decorator: image(gear:image/247 scale-none left top); }
+button.dtop { top: 122px; }
+button.ptop { top: 92px; }
+div.rslot { left: 169px; top: 202px; cursor: default; }
+.sicon { position: absolute; left: 14px; top: 14px; width: 60px; height: 60px; }
+
+/* the exchange's result and the coin */
+.resinfo { position: absolute; left: 268px; top: 200px; width: 150px; }
+.rname { font-size: 16px; color: #ffd780; }
+.fee { margin-top: 2px; }
+.choose { margin-top: 2px; }
+.choose .cname { display: inline-block; width: 48px; text-align: center; font-size: 14px; vertical-align: middle; }
+button.coin { position: absolute; left: 433px; top: 213px; width: 60px; height: 59px; margin: 0; padding: 0; border: 0; background-color: transparent;
+    decorator: image(gear:image/249 scale-none center center), image(gear:image/250 scale-none center center);
+    font-size: 11px; line-height: 14px; color: #f0e8c0; text-align: center; cursor: pointer; }
+button.coin:hover, button.coin:focus { color: #ffe030; image-color: #fff0c0; }
+button.coin:disabled { opacity: 0.5; }
+
+/* the lists of arts / runes: cells in the blank frame of the game */
+.grid { position: absolute; left: 17px; top: 314px; width: 485px; height: 178px; overflow-y: auto; }
+button.cell { display: inline-block; width: 56px; height: 56px; margin: 0 4px 4px 0; padding: 0; border: 0; background-color: transparent;
+    decorator: image(gear:image/356 contain); cursor: pointer; vertical-align: top; }
+button.cell:hover, button.cell:focus { decorator: image(gear:image/246 contain); }
+button.cell.on { decorator: image(gear:image/247 contain); }
+button.cell.full { opacity: 0.5; }
+.cicon { position: absolute; left: 9px; top: 9px; width: 38px; height: 38px; }
+
+/* buttons of the game: Create / Empty slot */
+button.act { position: absolute; top: 240px; }
+button.a1 { left: 17px; }
+button.a2 { left: 215px; }
+
+/* the right panel */
+.side-text { position: absolute; left: 524px; top: 26px; width: 108px; }
+.hname { font-size: 15px; color: #ffd780; text-align: center; }
+.master { position: absolute; left: 0px; top: 176px; width: 108px; text-align: center; font-size: 15px; color: #3a50ff; }
+.gold { position: absolute; left: 0px; top: 210px; width: 108px; text-align: center; font-size: 13px; color: #d8c060; }
+.msg { position: absolute; left: 0px; top: 250px; width: 108px; font-size: 12px; text-align: center; }
+button.mini { position: absolute; left: 0px; width: 108px; height: 30px; margin: 0; padding: 0 4px; text-align: center; font-size: 13px; line-height: 28px;
+    color: #e4e4e4; background-color: #00000060; border: 1px #8c7440; cursor: pointer; }
+button.mini:hover, button.mini:focus { color: #ffe030; border-color: #ffe030; transform: none; }
+.side-text button.mini { top: 340px; }
+.side-text button.closebtn { top: 430px; }
+.resinfo button.mini { position: relative; width: 120px; margin-top: 4px; }
+
+/* the buttons keep their label and its controller prompt on one line */
+button.game-button, button.mini, button.cslot, button.coin { flex: none; white-space: nowrap; }
+.msg { white-space: normal; }

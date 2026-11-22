@@ -1,0 +1,85 @@
+<rml>
+<head>
+    <title>Combo master</title>
+    <link type="text/rcss" href="master.rcss"/>
+</head>
+<body data-model="model">
+<div id="cm" data-if="open">
+    <!-- the frame of the game's window: bars over the panel, the side bars, the bottom bar, the ornaments of the portrait panel -->
+    <div class="fill main"></div>
+    <div class="fill side"></div>
+    <div class="bar-top"></div>
+    <div class="bar-v v1"></div><div class="bar-v v2"></div>
+    <div class="bar-top side-top"></div>
+    <div class="orn o1"></div><div class="orn o2"></div>
+    <div class="bt t1"></div><div class="bt t2"></div><div class="bt t3"></div><div class="bt t4"></div><div class="bt t5"></div>
+    <div class="bt t6"></div><div class="bt t7"></div><div class="bt t8"></div><div class="bt t9"></div><div class="bt t10"></div>
+
+    <!-- the two tabs -->
+    <button id="tab-combo" class="tabbtn t-combo" data-class-on="is_combo">Combo</button>
+    <button id="tab-exch" class="tabbtn t-exch" data-class-on="is_exch">Exchange</button>
+
+    <div data-if="nohero" class="line muted">Start or load a game first.</div>
+
+    <!-- Combo -->
+    <div data-if="is_combo &amp;&amp; !nohero">
+        <div class="line">Combine combat arts</div>
+        <button data-for="s : slots" class="cslot" data-attr-id="s.id" data-class-on="s.on" data-attr-title="s.tip" data-style-left="s.left">{{ s.label }}</button>
+        <button data-for="d : draft" class="slotbtn dslot dtop" data-attr-id="d.id" data-class-filled="d.filled" data-attr-title="d.tip" data-style-left="d.left">
+            <img data-if="d.filled" class="sicon" data-attr-src="d.icon" data-style-image-color="d.tint"/>
+        </button>
+        <div class="info regen">{{ regen }}</div>
+        <button id="make" class="game-button act a1" data-attrif-disabled="!can_make">Create combo</button>
+        <button id="clear" class="game-button act a2">Empty slot</button>
+        <div class="sub">Combat arts of the hero (click to add)</div>
+        <div class="grid" data-nav-scroll>
+            <button data-for="a : arts" class="cell acell" data-attr-id="a.id" data-class-full="a.full" data-attr-title="a.tip">
+                <img class="cicon" data-attr-src="a.icon" data-style-image-color="a.tint"/>
+            </button>
+            <div data-if="no_arts" class="muted pad">The hero knows no combat arts a combo can hold.</div>
+        </div>
+    </div>
+
+    <!-- Exchange -->
+    <div data-if="is_exch &amp;&amp; !nohero">
+        <div class="line">Exchange combat art runes</div>
+        <button data-for="p : picks" class="slotbtn pslot ptop" data-attr-id="p.id" data-class-filled="p.filled" data-attr-title="p.tip" data-style-left="p.left">
+            <img data-if="p.filled" class="sicon" data-attr-src="p.icon" data-style-image-color="p.tint"/>
+        </button>
+        <div class="slotbtn rslot" data-class-filled="result">
+            <img data-if="result" class="sicon" data-attr-src="res_icon" data-style-image-color="res_tint"/>
+        </div>
+        <div class="resinfo">
+            <div data-if="!result" class="muted small">{{ hint }}</div>
+            <div data-if="result">
+                <div class="rname">{{ res_name }}</div>
+                <div class="muted small">{{ res_kind }}</div>
+                <div data-class-good="fee_ok" data-class-bad="!fee_ok" class="small fee">{{ fee }}</div>
+                <div data-if="choose" class="choose">
+                    <a id="prev" class="arrow prev"></a><span class="cname">{{ choice_name }}</span><a id="next" class="arrow next"></a>
+                </div>
+                <button data-if="!choose" id="again" class="mini">Another one</button>
+            </div>
+        </div>
+        <button id="exchange" class="coin" data-attrif-disabled="!can_exchange">Exchange</button>
+        <div class="sub">Runes in the backpack (click to put in the exchange)</div>
+        <div class="grid" data-nav-scroll>
+            <button data-for="r : runes" class="cell rcell" data-attr-id="r.id" data-class-on="r.on" data-attr-title="r.tip">
+                <img class="cicon" data-attr-src="r.icon" data-style-image-color="r.tint"/>
+            </button>
+            <div data-if="no_runes" class="muted pad">No runes in the backpack.</div>
+        </div>
+    </div>
+
+    <!-- the right panel (the game shows the combo master's portrait here) -->
+    <div class="side-text">
+        <div class="hname">{{ hero }}</div>
+        <div class="master">Combo master</div>
+        <div class="gold">{{ gold }}</div>
+        <div class="msg" data-class-good="good" data-class-bad="!good">{{ message }}</div>
+        <button data-if="has_new" id="read" class="mini">Read the new rune</button>
+        <button id="close" class="mini closebtn">Close</button>
+    </div>
+</div>
+</body>
+</rml>
