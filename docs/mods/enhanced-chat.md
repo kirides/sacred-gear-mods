@@ -49,6 +49,22 @@ session's last 200).
 hotkeys, F7, F8 and F9 included, are better left alone). With a controller both are in the mod menu (**LT + LB**); the
 tabs, the buttons and the line area are D-pad stops. See [Controller](../Controller.md).
 
+## The game's text codes
+
+The window reads the same codes in a line as the game's own chat does (they come from the parser of the game's fonts) and draws the result:
+
+![Colors and icons in the chat](../images/enhanced-chat-codes.jpg)
+
+| Code | What it does |
+|---|---|
+| `\cAARRGGBB` | The letters after it have this color (`\cffFF4040` is red); it lasts until the next color code or `\r`. |
+| `\dAARRGGBB`, `\wAARRGGBB` | Also colors, as the game reads them (`\d` even where a line asks for no color codes). |
+| `\r` | Back to the line's own color. |
+| `\n` | Nothing: the game takes the code and draws nothing for it. |
+| `\gAARRGGBBIIIIIIII` | An inline picture: the game's UI image number `I` (8 hex digits, 1 to 1885; a larger number shows image 205, 0 nothing), tinted with `AARRGGBB` (`ffffffff` is untinted). `\gffffffff000000DA` is the skull. |
+
+The eight (or sixteen) characters after the letter are hex digits or spaces. A code that does not fit stays visible as text, as in the game. The [Name editor](name-editor.md) builds these codes, and the [Sprite browser](sprite-browser.md) lists the image numbers.
+
 ## How it works
 
 Sacred Gear (`gear.chat`, from sacred-bild) catches every line the game adds to its message list, tells the kinds apart

@@ -8,7 +8,7 @@
 --   * Tabs: All, Global (global, team and your own lines), Private, System (the game's and the server's lines and
 --     the drops); a tab that got a line since it was last open shows a dot. In a network game a dropdown narrows
 --     every tab to one player.
---   * Colours: the game's own colour codes in a line (\c...\r) are kept; drops near the hero (gear.world.items_near,
+--   * The game's text codes in a line (see parse_codes): colours (\c \w \d), \r, \n and inline UI images (\g); drops near the hero (gear.world.items_near,
 --     twice a second, as the loot log does) become a line with the item's name in its label colour; resting the
 --     cursor on such a line shows the game's tooltip of the item while it still exists.
 --   * The window is a bare panel: the layout editor moves and resizes it. Its tabs and buttons are D-pad stops, the
@@ -58,9 +58,67 @@ local function add_entry(e)
     end
 end
 
+---------------------------------------------------------------------------------------------------------------
+-- The game's text codes (the parser of its fonts, Sacred.exe 0x650c30 / 0x650aa0, and the drawing loop of cFontTTF2 0x64e9c0).
+-- A backslash and a letter start a code; a code that does not fit (too short, other characters) stays visible as text:
+--   \cAARRGGBB  the colour of the letters that follow       \wAARRGGBB  the same colour code (the game also marks the text as "wide")
+--   \dAARRGGBB  a colour that applies even where the line says no colour codes (a name plate)
+--   \r          back to the line's own colour               \n          nothing (the game takes the code and draws nothing for it)
+--   \gAARRGGBBIIIIIIII  a UI image (gear:image/I, I = 8 hex digits, 1 to 1885) tinted with AARRGGBB, drawn in the line like a letter
+-- The 8 or 16 characters after the letter are hex digits or spaces (spaces count as the end of the number).
+---------------------------------------------------------------------------------------------------------------
+local MAX_IMAGE = 1885
+
+-- 8 characters of a code as a number: the hex digits up to the first space (the game reads them with sscanf %x)
+local function code_number(s)
+    local digits = s:match('^%x*')
+    return digits ~= '' and tonumber(digits, 16) or 0
+end
+
+-- text, the line's colour (ARGB) -> runs {text, color} | {icon = image id, color = tint}, and the plain text (icons as nothing)
+local function parse_codes(text, base)
+    local runs, plain, cur, buf = {}, {}, base, {}
+    local function flush()
+        if #buf > 0 then
+            local s, last = table.concat(buf), runs[#runs]
+            if last and last.text and last.color == cur then last.text = last.text .. s else runs[#runs + 1] = {text = s, color = cur} end
+            plain[#plain + 1] = s
+            buf = {}
+        end
+    end
+    local i, n = 1, #text
+    while i <= n do
+        local b = text:find('\\', i, true)
+        if not b then buf[#buf + 1] = text:sub(i) break end
+        if b > i then buf[#buf + 1] = text:sub(i, b - 1) end
+        local code = text:sub(b + 1, b + 1)
+        local arg8 = (code == 'c' or code == 'w' or code == 'd') and text:match('^[%x ]+', b + 2)
+        if arg8 and #arg8 >= 8 then
+            flush()
+            cur = code_number(text:sub(b + 2, b + 9))
+            i = b + 10
+        elseif code == 'r' then
+            flush() cur = base i = b + 2
+        elseif code == 'n' then
+            i = b + 2
+        elseif code == 'g' and #(text:match('^[%x ]+', b + 2) or '') >= 16 then
+            flush()
+            local id = code_number(text:sub(b + 10, b + 17))
+            if id > MAX_IMAGE then id = 205 end        -- the game's stand-in for an image number it does not have
+            if id >= 1 then runs[#runs + 1] = {icon = id, color = code_number(text:sub(b + 2, b + 9))} end
+            i = b + 18
+        else
+            buf[#buf + 1] = '\\' i = b + 1
+        end
+    end
+    flush()
+    return runs, table.concat(plain)
+end
+
 local function from_line(l)
     if l.channel == 0 then return end
-    add_entry({kind = l.kind, sender = l.sender, runs = l.runs, plain = l.plain, stamp = stamp()})
+    local runs, plain = parse_codes(l.text or '', l.color or 0xFFFFFFFF)
+    add_entry({kind = l.kind, sender = l.sender, runs = runs, plain = plain, stamp = stamp()})
 end
 
 -- What to show for an item whose tooltip gave no name: the localized type name, the internal one on an older Gear.
@@ -175,7 +233,13 @@ local function lines_model()
             local id = 'L' .. i
             local runs = {}
             if stamps and e.stamp then runs[1] = {t = '[' .. e.stamp .. '] ', c = css_color(STAMP)} end
-            for _, r in ipairs(e.runs or {}) do runs[#runs + 1] = {t = r.text, c = css_color(r.color)} end
+            for _, r in ipairs(e.runs or {}) do
+                if r.icon then
+                    runs[#runs + 1] = {t = '', c = '#ffffffff', ic = true, deco = ('image(gear:image/%d?dp contain)'):format(r.icon), tint = css_color(r.color)}
+                else
+                    runs[#runs + 1] = {t = r.text, c = css_color(r.color), ic = false, deco = 'none', tint = '#ffffffff'}
+                end
+            end
             if e.item then line_items[id] = e.item end
             out[#out + 1] = {id = id, item = e.item ~= nil, runs = runs}
         end
@@ -362,6 +426,7 @@ end)
 -- For the self test (enhanced-chat_selftest): the window's state, and `set_visible` / `tab` to change it.
 gear.on('enhanced-chat.query', function(out)
     if type(out) ~= 'table' then return end
+    out.parse = parse_codes      -- for the self test
     if out.set_visible ~= nil then S.set('visible', out.set_visible and true or false) end
     if out.set_hide_sp ~= nil then S.set('hide_in_singleplayer', out.set_hide_sp and true or false) end
     if out.tab then view.tab = out.tab; view.unread[view.tab] = nil end

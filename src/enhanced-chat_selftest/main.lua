@@ -276,6 +276,22 @@ gear.task(function()
         check('runs: the \\c colour, then back to white', #l.runs == 3 and l.runs[2].color == 0xFFF0E040 and l.runs[3].color == 0xFFFFFFFF, #l.runs)
         check('the game did not show it (overlay replaced)', l.hidden == true)
     end
+    -- the game's text codes (parse_codes of the mod): colours (\c \w \d), \r, \n, inline images (\g), and codes that do not fit stay text
+    local parse = query().parse
+    check('the parser is reachable', type(parse) == 'function')
+    if parse then
+        local W = 0xFFFFFFFF
+        local runs, plain = parse('a\\cffFF0000b\\gff40ff40000000DAc\\r d', W)
+        check('codes: text, colour, icon, text, reset', #runs == 5 and runs[1].text == 'a' and runs[2].color == 0xFFFF0000 and runs[3].icon == 218 and runs[3].color == 0xFF40FF40
+            and runs[4].text == 'c' and runs[5].text == ' d' and runs[5].color == W, #runs)
+        check('codes: plain text without codes and images', plain == 'abc d', plain)
+        runs = parse('\\dffFFD040x\\wff0000FFy\\ncd', W)
+        check('codes: \\d and \\w are colours, \\n is nothing', #runs == 2 and runs[1].color == 0xFFFFD040 and runs[2].color == 0xFF0000FF and runs[2].text == 'ycd', #runs)
+        runs, plain = parse('\\cxyz \\g123 \\q end \\', W)
+        check('codes that do not fit stay text', #runs == 1 and plain == '\\cxyz \\g123 \\q end \\', plain)
+        runs = parse('\\gffffffff000007FF|\\gffffffff00000000|\\gffffffff0000075D', W)
+        check('image numbers: above 1885 the stand-in 205, 0 nothing, 1885 as is', #runs == 3 and runs[1].icon == 205 and runs[2].text == '||' and runs[3].icon == 1885, #runs)
+    end
     local p = add('Selftest private channel', 2)
     check('channel 2 is private (light blue)', p and p.kind == 'private' and p.color == 0xFF00A0FF, p and p.kind)
     local o = add('Selftest own line', 4)

@@ -6,6 +6,8 @@ button.tab.on { border-color: #ffd780; color: #ffd780; }
 .lwrap { position: relative; }
 #lines { height: 170dp; overflow-y: auto; padding-right: 4dp; }
 .line { color: #ffffff; margin: 0 0 1px 0; }
+.line span { white-space: pre-wrap; }
+.line span.ic { display: inline-block; width: 1.5em; height: 1.4em; vertical-align: middle; }
 .line.item:hover { background-color: #ffffff18; }
 button.newer { position: absolute; right: 18dp; bottom: 2dp; }
 
