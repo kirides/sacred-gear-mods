@@ -1,0 +1,21 @@
+<template name="buildsharer-dropdown">
+    <head>
+        <style>
+            .build-dd { position: relative; z-index: 10; }
+            .build-dd.open { z-index: 100; }
+            .build-dd .caret { margin-left: 7dp; color: #ffd780; }
+            .build-ddlist { position: absolute; left: 16dp; top: 29dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
+            .build-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
+            .build-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
+            button.button-dd { padding: 4dp 8dp 6dp 8dp; margin: 0 4dp 0 0; }
+        </style>
+    </head>
+    <body>
+        <button class="mini button-dd" data-attr-id="key" data-attr-title="title">
+            <span class="padkey a"></span>{{ label }}<span class="caret">&#9662;</span>
+        </button>
+        <div data-if="dd == key" class="build-ddlist" data-nav-scroll>
+            <button data-for="o : options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+        </div>
+    </body>
+</template>

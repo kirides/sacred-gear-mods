@@ -2,6 +2,7 @@
 <head>
     <title>Build sharer</title>
     <link type="text/rcss" href="main.rcss"/>
+    <link type="text/template" href="dropdown.rml"/>
 </head>
 <body data-model="model">
 <div id="main" class="window" data-panel="main" data-title="Build sharer" data-if="open">
@@ -12,8 +13,22 @@
         <div data-if="tab == 1">
             <div class="row">
                 <div data-if="dd != ''" id="build-ddshade"></div>
-                <span class="label">Class</span><div class="build-dd" data-class-open="dd == 'class'"><button class="mini" id="class" title="Only this class"><span class="padkey a"></span>{{ class_name }}<span class="caret">&#9662;</span></button><div data-if="dd == 'class'" class="build-ddlist" data-nav-scroll><button data-for="o : dd_classes" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-                <span class="label">Sort</span><div class="build-dd" data-class-open="dd == 'sort'"><button class="mini" id="sort"><span class="padkey a"></span>{{ sort_name }}<span class="caret">&#9662;</span></button><div data-if="dd == 'sort'" class="build-ddlist" data-nav-scroll><button data-for="o : dd_sorts" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <span class="label">Class</span>
+                <div class="build-dd class" data-class-open="dd == 'class'"
+                     data-alias-key="filters.class.key"
+                     data-alias-title="filters.class.title"
+                     data-alias-label="filters.class.label"
+                     data-alias-options="filters.class.options">
+                    <template src="buildsharer-dropdown"></template>
+                </div>
+                <span class="label">Sort</span>
+                <div class="build-dd sort" data-class-open="dd == 'sort'"
+                     data-alias-key="filters.sort.key"
+                     data-alias-title="filters.sort.title"
+                     data-alias-label="filters.sort.label"
+                     data-alias-options="filters.sort.options">
+                    <template src="buildsharer-dropdown"></template>
+                </div>
                 <button class="mini" id="refresh" title="Ask the server again"><span class="padkey a"></span>Refresh</button>
                 <button class="mini" id="prev" data-attrif-disabled="!can_prev"><span class="padkey a"></span>&lt;</button>
                 <button class="mini" id="next" data-attrif-disabled="!can_next"><span class="padkey a"></span>&gt;</button>

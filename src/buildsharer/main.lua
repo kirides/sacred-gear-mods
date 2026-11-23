@@ -206,9 +206,13 @@ local function snapshot()
     local hero = gear.world.hero()
     local m = {
         open = shown, title = 'Build sharer' .. key_hint('toggle'), tab = view.tab, status = fit(view.status, 90), tabs = {},
-        class_name = class_choices()[view.class], sort_name = SORTS[view.sort], can_prev = view.page > 1,
+        can_prev = view.page > 1,
         can_next = view.list ~= nil and view.page < view.list.pages, browse_msg = '', builds = {}, builds_count = '',
-        dd = open_filter, dd_classes = {}, dd_sorts = {},
+        dd = open_filter,
+        filters = {
+            class = {key = 'class', title = 'Only this class', label = class_choices()[view.class], options = {}},
+            sort = {key = 'sort', title = '', label = SORTS[view.sort], options = {}},
+        },
         me = '', my_title = fit(gear.settings.get('title'), 40), my_note = fit(gear.settings.get('note'), 70), my_tags = table.concat(my_tags(), ', '),
         carried = '', has_mine = view.mine ~= nil and view.mine ~= false, mine_verified = false, mine_line = '', mine_line2 = '',
         no_hero_data = view.hero_data == false, saved = {}, saved_msg = '', has_detail = view.detail ~= nil,
@@ -216,8 +220,8 @@ local function snapshot()
     }
     for i, name in ipairs(TABS) do m.tabs[i] = {id = 'tab' .. i, name = name, on = view.tab == i} end
     if view.tab == 1 then
-        for i, name in ipairs(class_choices()) do m.dd_classes[i] = {id = 'build-class-' .. i, label = name, on = i == view.class} end
-        for i, name in ipairs(SORTS) do m.dd_sorts[i] = {id = 'build-sort-' .. i, label = name, on = i == view.sort} end
+        for i, name in ipairs(class_choices()) do m.filters.class.options[i] = {id = 'build-class-' .. i, label = name, on = i == view.class} end
+        for i, name in ipairs(SORTS) do m.filters.sort.options[i] = {id = 'build-sort-' .. i, label = name, on = i == view.sort} end
         if not view.list then
             m.browse_msg = view.waiting and 'Asking the server ...' or 'Press Refresh to list the shared builds.'
         elseif #view.list.builds == 0 then
