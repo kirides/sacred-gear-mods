@@ -24,15 +24,17 @@ button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; marg
 input.game-check.chk { width: 40dp; height: 40dp; }
 
 /* portraits */
+/* The game's pictures in decorators without "?dp": the document already scales px of a picture by the canvas (1dp = one
+   layout unit), and "?dp" scaled them once more (twice as large at 2560x1440). */
 #portraits { position: absolute; width: 100dp; }
 button.pt { display: block; position: relative; width: 96dp; height: 132dp; padding: 0; margin: 0 0 24dp 0; border: 0; background-color: transparent; }
-.pt .ring { position: absolute; left: 0px; top: 0px; width: 96dp; height: 108dp; decorator: image(gear:image/42?dp scale-none left top); }
-.pt .redring { position: absolute; left: 0px; width: 96dp; decorator: image(gear:image/41?dp scale-none left bottom); }
+.pt .ring { position: absolute; left: 0px; top: 0px; width: 96dp; height: 108dp; decorator: image(gear:image/42 scale-none left top); }
+.pt .redring { position: absolute; left: 0px; width: 96dp; decorator: image(gear:image/41 scale-none left bottom); }
 .pt:hover .ring { opacity: 0.85; }
 .pt .pimg { position: absolute; left: 8dp; top: 20dp; width: 66dp; height: 72dp; }
 .pt.dead .pimg { opacity: 0.45; }
-.pt .beadbar { position: absolute; left: 7dp; top: 105dp; width: 73dp; height: 9dp; decorator: image(gear:image/66?dp scale-none left top); }
-.pt .beadfill { position: absolute; left: 1px; top: 1px; height: 7dp; overflow: hidden; decorator: image(gear:image/67?dp scale-none left top); }
+.pt .beadbar { position: absolute; left: 7dp; top: 105dp; width: 73dp; height: 9dp; decorator: image(gear:image/66 scale-none left top); }
+.pt .beadfill { position: absolute; left: 1px; top: 1px; height: 7dp; overflow: hidden; decorator: image(gear:image/67 scale-none left top); }
 .pt .plevel { position: absolute; left: 12dp; top: 78dp; color: #e8c878; font-size: 12dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
