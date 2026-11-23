@@ -10,7 +10,7 @@ Sacred Gear and the mod itself in your `mods` folder (see [Install](../Install.m
 
 ## How to use it
 
-Hold **Alt**: an *Edit layout* button shows at the top left. Press it. Frames show on every window and panel; drag them. By default they snap to the screen edges and to each other. Hold **Shift** while dragging to move freely. Press the button again to leave the edit mode.
+Hold **Alt**: an *Edit layout* button shows at the top left. Press it. Frames show on visible windows and open panels; drag them. By default they snap to the screen edges and to each other. Hold **Shift** while dragging to move freely. Press the button again to leave the edit mode.
 
 ## Settings
 

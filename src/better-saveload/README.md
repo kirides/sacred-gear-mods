@@ -19,8 +19,7 @@ start menu's *Load game* screen:
 
 ![The savegame screen](../../docs/images/better-saveload.jpg)
 
-Mouse, keyboard (typing the name or the search, Backspace, Up / Down, Page up / down, Home / End, Enter, Delete, Esc: the first clears the search) and controller (D-pad, A, B) all work. The screen is a panel like the
-other mods' panels: move and resize it with the layout editor (Alt + *Edit layout* in game), and it scales with the UI.
+Mouse, keyboard (typing the name or the search, Backspace, Up / Down, Page up / down, Home / End, Enter, Delete, Esc: the first clears the search) and controller (D-pad, A, B) all work. The screen is centered whenever it opens, scales with the UI, and is not previewed in the layout editor.
 
 ## Settings (Mods screen, F11)
 

@@ -18,6 +18,7 @@ local A = gear.auto
 local cfg = gear.config
 local results = {checks = {}, passed = 0, failed = 0}
 local WND_GAME, WND_MENUS = 'UI_WND_SAVEGAME', 'UI_MENU_LOADGAME'
+local PANEL_KEY = 'better-saveload:savegames'
 local LOAD_ENTRY = {512, 413}       -- the start menu's 5th entry (Load game), 1024x768 layout
 local BACK_BUTTON = {854, 697}      -- the screen's Back button at the panel's default place and size
 local NEW_ROW = {420, 169}          -- (the screen is an RmlUi document now: its elements are found by selector)
@@ -50,6 +51,17 @@ local function query()
     local out = {}
     gear.emit('better-saveload.query', out)
     return out
+end
+
+local function panel_centered()
+    local panel
+    for _, p in ipairs(gear.ui.panels()) do
+        if p.key == PANEL_KEY then panel = p break end
+    end
+    if not panel then return false end
+    local left, top, right, bottom = gear.ui.screen()
+    return math.abs(panel.x + panel.w / 2 - (left + right) / 2) <= 1
+        and math.abs(panel.y + panel.h / 2 - (top + bottom) / 2) <= 1
 end
 
 local function wait_open(name, want, timeout)
@@ -97,6 +109,7 @@ gear.task(function()
     check('screen lists the savegames', q.count == #before, ('%s of %d'):format(tostring(q.count), #before))
     check('menus: load mode', q.mode == 'load', q.mode)
     gear.wait(1)
+    check('menu screen is centered', panel_centered())
     A.screenshot('menu_load')
 
     -- Filters and order.
@@ -198,6 +211,16 @@ gear.task(function()
     local h = gear.world.hero()
     check('the loaded hero', h ~= nil and h:name() == target.hero, h and h:name())
 
+    gear.ui.set_edit_mode(true)
+    gear.wait(0.5)
+    local save_panel_open = false
+    for _, p in ipairs(gear.ui.panels()) do
+        if p.key == 'better-saveload:savegames' and p.open ~= false then save_panel_open = true end
+    end
+    check('save screen stays hidden in layout edit mode', not save_panel_open)
+    gear.ui.set_edit_mode(false)
+    gear.wait(0.2)
+
     -- In game: S opens the savegame window, the mod's screen shows in save mode.
     A.press('s')
     local s_ok = wait_open(WND_GAME, true)
@@ -213,6 +236,7 @@ gear.task(function()
     check('game: save mode, the new savegame row', q.mode == 'save' and q.sel == 'new',
         tostring(q.mode) .. ' ' .. tostring(q.sel))
     gear.wait(1)
+    check('game screen is centered', panel_centered())
     check('a default name', (q.name or '') ~= '', q.name)
     -- Typing: the keys go into the name (the player's keyboard layout, through gear.ui.typed).
     gear.emit('better-saveload.set', {name = ''})

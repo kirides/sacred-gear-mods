@@ -59,7 +59,8 @@ local function collect()
     if ui.can_move_windows() then
         for _, w in ipairs(ui.windows()) do
             local b = w.bounds
-            if w.drawn and w.movable and w.name ~= '' and (b or (w.width > 0 and w.height > 0)) then
+            if w.drawn and w.visible and not (ui.replaced and ui.replaced(w.name)) and w.movable
+                and w.name ~= '' and (b or (w.width > 0 and w.height > 0)) then
                 local wx, wy = w.x + w.frame_x, w.y + w.frame_y
                 b = b or {x = wx, y = wy, w = w.width, h = w.height}
                 list[#list + 1] = {key = 'game:' .. w.name, name = pretty(w.name), game = w.name,
@@ -68,7 +69,7 @@ local function collect()
         end
     end
     for _, p in ipairs(ui.panels()) do
-        if p.key ~= TOOLBAR then
+        if p.key ~= TOOLBAR and p.open ~= false then
             list[#list + 1] = {key = p.key, name = p.title ~= '' and p.title or p.key, panel = true,
                 x = p.x, y = p.y, w = p.w, h = p.h, resizable = p.resizable, min_w = p.min_width, min_h = p.min_height}
         end

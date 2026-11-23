@@ -108,11 +108,23 @@ return function(probe)
                         b and ('%d,%d %dx%d'):format(b.x, b.y, b.w, b.h) or '-'))
                 end
             end
+            local listed = {}
             local inv
             for _, fr in ipairs(probe.collect()) do
+                listed[fr.key] = true
                 print(('frame %s %q at %d,%d %dx%d'):format(fr.key, fr.name, fr.x, fr.y, fr.w, fr.h))
                 if fr.key == 'game:UI_WND_INVENTORY' then inv = fr end
             end
+            local hidden_excluded = true
+            for _, ww in ipairs(ui.windows()) do
+                if (not ww.visible or (ui.replaced and ui.replaced(ww.name))) and listed['game:' .. ww.name] then
+                    hidden_excluded = false
+                end
+            end
+            for _, pp in ipairs(ui.panels()) do
+                if pp.open == false and listed[pp.key] then hidden_excluded = false end
+            end
+            check('hidden windows and closed panels excluded', hidden_excluded)
             check('inventory overlay covers its tabs', inv and inv.y < y - 8, inv and ('overlay y %d, window y %d'):format(inv.y, y))
 
             -- A click selects (and moves nothing).

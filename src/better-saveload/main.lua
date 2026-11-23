@@ -11,6 +11,7 @@ local S = gear.settings
 local C = ui.COLORS
 
 local WND_GAME, WND_MENUS = 'UI_WND_SAVEGAME', 'UI_MENU_LOADGAME'
+local PANEL_KEY = 'better-saveload:savegames'
 local LAYER = 'top'
 local ROW_H, THUMB_W, THUMB_H = 54, 64, 48
 local DOUBLE_CLICK = 0.4    -- seconds between the two clicks of a double click
@@ -454,6 +455,7 @@ end
 -- The search and the name are text fields (data-value): the document takes the keys while one has the focus and hands the text back through
 -- on_change. Clicks are delegated listeners; the keyboard shortcuts (arrows, Enter, Delete ...) stay in input().
 local doc
+local center_error_reported = false
 local last = {}
 local row_keys = {}          -- row element id -> slot | 'new'
 local scroll_top = 0
@@ -563,10 +565,10 @@ end
 local ROW_H_UNITS = 56      -- a row (50 and its 1px border on both sides) and its gap (4)
 local VIEW_ROWS = 8
 
-local function snapshot(preview)
+local function snapshot()
     pic_budget = PIC_BUDGET
     local m = {
-        open = view.open ~= nil or preview == true, title = view.open == WND_MENUS and 'Load game' or 'Savegames',
+        open = view.open ~= nil, title = view.open == WND_MENUS and 'Load game' or 'Savegames',
         in_game = view.open == WND_GAME, load_on = view.mode == 'load', save_on = view.mode == 'save',
         dd = view.dd or '', dd_hero = {}, dd_class = {}, dd_sort = {},
         hero_label = view.heroes[view.hero_i] or '', class_label = view.class_i == 1 and 'All classes' or (CLASS_LABEL[view.classes[view.class_i]] or ''),
@@ -753,11 +755,11 @@ local function focus_default()
     if e then e:focus() end
 end
 
-local function screen(preview)
+local function screen()
     if not doc then load_doc() end
     if not doc then return end
-    if not preview then sync_name() end
-    local m = snapshot(preview)
+    sync_name()
+    local m = snapshot()
     for k, v in pairs(m) do
         if k ~= 'q' and k ~= 'name' and not same(v, last[k]) then doc.model[k] = v; last[k] = v end
     end
@@ -768,7 +770,20 @@ local function screen(preview)
         view.focus_request = nil
         focus_default()
     end
-    doc:draw({layer = LAYER, modal = not preview})
+    doc:draw({layer = LAYER, modal = true})
+    local panel = doc:query('#screen')
+    local rect = panel and panel:rect()
+    if rect then
+        local left, top, right, bottom = ui.screen()
+        local x = math.floor((left + right - rect.w) / 2 + 0.5)
+        local y = math.floor((top + bottom - rect.h) / 2 + 0.5)
+        if math.abs(rect.x - x) >= 0.5 or math.abs(rect.y - y) >= 0.5 then
+            if not ui.set_panel_rect(PANEL_KEY, x, y) and not center_error_reported then
+                gear.log('could not center the Better SaveLoad panel')
+                center_error_reported = true
+            end
+        end
+    end
     local list = doc:query('#list')
     if list then
         local top, height, client = list:scroll()
@@ -797,6 +812,7 @@ end
 
 local function opened(name)
     view.open = name
+    center_error_reported = false
     view.confirm = nil
     view.message = nil
     view.mode = name == WND_GAME and 'save' or 'load'     -- in game always the Save tab first
@@ -922,7 +938,7 @@ gear.on('draw', function(state)
     if name then
         input()
         if view.open then
-            screen(false)
+            screen()
             ui.capture_keys(true)      -- the game takes no keys while the screen is open (the document's own capture ends with its text focus)
         end
         return
@@ -935,10 +951,5 @@ gear.on('draw', function(state)
         elseif gear.time() >= note.until_ then
             view.note = nil
         end
-    end
-    -- The layout editor: the screen's panel can be moved and sized while nothing else is open.
-    if ui.edit_mode() and state.mode == 'game' and not state.exclusive then
-        view.open = nil
-        screen(true)
     end
 end)

@@ -1,4 +1,4 @@
-#screen { position: absolute; left: 86dp; top: 80dp; width: 800dp; }       /* no fixed height: the content sets it (the frame adds 52 x 61), so no empty strip under the buttons; top centres it in the 1024 x 768 layout */
+#screen { position: absolute; left: 86dp; top: 80dp; width: 800dp; }     /* initial place; main.lua centres the measured panel while open */
 .titlerow { height: 30dp; text-align: center; }
 .ttl { font-family: "Sacred Game"; font-size: 20dp; color: #ffd780; }
 .tool { display: flex; flex-direction: row; align-items: center; height: 34dp; }
