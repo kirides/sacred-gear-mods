@@ -236,6 +236,7 @@ local doc
 local last = {}
 local settings_open = false
 local editing_now = false
+local open_filter = ''
 
 local function olines()
     local out = {}
@@ -274,14 +275,22 @@ local function snapshot(visible)
     local m = {
         overlay_x = (cfg.overlay_x or 16) .. 'dp', overlay_y = (cfg.overlay_y or 100) .. 'dp', overlay_visible = visible, editing = editing_now, enabled = cfg.enabled == true, on_text = cfg.enabled and 'on' or 'off',
         settings_label = 'Settings' .. key_hint('panel'), olines = visible and olines() or {},
-        settings_open = settings_open, mode = tostring(mode), min_quality = cfg.min_quality, classes = {}, cats = {}, potions = {},
+        settings_open = settings_open, dd = open_filter, mode = tostring(mode), min_quality = cfg.min_quality,
+        dd_quality = {}, classes = {}, cats = {}, potions = {},
         keep_set = cfg.keep_set == true, keep_quest = cfg.keep_quest ~= false, dim = cfg.dim_alpha,
     }
+    for i, rule in ipairs(QUALITY_OPTIONS) do m.dd_quality[i] = {id = 'ddq' .. i, label = rule, on = rule == cfg.min_quality} end
     if settings_open then
         for _, cls in ipairs(W.CLASSES) do m.classes[#m.classes + 1] = {id = 'class-' .. cls.name, name = cls.name, on = picked[cls.name] == true} end
         for _, cat in ipairs(CATEGORIES) do
             local rule = cfg.categories[cat]
-            m.cats[#m.cats + 1] = {id = 'cat-' .. cat, name = cat, rule = rule == false and 'never' or rule or '(minimum)'}
+            local current = rule == false and 'never' or rule or '(minimum)'
+            local options = {}
+            for i, option in ipairs(CATEGORY_OPTIONS) do
+                options[i] = {id = 'ddc-' .. cat .. '-' .. i, label = option, on = option == current}
+            end
+            m.cats[#m.cats + 1] = {id = 'cat-' .. cat, name = cat, rule = current, dd = 'category-' .. cat,
+                open = open_filter == 'category-' .. cat, options = options}
         end
         for _, k in ipairs(POTIONS) do
             m.potions[#m.potions + 1] = {id = 'potion-' .. k, name = k, on = cfg.potions[k] ~= false,
@@ -332,7 +341,27 @@ local function load_doc()
         end
         changed()
     end)
-    on('#min_quality', function() cfg.min_quality = next_in(QUALITY_OPTIONS, cfg.min_quality); changed() end)
+    on('#min_quality', function() open_filter = open_filter == 'quality' and '' or 'quality' end)
+    on('#ddshade', function() open_filter = '' end)
+    on('.quality-opt', function(e)
+        local i = tonumber(tostring(e.current):match('^ddq(%d+)$'))
+        if i and QUALITY_OPTIONS[i] then cfg.min_quality = QUALITY_OPTIONS[i]; changed() end
+        open_filter = ''
+    end)
+    on('.catb', function(e)
+        local cat = tostring(e.current):sub(5)
+        local name = 'category-' .. cat
+        open_filter = open_filter == name and '' or name
+    end)
+    on('.category-opt', function(e)
+        local cat, i = tostring(e.current):match('^ddc%-([^-]+)%-(%d+)$')
+        i = tonumber(i)
+        if cat and i and CATEGORY_OPTIONS[i] then
+            cfg.categories[cat] = category_rule(CATEGORY_OPTIONS[i])
+            changed()
+        end
+        open_filter = ''
+    end)
     on('[id^=class-]', function(e)
         if type(cfg.classes) ~= 'table' then return end
         local name = tostring(e.current):sub(7)
@@ -342,13 +371,6 @@ local function load_doc()
         local list = {}
         for _, k in ipairs(W.CLASSES) do if picked[k.name] then list[#list + 1] = k.name end end
         cfg.classes = list
-        changed()
-    end)
-    on('.catb', function(e)
-        local cat = tostring(e.current):sub(5)
-        local rule = cfg.categories[cat]
-        local cur = rule == false and 'never' or rule or '(minimum)'
-        cfg.categories[cat] = category_rule(next_in(CATEGORY_OPTIONS, cur))
         changed()
     end)
     on('[id^=potion-]', function(e)

@@ -168,7 +168,9 @@ return function(probe)
         check('settings window opens', probe.settings_open())
         check('it stays open without Alt', probe.settings_open() and not probe.overlay_shown())
         A.screenshot('lootfilter-settings')
-        check('quality button known', click_element('#min_quality'))    -- normal -> magic
+        check('quality button known', click_element('#min_quality'))
+        gear.wait(0.5)
+        check('quality option known', click_element('#ddq2'))    -- magic
         gear.wait(0.5)
         check('lowest quality stepped', cfg.min_quality == 'magic', cfg.min_quality)
         check('stamina orb known', click_element('#potion-stamina'))

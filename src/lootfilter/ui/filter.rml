@@ -13,6 +13,7 @@
 </div>
 
 <div id="settings" class="window" data-panel="settings" data-title="Loot filter settings" data-if="settings_open">
+    <div data-if="dd != ''" id="ddshade"></div>
     <div class="titlebar">Loot filter settings</div>
     <div class="body">
         <div class="check-row"><span class="text" title="Off: the hero picks up everything">Filter on</span><input id="enabled" type="checkbox" class="game-check chk" data-checked="enabled"/></div>
@@ -27,9 +28,24 @@
             <div data-for="c : classes" class="cls"><input data-attr-id="c.id" type="checkbox" class="game-check chk small" data-checked="c.on"/><span class="text small">{{ c.name }}</span></div>
         </div>
 
-        <div class="check-row"><span class="heading" title="Items below it are left on the ground">Lowest quality</span><button class="game-button" id="min_quality"><span class="padkey a"></span>{{ min_quality }}</button></div>
+        <div class="check-row"><span class="heading" title="Items below it are left on the ground">Lowest quality</span>
+            <div class="quality-dd">
+                <button class="game-button" id="min_quality"><span class="padkey a"></span>{{ min_quality }}<span class="caret">&#9662;</span></button>
+                <div data-if="dd == 'quality'" class="ddlist" data-nav-scroll>
+                    <button data-for="o : dd_quality" class="mini opt quality-opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+                </div>
+            </div>
+        </div>
         <div class="cats">
-            <div data-for="c : cats" class="cat"><span class="text small">{{ c.name }}</span><button data-attr-id="c.id" class="mini catb"><span class="padkey a"></span>{{ c.rule }}</button></div>
+            <div data-for="c : cats" class="cat" data-class-open="c.open">
+                <span class="text small">{{ c.name }}</span>
+                <div class="cat-dd">
+                    <button data-attr-id="c.id" class="mini catb"><span class="padkey a"></span>{{ c.rule }}<span class="caret">&#9662;</span></button>
+                    <div data-if="dd == c.dd" class="ddlist" data-nav-scroll>
+                        <button data-for="o : c.options" class="mini opt category-opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <p class="heading">Potions</p>
