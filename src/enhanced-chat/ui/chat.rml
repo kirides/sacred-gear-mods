@@ -13,7 +13,7 @@
     </div>
     <div data-if="!minimized" class="lwrap">
         <div id="lines" data-style-font-size="fs">
-            <div data-for="l : lines" data-attr-id="l.id" class="line" data-class-item="l.item"><span data-for="r : l.runs" data-style-color="r.c">{{ r.t }}</span></div>
+            <div data-for="l : lines" data-attr-id="l.id" class="line" data-class-item="l.item"><span data-for="r : l.runs" data-style-color="r.c" data-class-ic="r.ic" data-style-decorator="r.deco" data-style-image-color="r.tint">{{ r.t }}</span></div>
         </div>
         <button data-if="new_label != ''" id="newer" class="tab newer" title="To the newest line"><span class="padkey a"></span>{{ new_label }}</button>
     </div>
