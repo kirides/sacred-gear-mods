@@ -1,5 +1,22 @@
 #log { position: absolute; left: 340dp; top: 200dp; width: 640dp; }
 .filters button.game-button { font-size: 15dp; margin-right: 4dp; }
+.filters button.filter-quality,
+.filters button.filter-category,
+.filters button.filter-kind {
+    width: 140px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+.filters button.filter-kind {
+    width: 220px;
+}
+.filters .ddwrap { position: relative; z-index: 10; }
+.filters .ddwrap button.game-button { margin-right: 4dp; }
+.ddwrap button.game-button .caret { margin-left: 4dp; color: #ffd780; }
+.ddlist { position: absolute; left: 16dp; top: 31dp; min-width: 170dp; max-height: 300dp; overflow-y: auto; z-index: 20; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
+button.mini.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
+button.mini.opt.on { color: #ffe030; border-color: #ffd780; }
+#ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 .rows { height: 230dp; overflow-y: auto; margin-top: 6dp; }
 .entry { display: flex; flex-direction: row; padding: 1px 0; font-size: 14dp; }
 .when { width: 90dp; color: #808080; }

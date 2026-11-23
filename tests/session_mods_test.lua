@@ -107,6 +107,12 @@ local function make_gear(mod_dir, opts)
         G.models = G.models or {}
         G.models[path] = doc
         G.rml_calls = opts.calls or {}
+        G.rml_on_change = opts.on_change
+        G.rml_handlers = G.rml_handlers or {}
+        function doc:on(selector, event, fn)
+            G.rml_handlers[selector] = G.rml_handlers[selector] or {}
+            G.rml_handlers[selector][event] = fn
+        end
         local function flat(v)
             if type(v) == 'table' then for _, x in pairs(v) do flat(x) end
             elseif v ~= nil then G.texts[#G.texts + 1] = tostring(v) end
@@ -288,6 +294,14 @@ do
     ok(joined(G2):find('Blade', 1, true), 'loot: reloaded entries are drawn')
     ok(joined(G2):find('entries', 1, true), 'loot: count line')
     ok(joined(G2):find('Goblin-Krieger', 1, true), 'loot: the source is drawn as the localized name of its id')
+    G2.rml_handlers['#quality']['click']()
+    fire(G2, 'draw', {mode = 'game'})
+    ok(G2.models['ui/log.rml'].model.dd == 'quality', 'loot: quality dropdown opens')
+    G2.rml_handlers['.opt']['click']({current = 'ddq5'})
+    fire(G2, 'draw', {mode = 'game'})
+    ok(G2.models['ui/log.rml'].model.fq == 'Unique'
+        and G2.models['ui/log.rml'].model.dd == '',
+        'loot: dropdown option updates the quality filter')
     -- a log of an older version holds the source as text: still shown as it is
     local G3 = load_mod('lootlog', {files = {['lootlog.json'] = G.gear.json.encode({session = 1, entries = {{s = 1, t = 5, kind = 'drop', name = 'Old Blade', quality = 'rare', category = 'weapon', src = 'gob_warrior.grn'}}})}, json = G.gear.json})
     fire(G3, 'load')

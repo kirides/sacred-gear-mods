@@ -277,10 +277,11 @@ end
 
 local clock_text = gear.fmt.clock
 
--- ui/log.rml (the game theme). The three filters are buttons that step through their options (works with the pad too).
+-- ui/log.rml (the game theme). The three filters use custom game-style dropdown lists.
 local doc
 local shown = false
 local sig                  -- what the model was built from: entry count, newest entry, filters
+local open_filter = ''
 
 local function build()
     local list = {}
@@ -297,24 +298,23 @@ local function build()
             end
         end
     end
-    return {
+    local m = {
         title = 'Loot log' .. key_hint('panel'),
+        dd = open_filter,
         fq = Q_OPTIONS[filter.q], fc = C_OPTIONS[filter.c], fk = K_OPTIONS[filter.k],
+        dd_quality = {}, dd_category = {}, dd_kind = {},
         count = ('%d of %d entries'):format(total, #entries),
         rows = list,
     }
-end
-
-local function cycle(which, options)
-    return function() filter[which] = filter[which] % #options + 1 end
+    for i, label in ipairs(Q_OPTIONS) do m.dd_quality[i] = {id = 'ddq' .. i, label = label, on = i == filter.q} end
+    for i, label in ipairs(C_OPTIONS) do m.dd_category[i] = {id = 'ddc' .. i, label = label, on = i == filter.c} end
+    for i, label in ipairs(K_OPTIONS) do m.dd_kind[i] = {id = 'ddk' .. i, label = label, on = i == filter.k} end
+    return m
 end
 
 local function load_doc()
     local err
     doc, err = ui.rml.load('ui/log.rml', {dp = true, model = build(), calls = {
-        cycle_q = guard('cycle_q', cycle('q', Q_OPTIONS)),
-        cycle_c = guard('cycle_c', cycle('c', C_OPTIONS)),
-        cycle_k = guard('cycle_k', cycle('k', K_OPTIONS)),
         clear = guard('clear', function()
             entries = {}
             dirty = true
@@ -322,12 +322,29 @@ local function load_doc()
         end),
     }})
     if not doc then gear.log('loot log: ui/log.rml failed: ' .. tostring(err)) end
+    local function on(sel, fn)
+        doc:on(sel, 'click', gear.guard('click ' .. sel, fn))
+    end
+    local function toggle(name) return function() open_filter = open_filter == name and '' or name end end
+    on('#quality', toggle('quality'))
+    on('#category', toggle('category'))
+    on('#kind', toggle('kind'))
+    on('#ddshade', function() open_filter = '' end)
+    on('.opt', function(e)
+        local id = tostring(e.current)
+        local i
+        if open_filter == 'quality' then i = tonumber(id:match('^ddq(%d+)$')); if i and Q_OPTIONS[i] then filter.q = i end
+        elseif open_filter == 'category' then i = tonumber(id:match('^ddc(%d+)$')); if i and C_OPTIONS[i] then filter.c = i end
+        elseif open_filter == 'kind' then i = tonumber(id:match('^ddk(%d+)$')); if i and K_OPTIONS[i] then filter.k = i end
+        end
+        open_filter = ''
+    end)
 end
 
 local function draw_panel()
     if not doc then load_doc() end
     if not doc then return end
-    local s = table.concat({#entries, tostring(entries[#entries]), filter.q, filter.c, filter.k}, '|')
+    local s = table.concat({#entries, tostring(entries[#entries]), filter.q, filter.c, filter.k, open_filter}, '|')
     if s ~= sig then
         sig = s
         for k, v in pairs(build()) do doc.model[k] = v end

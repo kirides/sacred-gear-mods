@@ -5,12 +5,28 @@
 </head>
 <body data-model="model">
 <div id="log" class="window" data-panel="log" data-title="Loot log">
+    <div data-if="dd != ''" id="ddshade"></div>
     <div class="titlebar">{{ title }}</div>
     <div class="body">
         <div class="row filters">
-            <button class="game-button" data-event-click="cycle_q" title="Lowest quality shown"><span class="padkey a"></span>{{ fq }}</button>
-            <button class="game-button" data-event-click="cycle_c" title="Category shown"><span class="padkey a"></span>{{ fc }}</button>
-            <button class="game-button" data-event-click="cycle_k" title="Dropped on the ground, picked up into the backpack, or acquired otherwise"><span class="padkey a"></span>{{ fk }}</button>
+            <div class="ddwrap">
+                <button id="quality" class="game-button filter-quality" title="Lowest quality shown"><span class="padkey a"></span>{{ fq }}<span class="caret">&#9662;</span></button>
+                <div data-if="dd == 'quality'" class="ddlist" data-nav-scroll>
+                    <button data-for="o : dd_quality" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+                </div>
+            </div>
+            <div class="ddwrap">
+                <button id="category" class="game-button filter-category" title="Category shown"><span class="padkey a"></span>{{ fc }}<span class="caret">&#9662;</span></button>
+                <div data-if="dd == 'category'" class="ddlist" data-nav-scroll>
+                    <button data-for="o : dd_category" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+                </div>
+            </div>
+            <div class="ddwrap">
+                <button id="kind" class="game-button filter-kind" title="Dropped on the ground, picked up into the backpack, or acquired otherwise"><span class="padkey a"></span>{{ fk }}<span class="caret">&#9662;</span></button>
+                <div data-if="dd == 'kind'" class="ddlist" data-nav-scroll>
+                    <button data-for="o : dd_kind" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+                </div>
+            </div>
         </div>
         <div class="row space">
             <span class="label">{{ count }}</span>
