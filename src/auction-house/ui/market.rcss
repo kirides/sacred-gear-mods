@@ -19,6 +19,12 @@ button.mini.on { border-color: #ffd780; color: #ffd780; }
 button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; }
 button.game-button.dis { opacity: 0.55; color: #8a8a8a; }
+.ah-dd { position: relative; z-index: 10; }
+.ah-dd .caret { margin-left: 7dp; color: #ffd780; }
+.ah-ddlist { position: absolute; left: 16dp; top: 29dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 20; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
+.ah-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
+.ah-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
+#ah-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 .lst { height: 300dp; overflow-y: auto; }
 .listing { display: flex; flex-direction: row; align-items: center; padding: 2dp 4dp; margin-bottom: 2dp; background-color: #12121c; border: 1px #2a2a38; }
 .listing.ret { background-color: #302020; }

@@ -9,6 +9,7 @@
 </div>
 
 <div id="market" class="window" data-panel="market" data-title="Auction house" data-if="market_open">
+    <div data-if="dd != ''" id="ah-ddshade"></div>
     <div class="titlebar">Auction house</div>
     <div class="body">
         <div class="tabbar"><a data-for="t : tabs" class="link tab" data-attr-id="t.id" data-class-on="t.on">{{ t.name }}</a></div>
@@ -18,14 +19,14 @@
             <div class="frow">
                 <input type="text" class="field grow" data-value="q_text" maxlength="40" placeholder="Search name or any tooltip line"/>
                 <button class="mini" id="kbd-q" title="Type with an on-screen keyboard"><span class="padkey a"></span>Kbd</button>
-                <button class="mini wide" id="ah-cat"><span class="padkey a"></span>{{ cat }}</button>
-                <button class="mini wide" id="ah-qual"><span class="padkey a"></span>{{ qual }}</button>
+                <div class="ah-dd"><button class="mini wide" id="ah-cat"><span class="padkey a"></span>{{ cat }}<span class="caret">&#9662;</span></button><div data-if="dd == 'cat'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_cat" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div class="ah-dd"><button class="mini wide" id="ah-qual"><span class="padkey a"></span>{{ qual }}<span class="caret">&#9662;</span></button><div data-if="dd == 'qual'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_qual" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
             </div>
             <div class="frow">
-                <button class="mini wide" id="ah-lvl"><span class="padkey a"></span>{{ level }}</button>
-                <button class="mini wide" id="ah-price"><span class="padkey a"></span>{{ price }}</button>
+                <div class="ah-dd"><button class="mini wide" id="ah-lvl"><span class="padkey a"></span>{{ level }}<span class="caret">&#9662;</span></button><div data-if="dd == 'level'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_level" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div class="ah-dd"><button class="mini wide" id="ah-price"><span class="padkey a"></span>{{ price }}<span class="caret">&#9662;</span></button><div data-if="dd == 'price'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_price" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <button class="mini" id="ah-class" data-class-on="mine_class"><span class="padkey a"></span>{{ class_label }}</button>
-                <button class="mini wide" id="ah-sort"><span class="padkey a"></span>{{ sort }}</button>
+                <div class="ah-dd"><button class="mini wide" id="ah-sort"><span class="padkey a"></span>{{ sort }}<span class="caret">&#9662;</span></button><div data-if="dd == 'sort'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_sort" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <button class="mini" id="ah-desc" title="Sort order"><span class="padkey a"></span>{{ order }}</button>
             </div>
             <div class="frow">
@@ -54,7 +55,7 @@
                 <div class="listing"><img class="mi" data-attr-src="sel.src"/><div class="lbody"><div data-style-color="sel.color" class="lname">{{ sel.name }}</div><div class="muted small">{{ sel.detail }}</div></div></div>
                 <div class="frow"><span class="lab">Price</span><input type="text" class="field price" data-value="price_in" maxlength="10" placeholder="gold"/><button class="mini" id="kbd-price"><span class="padkey a"></span>Kbd</button>
                     <button data-for="s : steps" class="mini" data-attr-id="s.id"><span class="padkey a"></span>{{ s.label }}</button></div>
-                <div class="frow"><span class="lab">For</span><button class="mini wide" id="ah-days"><span class="padkey a"></span>{{ days }}</button><span class="muted small">{{ fee }}</span></div>
+                <div class="frow"><span class="lab">For</span><div class="ah-dd"><button class="mini wide" id="ah-days"><span class="padkey a"></span>{{ days }}<span class="caret">&#9662;</span></button><div data-if="dd == 'days'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_days" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div><span class="muted small">{{ fee }}</span></div>
                 <button class="game-button" id="ah-list" data-attrif-disabled="!can_list" title="The item leaves your inventory now; it comes back by the mailbox if it does not sell"><span class="padkey a"></span>Put up for sale</button>
             </div>
         </div>

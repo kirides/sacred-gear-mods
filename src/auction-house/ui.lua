@@ -60,7 +60,7 @@ local view = {
     tab = 'browse',
     q = {text = '', cat = 1, qual = 1, level = 1, price = 1, mine_class = false}, sort = 1, desc = false, page = 1,
     asked = nil, sell = {page = 0, sel = nil, price = '', days = 2}, gold_amount = '',
-    msg = nil, msg_ok = true, msg_until = 0, hover = nil, busy = false,
+    msg = nil, msg_ok = true, msg_until = 0, hover = nil, busy = false, dd = '',
 }
 M.view = view
 
@@ -231,8 +231,6 @@ local function set_field(key, value)
     if doc then doc.model[key] = value; last[key] = value end
 end
 
-local function cycle(list, i) return i % #list + 1 end
-
 local function stats_line(client)
     if client.info and client.info.problem then return client.info.problem, true end
     if client.where == 'probe' then return 'Looking for the market on the game server...', false end
@@ -399,11 +397,13 @@ local function snapshot(client, cfg, st)
         open_shown = st.button ~= nil, open_enabled = st.button == 'on', open_label = panel_open and 'Close' or 'Open the market',
         open_tip = st.button == 'on' and 'Buy and sell items with the other players' or 'Open a chest to use the market',
         market_open = panel_open and st.market, tab = view.tab, tabs = {}, status = '', status_bad = false,
+        dd = view.dd,
         q_text = last.q_text or '', price_in = last.price_in or '', gold_in = last.gold_in or '',
         cat = '', qual = '', level = '', price = '', mine_class = false, class_label = '', sort = '', order = '', count = '', pg = '',
         can_prev = false, can_next = false, browse_msg = '', rows = {},
         sp_n = '', sp_prev = false, sp_next = false, cells = {}, has_sel = false, sel = {src = '', color = '#ffffffff', name = '', detail = ''}, steps = {},
         days = '', fee = '', can_list = false,
+        dd_cat = {}, dd_qual = {}, dd_level = {}, dd_price = {}, dd_sort = {}, dd_days = {},
         mine_title = '', mine_rows = {}, mine_more = '', busy = view.busy and true or false,
         wallet = '', can_dep = false, can_all = false, mail_title = '', can_collect = false, returns = {}, mails = {}, mail_more = '',
         msg_ok = true, footer = '',
@@ -412,6 +412,16 @@ local function snapshot(client, cfg, st)
     ids = {}
     for i, t in ipairs(TABS) do m.tabs[i] = {id = 'tab-' .. t[1], name = t[2], on = view.tab == t[1]} end
     if not m.market_open then return m end
+    for i, v in ipairs(CATEGORIES) do m.dd_cat[i] = {id = 'ah-dd-cat-' .. i, label = v[2], on = i == view.q.cat} end
+    for i, v in ipairs(QUALITIES) do m.dd_qual[i] = {id = 'ah-dd-qual-' .. i, label = v[2], on = i == view.q.qual} end
+    for i, v in ipairs(LEVELS) do m.dd_level[i] = {id = 'ah-dd-level-' .. i, label = v[3], on = i == view.q.level} end
+    for i, v in ipairs(PRICES) do m.dd_price[i] = {id = 'ah-dd-price-' .. i, label = v[3], on = i == view.q.price} end
+    for i, v in ipairs(SORTS) do m.dd_sort[i] = {id = 'ah-dd-sort-' .. i, label = v[2], on = i == view.sort} end
+    local cl = client
+    local rules = cl and cl.info and cl.info.rules or {durations = {1, 3, 7}}
+    for i, d in ipairs(rules.durations) do
+        m.dd_days[i] = {id = 'ah-dd-days-' .. i, label = d == 1 and '1 day' or (d .. ' days'), on = i == view.sell.days}
+    end
     m.status, m.status_bad = stats_line(client)
     if view.tab == 'browse' then browse_model(client, m)
     elseif view.tab == 'sell' then sell_model(client, cfg, m)
@@ -477,13 +487,42 @@ local function load_doc(client, cfg, st)
         if t == 'mine' then view.mine_asked = nil end
     end)
     -- Browse
-    on('#ah-cat', function() view.q.cat = cycle(CATEGORIES, view.q.cat); M.search(c(), 1) end)
-    on('#ah-qual', function() view.q.qual = cycle(QUALITIES, view.q.qual); M.search(c(), 1) end)
-    on('#ah-lvl', function() view.q.level = cycle(LEVELS, view.q.level); M.search(c(), 1) end)
-    on('#ah-price', function() view.q.price = cycle(PRICES, view.q.price); M.search(c(), 1) end)
+    local function toggle_dd(name) return function() view.dd = view.dd == name and '' or name end end
+    on('#ah-ddshade', function() view.dd = '' end)
+    on('#ah-cat', toggle_dd('cat'))
+    on('#ah-qual', toggle_dd('qual'))
+    on('#ah-lvl', toggle_dd('level'))
+    on('#ah-price', toggle_dd('price'))
     on('#ah-class', function() view.q.mine_class = not view.q.mine_class; M.search(c(), 1) end)
-    on('#ah-sort', function() view.sort = cycle(SORTS, view.sort); M.search(c(), 1) end)
+    on('#ah-sort', toggle_dd('sort'))
     on('#ah-desc', function() view.desc = not view.desc; M.search(c(), 1) end)
+    on('.ah-ddlist .opt', function(e)
+        local id = tostring(e.current)
+        local i
+        i = tonumber(id:match('^ah%-dd%-cat%-([%d]+)$'))
+        if i and CATEGORIES[i] then view.q.cat = i; M.search(c(), 1)
+        else
+            i = tonumber(id:match('^ah%-dd%-qual%-([%d]+)$'))
+            if i and QUALITIES[i] then view.q.qual = i; M.search(c(), 1)
+            else
+                i = tonumber(id:match('^ah%-dd%-level%-([%d]+)$'))
+                if i and LEVELS[i] then view.q.level = i; M.search(c(), 1)
+                else
+                    i = tonumber(id:match('^ah%-dd%-price%-([%d]+)$'))
+                    if i and PRICES[i] then view.q.price = i; M.search(c(), 1)
+                    else
+                        i = tonumber(id:match('^ah%-dd%-sort%-([%d]+)$'))
+                        if i and SORTS[i] then view.sort = i; M.search(c(), 1)
+                        else
+                            i = tonumber(id:match('^ah%-dd%-days%-([%d]+)$'))
+                            if i then view.sell.days = i end
+                        end
+                    end
+                end
+            end
+        end
+        view.dd = ''
+    end)
     on('#ah-search', function() M.search(c(), 1) end)
     on('#ah-prev', function() local cl = c(); if cl and cl.page and cl.page.page > 1 then M.search(cl, cl.page.page - 1) end end)
     on('#ah-next', function() local cl = c(); if cl and cl.page and cl.page.page < cl.page.pages then M.search(cl, cl.page.page + 1) end end)
@@ -520,11 +559,7 @@ local function load_doc(client, cfg, st)
         view.sell.price = tostring(math.max(0, (tonumber(view.sell.price) or 0) + step))
         set_field('price_in', view.sell.price)
     end)
-    on('#ah-days', function()
-        local cl = c()
-        local rules = cl and cl.info and cl.info.rules or {durations = {1, 3, 7}}
-        view.sell.days = view.sell.days % #rules.durations + 1
-    end)
+    on('#ah-days', toggle_dd('days'))
     on('#ah-list', function()
         local cl, s = c(), view.sell
         if not (cl and s.sel and last.can_list) then return end
