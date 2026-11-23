@@ -1,0 +1,33 @@
+<template name="lootlog-dropdown">
+    <head>
+        <style>
+            .filters button.game-button { font-size: 15dp; margin-right: 4dp; }
+            .filters .ddwrap.quality button.game-button,
+            .filters .ddwrap.category button.game-button {
+                width: 140px;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+            .filters .ddwrap.kind button.game-button {
+                width: 220px;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+            .filters .ddwrap { position: relative; z-index: 10; }
+            .filters .ddwrap.open { z-index: 100; }
+            .filters .ddwrap button.game-button { margin-right: 4dp; }
+            .ddwrap button.game-button .caret { margin-left: 4dp; color: #ffd780; }
+            .ddlist { position: absolute; left: 16dp; top: 31dp; min-width: 170dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
+            button.mini.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
+            button.mini.opt.on { color: #ffe030; border-color: #ffd780; }
+        </style>
+    </head>
+    <body>
+        <button class="game-button" data-attr-id="key" data-attr-title="title">
+            <span class="padkey a"></span>{{ label }}<span class="caret">&#9662;</span>
+        </button>
+        <div data-if="dd == key" class="ddlist" data-nav-scroll>
+            <button data-for="o : options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+        </div>
+    </body>
+</template>

@@ -2,6 +2,7 @@
 <head>
     <title>Loot log</title>
     <link type="text/rcss" href="log.rcss"/>
+    <link type="text/template" href="filters.rml"/>
 </head>
 <body data-model="model">
 <div id="log" class="window" data-panel="log" data-title="Loot log">
@@ -9,23 +10,26 @@
     <div class="titlebar">{{ title }}</div>
     <div class="body">
         <div class="row filters">
-            <div class="ddwrap" data-class-open="dd == 'quality'">
-                <button id="quality" class="game-button filter-quality" title="Lowest quality shown"><span class="padkey a"></span>{{ fq }}<span class="caret">&#9662;</span></button>
-                <div data-if="dd == 'quality'" class="ddlist" data-nav-scroll>
-                    <button data-for="o : dd_quality" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
-                </div>
+            <div class="ddwrap quality" data-class-open="dd == 'quality'"
+                 data-alias-key="filters.quality.key"
+                 data-alias-title="filters.quality.title"
+                 data-alias-label="filters.quality.label"
+                 data-alias-options="filters.quality.options">
+                <template src="lootlog-dropdown"></template>
             </div>
-            <div class="ddwrap" data-class-open="dd == 'category'">
-                <button id="category" class="game-button filter-category" title="Category shown"><span class="padkey a"></span>{{ fc }}<span class="caret">&#9662;</span></button>
-                <div data-if="dd == 'category'" class="ddlist" data-nav-scroll>
-                    <button data-for="o : dd_category" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
-                </div>
+            <div class="ddwrap category" data-class-open="dd == 'category'"
+                 data-alias-key="filters.category.key"
+                 data-alias-title="filters.category.title"
+                 data-alias-label="filters.category.label"
+                 data-alias-options="filters.category.options">
+                <template src="lootlog-dropdown"></template>
             </div>
-            <div class="ddwrap" data-class-open="dd == 'kind'">
-                <button id="kind" class="game-button filter-kind" title="Dropped on the ground, picked up into the backpack, or acquired otherwise"><span class="padkey a"></span>{{ fk }}<span class="caret">&#9662;</span></button>
-                <div data-if="dd == 'kind'" class="ddlist" data-nav-scroll>
-                    <button data-for="o : dd_kind" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
-                </div>
+            <div class="ddwrap kind" data-class-open="dd == 'kind'"
+                 data-alias-key="filters.kind.key"
+                 data-alias-title="filters.kind.title"
+                 data-alias-label="filters.kind.label"
+                 data-alias-options="filters.kind.options">
+                <template src="lootlog-dropdown"></template>
             </div>
         </div>
         <div class="row space">

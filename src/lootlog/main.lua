@@ -298,17 +298,25 @@ local function build()
             end
         end
     end
+    local function options(labels, prefix, selected)
+        local list = {}
+        for i, label in ipairs(labels) do list[i] = {id = prefix .. i, label = label, on = i == selected} end
+        return list
+    end
     local m = {
         title = 'Loot log' .. key_hint('panel'),
         dd = open_filter,
-        fq = Q_OPTIONS[filter.q], fc = C_OPTIONS[filter.c], fk = K_OPTIONS[filter.k],
-        dd_quality = {}, dd_category = {}, dd_kind = {},
+        filters = {
+            quality = {key = 'quality', title = 'Lowest quality shown', label = Q_OPTIONS[filter.q],
+                       options = options(Q_OPTIONS, 'ddq', filter.q)},
+            category = {key = 'category', title = 'Category shown', label = C_OPTIONS[filter.c],
+                        options = options(C_OPTIONS, 'ddc', filter.c)},
+            kind = {key = 'kind', title = 'Dropped on the ground, picked up into the backpack, or acquired otherwise',
+                    label = K_OPTIONS[filter.k], options = options(K_OPTIONS, 'ddk', filter.k)},
+        },
         count = ('%d of %d entries'):format(total, #entries),
         rows = list,
     }
-    for i, label in ipairs(Q_OPTIONS) do m.dd_quality[i] = {id = 'ddq' .. i, label = label, on = i == filter.q} end
-    for i, label in ipairs(C_OPTIONS) do m.dd_category[i] = {id = 'ddc' .. i, label = label, on = i == filter.c} end
-    for i, label in ipairs(K_OPTIONS) do m.dd_kind[i] = {id = 'ddk' .. i, label = label, on = i == filter.k} end
     return m
 end
 
