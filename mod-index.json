@@ -45,7 +45,7 @@
       "id": "auction-house",
       "path": "mods/auction-house",
       "name": "Auction house",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "author": "kirides",
       "description": "Buy and sell items with the other players of a game, from the chest window. The host keeps the market.",
       "tags": [
@@ -238,7 +238,7 @@
       "id": "lootfilter",
       "path": "mods/lootfilter",
       "name": "Loot filter",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "author": "Sacred Gear",
       "description": "Picks up only the items you want: by class, quality and category; dims the rest on the ground.",
       "tags": [
@@ -253,7 +253,7 @@
       "id": "lootlog",
       "path": "mods/lootlog",
       "name": "Loot log",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "author": "Sacred Gear",
       "description": "A log of the items that dropped near the hero and the items that ended up in the backpack, filterable by quality, category and kind; kept between sessions.",
       "tags": [
