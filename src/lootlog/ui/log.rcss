@@ -11,9 +11,10 @@
     width: 220px;
 }
 .filters .ddwrap { position: relative; z-index: 10; }
+.filters .ddwrap.open { z-index: 100; }
 .filters .ddwrap button.game-button { margin-right: 4dp; }
 .ddwrap button.game-button .caret { margin-left: 4dp; color: #ffd780; }
-.ddlist { position: absolute; left: 16dp; top: 31dp; min-width: 170dp; max-height: 300dp; overflow-y: auto; z-index: 20; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
+.ddlist { position: absolute; left: 16dp; top: 31dp; min-width: 170dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
 button.mini.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
 button.mini.opt.on { color: #ffe030; border-color: #ffd780; }
 #ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }

@@ -8,7 +8,7 @@
     <div class="tabs">
         <div class="tabbar chat"><a data-for="t : tabs" class="link tab" data-attr-id="t.id" data-class-on="t.on">{{ t.label }}</a></div>
         <span class="grow"></span>
-        <button data-if="show_player" class="tab" id="player" title="Only the lines of this player"><span class="padkey a"></span>{{ player_label }}</button>
+        <div data-if="show_player" class="chat-dd" data-class-open="dd_open"><button class="tab" id="player" title="Only the lines of this player"><span class="padkey a"></span>{{ player_label }}<span class="caret">&#9662;</span></button><div data-if="dd_open" class="chat-ddlist" data-nav-scroll><button data-for="o : players" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
         <button class="tab" id="min" data-attr-title="min_tip"><span class="padkey a"></span>{{ min_label }}</button>
     </div>
     <div data-if="!minimized" class="lwrap">

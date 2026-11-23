@@ -29,7 +29,7 @@
         </div>
 
         <div class="check-row"><span class="heading" title="Items below it are left on the ground">Lowest quality</span>
-            <div class="quality-dd">
+            <div class="quality-dd" data-class-open="dd == 'quality'">
                 <button class="game-button" id="min_quality"><span class="padkey a"></span>{{ min_quality }}<span class="caret">&#9662;</span></button>
                 <div data-if="dd == 'quality'" class="ddlist" data-nav-scroll>
                     <button data-for="o : dd_quality" class="mini opt quality-opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>

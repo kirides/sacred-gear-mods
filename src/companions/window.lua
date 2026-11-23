@@ -64,6 +64,7 @@ function M.new(env)
     local doc
     local last = {}
     local by_id = {}          -- element id -> hero / ability, for the click handlers
+    local open_filter = ''
 
     -- Experience toward the next level: the game's levels (gear's experience_range), cached per hero and level.
     local xp_cache = {}
@@ -183,6 +184,11 @@ function M.new(env)
             by_id['play' .. c.id], by_id['name' .. c.id], by_id['beh' .. c.id] = c, c, c
             by_id['tac' .. c.id], by_id['dis' .. c.id] = c, c
             local can_dismiss = companion and not controlled
+            local behaviour_options = {}
+            behaviour_options[1] = {id = 'beh-' .. c.id .. '-0', label = BEHAVIOUR_LABEL.default, on = r.behaviour == nil}
+            for i, behaviour in ipairs(BEHAVIOURS) do
+                behaviour_options[i + 1] = {id = 'beh-' .. c.id .. '-' .. i, label = BEHAVIOUR_LABEL[behaviour], on = r.behaviour == behaviour}
+            end
             m.heroes[#m.heroes + 1] = {
                 id_play = 'play' .. c.id, id_name = 'name' .. c.id, id_beh = 'beh' .. c.id, id_tac = 'tac' .. c.id, id_dis = 'dis' .. c.id,
                 image = image_url(c:portrait()), name = name_of(c), controlled = controlled, dead = dead,
@@ -192,6 +198,7 @@ function M.new(env)
                 tip_play = controlled and 'You play this hero' or 'Play this hero',
                 can_name = companion, tip_name = companion and 'Another name for this companion' or 'Your own hero keeps the name you gave it',
                 behaviour = index == 1 and BEHAVIOUR_LABEL.default or BEHAVIOUR_LABEL[BEHAVIOURS[index - 1]],
+                beh_dd = 'beh-' .. c.id, beh_options = behaviour_options,
                 tactics = win.tactics == c.id and 'Close' or 'Tactics',
                 can_dismiss = can_dismiss, tip_dismiss = can_dismiss and 'Leaves the party for good, with what they wear (empty their backpack first)'
                     or 'Play another hero to dismiss this one',
@@ -200,6 +207,7 @@ function M.new(env)
         end
         local full = #party.companions() >= setting('max_companions', 3)
         m.class_name = CLASS_LABEL[CLASS_ORDER[win.class]] or '?'
+        for i, class in ipairs(CLASS_ORDER) do m.dd_classes[i] = {id = 'class-' .. i, label = CLASS_LABEL[class] or class, on = i == win.class} end
         m.full = full
         m.companions_text = ('%d of %d companions'):format(#party.companions(), setting('max_companions', 3))
         if not files.loaded then refresh_files() end
@@ -210,6 +218,10 @@ function M.new(env)
         if #files.list > 0 then
             local label = files.labels[files.index] or '?'
             m.file_label = maybe and ('! ' .. label) or label
+            for i, file in ipairs(files.list) do
+                local flabel = files.labels[i] or '?'
+                m.dd_files[i] = {id = 'file-' .. i, label = may_be_in_party(file) and ('! ' .. flabel) or flabel, on = i == files.index}
+            end
         end
         m.can_bring = not full and #files.list > 0
         m.bring_tip = (maybe and 'A hero with this class and name is in the party already: this may be a second copy. ' or '')
@@ -221,10 +233,12 @@ function M.new(env)
         local mi = 1
         for i, b in ipairs(MB) do if prefs.data.merc_behaviour == b then mi = i end end
         m.merc_label = ML[mi]
+        for i, label in ipairs(ML) do m.dd_mercs[i] = {id = 'merc-' .. i, label = label, on = i == mi} end
         m.merc_count = ('%d with the party'):format(#party.mercenaries())
         m.purses_on = separate() and true or false
         if m.purses_on then
             m.amount_label = AMOUNT_LABELS[win.amount]
+            for i, label in ipairs(AMOUNT_LABELS) do m.dd_amounts[i] = {id = 'amount-' .. i, label = label, on = i == win.amount} end
             for _, c in ipairs(heroes) do
                 local controlled = c == leader
                 by_id['give' .. c.id], by_id['take' .. c.id] = c, c
@@ -243,10 +257,16 @@ function M.new(env)
         local m = {portraits_on = false, px = '932dp', py = '260dp', portraits = {}, open = false, title = '', msg = '', heroes = {},
             class_name = '', full = false, companions_text = '', no_files = true, file_label = '', can_bring = false, bring_tip = '', maybe = false,
             picked = '', keep_label = '', merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
+            dd = open_filter, dd_classes = {}, dd_files = {}, dd_mercs = {}, dd_amounts = {}, dd_styles = {},
             tac_on = false, tac = {title = '', style = '', style_tip = '', none = false, abilities = {}}}
         by_id = {}
         portraits_model(m)
         window_model(m)
+        for i, style in ipairs(STYLES) do
+            local r
+            for _, h in ipairs(party.heroes()) do if h.id == win.tactics then r = record(h.id) end end
+            m.dd_styles[i] = {id = 'style-' .. i, label = STYLE_LABEL[style], on = r and (r.style or 'balanced') == style or (not r and style == 'balanced')}
+        end
         return m
     end
 
@@ -275,13 +295,7 @@ function M.new(env)
         end)
         on('[id^=beh]', function(e)
             local c = target(e)
-            if not c then return end
-            local r = record(c.id)
-            local index = 1
-            for i, b in ipairs(BEHAVIOURS) do if r.behaviour == b then index = i + 1 end end
-            local new = index % (#BEHAVIOURS + 1) + 1
-            r.behaviour = new > 1 and BEHAVIOURS[new - 1] or nil
-            store:changed()
+            if c then open_filter = open_filter == 'beh-' .. c.id and '' or 'beh-' .. c.id end
         end)
         on('[id^=tac]', function(e)
             local c = target(e)
@@ -292,22 +306,61 @@ function M.new(env)
             local c = target(e)
             if c and c.id >= party.FIRST_ID and c ~= leader_of() then dismiss(c) end
         end)
-        on('#class', function() win.class = win.class % #CLASS_ORDER + 1 end)
+        on('#party-ddshade', function() open_filter = '' end)
+        on('#class', function() open_filter = open_filter == 'class' and '' or 'class' end)
+        on('.party-ddlist .opt', function(e)
+            local id = tostring(e.current)
+            local i
+            i = tonumber(id:match('^class%-([%d]+)$'))
+            if i and CLASS_ORDER[i] then win.class = i
+            else
+                i = tonumber(id:match('^file%-([%d]+)$'))
+                if i and files.list[i] then files.index = i
+                else
+                    i = tonumber(id:match('^merc%-([%d]+)$'))
+                    if i and MB[i] then prefs.data.merc_behaviour = MB[i]; prefs:changed()
+                    else
+                        i = tonumber(id:match('^amount%-([%d]+)$'))
+                        if i and AMOUNTS[i] then win.amount = i
+                        else
+                            i = tonumber(id:match('^style%-([%d]+)$'))
+                            if i and STYLES[i] then
+                                local c
+                                for _, h in ipairs(party.heroes()) do if h.id == win.tactics then c = h end end
+                                if c then
+                                    local r = record(c.id)
+                                    r.style = STYLES[i] ~= 'balanced' and STYLES[i] or nil
+                                    store:changed()
+                                end
+                            else
+                                local cid, bi = id:match('^beh%-([%d]+)%-([%d]+)$')
+                                cid, bi = tonumber(cid), tonumber(bi)
+                                if cid then
+                                    local c
+                                    for _, h in ipairs(party.heroes()) do if h.id == cid then c = h end end
+                                    if c then
+                                        local r = record(c.id)
+                                        r.behaviour = bi > 0 and BEHAVIOURS[bi] or nil
+                                        store:changed()
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            open_filter = ''
+        end)
         on('#recruit', function()
             if #party.companions() < setting('max_companions', 3) then recruit(CLASS_ORDER[win.class]) end
         end)
-        on('#heroes', function() if #files.list > 0 then files.index = files.index % #files.list + 1 end end)
+        on('#heroes', function() open_filter = open_filter == 'heroes' and '' or 'heroes' end)
         on('#bring', function()
             if #party.companions() < setting('max_companions', 3) and files.list[files.index] then bring(files.list[files.index]) end
         end)
         on('#keep', function() keep() end)
-        on('#mercs', function()
-            local mi = 1
-            for i, b in ipairs(MB) do if prefs.data.merc_behaviour == b then mi = i end end
-            prefs.data.merc_behaviour = MB[mi % #MB + 1]
-            prefs:changed()
-        end)
-        on('#goldamount', function() win.amount = win.amount % #AMOUNTS + 1 end)
+        on('#mercs', function() open_filter = open_filter == 'mercs' and '' or 'mercs' end)
+        on('#goldamount', function() open_filter = open_filter == 'goldamount' and '' or 'goldamount' end)
         on('[id^=give]', function(e)
             local c, leader = target(e), leader_of()
             if c and c ~= leader and (leader:gold() or 0) > 0 then give_gold(c, AMOUNTS[win.amount]) end
@@ -316,17 +369,7 @@ function M.new(env)
             local c, leader = target(e), leader_of()
             if c and c ~= leader and purse_of(c) > 0 then take_gold(c, AMOUNTS[win.amount]) end
         end)
-        on('#style', function()
-            local c
-            for _, h in ipairs(party.heroes()) do if h.id == win.tactics then c = h end end
-            if not c then return end
-            local r = record(c.id)
-            local index = 1
-            for i, st in ipairs(STYLES) do if (r.style or 'balanced') == st then index = i end end
-            local new = STYLES[index % #STYLES + 1]
-            r.style = new ~= 'balanced' and new or nil
-            store:changed()
-        end)
+        on('#style', function() open_filter = open_filter == 'style' and '' or 'style' end)
         on('[id^=use]', function(e)
             local t = target(e)
             if not t then return end

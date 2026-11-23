@@ -11,17 +11,20 @@ local C = ui.COLORS
 
 local message
 local function note(text) message = text end
+local dd_open = false
 
 -- The page is ui/page.rml (the game theme): the realm button steps through the realms.
 gear.mods.page_rml('ui/page.rml', {
-    model = {realm = '', host = '', message = ''},
+    model = {realm = '', host = '', message = '', dd_open = false, realms = {}},
     on_load = function(doc)
         doc:on('#realm', 'click', function()
+            dd_open = not dd_open
+        end)
+        doc:on('.realm-ddlist .opt', 'click', function(e)
+            local i = tonumber(tostring(e.current):match('^realm%-([%d]+)$'))
             local realms = gear.realm.list()
-            local current = gear.realm.current()
-            local index = 1
-            for i, r in ipairs(realms) do if r.id == current.id then index = i end end
-            local pick = realms[index % #realms + 1]
+            local pick = i and realms[i]
+            dd_open = false
             if not pick then return end
             local ok, why = gear.realm.use(pick.id)
             note(ok and ('Realm: ' .. pick.name) or ('Not changed: ' .. tostring(why)))
@@ -34,6 +37,10 @@ gear.mods.page_rml('ui/page.rml', {
         r = r or current
         local host = (r.host and r.host ~= '') and r.host or '(from Settings.cfg)'
         local m = doc.model
+        m.dd_open = dd_open
+        m.realms = {}
+        local realms = gear.realm.list()
+        for i, realm in ipairs(realms) do m.realms[i] = {id = 'realm-' .. i, label = realm.name, on = realm.id == r.id} end
         if m.realm ~= r.name then m.realm = r.name end
         local h = host .. (r.port and (':' .. r.port) or '')
         if m.host ~= h then m.host = h end

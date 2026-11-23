@@ -11,8 +11,9 @@
 
         <div data-if="tab == 1">
             <div class="row">
-                <span class="label">Class</span><button class="mini" id="class" title="Only this class"><span class="padkey a"></span>{{ class_name }}</button>
-                <span class="label">Sort</span><button class="mini" id="sort"><span class="padkey a"></span>{{ sort_name }}</button>
+                <div data-if="dd != ''" id="build-ddshade"></div>
+                <span class="label">Class</span><div class="build-dd" data-class-open="dd == 'class'"><button class="mini" id="class" title="Only this class"><span class="padkey a"></span>{{ class_name }}<span class="caret">&#9662;</span></button><div data-if="dd == 'class'" class="build-ddlist" data-nav-scroll><button data-for="o : dd_classes" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <span class="label">Sort</span><div class="build-dd" data-class-open="dd == 'sort'"><button class="mini" id="sort"><span class="padkey a"></span>{{ sort_name }}<span class="caret">&#9662;</span></button><div data-if="dd == 'sort'" class="build-ddlist" data-nav-scroll><button data-for="o : dd_sorts" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <button class="mini" id="refresh" title="Ask the server again"><span class="padkey a"></span>Refresh</button>
                 <button class="mini" id="prev" data-attrif-disabled="!can_prev"><span class="padkey a"></span>&lt;</button>
                 <button class="mini" id="next" data-attrif-disabled="!can_next"><span class="padkey a"></span>&gt;</button>

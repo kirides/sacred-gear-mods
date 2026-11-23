@@ -15,6 +15,13 @@ button.brow { display: block; width: 100%; margin: 0 0 2dp 0; padding: 2dp 8dp; 
 .status { margin-top: 8dp; }
 button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
+.build-dd { position: relative; z-index: 10; }
+.build-dd.open { z-index: 100; }
+.build-dd .caret { margin-left: 7dp; color: #ffd780; }
+.build-ddlist { position: absolute; left: 16dp; top: 29dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
+.build-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
+.build-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
+#build-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

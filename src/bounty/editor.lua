@@ -21,6 +21,7 @@ local flash = nil          -- {text, at}
 local shown = false
 local doc
 local last = {}
+local open_filter = ''
 local hooks_ref            -- the hooks of main.lua, set by draw()
 local ids = {}             -- element id -> action data
 
@@ -106,6 +107,7 @@ local INPUT_KEYS = {f_title = true, f_target = true, f_minutes = true, f_minleve
 local function blank()
     return {open = false, view = 'list', flash = '', defs = {}, list_empty = false,
         mode_label = '', show_tier = false, tier_label = '', show_items = false, items_line = '', items_ok = false,
+        dd = '', dd_modes = {}, dd_tiers = {},
         trigger_on = false, blocked = false,
         names = {any = true, chips = {}, opts = {}}, trig = {any = true, chips = {}, opts = {}},
         f_title = '', f_target = 10, f_minutes = 0, f_minlevel = 1, f_gold = 500, f_count = 10, f_cool = 30,
@@ -120,6 +122,7 @@ end
 local function snapshot()
     local m = blank()
     m.open = shown
+    m.dd = open_filter
     if not shown then return m end
     ids = {}
     if form then
@@ -129,6 +132,8 @@ local function snapshot()
         m.show_tier = f.mode == 2 or f.mode == 3
         m.tier_label = TIERS[f.tier]
         m.show_items = f.mode == 4
+        for i, label in ipairs(ITEM_MODES) do m.dd_modes[i] = {id = 'bounty-mode-' .. i, label = label, on = i == f.mode} end
+        for i, label in ipairs(TIERS) do m.dd_tiers[i] = {id = 'bounty-tier-' .. i, label = label, on = i == f.tier} end
         local line = {}
         for _, c in ipairs(f.chosen) do line[#line + 1] = c.name end
         m.items_ok = #line > 0
@@ -197,8 +202,19 @@ local function load_doc()
         local d = ids[tostring(e.current)]
         if d and hooks_ref then hooks_ref.stop(d.id); customs.remove(d.id) end
     end)
-    on('#mode', function() if form then form.mode = form.mode % #ITEM_MODES + 1 end end)
-    on('#tier', function() if form then form.tier = form.tier % #TIERS + 1 end end)
+    on('#bounty-ddshade', function() open_filter = '' end)
+    on('#mode', function() open_filter = open_filter == 'mode' and '' or 'mode' end)
+    on('#tier', function() open_filter = open_filter == 'tier' and '' or 'tier' end)
+    on('.bounty-ddlist .opt', function(e)
+        local id = tostring(e.current)
+        local i = tonumber(id:match('^bounty%-mode%-([%d]+)$'))
+        if i and ITEM_MODES[i] and form then form.mode = i
+        else
+            i = tonumber(id:match('^bounty%-tier%-([%d]+)$'))
+            if i and TIERS[i] and form then form.tier = i end
+        end
+        open_filter = ''
+    end)
     on('#finditem', function()
         local f = form
         if not f then return end

@@ -212,6 +212,7 @@ end
 local doc
 local last = {}
 local sig                    -- what the lines were built from
+local dd_open = false
 local line_items = {}        -- line element id -> item object id (a drop: the game's tooltip while the cursor rests on it)
 local hover_item
 
@@ -264,8 +265,12 @@ local function snapshot()
         box_h = (view.minimized and 24 or height) .. 'dp', box_w = width .. 'dp',
         min_label = view.minimized and '+' or '-', min_tip = view.minimized and 'Show the lines' or 'Only the tabs',
         tabs = {}, show_player = names ~= nil, player_label = view.player_name or 'All players',
+        dd_open = dd_open, players = {},
         lines = last.lines or {}, new_label = view.new_below > 0 and ('%d new \u{25BC}'):format(view.new_below) or '',
     }
+    if names then
+        for i, name in ipairs(names) do m.players[i] = {id = 'player-' .. i, label = name, on = i == view.player} end
+    end
     for i = 1, #TABS do m.tabs[i] = {id = 'tab' .. i, label = tab_label(i), on = i == view.tab} end
     local s = table.concat({#entries, tostring(entries[#entries]), view.tab, tostring(view.player_name), tostring(setting('timestamps', false))}, '|')
     if s ~= sig then
@@ -303,13 +308,20 @@ local function load_doc()
             state_file.data.minimized = view.minimized
             state_file:changed()
         elseif id == 'player' then
-            local names = players()
-            view.player = view.player % #names + 1
-            view.player_name = view.player > 1 and names[view.player] or nil
-            view.stick = true
+            dd_open = not dd_open
         elseif id == 'newer' then
             view.stick, view.new_below, view.content_h = true, 0, nil
         end
+    end)
+    on('.chat-ddlist .opt', function(e)
+        local i = tonumber(tostring(e.current):match('^player%-([%d]+)$'))
+        local names = players()
+        if i and names[i] then
+            view.player = i
+            view.player_name = i > 1 and names[i] or nil
+            view.stick = true
+        end
+        dd_open = false
     end)
     doc:on('.line', 'mouseover', function(e) hover_item = line_items[tostring(e.current)] end)
     doc:on('.line', 'mouseout', function() hover_item = nil end)

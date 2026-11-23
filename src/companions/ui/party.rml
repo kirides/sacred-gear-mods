@@ -17,6 +17,7 @@
 </div>
 
 <div id="party" class="window" data-panel="party" data-title="Party" data-if="open">
+    <div data-if="dd != ''" id="party-ddshade"></div>
     <div class="titlebar">{{ title }}</div>
     <div class="body">
         <p data-if="msg != ''" class="muted">{{ msg }}</p>
@@ -33,7 +34,12 @@
                 <div class="hbtns">
                     <button class="mini" data-attrif-disabled="!h.can_play" data-attr-id="h.id_play" data-attr-title="h.tip_play"><span class="padkey a"></span>{{ h.play }}</button>
                     <button class="mini" data-attrif-disabled="!h.can_name" data-attr-id="h.id_name" data-attr-title="h.tip_name"><span class="padkey a"></span>Name</button>
-                    <button class="mini wide" data-attr-id="h.id_beh" title="What this hero does while you play another one"><span class="padkey a"></span>{{ h.behaviour }}</button>
+                    <div class="party-dd" data-class-open="dd == h.beh_dd">
+                        <button class="mini wide" data-attr-id="h.id_beh" title="What this hero does while you play another one"><span class="padkey a"></span>{{ h.behaviour }}<span class="caret">&#9662;</span></button>
+                        <div data-if="dd == h.beh_dd" class="party-ddlist" data-nav-scroll>
+                            <button data-for="o : h.beh_options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+                        </div>
+                    </div>
                     <button class="mini" data-attr-id="h.id_tac" title="How this hero fights and the combat arts and spells they use on their own"><span class="padkey a"></span>{{ h.tactics }}</button>
                     <button class="mini" data-attrif-disabled="!h.can_dismiss" data-attr-id="h.id_dis" data-attr-title="h.tip_dismiss"><span class="padkey a"></span>Dismiss</button>
                 </div>
@@ -42,14 +48,14 @@
             <div class="sep"></div>
             <div class="frow">
                 <span class="accent lab">Recruit</span>
-                <button class="mini wide" id="class" title="The class of the new hero"><span class="padkey a"></span>{{ class_name }}</button>
+                <div class="party-dd" data-class-open="dd == 'class'"><button class="mini wide" id="class" title="The class of the new hero"><span class="padkey a"></span>{{ class_name }}<span class="caret">&#9662;</span></button><div data-if="dd == 'class'" class="party-ddlist" data-nav-scroll><button data-for="o : dd_classes" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <button class="game-button" id="recruit" data-attrif-disabled="full" title="A new hero of this class joins where you stand"><span class="padkey a"></span>Recruit</button>
                 <span class="muted small">{{ companions_text }}</span>
             </div>
             <div class="frow">
                 <span class="accent lab">Bring</span>
                 <span data-if="no_files" class="muted small">No kept heroes yet: "Keep" your hero below.</span>
-                <button data-if="!no_files" class="mini wide" id="heroes" title="Heroes kept from other savegames, and your network characters"><span class="padkey a"></span>{{ file_label }}</button>
+                <div data-if="!no_files" class="party-dd" data-class-open="dd == 'heroes'"><button class="mini wide" id="heroes" title="Heroes kept from other savegames, and your network characters"><span class="padkey a"></span>{{ file_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'heroes'" class="party-ddlist" data-nav-scroll><button data-for="o : dd_files" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <button class="game-button" id="bring" data-attrif-disabled="!can_bring" data-attr-title="bring_tip" data-class-amber="maybe"><span class="padkey a"></span>Bring</button>
             </div>
             <div class="frow" data-if="picked != ''"><span class="lab"></span><span class="small">{{ picked }}</span><span data-if="maybe" class="amber small">May be in the party</span></div>
@@ -59,7 +65,7 @@
             </div>
             <div class="frow">
                 <span class="accent lab">Mercenaries</span>
-                <button class="mini wide" id="mercs" title="What the game's own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts"><span class="padkey a"></span>{{ merc_label }}</button>
+                <div class="party-dd" data-class-open="dd == 'mercs'"><button class="mini wide" id="mercs" title="What the game's own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts"><span class="padkey a"></span>{{ merc_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'mercs'" class="party-ddlist" data-nav-scroll><button data-for="o : dd_mercs" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <span class="muted small">{{ merc_count }}</span>
             </div>
 
@@ -67,7 +73,7 @@
                 <div class="sep"></div>
                 <div class="frow">
                     <span class="accent lab">Purses</span>
-                    <button class="mini wide" id="goldamount" title="How much gold Give and Take move"><span class="padkey a"></span>{{ amount_label }}</button>
+                    <div class="party-dd" data-class-open="dd == 'goldamount'"><button class="mini wide" id="goldamount" title="How much gold Give and Take move"><span class="padkey a"></span>{{ amount_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'goldamount'" class="party-ddlist" data-nav-scroll><button data-for="o : dd_amounts" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 </div>
                 <div data-for="p : purses" class="frow">
                     <span data-class-accent="p.controlled" class="pname">{{ p.text }}</span>
@@ -79,7 +85,7 @@
             <div data-if="tac_on">
                 <div class="sep"></div>
                 <p class="accent">{{ tac.title }}</p>
-                <div class="frow"><span class="muted lab">Fights with</span><button class="mini wide" id="style" data-attr-title="tac.style_tip"><span class="padkey a"></span>{{ tac.style }}</button></div>
+                <div class="frow"><span class="muted lab">Fights with</span><div class="party-dd" data-class-open="dd == 'style'"><button class="mini wide" id="style" data-attr-title="tac.style_tip"><span class="padkey a"></span>{{ tac.style }}<span class="caret">&#9662;</span></button><div data-if="dd == 'style'" class="party-ddlist" data-nav-scroll><button data-for="o : dd_styles" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div></div>
                 <p data-if="tac.none" class="muted small">No combat arts or spells learned yet.</p>
                 <div class="tlist">
                     <div data-for="a : tac.abilities" class="check-row small">

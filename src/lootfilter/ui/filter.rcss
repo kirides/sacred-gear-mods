@@ -25,7 +25,7 @@ input.game-check.small { width: 36dp; height: 36dp; margin-right: 4dp; }
 button.catb { min-width: 90dp; }
 button.mini { padding: 0 8dp; margin: 0; }
 .quality-dd, .cat-dd { position: relative; z-index: 10; }
-.quality-dd { z-index: 100; }
+.quality-dd.open { z-index: 100; }
 .cat { position: relative; }
 .cat.open { z-index: 100; }
 .quality-dd button.game-button { width: 150dp; min-width: 150dp; max-width: 150dp; padding-left: 28dp; padding-right: 28dp; }
