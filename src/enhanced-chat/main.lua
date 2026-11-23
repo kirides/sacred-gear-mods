@@ -15,6 +15,7 @@
 --     line area scrolls with the D-pad and the right stick; the controller's mod menu shows / hides it.
 local ui, S, W = gear.ui, gear.settings, gear.world
 local chat = gear.chat
+local world = gear.world
 
 local TABS = {
     {id = 'all', label = 'All'},
@@ -258,7 +259,7 @@ local function snapshot()
     else
         view.player, view.player_name = 1, nil
     end
-    local width = math.floor(setting('window_width', 420))
+    local width = math.floor(setting('window_width', 510))
     local height = math.floor(setting('window_height', 200))
     local m = {
         open = true, minimized = view.minimized, fs = fs .. 'dp', bg = ('#000000%02x'):format(math.floor(setting('opacity', 140))),
@@ -327,7 +328,16 @@ local function load_doc()
     doc:on('.line', 'mouseout', function() hover_item = nil end)
 end
 
+local function should_show_window()
+    if setting('visible', 'multiplayer') ~= 'chatting' then return true end
+
+    local w = ui.window('UI_WND_NETINFO')
+    if (not w) or (not w.drawn) then return false end
+    return world.hero() and true or false
+end
+
 local function draw_window()
+    if not should_show_window() then return end
     if not doc then load_doc() end
     if not doc then return end
     local m = snapshot()
@@ -381,15 +391,22 @@ local function rect_of(sel)
     return e and e:rect() or nil
 end
 
-local function visible() return setting('visible', true) ~= false end
+local function visibility()
+    local mode = setting('visible', 'multiplayer')
+    if mode == false then return 'never' end
+    if mode == true then return 'multiplayer' end
+    return mode
+end
 
--- 'Hide in Singleplayer' (on by default): no window in a single player game, the game shows its own lines there.
-local function hidden_here() return setting('hide_in_singleplayer', true) ~= false and not network_game() end
+local function visible() return visibility() ~= 'never' end
 
 -- Whether the window is shown in this game at all.
-local function active() return visible() and not hidden_here() end
+local function active()
+    local mode = visibility()
+    return mode ~= 'never' and (mode ~= 'multiplayer' or network_game())
+end
 
-local function toggle() S.set('visible', not visible()) end
+local function toggle() S.set('visible', visible() and 'never' or 'always') end
 
 local function next_tab()
     view.tab = view.tab % #TABS + 1
@@ -439,8 +456,8 @@ end)
 gear.on('enhanced-chat.query', function(out)
     if type(out) ~= 'table' then return end
     out.parse = parse_codes      -- for the self test
-    if out.set_visible ~= nil then S.set('visible', out.set_visible and true or false) end
-    if out.set_hide_sp ~= nil then S.set('hide_in_singleplayer', out.set_hide_sp and true or false) end
+    if out.set_visible ~= nil then S.set('visible', out.set_visible and 'always' or 'never') end
+    if out.set_visibility ~= nil then S.set('visible', out.set_visibility) end
     if out.tab then view.tab = out.tab; view.unread[view.tab] = nil end
     if out.set_player ~= nil then
         view.player = 1
@@ -450,6 +467,7 @@ gear.on('enhanced-chat.query', function(out)
     out.players = players()
     out.network = network_game()
     out.active = active()
+    out.visibility = visibility()
     out.visible, out.tab, out.entries, out.shown, out.minimized = visible(), view.tab, #entries, view.shown or 0, view.minimized
     out.last = entries[#entries]
     out.tabs = {}
