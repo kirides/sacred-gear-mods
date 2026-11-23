@@ -2,7 +2,7 @@
 return {
     id = 'enhanced-chat',
     name = 'Enhanced Chat',
-    version = '1.1.2',
+    version = '1.1.3',
     author = 'kirides',
     description = 'A chat window in place of the lines at the top of the screen that fade and are gone: it keeps the '
         .. 'last lines of the session to scroll back through, has tabs for global, private and system messages (and a '
