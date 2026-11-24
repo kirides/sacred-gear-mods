@@ -3,8 +3,8 @@ local M = {}
 
 M.ROLES = {'hero', 'companion', 'enemy', 'neutral', 'trap'}
 
--- Spells whose parameter 0 is how long the effect on the victim lasts (seconds = base + level * per level). Measured for 40
--- (root: the victim stood 1 s with 1, 7 s with 7); the others by the spell's text and values, not yet measured.
+-- Spells whose parameter 0 is probably how long the effect on the victim lasts (seconds = base + level * per level), going by the
+-- spell's text and values; in game only partly checked (see docs/mods/spell-tuning.md).
 M.DURATION = {
     [16] = 'Bannkreis der Angst', [18] = 'Irritation', [19] = 'Bekehrung', [25] = 'Fleisch zu Stein', [40] = 'Pflanzenkaefig',
     [67] = 'Hoellenfurcht',
