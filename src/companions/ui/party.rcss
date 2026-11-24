@@ -64,3 +64,12 @@ a.mv.off, a.mv.off:hover, a.mv.off:focus { opacity: 0.3; cursor: default; }
 .cbox { display: inline-block; width: 48dp; flex: none; }
 .aname { flex: 1; text-align: left; }
 .mvs { margin-left: auto; text-align: right; }
+
+/* The open drop-down's list: a top-level element of the document (see party.rml), above the windows. Its origin marker takes no room and no mouse. */
+#party-origin { position: absolute; left: 0px; top: 0px; width: 1px; height: 1px; visibility: hidden; }
+#party-pop { position: absolute; z-index: 300; }
+
+/* the hero rows fit the window: a narrower behaviour drop-down and name column, the window as wide as Play, Name, behaviour, To me, Tactics, Keep and Dismiss need */
+#party { width: 945dp; }
+.hinfo { width: 200dp; }
+.hbtns button.game-dropdown { min-width: 0; width: 160dp; box-sizing: border-box; }

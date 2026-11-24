@@ -70,6 +70,7 @@ function M.new(env)
     local last = {}
     local by_id = {}          -- element id -> hero / ability, for the click handlers
     local open_filter = ''
+    local pop_rect            -- the open list's box last frame (its height decides whether it opens above its button)
 
     -- Experience toward the next level: the game's levels (gear's experience_range), cached per hero and level.
     local xp_cache = {}
@@ -352,28 +353,37 @@ function M.new(env)
             class_name = '', full = false, companions_text = '', no_files = true, file_label = '', can_bring = false, bring_tip = '', maybe = false,
             picked = '', keep_label = '', can_bring_all = false, merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
             dd = open_filter, dd_classes = {}, dd_files = {}, dd_mercs = {}, dd_amounts = {}, dd_styles = {},
-            beh_pop = {open = false, left = '0dp', top = '0dp', options = {{id = '', label = '', on = false}}},
+            pop = {open = false, left = '0dp', top = '0dp', width = '150dp', options = {{id = '', label = '', on = false}}},
             tac_on = false, tac = {title = '', style = '', style_tip = '', none = false, abilities = {}, flee_text = '', flee_prev_off = true, flee_next_off = false, repos = false}}
         by_id = {}
         portraits_model(m)
         window_model(m)
-        -- the behaviour list of the hero row whose button was clicked: placed at the window under that button (a row's own list would be clipped by the scrolling hero list)
-        if open_filter:sub(1, 4) == 'beh-' and doc then
-            for _, h in ipairs(m.heroes) do
-                if h.beh_dd == open_filter then
-                    local b, w = doc:query('#' .. h.id_beh), doc:query('#party')
-                    local br, wr = b and b:rect(), w and w:rect()
-                    if br and wr then
-                        m.beh_pop = {open = true, left = ('%ddp'):format(math.floor(br.x - wr.x)), top = ('%ddp'):format(math.floor(br.y + br.h - wr.y)), options = h.beh_options}
-                    end
-                    break
-                end
-            end
-        end
         for i, style in ipairs(STYLES) do
             local r
             for _, h in ipairs(party.heroes()) do if h.id == win.tactics then r = record(h.id) end end
             m.dd_styles[i] = {id = 'style-' .. i, label = STYLE_LABEL[style], on = r and (r.style or 'balanced') == style or (not r and style == 'balanced')}
+        end
+        -- the list of the open drop-down, under its button (above it when it would reach past the screen's bottom)
+        if open_filter ~= '' and doc then
+            local button, options
+            local lists = {class = m.dd_classes, heroes = m.dd_files, mercs = m.dd_mercs, goldamount = m.dd_amounts, style = m.dd_styles}
+            if lists[open_filter] then button, options = '#' .. open_filter, lists[open_filter] end
+            for _, h in ipairs(m.heroes) do
+                if h.beh_dd == open_filter then button, options = '#' .. h.id_beh, h.beh_options end
+            end
+            local b, o = button and doc:query(button), doc:query('#party-origin')
+            local br, orr = b and b:exists() and b:rect(), o and o:rect()
+            if br and orr and options and #options > 0 then
+                local pr = pop_rect or {h = #options * 30 + 8}
+                local top = br.y + br.h
+                local st = ui.state()
+                if top + pr.h > (st.screen_bottom or 768) - 4 and br.y - pr.h >= (st.screen_top or 0) then top = br.y - pr.h end
+                -- as wide as its button, or as its longest entry (an absolute box does not grow with its text in RmlUi)
+                local chars = 0
+                for _, o in ipairs(options) do chars = math.max(chars, #o.label) end
+                m.pop = {open = true, left = ('%ddp'):format(math.floor(br.x - orr.x)), top = ('%ddp'):format(math.floor(top - orr.y)),
+                    width = ('%ddp'):format(math.floor(math.max(br.w, chars * 7.5 + 28))), options = options}
+            end
         end
         return m
     end
@@ -538,6 +548,8 @@ function M.new(env)
             if not same(v, last[k]) then doc.model[k] = v; last[k] = v end
         end
         doc:draw({layer = 'hud'})
+        local e = m.pop.open and doc:query('#party-pop')
+        pop_rect = e and e:exists() and e:rect() or nil
     end
 
     return {draw = draw,

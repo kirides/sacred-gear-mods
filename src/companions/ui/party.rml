@@ -20,8 +20,6 @@
 
 <div id="party" class="window" data-panel="party" data-title="Party" data-if="open">
     <div data-if="dd != ''" id="party-ddshade"></div>
-    <!-- the hero rows scroll (and clip): the list of a row's behaviour drop-down lives here at the window, above everything, and is placed by the Lua side under its button -->
-    <div data-if="beh_pop.open" class="dd-list party-ddlist" data-nav-scroll data-style-left="beh_pop.left" data-style-top="beh_pop.top"><button data-for="o : beh_pop.options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div>
     <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="window" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
     <div class="body" data-nav-scroll>
         <p data-if="msg != ''" class="muted">{{ msg }}</p>
@@ -54,14 +52,14 @@
             <div class="sep"></div>
             <div class="frow">
                 <span class="accent lab">Recruit</span>
-                <div class="dd party-dd" data-class-open="dd == 'class'"><button class="game-dropdown" id="class" title="The class of the new hero"><span class="padkey a"></span>{{ class_name }}</button><div data-if="dd == 'class'" class="dd-list party-ddlist" data-nav-scroll><button data-for="o : dd_classes" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div class="dd party-dd" data-class-open="dd == 'class'"><button class="game-dropdown" id="class" title="The class of the new hero"><span class="padkey a"></span>{{ class_name }}</button></div>
                 <button class="ibtn" id="recruit" data-attrif-disabled="full" title="A new hero of this class joins where you stand"><span class="padkey a"></span><span class="icon icon-person-add"></span> Recruit</button>
                 <span class="muted small">{{ companions_text }}</span>
             </div>
             <div class="frow">
                 <span class="accent lab">Bring</span>
                 <span data-if="no_files" class="muted small">No kept heroes yet: "Keep" your hero below.</span>
-                <div data-if="!no_files" class="dd party-dd" data-class-open="dd == 'heroes'"><button class="game-dropdown" id="heroes" title="Heroes kept from other savegames, and your network characters"><span class="padkey a"></span>{{ file_label }}</button><div data-if="dd == 'heroes'" class="dd-list party-ddlist" data-nav-scroll><button data-for="o : dd_files" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div data-if="!no_files" class="dd party-dd" data-class-open="dd == 'heroes'"><button class="game-dropdown" id="heroes" title="Heroes kept from other savegames, and your network characters"><span class="padkey a"></span>{{ file_label }}</button></div>
                 <button class="ibtn" id="bring" data-attrif-disabled="!can_bring" data-attr-title="bring_tip" data-class-amber="maybe"><span class="padkey a"></span><span class="icon icon-group-add"></span> Bring</button>
                 <button class="ibtn" id="bringall" data-attrif-disabled="!can_bring_all" title="Brings every kept hero that is not in the party yet, as far as there is room, each with the tactics they were kept with"><span class="padkey a"></span><span class="icon icon-group-add"></span> Bring all</button>
             </div>
@@ -74,7 +72,7 @@
             </div>
             <div class="frow">
                 <span class="accent lab">Mercenaries</span>
-                <div class="dd party-dd" data-class-open="dd == 'mercs'"><button class="game-dropdown" id="mercs" title="What the game's own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts"><span class="padkey a"></span>{{ merc_label }}</button><div data-if="dd == 'mercs'" class="dd-list party-ddlist" data-nav-scroll><button data-for="o : dd_mercs" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div class="dd party-dd" data-class-open="dd == 'mercs'"><button class="game-dropdown" id="mercs" title="What the game's own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts"><span class="padkey a"></span>{{ merc_label }}</button></div>
                 <span class="muted small">{{ merc_count }}</span>
             </div>
 
@@ -89,7 +87,7 @@
                 <div class="sep"></div>
                 <div class="frow">
                     <span class="accent lab">Purses</span>
-                    <div class="dd party-dd" data-class-open="dd == 'goldamount'"><button class="game-dropdown" id="goldamount" title="How much gold Give and Take move"><span class="padkey a"></span>{{ amount_label }}</button><div data-if="dd == 'goldamount'" class="dd-list party-ddlist" data-nav-scroll><button data-for="o : dd_amounts" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                    <div class="dd party-dd" data-class-open="dd == 'goldamount'"><button class="game-dropdown" id="goldamount" title="How much gold Give and Take move"><span class="padkey a"></span>{{ amount_label }}</button></div>
                 </div>
                 <div data-for="p : purses" class="frow">
                     <span data-class-accent="p.controlled" class="pname">{{ p.text }}</span>
@@ -103,7 +101,7 @@
             <div data-if="tac_on">
                 <div class="sep"></div>
                 <p class="accent">{{ tac.title }}</p>
-                <div class="frow"><span class="muted lab">Fights with</span><div class="dd party-dd" data-class-open="dd == 'style'"><button class="game-dropdown" id="style" data-attr-title="tac.style_tip"><span class="padkey a"></span>{{ tac.style }}</button><div data-if="dd == 'style'" class="dd-list party-ddlist" data-nav-scroll><button data-for="o : dd_styles" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div></div>
+                <div class="frow"><span class="muted lab">Fights with</span><div class="dd party-dd" data-class-open="dd == 'style'"><button class="game-dropdown" id="style" data-attr-title="tac.style_tip"><span class="padkey a"></span>{{ tac.style }}</button></div></div>
                 <div class="frow"><span class="muted lab">Run away</span>
                     <a id="fleeprev" class="arrow prev" data-class-off="tac.flee_prev_off" title="Less health: runs away later, or never"></a><span class="fleetext">{{ tac.flee_text }}</span><a id="fleenext" class="arrow next" data-class-off="tac.flee_next_off" title="More health: runs away sooner"></a>
                     <span class="muted small">to your side, back in the fight at 60% health</span></div>
@@ -127,5 +125,10 @@
         </div>
     </div>
 </div>
+<!-- The list of the open drop-down: a window of its own (a top-level element), so it is never clipped by the scrolling body or hero list, and a
+     click on it reaches the document even where it hangs out of the party window. Placed by the Lua side under its button (above it near the
+     screen's bottom); party-origin is where the document's (0, 0) lies. -->
+<div id="party-origin"></div>
+<div data-if="pop.open" id="party-pop" class="dd-list party-ddlist" data-nav-scroll data-style-left="pop.left" data-style-top="pop.top" data-style-width="pop.width"><button data-for="o : pop.options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div>
 </body>
 </rml>
