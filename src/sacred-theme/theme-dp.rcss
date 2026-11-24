@@ -179,6 +179,29 @@ button.mini {
 button.mini:hover, button.mini:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
 button.mini:active { color: #fff2a0; }
 button.mini.on { color: #ffd54a; }
+/* Icon buttons (class ibtn on a <button> that holds only an icon: pagers, backspace, close ...): no frame, the glow text of .link; the icon takes the text colour. */
+button.ibtn {
+    display: inline-block;
+    flex: none;
+    min-width: 0;
+    height: auto;
+    margin: 0 4dp 0 0;
+    padding: 2dp 8dp;
+    border: 0;
+    background-color: transparent;
+    decorator: none;
+    color: #e8d8a8;
+    font-family: "Sacred Game";
+    font-size: 16dp;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    transform: none;
+}
+button.ibtn:hover, button.ibtn:focus { color: #fff6d0; background-color: transparent; border: 0; transform: none; font-effect: glow(2dp 6dp 0px 0px #ffb840e6); }
+button.ibtn:active { color: #ffffff; font-effect: glow(3dp 8dp 0px 0px #ffe9a8ff); }
+button.ibtn:disabled, button.ibtn[disabled] { color: #6a6a6a; font-effect: none; }
+
 /* Tab buttons (class tab on a <button>, where a window keeps its own tab row): the look of the .tabbar links, the open one (.on) bright with a bar under it. */
 button.tab { display: inline-block; flex: none; margin: 0 4dp 0 0; padding: 3dp 12dp; border: 0; background-color: transparent; color: #e8d8a8; font-family: "Sacred Game"; font-size: 15dp; white-space: nowrap; cursor: pointer; transform: none; }
 button.tab:hover, button.tab:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }

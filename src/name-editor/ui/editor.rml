@@ -20,9 +20,9 @@
     </div>
     <div class="ne-fieldrow">
         <div id="ne-pill" class="ne-pill" tabindex="0"></div>
-        <button id="act-left" class="mini ne-sq" title="Cursor left"><span class="icon icon-chevron-left"></span></button>
-        <button id="act-right" class="mini ne-sq" title="Cursor right"><span class="icon icon-chevron-right"></span></button>
-        <button id="act-back" class="mini ne-sq" title="Backspace"><span class="icon icon-backspace"></span></button>
+        <button id="act-left" class="ibtn" title="Cursor left"><span class="icon icon-chevron-left"></span></button>
+        <button id="act-right" class="ibtn" title="Cursor right"><span class="icon icon-chevron-right"></span></button>
+        <button id="act-back" class="ibtn" title="Backspace"><span class="icon icon-backspace"></span></button>
     </div>
     <div id="ne-info" class="ne-info"></div>
     <div class="tabbar">

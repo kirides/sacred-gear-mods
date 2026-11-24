@@ -30,8 +30,8 @@
                     <template src="buildsharer-dropdown"></template>
                 </div>
                 <button class="mini" id="refresh" title="Ask the server again"><span class="padkey a"></span>Refresh</button>
-                <button class="mini" id="prev" data-attrif-disabled="!can_prev"><span class="padkey a"></span><span class="icon icon-chevron-left"></span></button>
-                <button class="mini" id="next" data-attrif-disabled="!can_next"><span class="padkey a"></span><span class="icon icon-chevron-right"></span></button>
+                <button class="ibtn" id="prev" data-attrif-disabled="!can_prev"><span class="padkey a"></span><span class="icon icon-chevron-left"></span></button>
+                <button class="ibtn" id="next" data-attrif-disabled="!can_next"><span class="padkey a"></span><span class="icon icon-chevron-right"></span></button>
             </div>
             <p data-if="browse_msg != ''" class="muted">{{ browse_msg }}</p>
             <div class="blist">

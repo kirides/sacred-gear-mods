@@ -23,12 +23,12 @@
         <span class="good">{{ copied }}</span>
     </div>
     <div class="row">
-        <button id="first" class="mini" title="First page"><span class="icon icon-first-page"></span></button>
+        <button id="first" class="ibtn" title="First page"><span class="icon icon-first-page"></span></button>
         <button id="prev10" class="mini">-10</button>
-        <button id="prev" class="mini" title="Previous page"><span class="icon icon-chevron-left"></span></button>
-        <button id="next" class="mini" title="Next page"><span class="icon icon-chevron-right"></span></button>
+        <button id="prev" class="ibtn" title="Previous page"><span class="icon icon-chevron-left"></span></button>
+        <button id="next" class="ibtn" title="Next page"><span class="icon icon-chevron-right"></span></button>
         <button id="next10" class="mini">+10</button>
-        <button id="last" class="mini" title="Last page"><span class="icon icon-last-page"></span></button>
+        <button id="last" class="ibtn" title="Last page"><span class="icon icon-last-page"></span></button>
     </div>
     <div class="grid">
         <button data-for="c : cells" class="cell" data-attr-id="c.id" data-attr-title="c.tip">
