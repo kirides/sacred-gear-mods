@@ -18,7 +18,7 @@
 .kv { display: flex; flex-direction: row; justify-content: space-between; margin: 1px 0; }
 .kv.top { margin-top: 8dp; }
 .icons { display: flex; flex-direction: row; justify-content: flex-end; margin-top: 4dp; }
-button.mini { padding: 0 6dp; margin: 0 0 0 3dp; font-size: 12dp; }
+button.mini { margin: 0 0 0 3dp; }
 .heading { margin: 8dp 0 3dp 0; }
 .graph { margin-top: 8dp; }
 .bars { display: flex; flex-direction: row; width: 180dp; height: 44dp; background-color: #00000060; }
@@ -29,4 +29,3 @@ button.mini { padding: 0 6dp; margin: 0 0 0 3dp; font-size: 12dp; }
 .half.down .fill { top: 0px; background-color: #f06464; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
