@@ -380,6 +380,7 @@ a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: im
 .icon-close-fullscreen::before { content: "\f1cf"; }
 .icon-cloud::before { content: "\e2bd"; }
 .icon-cloud-download::before { content: "\e2c0"; }
+.icon-cloud-sync::before { content: "\eb5a"; }
 .icon-cloud-upload::before { content: "\e2c3"; }
 .icon-content-copy::before { content: "\e14d"; }
 .icon-content-cut::before { content: "\e14e"; }
@@ -404,6 +405,7 @@ a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: im
 .icon-fast-forward::before { content: "\e01f"; }
 .icon-fast-rewind::before { content: "\e020"; }
 .icon-favorite::before { content: "\e87d"; }
+.icon-fiber-manual-record::before { content: "\e061"; }
 .icon-file-open::before { content: "\eaf3"; }
 .icon-filter-alt::before { content: "\ef4f"; }
 .icon-filter-list::before { content: "\e152"; }
@@ -414,6 +416,7 @@ a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: im
 .icon-format-color-fill::before { content: "\e23a"; }
 .icon-grid-view::before { content: "\e9b0"; }
 .icon-group::before { content: "\e7ef"; }
+.icon-group-add::before { content: "\e7f0"; }
 .icon-groups::before { content: "\f233"; }
 .icon-heart-broken::before { content: "\eac2"; }
 .icon-help::before { content: "\e887"; }
@@ -443,6 +446,7 @@ a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: im
 .icon-military-tech::before { content: "\ea3f"; }
 .icon-more-horiz::before { content: "\e5d3"; }
 .icon-more-vert::before { content: "\e5d4"; }
+.icon-move-to-inbox::before { content: "\e168"; }
 .icon-music-note::before { content: "\e3a1"; }
 .icon-my-location::before { content: "\e1b3"; }
 .icon-north::before { content: "\f1e0"; }
@@ -450,18 +454,23 @@ a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: im
 .icon-notifications::before { content: "\e7f4"; }
 .icon-notifications-off::before { content: "\e7f6"; }
 .icon-open-in-full::before { content: "\f1ce"; }
+.icon-outbox::before { content: "\ef5f"; }
 .icon-paid::before { content: "\f041"; }
 .icon-palette::before { content: "\e3b7"; }
 .icon-pause::before { content: "\e034"; }
 .icon-payments::before { content: "\ef63"; }
 .icon-person::before { content: "\e7fd"; }
+.icon-person-add::before { content: "\e7fe"; }
+.icon-person-remove::before { content: "\ef66"; }
 .icon-pets::before { content: "\e91d"; }
 .icon-pie-chart::before { content: "\e6c4"; }
 .icon-place::before { content: "\e0c8"; }
 .icon-play-arrow::before { content: "\e037"; }
 .icon-power-settings-new::before { content: "\e8ac"; }
 .icon-psychology::before { content: "\ea4a"; }
+.icon-publish::before { content: "\e255"; }
 .icon-radio-button-checked::before { content: "\e837"; }
+.icon-radio-button-partial::before { content: "\f560"; }
 .icon-radio-button-unchecked::before { content: "\e836"; }
 .icon-redo::before { content: "\e15a"; }
 .icon-refresh::before { content: "\e5d5"; }
@@ -475,6 +484,7 @@ a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: im
 .icon-search::before { content: "\e8b6"; }
 .icon-security::before { content: "\e32a"; }
 .icon-sell::before { content: "\e54e"; }
+.icon-send::before { content: "\e163"; }
 .icon-send::before { content: "\e163"; }
 .icon-settings::before { content: "\e8b8"; }
 .icon-share::before { content: "\e80d"; }
@@ -490,6 +500,7 @@ a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: im
 .icon-star::before { content: "\e838"; }
 .icon-star-half::before { content: "\e839"; }
 .icon-stop::before { content: "\e047"; }
+.icon-storefront::before { content: "\ea12"; }
 .icon-swap-horiz::before { content: "\e8d4"; }
 .icon-swap-vert::before { content: "\e0c3"; }
 .icon-swords::before { content: "\f889"; }
@@ -504,6 +515,7 @@ a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: im
 .icon-undo::before { content: "\e166"; }
 .icon-unfold-less::before { content: "\e5d6"; }
 .icon-unfold-more::before { content: "\e5d7"; }
+.icon-unpublished::before { content: "\f236"; }
 .icon-upload::before { content: "\e2c6"; }
 .icon-videogame-asset::before { content: "\e338"; }
 .icon-view-list::before { content: "\e8ef"; }

@@ -11,3 +11,4 @@ notifications notifications_off volume_up volume_off mic music_note chat chat_bu
 sync sync_alt cached autorenew loop power_settings_new logout login key vpn_key wifi cloud cloud_download cloud_upload
 trending_up trending_down bar_chart show_chart pie_chart calculate leaderboard
 casino sports_esports videogame_asset extension toys auto_fix_high magic_button science psychology
+group_add person_add person_remove storefront send move_to_inbox outbox publish unpublished cloud_sync fiber_manual_record radio_button_partial
