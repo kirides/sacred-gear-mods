@@ -187,6 +187,20 @@ local function name_of(c)
     return record(c.id).name or default_name(c)
 end
 
+-- A name without the padding the hero files and older saves left on it: no NUL characters, no spaces (also the no-break space) or line breaks at
+-- either end. (The name plate over the head shows trailing spaces.) Colour codes inside the name stay as they are.
+local function clean_name(s)
+    local NBSP = '\194\160'     -- UTF-8 of the no-break space
+    s = tostring(s or ''):gsub('%z', '')
+    while true do
+        local before = s
+        s = s:gsub('^%s+', ''):gsub('%s+$', '')
+        if s:sub(1, 2) == NBSP then s = s:sub(3) end
+        if s:sub(-2) == NBSP then s = s:sub(1, -3) end
+        if s == before then return s end
+    end
+end
+
 -- The game forgets a companion's name on every load: give it again whenever it differs.
 local function apply_names()
     for _, c in ipairs(party.heroes()) do
@@ -194,6 +208,11 @@ local function apply_names()
             local r = record(c.id)
             if not r.name then
                 r.name = default_name(c)
+                store:changed()
+            end
+            local clean = clean_name(r.name)
+            if clean ~= r.name then          -- a name saved with trailing spaces
+                r.name = clean ~= '' and clean or default_name(c)
                 store:changed()
             end
             if c:name() ~= r.name then c:set_name(r.name) end
@@ -269,8 +288,8 @@ end
 -- A hero file whose class and name match a hero of the party: the hero MAY have been brought from it already (a warning
 -- only; the mod has no way to tell for sure). The companions carry the file's name when brought.
 local function may_be_in_party(f)
-    if not f or f.name == '' or f.name == 'Anonymous' then return false end
-    local want = f.name:sub(1, 30):lower()
+    if not f or clean_name(f.name) == '' or f.name == 'Anonymous' then return false end
+    local want = clean_name(clean_name(f.name):sub(1, 30)):lower()
     for _, h in ipairs(party.heroes()) do
         if h:class() == f.class and name_of(h):lower() == want then return true end
     end
@@ -290,7 +309,8 @@ local function bring(f)
     r.fallen = nil
     r.purse = nil
     r.abilities = {}
-    r.name = (f.name ~= '' and f.name ~= 'Anonymous') and f.name:sub(1, 30) or default_name(c)
+    local file_name = clean_name(f.name)
+    r.name = (file_name ~= '' and file_name ~= 'Anonymous') and clean_name(file_name:sub(1, 30)) or default_name(c)
     store:changed()
     c:set_name(r.name)
     toast(r.name .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level()) .. ') joins the party')
