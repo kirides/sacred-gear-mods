@@ -15,7 +15,7 @@ end
 return {
     id = 'spell-tuning',
     name = 'Spell tuning',
-    version = '0.1.0',
+    version = '0.1.1',
     author = 'kirides',
     description = 'Changes what spells do, by who casts them: the hero you play, companions, enemies, neutral creatures or traps. Shorten (or lengthen) root, stun and fear, weaken (or strengthen) the changes of attack, defence and speed, and the damage. Single player only.',
     settings = settings,
