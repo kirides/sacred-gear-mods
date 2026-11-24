@@ -15,8 +15,8 @@
     <div id="ne-prev" class="ne-prev"></div>
     <div class="ne-rawrow">
         <div id="ne-raw" class="ne-raw"></div>
-        <button id="act-copy" class="mini" title="Copy the raw text"><span class="icon icon-content-copy"></span> Copy</button>
-        <button id="act-paste" class="mini" title="Replace the name with the raw text on the clipboard"><span class="icon icon-content-paste"></span> Paste</button>
+        <button id="act-copy" class="ibtn" title="Copy the raw text"><span class="icon icon-content-copy"></span> Copy</button>
+        <button id="act-paste" class="ibtn" title="Replace the name with the raw text on the clipboard"><span class="icon icon-content-paste"></span> Paste</button>
     </div>
     <div class="ne-fieldrow">
         <div id="ne-pill" class="ne-pill" tabindex="0"></div>
@@ -32,8 +32,8 @@
         <a id="tab-grd" class="link tab" tabindex="0">Gradient</a>
         <span id="ne-rb" class="padkey rb"></span>
         <span class="ne-sp"></span>
-        <button id="act-example" class="mini ne-sm" title="Fill in an example name">Example</button>
-        <button id="act-clear" class="mini ne-sm" title="Empty the name"><span class="icon icon-delete"></span> Clear</button>
+        <button id="act-example" class="ibtn" title="Fill in an example name">Example</button>
+        <button id="act-clear" class="ibtn" title="Empty the name"><span class="icon icon-delete"></span> Clear</button>
     </div>
     <div id="ne-p-col" class="ne-panel">
         <div id="ne-colors" class="ne-grid"></div>
