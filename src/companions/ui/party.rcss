@@ -12,7 +12,6 @@
 .hbtns { display: flex; flex-direction: row; }
 button.mini { padding: 0 8dp; margin: 0 3dp 0 0; font-size: 13dp; }
 button.mini.wide { min-width: 120dp; }
-button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
 button.game-button.amber { color: #ffc060; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; margin-right: 8dp; }
