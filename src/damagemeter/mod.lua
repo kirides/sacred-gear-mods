@@ -2,7 +2,7 @@
 return {
     id = 'damagemeter',
     name = 'Damage meter',
-    version = '0.2.2',
+    version = '0.2.3',
     author = 'Sacred Gear',
     description = 'Damage dealt and taken by the hero (from the engine\'s final damage of every hit), DPS over the fight and the last seconds (compact view by default: character name and DPS, the whole party in a network game), the biggest hit, damage by monster type, kills per minute.',
     settings = {
