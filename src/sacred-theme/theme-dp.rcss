@@ -299,8 +299,8 @@ gear-ring { display: inline-block; width: 40dp; height: 40dp; }
 scrollbarvertical { width: 30dp; }
 scrollbarvertical slidertrack { width: 30dp; decorator: image(gear:image/288 repeat-y center top); background-color: transparent; }
 scrollbarvertical sliderbar { width: 30dp; height: 30dp; decorator: image(gear:image/286 scale-none center center); background-color: transparent; }
-scrollbarvertical sliderarrowdec { width: 30dp; height: 30dp; decorator: image(gear:image/298 scale-none center center); transform: rotate(90deg); }
-scrollbarvertical sliderarrowinc { width: 30dp; height: 30dp; decorator: image(gear:image/299 scale-none center center); transform: rotate(90deg); }
+scrollbarvertical sliderarrowdec { width: 30dp; height: 30dp; decorator: image(gear:image/298 scale-none center center); transform: rotate(90deg); position: relative; left: -3px; }   /* the orb's picture sits 3dp right of the groove's axis */
+scrollbarvertical sliderarrowinc { width: 30dp; height: 30dp; decorator: image(gear:image/299 scale-none center center); transform: rotate(90deg); position: relative; left: -3px; }   /* the orb's picture sits 3dp right of the groove's axis */
 
 /* Arrows to step through values or pages (class arrow on an <a>, next for the right one): the game's white arrows (images 236 and 237, 32x18) in a box a little
    larger, so hover and pad focus can put the warm bloom (arrow-glow-left.png?dp / arrow-glow-right.png?dp, the arrow blurred and tinted like the .link bloom) over
