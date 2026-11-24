@@ -12,8 +12,6 @@ button.mini { padding: 0 8dp; margin: 0; }
 .rlist { height: 280dp; overflow-y: auto; }
 .rec { margin-bottom: 6dp; }
 .rec .sub { margin-left: 10dp; font-size: 14dp; }
-.wrap { white-space: pre-wrap; }
-.warn { color: #ffc878; }
 .good { color: #8fce7a; }
 .status { margin-top: 8dp; }
 
