@@ -6,14 +6,14 @@
 <body data-model="model">
 <div id="page">
     <div data-if="view" id="pop" class="window">
-        <div class="titlebar"><span class="tt">{{ v_title }}</span><button id="x" class="mini" title="Close">X</button></div>
+        <div class="titlebar"><span class="tt">{{ v_title }}</span><button id="x" class="ibtn" title="Close"><span class="icon icon-close"></span> X</button></div>
         <div class="body">
             <div class="info">{{ v_info }}</div>
             <button id="vpic" class="big" title="Click to close"><div class="bigpic" data-style-decorator="v_deco"></div></button>
             <div class="row">
-                <button id="vprev" class="mini"><span class="padkey a"></span>&lt; Previous</button>
-                <button id="vnext" class="mini"><span class="padkey a"></span>Next &gt;</button>
-                <button id="vcopy" class="mini"><span class="padkey a"></span>Copy class</button>
+                <button id="vprev" class="ibtn"><span class="padkey a"></span><span class="icon icon-chevron-left"></span>&lt; Previous</button>
+                <button id="vnext" class="ibtn"><span class="padkey a"></span><span class="icon icon-chevron-right"></span>Next &gt;</button>
+                <button id="vcopy" class="ibtn"><span class="padkey a"></span><span class="icon icon-content-copy"></span> Copy class</button>
                 <button id="vclose" class="mini"><span class="padkey b"></span>Close</button>
             </div>
         </div>
