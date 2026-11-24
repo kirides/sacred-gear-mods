@@ -1,5 +1,4 @@
 #page { width: 560dp; }
-.nav { padding: 3dp 10dp; margin: 0 4dp 0 0; font-size: 14dp; flex: none; white-space: nowrap; }
 .grid { display: flex; flex-direction: row; flex-wrap: wrap; }
 button.cell { display: block; flex: none; width: 100dp; margin: 0 6dp 6dp 0; padding: 4dp; text-align: center; }
 .holder { width: 90dp; height: 48dp; overflow: hidden; }
@@ -8,7 +7,7 @@ button.cell { display: block; flex: none; width: 100dp; margin: 0 6dp 6dp 0; pad
 #pop { position: absolute; left: 20dp; top: 60dp; width: 520dp; z-index: 10; background-color: #100d0a; }
 #pop .titlebar { display: flex; flex-direction: row; justify-content: space-between; align-items: center; }
 #pop .tt { font-size: 17dp; }
-button.xbtn { flex: none; width: 28dp; height: 24dp; margin: 0; padding: 0; text-align: center; line-height: 22dp; font-size: 15dp; }
+button.mini.xbtn { min-width: 0; }
 #pop .info { color: #8c8c8c; font-size: 13dp; margin-bottom: 4dp; }
 button.big { display: block; width: 480dp; height: 280dp; margin: 0 0 8dp 0; padding: 8dp; }
 .bigpic { width: 464dp; height: 264dp; }
