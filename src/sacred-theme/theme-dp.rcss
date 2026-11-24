@@ -178,6 +178,11 @@ button.mini {
 }
 button.mini:hover, button.mini:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
 button.mini:active { color: #fff2a0; }
+button.mini.on { color: #ffd54a; }
+/* Tab buttons (class tab on a <button>, where a window keeps its own tab row): the look of the .tabbar links, the open one (.on) bright with a bar under it. */
+button.tab { display: inline-block; flex: none; margin: 0 4dp 0 0; padding: 3dp 12dp; border: 0; background-color: transparent; color: #e8d8a8; font-family: "Sacred Game"; font-size: 15dp; white-space: nowrap; cursor: pointer; transform: none; }
+button.tab:hover, button.tab:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
+button.tab.on { color: #ffcf40; border-bottom: 2dp #ffcf40; }
 button.mini:disabled, button.mini[disabled], button.mini.dis { color: #8a8a8a; opacity: 0.55; border: 0; }
 
 /* The game's drop-down button (class game-dropdown on a <button>): the arrow orbs of the options screens, the left cap (image 267) and the right cap (270) keep their
