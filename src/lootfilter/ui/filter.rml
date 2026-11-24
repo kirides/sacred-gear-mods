@@ -9,7 +9,7 @@
 <div id="overlay" class="bare" data-style-left="overlay_x" data-style-top="overlay_y" data-panel="overlay" data-title="Loot filter overlay" data-if="overlay_visible">
     <div class="oh"><span data-class-off="!enabled" class="ot">Loot filter</span><span data-class-bad="!enabled" class="good">{{ on_text }}</span></div>
     <div data-for="l : olines" class="ol"><span data-class-sub="l.sub">{{ l.k }}</span><span data-class-magic="l.q == 'magic'" data-class-rare="l.q == 'rare'" data-class-set="l.q == 'set'" data-class-unique="l.q == 'unique'" data-class-bad="l.q == 'never'" class="ov">{{ l.v }}</span></div>
-    <button data-if="!editing" class="game-button" id="open-settings" title="Change the rules in game"><span class="padkey a"></span>{{ settings_label }}</button>
+    <button data-if="!editing" class="ibtn" id="open-settings" title="Change the rules in game"><span class="padkey a"></span><span class="icon icon-settings"></span> {{ settings_label }}</button>
 </div>
 
 <div id="settings" class="window" data-panel="settings" data-title="Loot filter settings" data-if="settings_open">
