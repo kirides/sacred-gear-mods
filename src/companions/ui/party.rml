@@ -108,7 +108,7 @@
                 <div class="frow"><span class="muted lab">Run away</span>
                     <a id="fleeprev" class="arrow prev" data-class-off="tac.flee_prev_off" title="Less health: runs away later, or never"></a><span class="fleetext">{{ tac.flee_text }}</span><a id="fleenext" class="arrow next" data-class-off="tac.flee_next_off" title="More health: runs away sooner"></a>
                     <span class="muted small">to your side, back in the fight at 60% health</span></div>
-                <div class="check-row small"><span class="text small" title="With a ranged weapon: a target that is not hurt for 3 seconds (a wall or rock in the way, shots that miss): the hero goes to another spot around it and shoots again">Move to another spot when shots miss</span><input id="repos" type="checkbox" class="game-check chk" data-checked="tac.repos"/></div>
+                <div class="check-row small arow"><span class="cbox"><input id="repos" type="checkbox" class="game-check chk" data-checked="tac.repos"/></span><span class="text small" title="With a ranged weapon: a target that is not hurt for 3 seconds (a wall or rock in the way, shots that miss): the hero goes to another spot around it and shoots again">Move to another spot when shots miss</span></div>
                 <div class="frow">
                     <span class="muted lab">Combat arts</span>
                     <button class="mini" id="heroartsoff" title="Switches off all combat arts and spells of this hero"><span class="padkey a"></span>All off</button>
@@ -117,11 +117,11 @@
                 </div>
                 <p data-if="tac.none" class="muted small">No combat arts or spells learned yet.</p>
                 <div class="tlist">
-                    <div data-for="a : tac.abilities" class="check-row small">
-                        <span class="mvs"><a data-if="a.used" data-attr-id="a.id_up" class="mv up" data-class-off="a.off_up" title="Higher priority: used before the ones below"></a><a data-if="a.used" data-attr-id="a.id_dn" class="mv down" data-class-off="a.off_dn" title="Lower priority: used after the ones above"></a></span>
-                        <span class="text small" data-attr-title="a.tip">{{ a.text }}</span>
-                        <input data-if="a.used" data-attr-id="a.id" type="checkbox" class="game-check chk" data-checked="a.on"/>
+                    <div data-for="a : tac.abilities" class="check-row small arow">
+                        <span class="cbox"><input data-if="a.used" data-attr-id="a.id" type="checkbox" class="game-check chk" data-checked="a.on"/></span>
+                        <span class="text small aname" data-attr-title="a.tip">{{ a.text }}</span>
                         <span data-if="!a.used" class="muted small">not used by the AI</span>
+                        <span class="mvs"><a data-if="a.used" data-attr-id="a.id_up" class="mv up" data-class-off="a.off_up" title="Higher priority: used before the ones below"></a><a data-if="a.used" data-attr-id="a.id_dn" class="mv down" data-class-off="a.off_dn" title="Lower priority: used after the ones above"></a></span>
                     </div>
                 </div>
             </div>

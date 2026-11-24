@@ -65,3 +65,9 @@ a.mv.off, a.mv.off:hover, a.mv.off:focus { opacity: 0.3; cursor: default; }
 /* the window grows with the tactics list: its body scrolls (a pad scrolls it with the stick) when it would not fit the screen */
 #party .body { max-height: 540dp; overflow-y: auto; }
 .tlist { max-height: 230dp; }
+
+/* checkbox on the left, the name next to it, the priority arrows at the right edge */
+.arow { justify-content: flex-start; }
+.cbox { display: inline-block; width: 48dp; flex: none; }
+.aname { flex: 1; text-align: left; }
+.mvs { margin-left: auto; text-align: right; }
