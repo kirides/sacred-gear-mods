@@ -1,6 +1,6 @@
 /* the opener: a plain small button (no window frame), still a layout panel the player moves while Alt is held */
 #open { position: absolute; left: 780dp; top: 572dp; width: 150dp; }
-button.open-btn { display: block; border: 1px #8c7440; background-color: #14141f; color: #e8d8a8; font-family: "Sacred Game"; width: 100%; margin: 0; padding: 3dp 0; text-align: center; font-size: 13dp; white-space: nowrap; flex: none; }
+button.open-btn { display: block; width: 100%; margin: 0; }
 #market { position: absolute; left: 228dp; top: 16dp; width: 640dp; }
 #osk { position: absolute; left: 300dp; top: 260dp; width: 470dp; }
 .tabs { display: flex; flex-direction: row; margin-bottom: 4dp; }
@@ -37,4 +37,3 @@ button.cell img.icon { position: absolute; left: 1px; top: 1px; }
 button.key { min-width: 34dp; margin-right: 4dp; text-align: center; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.open-btn:hover, button.open-btn:focus { border-color: #ffd780; color: #ffe030; background-color: #24243a; }
