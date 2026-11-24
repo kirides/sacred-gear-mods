@@ -20,6 +20,8 @@
 
 <div id="party" class="window" data-panel="party" data-title="Party" data-if="open">
     <div data-if="dd != ''" id="party-ddshade"></div>
+    <!-- the hero rows scroll (and clip): the list of a row's behaviour drop-down lives here at the window, above everything, and is placed by the Lua side under its button -->
+    <div data-if="beh_pop.open" class="dd-list party-ddlist" data-nav-scroll data-style-left="beh_pop.left" data-style-top="beh_pop.top"><button data-for="o : beh_pop.options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div>
     <div class="titlebar">{{ title }}</div>
     <div class="body" data-nav-scroll>
         <p data-if="msg != ''" class="muted">{{ msg }}</p>
@@ -39,9 +41,6 @@
                     <button class="ibtn" data-attrif-disabled="!h.can_name" data-attr-id="h.id_name" data-attr-title="h.tip_name"><span class="padkey a"></span><span class="icon icon-edit"></span> Name</button>
                     <div class="dd party-dd" data-class-open="dd == h.beh_dd">
                         <button class="game-dropdown" data-attr-id="h.id_beh" title="What this hero does while you play another one"><span class="padkey a"></span>{{ h.behaviour }}</button>
-                        <div data-if="dd == h.beh_dd" class="dd-list party-ddlist" data-nav-scroll>
-                            <button data-for="o : h.beh_options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
-                        </div>
                     </div>
                     <button class="ibtn" data-attrif-disabled="!h.can_me" data-attr-id="h.id_me" title="Stuck? This hero joins you where you stand"><span class="padkey a"></span><span class="icon icon-my-location"></span> To me</button>
                     <button class="ibtn" data-attr-id="h.id_tac" title="How this hero fights and the combat arts and spells they use on their own"><span class="padkey a"></span><span class="icon icon-tune"></span> {{ h.tactics }}</button>
