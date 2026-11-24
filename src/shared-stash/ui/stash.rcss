@@ -11,10 +11,8 @@ button.cell:hover { background-color: #506090; border-color: #ffffff; }
 button.cell.off { opacity: 0.4; }
 button.cell img.icon { position: absolute; left: 1px; top: 1px; }
 .status { min-height: 18dp; margin-top: 4dp; }
-.wrap { white-space: pre-wrap; }
 .small { font-size: 13dp; }
 button.mini { padding: 0 8dp; margin: 0 2dp; }
-button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button.dis { opacity: 0.55; color: #8a8a8a; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
