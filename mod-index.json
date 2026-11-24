@@ -107,7 +107,7 @@
       "id": "buildsharer",
       "path": "mods/buildsharer",
       "name": "Build sharer",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "author": "Sacred Gear",
       "description": "Publish your hero build to the game server and browse the builds other players shared. Needs the Sacred.GameServer of the SacredEngineRemake with scripts-examples/build_sharer.lua; the server reads your skills and equipment itself, this mod only sends a title, a note, tags and the items you carry.",
       "tags": [
@@ -123,7 +123,7 @@
       "id": "companions",
       "path": "mods/companions",
       "name": "Companions",
-      "version": "0.3.4",
+      "version": "0.3.5",
       "author": "Sacred Gear",
       "description": "A party of heroes in single player: recruit companions of any class, each with their own inventory, equipment, attributes, skills, combat arts and experience. Click a portrait (or use the controller's mod menu) to play that hero; the others follow and fight on their own, with their combat arts and spells.",
       "tags": [
@@ -253,7 +253,7 @@
       "id": "lootlog",
       "path": "mods/lootlog",
       "name": "Loot log",
-      "version": "0.2.4",
+      "version": "0.2.5",
       "author": "Sacred Gear",
       "description": "A log of the items that dropped near the hero and the items that ended up in the backpack, filterable by quality, category and kind; kept between sessions.",
       "tags": [
