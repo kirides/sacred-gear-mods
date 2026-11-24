@@ -10,7 +10,7 @@
 .hfill { height: 6dp; background-color: #60c060; }
 .hfill.bad { background-color: #c04040; }
 .hbtns { display: flex; flex-direction: row; }
-button.mini { padding: 0 8dp; margin: 0 3dp 0 0; font-size: 13dp; }
+button.mini { margin: 0 3dp 0 0; }
 button.mini.wide { min-width: 120dp; }
 button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
 button.game-button.amber { color: #ffc060; }
@@ -41,4 +41,3 @@ button.pt { display: block; position: absolute; width: 96dp; height: 132dp; padd
 .pt .plevel { position: absolute; left: 12dp; top: 78dp; color: #e8c878; font-size: 12dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
