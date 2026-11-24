@@ -11,8 +11,8 @@
 
         <div data-if="view == 'list'">
             <div class="row">
-                <button class="game-button" id="new"><span class="padkey a"></span>New bounty</button>
-                <button class="game-button" id="reload" title="Read custom.json again after editing it by hand"><span class="padkey a"></span>Reload file</button>
+                <button class="ibtn" id="new"><span class="padkey a"></span><span class="icon icon-add"></span> New bounty</button>
+                <button class="ibtn" id="reload" title="Read custom.json again after editing it by hand"><span class="padkey a"></span><span class="icon icon-refresh"></span> Reload file</button>
                 <span data-if="flash != ''" class="good small">{{ flash }}</span>
             </div>
             <p data-if="list_empty" class="msg small">No bounties of your own yet. "New bounty" makes one: pick the creatures, how many, and the reward. Start it here, or let it start by itself after some kills. Good for challenges on a stream.</p>
@@ -25,8 +25,8 @@
                     </div>
                     <div class="dbtns">
                         <button class="mini" data-attr-id="d.id_go"><span class="padkey a"></span>{{ d.go }}</button>
-                        <button class="mini" data-attr-id="d.id_ed"><span class="padkey a"></span>Edit</button>
-                        <button class="mini" data-attr-id="d.id_del"><span class="padkey a"></span>Delete</button>
+                        <button class="ibtn" data-attr-id="d.id_ed"><span class="padkey a"></span><span class="icon icon-edit"></span> Edit</button>
+                        <button class="ibtn" data-attr-id="d.id_del"><span class="padkey a"></span><span class="icon icon-delete"></span> Delete</button>
                     </div>
                 </div>
             </div>
@@ -56,8 +56,8 @@
                 <div data-if="show_tier" class="dd bounty-dd" data-class-open="dd == 'tier'"><button class="game-dropdown" id="tier"><span class="padkey a"></span>{{ tier_label }}</button><div data-if="dd == 'tier'" class="dd-list bounty-ddlist" data-nav-scroll><button data-for="o : dd_tiers" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
             </div>
             <div data-if="show_items" class="frow"><span class="lab">Items</span>
-                <button class="mini" id="finditem" title="Search by the name of the item in your language; typos are fine"><span class="padkey a"></span>Find an item...</button>
-                <button data-if="items_ok" class="mini" id="clearpick"><span class="padkey a"></span>Clear</button>
+                <button class="ibtn" id="finditem" title="Search by the name of the item in your language; typos are fine"><span class="padkey a"></span><span class="icon icon-search"></span> Find an item...</button>
+                <button data-if="items_ok" class="ibtn" id="clearpick"><span class="padkey a"></span><span class="icon icon-clear"></span> Clear</button>
                 <span data-class-accent="items_ok" data-class-bad="!items_ok" class="small">{{ items_line }}</span>
             </div>
 
