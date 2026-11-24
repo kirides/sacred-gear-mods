@@ -20,12 +20,14 @@ Example: *Spells cast by enemies* → Duration 40 %: a root of 20 seconds holds 
 
 ## How it works and its limits
 
-The game keeps one record per spell for every caster. The mod looks about 20 times a second at the creatures around the hero (3500 units), sees which spell each has in flight, and writes that spell's numbers for the caster's role just before the effect reads them. Measured in the game: the root's duration is parameter 0 of the spell record (1 second with 1, 7 seconds with 7), and the mod's 50 % setting shortened a root from 21.5 to 6.75 seconds (self test).
+The game keeps one record per spell for every caster. The mod looks about 20 times a second at the creatures around the hero (3500 units), sees which spell each has in flight, and writes that spell's numbers for the caster's role just before the effect reads them.
+
+What is proven in the game (self test): when the hero casts the root (Pflanzenkäfig) the record holds the numbers for *the hero you play*, when a companion casts it the record holds the numbers for *companions*, each with its own percentage. What is **not** solidly proven: that the shorter number shortens the root on the victim. In some runs a root on a foe lasted 1 s with parameter 0 set to 1 and 7 s with 7, but repeated runs with the self test gave erratic times (1 to 21 seconds at the same setting), so check it in a real fight.
 
 - Two casters of **different roles** casting the same spell within a fraction of a second get the numbers of the one seen last.
 - A caster counts as an *enemy* if it is hostile to the hero you play, as a *trap* if its type name says so (trap, falle, spike, turret), otherwise *neutral*.
 - Duration works for the listed crowd control spells; whether the other spells measure their effect time in parameter 0 is not checked, so the mod leaves those alone. Strength and damage change the spell record's numbers as the game reads them: some spells use them differently, so try the numbers in a fight.
-- Not tested in game yet: casts by enemies (the role lookup and `Creature:casting` for monsters were checked, the end to end effect was measured with the hero as caster only).
+- Not tested in game yet: casts by enemies, neutral creatures and traps. Spawned or teleported monsters stand still and never cast, so the test could only use the hero and a companion; `Creature:casting` does read a natural monster's casts (a dark elf NPC showed its arts).
 
 ## Development
 
