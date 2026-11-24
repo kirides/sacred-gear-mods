@@ -6,8 +6,8 @@
 <body data-model="model">
 
 <!-- The companions under the game's own portraits: the ring (grey, red for the health left), the portrait, the experience beads. -->
-<div id="portraits" class="bare ptcol" data-panel="portraits" data-title="Companions" data-if="portraits_on" data-style-left="px" data-style-top="py">
-    <button data-for="c : portraits" class="pt" data-attr-id="c.id" data-attr-title="c.tip" data-class-dead="c.dead">
+<div id="portraits" class="bare ptcol" data-panel="portraits" data-title="Companions" data-if="portraits_on" data-style-left="px" data-style-top="py" data-style-height="pheight">
+    <button data-for="c : portraits" class="pt" data-attr-id="c.id" data-attr-title="c.tip" data-class-dead="c.dead" data-style-left="c.left" data-style-top="c.top">
         <div class="ring"></div>
         <div class="redring" data-style-top="c.red_top" data-style-height="c.red_h"></div>
         <img class="pimg" data-attr-src="c.image"/>

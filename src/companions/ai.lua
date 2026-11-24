@@ -328,12 +328,31 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     local lx, ly, ll = leader:position()
     if not cx or not lx then return end
     local d = dist(cx, cy, lx, ly)
-    -- Left behind (a portal, another level, a teleport): join the leader.
-    if cl ~= ll or d > opts.teleport then
+    -- Stuck (a cave's narrow ways, a wall between them): no headway toward a leader far off for 6 s.
+    local stuck = false
+    local act0 = c:action()
+    if d > opts.follow * 2 and (act0 == 'walking' or act0 == 'idle') then
+        if not s.stuck_at or math.abs(cx - s.stuck_x) + math.abs(cy - s.stuck_y) > 40 then
+            s.stuck_at, s.stuck_x, s.stuck_y = now, cx, cy
+        elseif now - s.stuck_at > 6 then
+            stuck = true
+        end
+    else
+        s.stuck_at = nil
+    end
+    -- Left behind (a portal, another level, a cave, a teleport) or stuck: join the leader, close to them (a cave has
+    -- little room: the spot in the formation may lie in rock, then right beside the leader, then on the leader's spot).
+    if cl ~= ll or d > opts.teleport or stuck then
         if now - s.teleported > 2 then
-            local fx, fy = formation(lx, ly, slot, count, opts.follow * 0.6)
-            c:teleport(fx, fy, ll)
-            s.teleported, s.target = now, nil
+            local fx, fy = formation(lx, ly, slot, count, math.min(opts.follow * 0.6, 120))
+            local spots = {{fx, fy}, {lx + 40, ly + 40}, {lx - 40, ly + 40}, {lx, ly}}
+            for _, p in ipairs(spots) do
+                if c:teleport(p[1], p[2], ll) then
+                    local nx, ny, nl = c:position()
+                    if nl == ll and nx and dist(nx, ny, lx, ly) < 400 then break end
+                end
+            end
+            s.teleported, s.target, s.stuck_at = now, nil, nil
         end
         return
     end

@@ -94,17 +94,19 @@ function M.new(env)
     local placed_at
     local function column_place()
         local w = ui.window('UI_WND_MERC')
-        local b = w and w.drawn and w.bounds
         local x, y
-        if b and b.w and b.w > 0 then
-            x, y = b.x, b.y + 2 + math.floor(b.h / 120 + 0.5) * ROW
+        if w and w.drawn then
+            -- the window's own place, not what it drew last frame (its portraits shake when the hero takes heavy damage, and
+            -- the column slid sideways with them); its rows: the hero you play and each mercenary
+            x = (w.x or 0) + (w.frame_x or 0)
+            y = (w.y or 0) + (w.frame_y or 0) + 16 + (1 + #party.mercenaries()) * ROW
         elseif w then
             local st = ui.state()
             x, y = (st.screen_right or 1024) - PW, 16
         else
             return nil
         end
-        return math.floor(x + 0.5) - 2, math.floor(y + 0.5) - 2
+        return math.floor(x + 0.5), math.floor(y + 0.5) - 2
     end
 
     local function same(a, b)
@@ -121,7 +123,11 @@ function M.new(env)
         m.portraits_on = true
         local x, y = column_place()
         m.px, m.py = px(x or cfg.portraits_x or 932), px(y or cfg.portraits_y or 260)
-        for _, c in ipairs(list) do
+        -- as many rows as fit down the screen's right edge (the taskbar is in the middle), then a further column to the left
+        local st = ui.state()
+        local rows = math.max(1, math.floor(((st.screen_bottom or 768) - 24 - (y or cfg.portraits_y or 260)) / ROW))
+        m.pheight = px(math.min(#list, rows) * ROW)
+        for i, c in ipairs(list) do
             local dead = c:is_dead()
             local hp, max = c:hp() or 0, c:max_hp() or 1
             local frac = dead and 0 or math.min(1, math.max(0, hp / math.max(1, max)))
@@ -130,6 +136,7 @@ function M.new(env)
             by_id[id] = c
             m.portraits[#m.portraits + 1] = {
                 id = id, dead = dead, image = image_url(c:portrait()), level = tostring(c:level() or ''),
+                left = px(-math.floor((i - 1) / rows) * (PW + 6)), top = px(((i - 1) % rows) * ROW),
                 xp = px(71 * xp_fraction(c)), red_top = px(top * RH), red_h = frac > 0 and px(RH - top * RH) or '0dp',
                 tip = name_of(c) .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level())
                     .. ')\n' .. (dead and 'Fallen' or ('Click to play' .. key_hint('next'))),
@@ -254,7 +261,7 @@ function M.new(env)
     end
 
     local function snapshot()
-        local m = {portraits_on = false, px = '932dp', py = '260dp', portraits = {}, open = false, title = '', msg = '', heroes = {},
+        local m = {portraits_on = false, px = '932dp', py = '260dp', pheight = '132dp', portraits = {}, open = false, title = '', msg = '', heroes = {},
             class_name = '', full = false, companions_text = '', no_files = true, file_label = '', can_bring = false, bring_tip = '', maybe = false,
             picked = '', keep_label = '', merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
             dd = open_filter, dd_classes = {}, dd_files = {}, dd_mercs = {}, dd_amounts = {}, dd_styles = {},
