@@ -78,6 +78,8 @@ input.field, select.field {
 }
 input.field { caret-style: underscore; caret-color: #ffd780; }
 input.field:focus, select.field:focus { border-color: #ffd780; }
+/* The selected text of a field (mouse, Shift + arrows, Ctrl + A): the brown-gold of the lists, over light text. */
+input.field selection, textarea selection { background-color: #8a6a28cc; color: #fff2c8; }
 
 /* Lists: .list holds .item rows (a thumbnail, a gold .name, grey .sub); .selected is the brown-gold chosen row. Make an item a button to make it a pad stop. */
 .list { margin: 4dp 0; }
