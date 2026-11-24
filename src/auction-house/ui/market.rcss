@@ -7,16 +7,13 @@ button.open-btn { display: block; border: 1px #8c7440; background-color: #14141f
 button.tab { margin-right: 4dp; font-family: "Sacred Game"; }
 button.tab.on { border-color: #ffd780; color: #ffd780; }
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
-.grow { flex: 1 1 auto; }
 .lab { width: 46dp; flex: none; }
-.small { font-size: 12dp; }
 .gold { color: #ffe080; }
 .pn { width: 56dp; text-align: center; }
 input.price { width: 150dp; margin-right: 4dp; }
 button.mini { padding: 0 8dp; margin: 0 4dp 0 0; font-size: 13dp; }
 button.mini.wide { min-width: 120dp; }
 button.mini.on { border-color: #ffd780; color: #ffd780; }
-button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; }
 button.game-button.dis { opacity: 0.55; color: #8a8a8a; }
 .ah-dd { position: relative; z-index: 10; }
