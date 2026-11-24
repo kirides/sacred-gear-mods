@@ -33,6 +33,7 @@ The pictures are screenshots from the game, taken by a script ([how](docs/Screen
 | [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.jpg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. Ctrl+D. |
 | [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.jpg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
 | [**Spawn rate**](docs/mods/spawn-rate.md) | <img src="docs/images/spawn-rate.jpg" width="220" alt="Spawn rate"> | Multiply the creatures the game spawns, from 1x to 100x, with safeguards for the frame rate. Single player. |
+| [**Spell tuning**](docs/mods/spell-tuning.md) | | Shorten or strengthen root, stun, fear, spell strength and damage by who casts the spell: you, companions, enemies, neutrals or traps. Single player. |
 | [**Region counter**](docs/mods/region-counter.md) | <img src="docs/images/region-counter.jpg" width="220" alt="Region counter"> | The kills a region needs before its Region Boss quest: set your own number, and keep the count when you leave the region or quit. |
 | [**Layout editor**](docs/mods/layout.md) | <img src="docs/images/layout.jpg" width="220" alt="Layout editor"> | Move the game's windows and mod panels where you want them. Hold Alt. |
 | [**Realm picker**](docs/mods/realms.md) | <img src="docs/images/realms.jpg" width="220" alt="Realm picker"> | Choose the online play server for Closed and Open Internet. |
