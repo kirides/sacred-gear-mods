@@ -3,7 +3,7 @@
 button.tab { margin-right: 4dp; font-family: "Sacred Game"; }
 button.tab.on { border-color: #ffd780; color: #ffd780; }
 .row .label { margin: 0 4dp 0 8dp; align-self: center; }
-button.mini { padding: 4dp 8dp 6dp 8dp; margin: 0 4dp 0 0; }
+button.mini { margin: 0 4dp 0 0; }
 .blist { height: 270dp; overflow-y: auto; margin-top: 6dp; }
 button.brow { display: block; width: 100%; margin: 0 0 2dp 0; padding: 2dp 8dp; text-align: left; font-size: 14dp; }
 .dlist { height: 220dp; overflow-y: auto; }
@@ -14,4 +14,3 @@ button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
 #build-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
