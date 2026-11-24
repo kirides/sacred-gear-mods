@@ -12,7 +12,6 @@ button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; marg
 button.game-button.tab { padding: 0 30dp 0 29dp; }
 .srow { display: flex; flex-direction: row; align-items: center; margin: 4dp 0; }
 .sfield { flex: 1 1 0px; min-width: 0px; display: flex; flex-direction: row; align-items: center; margin-right: 6dp; }
-.grow { flex: 1 1 auto; }
 .cnt { margin-left: 8dp; color: #8c8c8c; font-size: 12dp; }
 .main { display: flex; flex-direction: row; margin-top: 4dp; }
 .left { width: 470dp; margin-right: 12dp; }
@@ -40,7 +39,6 @@ button.row.sel { background-color: #4a3f2a; border-color: #ffd780; }
 .dfield { display: flex; flex-direction: row; font-size: 12dp; }
 .dk { width: 70dp; color: #8c8c8c; }
 .dv { flex: 1 1 auto; }
-.small { font-size: 12dp; }
 .namerow { display: flex; flex-direction: row; align-items: center; margin-top: 6dp; }
 .lab { width: 50dp; }
 .btns { margin-top: 6dp; }
