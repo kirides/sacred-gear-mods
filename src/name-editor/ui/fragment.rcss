@@ -31,19 +31,13 @@
 .ne-info.over { color: #e06060; }
 
 /* buttons of the editor (the theme's game-button is for the big ones) */
-.ne-btn { display: inline-block; flex: none; margin: 0 6dp 0 0; padding: 4dp 12dp; font-size: 14dp; line-height: 20dp; white-space: nowrap; text-align: center; color: #e4dcc0; background-color: #1c160e; border: 1px #6b5428; cursor: pointer; }
-.ne-btn:hover, .ne-btn:focus { color: #ffd54a; border-color: #ffd54a; background-color: #2a2113; }
-.ne-btn.on { color: #ffd54a; border-color: #c9a24a; }
 .ne-sp { flex: 1 1 auto; }
-.ne-btn.ne-sm { padding: 1dp 10dp; margin: 0 0 0 6dp; font-size: 13dp; }
-.ne-btn.ne-sq { width: 34dp; padding: 4dp 0; margin-right: 4dp; }
-.ne-btn.ne-go { border-color: #c9a24a; color: #ffd54a; }
 
 /* palettes */
 .ne-panel { margin: 2dp 0 0 0; }
 .ne-grid { display: flex; flex-direction: row; flex-wrap: wrap; width: 576dp; }
-.sw, .ib, .pre, .ne-btn { transform: none; }
-.sw:hover, .sw:focus, .ib:hover, .ib:focus, .pre:hover, .pre:focus, .ne-btn:hover, .ne-btn:focus { transform: none; }
+.sw, .ib, .pre { transform: none; }
+.sw:hover, .sw:focus, .ib:hover, .ib:focus, .pre:hover, .pre:focus { transform: none; }
 .sw { display: block; flex: none; width: 42dp; height: 30dp; margin: 0 4dp 4dp 0; padding: 0; border: 1px #000000; cursor: pointer; }
 .sw:hover, .sw:focus { border: 2dp #ffd54a; }
 .sw.sel { border: 2dp #ffffff; }
@@ -61,8 +55,6 @@ body.pad .sw:focus > .padkey.a, body.pad .sw:hover > .padkey.a, body.pad .ib:foc
 .ne-gbar { display: flex; flex-direction: row; height: 26dp; width: 576dp; border: 1px #000000; margin: 0 0 8dp 0; }
 .ne-gbar .sl { display: block; flex: 1 1 0; height: 26dp; }
 .ne-grow { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; margin: 4dp 0 6dp 0; }
-.ne-slot { padding: 4dp 12dp 4dp 6dp; }
-.ne-slot.on { border-color: #ffd54a; }
 .ne-dot { display: inline-block; width: 20dp; height: 20dp; margin-right: 8dp; vertical-align: middle; border: 1px #000000; border-radius: 10dp; }
 .ne-presets { display: flex; flex-direction: row; flex-wrap: wrap; margin: 0 0 8dp 0; }
 .pre { display: flex; flex-direction: row; flex: none; width: 86dp; height: 22dp; margin: 0 6dp 6dp 0; padding: 0; border: 1px #000000; cursor: pointer; }

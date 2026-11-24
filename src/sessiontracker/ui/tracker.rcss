@@ -1,7 +1,5 @@
 #tracker { position: absolute; left: 16dp; top: 200dp; width: 290dp; }
 .stat { display: flex; flex-direction: row; justify-content: space-between; margin: 2dp 0; }
 .stat .value { text-align: right; }
-.gold { color: #ffd778; }
-.xp { color: #9cd0ff; }
 .hist { font-size: 13dp; }
 .heading { margin-top: 12dp; }

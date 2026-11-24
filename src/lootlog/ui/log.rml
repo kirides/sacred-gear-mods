@@ -10,21 +10,21 @@
     <div class="titlebar">{{ title }}</div>
     <div class="body">
         <div class="row filters">
-            <div class="ddwrap quality" data-class-open="dd == 'quality'"
+            <div class="dd ddwrap quality" data-class-open="dd == 'quality'"
                  data-alias-key="filters.quality.key"
                  data-alias-title="filters.quality.title"
                  data-alias-label="filters.quality.label"
                  data-alias-options="filters.quality.options">
                 <template src="lootlog-dropdown"></template>
             </div>
-            <div class="ddwrap category" data-class-open="dd == 'category'"
+            <div class="dd ddwrap category" data-class-open="dd == 'category'"
                  data-alias-key="filters.category.key"
                  data-alias-title="filters.category.title"
                  data-alias-label="filters.category.label"
                  data-alias-options="filters.category.options">
                 <template src="lootlog-dropdown"></template>
             </div>
-            <div class="ddwrap kind" data-class-open="dd == 'kind'"
+            <div class="dd ddwrap kind" data-class-open="dd == 'kind'"
                  data-alias-key="filters.kind.key"
                  data-alias-title="filters.kind.title"
                  data-alias-label="filters.kind.label"
@@ -34,7 +34,7 @@
         </div>
         <div class="row space">
             <span class="label">{{ count }}</span>
-            <button class="game-button" data-event-click="clear" title="Empties the log (also the file)"><span class="padkey a"></span>Clear</button>
+            <button class="ibtn" data-event-click="clear" title="Empties the log (also the file)"><span class="padkey a"></span><span class="icon icon-delete"></span>Clear</button>
         </div>
         <div class="rows">
             <div data-for="r : rows" class="entry">

@@ -10,23 +10,23 @@
 .col.wide { width: 66dp; }
 .col.bad, .bad { color: #ff8080; }
 .line.head .col { color: #b0b0b0; font-size: 11dp; }
-.solo { position: relative; height: 38dp; }
+.solo { display: flex; flex-direction: row; justify-content: space-between; align-items: center; min-height: 38dp; }
+.solo .who { flex: 1 1 auto; min-width: 0; }
 .solo .name { font-size: 14dp; }
-.solo .big { position: absolute; right: 0px; top: 0px; font-size: 20dp; color: #f0f0f0; }
+.solo .big { flex: none; margin-left: 8dp; font-size: 20dp; color: #f0f0f0; }
 .solo .big.fighting { color: #90e090; }
-.solo .small { position: absolute; left: 0px; top: 22dp; font-size: 11dp; }
+.solo .small { display: block; font-size: 11dp; }
 .kv { display: flex; flex-direction: row; justify-content: space-between; margin: 1px 0; }
 .kv.top { margin-top: 8dp; }
 .icons { display: flex; flex-direction: row; justify-content: flex-end; margin-top: 4dp; }
-button.mini { padding: 0 6dp; margin: 0 0 0 3dp; font-size: 12dp; }
+button.mini { margin: 0 0 0 3dp; }
 .heading { margin: 8dp 0 3dp 0; }
 .graph { margin-top: 8dp; }
 .bars { display: flex; flex-direction: row; width: 180dp; height: 44dp; background-color: #00000060; }
 .slot { width: 6dp; height: 44dp; }
-.half { height: 22dp; position: relative; }
-.half .fill { position: absolute; left: 0px; width: 5dp; background-color: #78dc78; }
-.half.up .fill { bottom: 0px; }
-.half.down .fill { top: 0px; background-color: #f06464; }
+.half { display: flex; flex-direction: column; height: 22dp; }
+.half.up { justify-content: flex-end; }
+.half .fill { flex: none; width: 5dp; background-color: #78dc78; }
+.half.down .fill { background-color: #f06464; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

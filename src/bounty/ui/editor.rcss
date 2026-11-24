@@ -7,7 +7,6 @@
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
 .frow.top { align-items: flex-start; }
 .lab { width: 140dp; flex: none; color: #9a9a9a; font-size: 13dp; }
-.grow { flex: 1 1 auto; }
 .val { width: 60dp; text-align: right; margin-left: 6dp; }
 input.game-slider { width: 250dp; }
 .slider-row { height: 40dp; }
@@ -17,16 +16,9 @@ button.chip { margin: 2dp 4dp 2dp 0; padding: 0 8dp; font-size: 13dp; }
 .opts { max-height: 120dp; overflow-y: auto; }
 button.opt { display: block; width: 100%; margin: 0; padding: 1px 8dp; text-align: left; font-size: 13dp; background-color: #12121c; border: 1px #4a4030; }
 button.mini.wide { min-width: 200dp; }
-.bounty-dd { position: relative; z-index: 10; }
-.bounty-dd.open { z-index: 100; }
-.bounty-dd .caret { margin-left: 7dp; color: #ffd780; }
-.bounty-ddlist { position: absolute; left: 16dp; top: 29dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
-.bounty-ddlist button.opt { display: block; width: 100%; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-.bounty-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
 #bounty-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 .check-row { height: 36dp; }
 .fscroll { max-height: 520dp; overflow-y: auto; }
 .opts { max-height: 96dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

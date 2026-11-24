@@ -10,18 +10,12 @@
 .hfill { height: 6dp; background-color: #60c060; }
 .hfill.bad { background-color: #c04040; }
 .hbtns { display: flex; flex-direction: row; }
-button.mini { padding: 0 8dp; margin: 0 3dp 0 0; font-size: 13dp; }
+button.mini { margin: 0 3dp 0 0; }
 button.mini.wide { min-width: 120dp; }
 button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
 button.game-button.amber { color: #ffc060; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; margin-right: 8dp; }
-.party-dd { position: relative; z-index: 10; }
-.party-dd.open { z-index: 100; }
-.party-dd .caret { margin-left: 7dp; color: #ffd780; }
-.party-ddlist { position: absolute; left: 16dp; top: 29dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
-.party-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-.party-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
 #party-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 .sep { height: 1px; background-color: #6a5a3c80; margin: 6dp 0; }
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
@@ -48,7 +42,6 @@ button.pt { display: block; position: absolute; width: 96dp; height: 132dp; padd
 .pt .plevel { position: absolute; left: 12dp; top: 78dp; color: #e8c878; font-size: 12dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
 
 /* Many companions: the hero rows scroll (about seven show), so the rows below stay on the screen. */
 .herolist { max-height: 340dp; overflow-y: auto; }

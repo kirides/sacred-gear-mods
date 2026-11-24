@@ -45,7 +45,6 @@ button.t-exch { left: 143dp; }
 .info { position: absolute; left: 17dp; width: 490dp; font-size: 13dp; color: #b8b8b8; }
 .info.regen { top: 216dp; }
 .muted { color: #9a9a9a; }
-.small { font-size: 12dp; }
 .good { color: #60d060; }
 .bad { color: #e04848; }
 .pad { padding: 8dp; }

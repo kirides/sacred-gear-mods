@@ -6,7 +6,7 @@
 <body data-model="model">
 <div id="page">
     <p>Online play server (Closed / Open Internet)</p>
-    <div class="line"><span class="muted lab">Realm</span><div class="realm-dd" data-class-open="dd_open"><button class="game-button" id="realm" title="Choose the server for the next Closed / Open Internet connection"><span class="padkey a"></span>{{ realm }}<span class="caret">&#9662;</span></button><div data-if="dd_open" class="realm-ddlist" data-nav-scroll><button data-for="o : realms" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div></div>
+    <div class="line"><span class="muted lab">Realm</span><div class="dd realm-dd" data-class-open="dd_open"><button class="game-dropdown" id="realm" title="Choose the server for the next Closed / Open Internet connection"><span class="padkey a"></span>{{ realm }}</button><div data-if="dd_open" class="dd-list realm-ddlist" data-nav-scroll><button data-for="o : realms" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div></div>
     <p class="muted">Host: {{ host }}</p>
     <p data-if="message != ''" class="muted">{{ message }}</p>
 </div>

@@ -2,7 +2,7 @@
 .tabs { display: flex; flex-direction: row; margin-bottom: 8dp; }
 button.tab { margin-right: 4dp; font-family: "Sacred Game"; }
 button.tab.on { border-color: #ffd780; color: #ffd780; }
-button.mini { padding: 0 8dp; margin: 0; }
+button.mini { margin: 0; }
 .pad { margin-left: 10dp; }
 .line { display: flex; flex-direction: row; justify-content: space-between; margin: 1px 0 1px 10dp; }
 .line .grow { flex: 1 1 auto; }
@@ -12,10 +12,7 @@ button.mini { padding: 0 8dp; margin: 0; }
 .rlist { height: 280dp; overflow-y: auto; }
 .rec { margin-bottom: 6dp; }
 .rec .sub { margin-left: 10dp; font-size: 14dp; }
-.wrap { white-space: pre-wrap; }
-.warn { color: #ffc878; }
 .good { color: #8fce7a; }
 .status { margin-top: 8dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

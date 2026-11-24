@@ -23,6 +23,16 @@ body { font-size: 15dp; color: #f0f0f0; }
 .window > .body { padding: 10px 14px 12px 14px; }
 .window.plain { padding: 14px 16px; }
 
+/* Utilities every screen needs (they used to be repeated in each mod's stylesheet; Gear's plain base style has the same rules): .small a smaller line, .wrap keeps line breaks,
+   .grow takes the free room of a flex row, .warn / .gold / .xp colour a text, button.dis a button that cannot be used now (it stays a pad stop). */
+.small { font-size: 12px; }
+.wrap { white-space: pre-wrap; }
+.grow { flex: 1 1 auto; }
+.warn { color: #ffc878; }
+.gold { color: #ffd778; }
+.xp { color: #9cd0ff; }
+button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
+
 /* Text: .heading is a section title in the gold of the legacy headings; .label / .value are a grey name and its white value. */
 .heading { font-family: "Sacred Game"; color: #f0c860; margin: 8px 0 4px 0; }
 .label { color: #9a9a9a; }
@@ -144,6 +154,101 @@ span.padkey.right { decorator: image(gear:pad/right contain); }
 .thick-frame { padding: 29px 26px 32px 26px; }
 /* Where the dark fill starts inside the border (the game sets it per window; Gear reads these classes): bg-fill-settings is the bigger gap (22 / 24.5 / 22 / 24.5, the character selection and the settings screens), bg-fill-dialog the thin one (16 / 20 / 15 / 18, the confirmation popup); without either the default is the settings gap. data-fill-inset="l t r b" overrides. */
 
+/* The compact game button (class mini on a <button>, for pagers, row actions and toolbars): the same orb caps and middle (280 / 281 / 282) scaled to the height of the
+   button, so it fits where the big game-button does not. Mods only choose its margin (and min-width with .wide / .key). Every button keeps its label on one line. */
+button { flex: none; white-space: nowrap; }
+button.mini {
+    display: inline-block;
+    height: 28px;
+    min-width: 56px;
+    margin: 0 4px 0 0;
+    padding: 0 24px;
+    border: 0;
+    background-color: transparent;
+    decorator: tiled-horizontal(gear:image/280, gear:image/281, gear:image/282);
+    color: #e4e4e4;
+    font-family: "Sacred Game";
+    font-size: 14px;
+    line-height: 28px;
+    text-align: center;
+    cursor: pointer;
+    transform: none;
+}
+button.mini:hover, button.mini:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
+button.mini:active { color: #fff2a0; }
+button.mini.on { color: #ffd54a; }
+/* Icon buttons (class ibtn on a <button> that holds only an icon: pagers, backspace, close ...): no frame, the glow text of .link; the icon takes the text colour. */
+button.ibtn {
+    display: inline-block;
+    flex: none;
+    min-width: 0;
+    height: auto;
+    margin: 0 4px 0 0;
+    padding: 2px 8px;
+    border: 0;
+    background-color: transparent;
+    decorator: none;
+    color: #e8d8a8;
+    font-family: "Sacred Game";
+    font-size: 16px;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    transform: none;
+}
+button.ibtn:hover, button.ibtn:focus { color: #fff6d0; background-color: transparent; transform: none; font-effect: glow(2px 6px 0px 0px #ffb840e6); }
+/* Icon / text buttons side by side are separated by a thin vertical bar, as the tabs of a .tabbar are: */
+button.ibtn + button.ibtn { border-left: 1px #8c744099; margin-left: 4px; padding-left: 12px; }
+button.ibtn + button.ibtn:hover, button.ibtn + button.ibtn:focus, button.ibtn + button.ibtn:active { border-color: #8c744099; }
+button.ibtn:active { color: #ffffff; font-effect: glow(3px 8px 0px 0px #ffe9a8ff); }
+button.ibtn:disabled, button.ibtn[disabled] { color: #6a6a6a; font-effect: none; }
+
+/* Tab buttons (class tab on a <button>, where a window keeps its own tab row): the look of the .tabbar links, the open one (.on) bright with a bar under it. */
+button.tab { display: inline-block; flex: none; margin: 0 4px 0 0; padding: 3px 12px; border: 0; background-color: transparent; color: #e8d8a8; font-family: "Sacred Game"; font-size: 15px; white-space: nowrap; cursor: pointer; transform: none; }
+button.tab:hover, button.tab:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
+button.tab.on { color: #ffcf40; border-bottom: 2px #ffcf40; }
+button.mini:disabled, button.mini[disabled], button.mini.dis { color: #8a8a8a; opacity: 0.55; border: 0; }
+
+/* The game's drop-down button (class game-dropdown on a <button>): the arrow orbs of the options screens, the left cap (image 267) and the right cap (270) keep their
+   size and the middle (281) is tiled, so it is as wide as its label needs (never put a chevron into the label). The list it opens is a .list of .item buttons below it
+   (the mod keeps the open state); wrap both in an element with position: relative if the list floats. */
+button.game-dropdown {
+    display: inline-block;
+    height: 37px;
+    min-width: 130px;
+    margin: 0 8px 0 0;
+    padding: 0 40px;
+    border: 0;
+    background-color: transparent;
+    decorator: image(gear:image/281 repeat-x) content-box, image(gear:image/267 scale-none left center) border-box, image(gear:image/270 scale-none right center) border-box;
+    color: #e4e4e4;
+    font-family: "Sacred Game";
+    font-size: 16px;
+    line-height: 31px;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    transform: none;
+}
+button.game-dropdown:hover, button.game-dropdown:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
+button.game-dropdown:disabled, button.game-dropdown[disabled], button.game-dropdown[disabled]:hover, button.game-dropdown[disabled]:focus { color: #8a8a8a; opacity: 0.55; }
+
+/* Drop-down popups (made to flow, absolute only where a popup must float): <div class="dd" data-class-open="..."><button class="game-dropdown">..</button><div class="dd-list">
+   <button class="mini opt on">..</button></div></div>. .dd is the anchor (the list opens right below the button, over what follows), .dd-list the floating list, .opt its entries,
+   .dd-shade a full-size layer behind an open list that takes the click that closes it. */
+.dd { position: relative; display: inline-block; flex: none; z-index: 10; }
+.dd.open { z-index: 100; }
+.dd-list { position: absolute; left: 0; top: 100%; min-width: 150px; max-height: 300px; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2px; }
+.dd-list button.opt { display: block; width: auto; min-width: 0; height: auto; margin: 0; padding: 3px 10px; text-align: left; white-space: nowrap; color: #e8e8e8; border: 0; background-color: transparent; decorator: none; font-family: "Segoe UI"; font-size: 15px; line-height: 1.4; transform: none; }
+.dd-list button.opt:hover, .dd-list button.opt:focus, .dd-list button.opt.on { background-color: #ffd78030; border: 0; color: #ffe030; }
+.dd-shade a full-size layer behind an open list that takes the click that closes it. */
+.dd { position: relative; display: inline-block; flex: none; z-index: 10; }
+.dd.open { z-index: 100; }
+.dd-list { position: absolute; left: 0; top: 100%; min-width: 150px; max-height: 300px; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2px; }
+.dd-list button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4px 10px; }
+.dd-list button.opt.on { color: #ffe030; border-color: #ffd780; }
+.dd-shade { position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 5; }
+
 /* The game's own button (class game-button on a <button>): the orb caps (images 280 / 282) keep their size, only the middle (281) is tiled, so a button
    of any width works; the label is centred in the middle part and the pad prompt (.padkey) sits in front of it. Normal grey-white label, hover
    yellow (and with the pad focus; the glow is for the frameless .link only), pressed the other plate (283 to 285), disabled dim. */
@@ -223,8 +328,8 @@ gear-ring { display: inline-block; width: 40px; height: 40px; }
 scrollbarvertical { width: 30px; }
 scrollbarvertical slidertrack { width: 30px; decorator: image(gear:image/288 repeat-y center top); background-color: transparent; }
 scrollbarvertical sliderbar { width: 30px; height: 30px; decorator: image(gear:image/286 scale-none center center); background-color: transparent; }
-scrollbarvertical sliderarrowdec { width: 30px; height: 30px; decorator: image(gear:image/298 scale-none center center); transform: rotate(90deg); }
-scrollbarvertical sliderarrowinc { width: 30px; height: 30px; decorator: image(gear:image/299 scale-none center center); transform: rotate(90deg); }
+scrollbarvertical sliderarrowdec { width: 30px; height: 30px; decorator: image(gear:image/298 scale-none center center); transform: rotate(90deg); position: relative; left: -3px; }   /* the orb's picture sits 3px right of the groove's axis */
+scrollbarvertical sliderarrowinc { width: 30px; height: 30px; decorator: image(gear:image/299 scale-none center center); transform: rotate(90deg); position: relative; left: -3px; }   /* the orb's picture sits 3px right of the groove's axis */
 
 /* Arrows to step through values or pages (class arrow on an <a>, next for the right one): the game's white arrows (images 236 and 237, 32x18) in a box a little
    larger, so hover and pad focus can put the warm bloom (arrow-glow-left.png / arrow-glow-right.png, the arrow blurred and tinted like the .link bloom) over
@@ -235,6 +340,195 @@ a.arrow:hover, a.arrow:focus, a.arrow:active { decorator: image(arrow-glow-left.
 a.arrow.next:hover, a.arrow.next:focus, a.arrow.next:active { decorator: image(arrow-glow-right.png scale-none center center), image(gear:image/237 scale-none center center); }
 a.arrow.off, a.arrow.off:hover, a.arrow.off:focus { opacity: 0.35; decorator: image(gear:image/236 scale-none center center); cursor: default; }
 a.arrow.next.off, a.arrow.next.off:hover, a.arrow.next.off:focus { decorator: image(gear:image/237 scale-none center center); }
+
+/* ICONS BEGIN (generated by tools/make_icons.py from tools/icons.txt: do not edit) */
+@font-face { font-family: "Sacred Icons"; src: url("icons.ttf") format("truetype"); }
+.icon { display: inline-block; font-family: "Sacred Icons"; font-weight: normal; font-style: normal; font-size: 1.25em; line-height: 1; vertical-align: -0.2em; }
+.icon-add::before { content: "\e145"; }
+.icon-add-circle::before { content: "\e147"; }
+.icon-air::before { content: "\efd8"; }
+.icon-arrow-back::before { content: "\e5c4"; }
+.icon-arrow-downward::before { content: "\e5db"; }
+.icon-arrow-drop-down::before { content: "\e5c5"; }
+.icon-arrow-drop-up::before { content: "\e5c7"; }
+.icon-arrow-forward::before { content: "\e5c8"; }
+.icon-arrow-upward::before { content: "\e5d8"; }
+.icon-auto-fix-high::before { content: "\e662"; }
+.icon-autorenew::before { content: "\e028"; }
+.icon-backpack::before { content: "\f19c"; }
+.icon-backspace::before { content: "\e14a"; }
+.icon-bar-chart::before { content: "\e26b"; }
+.icon-bolt::before { content: "\ea0b"; }
+.icon-bookmark::before { content: "\e866"; }
+.icon-bug-report::before { content: "\e868"; }
+.icon-build::before { content: "\e869"; }
+.icon-cached::before { content: "\e86a"; }
+.icon-calculate::before { content: "\ea5f"; }
+.icon-cancel::before { content: "\e5c9"; }
+.icon-casino::before { content: "\eb40"; }
+.icon-chat::before { content: "\e0b7"; }
+.icon-chat-bubble::before { content: "\e0ca"; }
+.icon-check::before { content: "\e5ca"; }
+.icon-check-box::before { content: "\e834"; }
+.icon-check-box-outline-blank::before { content: "\e835"; }
+.icon-chevron-left::before { content: "\e408"; }
+.icon-chevron-right::before { content: "\e409"; }
+.icon-clear::before { content: "\e14c"; }
+.icon-close::before { content: "\e14c"; }
+.icon-close-fullscreen::before { content: "\f1cf"; }
+.icon-cloud::before { content: "\e2bd"; }
+.icon-cloud-download::before { content: "\e2c0"; }
+.icon-cloud-sync::before { content: "\eb5a"; }
+.icon-cloud-upload::before { content: "\e2c3"; }
+.icon-content-copy::before { content: "\e14d"; }
+.icon-content-cut::before { content: "\e14e"; }
+.icon-content-paste::before { content: "\e14f"; }
+.icon-delete::before { content: "\e872"; }
+.icon-delete-forever::before { content: "\e92b"; }
+.icon-description::before { content: "\e873"; }
+.icon-done::before { content: "\e876"; }
+.icon-done-all::before { content: "\e877"; }
+.icon-download::before { content: "\e171"; }
+.icon-drag-indicator::before { content: "\e945"; }
+.icon-east::before { content: "\f1df"; }
+.icon-eco::before { content: "\ea35"; }
+.icon-edit::before { content: "\e150"; }
+.icon-emoji-events::before { content: "\e71a"; }
+.icon-error::before { content: "\e000"; }
+.icon-expand-circle-down::before { content: "\e7cd"; }
+.icon-expand-less::before { content: "\e5ce"; }
+.icon-expand-more::before { content: "\e5cf"; }
+.icon-explore::before { content: "\e87a"; }
+.icon-extension::before { content: "\e87b"; }
+.icon-fast-forward::before { content: "\e01f"; }
+.icon-fast-rewind::before { content: "\e020"; }
+.icon-favorite::before { content: "\e87d"; }
+.icon-fiber-manual-record::before { content: "\e061"; }
+.icon-file-open::before { content: "\eaf3"; }
+.icon-filter-alt::before { content: "\ef4f"; }
+.icon-filter-list::before { content: "\e152"; }
+.icon-first-page::before { content: "\e5dc"; }
+.icon-flag::before { content: "\e153"; }
+.icon-folder::before { content: "\e2c7"; }
+.icon-folder-open::before { content: "\e2c8"; }
+.icon-format-color-fill::before { content: "\e23a"; }
+.icon-grid-view::before { content: "\e9b0"; }
+.icon-group::before { content: "\e7ef"; }
+.icon-group-add::before { content: "\e7f0"; }
+.icon-groups::before { content: "\f233"; }
+.icon-heart-broken::before { content: "\eac2"; }
+.icon-help::before { content: "\e887"; }
+.icon-history::before { content: "\e28e"; }
+.icon-home::before { content: "\e88a"; }
+.icon-hourglass-empty::before { content: "\e88b"; }
+.icon-info::before { content: "\e88e"; }
+.icon-inventory-2::before { content: "\e1a1"; }
+.icon-key::before { content: "\e73c"; }
+.icon-keyboard::before { content: "\e312"; }
+.icon-label::before { content: "\e892"; }
+.icon-last-page::before { content: "\e5dd"; }
+.icon-leaderboard::before { content: "\f20c"; }
+.icon-link::before { content: "\e157"; }
+.icon-list::before { content: "\e896"; }
+.icon-local-fire-department::before { content: "\ea05"; }
+.icon-lock::before { content: "\e88d"; }
+.icon-lock-open::before { content: "\e898"; }
+.icon-login::before { content: "\ea77"; }
+.icon-logout::before { content: "\e9ba"; }
+.icon-loop::before { content: "\e028"; }
+.icon-magic-button::before { content: "\f136"; }
+.icon-mail::before { content: "\e0be"; }
+.icon-map::before { content: "\e55b"; }
+.icon-menu::before { content: "\e5d2"; }
+.icon-mic::before { content: "\e029"; }
+.icon-military-tech::before { content: "\ea3f"; }
+.icon-more-horiz::before { content: "\e5d3"; }
+.icon-more-vert::before { content: "\e5d4"; }
+.icon-move-to-inbox::before { content: "\e168"; }
+.icon-music-note::before { content: "\e3a1"; }
+.icon-my-location::before { content: "\e1b3"; }
+.icon-north::before { content: "\f1e0"; }
+.icon-north-east::before { content: "\f1e1"; }
+.icon-notifications::before { content: "\e7f4"; }
+.icon-notifications-off::before { content: "\e7f6"; }
+.icon-open-in-full::before { content: "\f1ce"; }
+.icon-outbox::before { content: "\ef5f"; }
+.icon-paid::before { content: "\f041"; }
+.icon-palette::before { content: "\e3b7"; }
+.icon-pause::before { content: "\e034"; }
+.icon-payments::before { content: "\ef63"; }
+.icon-person::before { content: "\e7fd"; }
+.icon-person-add::before { content: "\e7fe"; }
+.icon-person-remove::before { content: "\ef66"; }
+.icon-pets::before { content: "\e91d"; }
+.icon-pie-chart::before { content: "\e6c4"; }
+.icon-place::before { content: "\e0c8"; }
+.icon-play-arrow::before { content: "\e037"; }
+.icon-power-settings-new::before { content: "\e8ac"; }
+.icon-psychology::before { content: "\ea4a"; }
+.icon-publish::before { content: "\e255"; }
+.icon-radio-button-checked::before { content: "\e837"; }
+.icon-radio-button-partial::before { content: "\f560"; }
+.icon-radio-button-unchecked::before { content: "\e836"; }
+.icon-redo::before { content: "\e15a"; }
+.icon-refresh::before { content: "\e5d5"; }
+.icon-remove::before { content: "\e15b"; }
+.icon-remove-circle::before { content: "\e15c"; }
+.icon-restart-alt::before { content: "\f053"; }
+.icon-save::before { content: "\e161"; }
+.icon-savings::before { content: "\e2eb"; }
+.icon-schedule::before { content: "\e192"; }
+.icon-science::before { content: "\ea4b"; }
+.icon-search::before { content: "\e8b6"; }
+.icon-security::before { content: "\e32a"; }
+.icon-sell::before { content: "\e54e"; }
+.icon-send::before { content: "\e163"; }
+.icon-send::before { content: "\e163"; }
+.icon-settings::before { content: "\e8b8"; }
+.icon-share::before { content: "\e80d"; }
+.icon-shield::before { content: "\e75b"; }
+.icon-shopping-cart::before { content: "\e547"; }
+.icon-show-chart::before { content: "\e6e1"; }
+.icon-skip-next::before { content: "\e044"; }
+.icon-skip-previous::before { content: "\e045"; }
+.icon-sort::before { content: "\e164"; }
+.icon-south::before { content: "\f1e3"; }
+.icon-south-east::before { content: "\f1e4"; }
+.icon-sports-esports::before { content: "\e6ec"; }
+.icon-star::before { content: "\e838"; }
+.icon-star-half::before { content: "\e839"; }
+.icon-stop::before { content: "\e047"; }
+.icon-storefront::before { content: "\ea12"; }
+.icon-swap-horiz::before { content: "\e8d4"; }
+.icon-swap-vert::before { content: "\e0c3"; }
+.icon-swords::before { content: "\f889"; }
+.icon-sync::before { content: "\e627"; }
+.icon-sync-alt::before { content: "\ea18"; }
+.icon-tag::before { content: "\e9ef"; }
+.icon-timer::before { content: "\e425"; }
+.icon-toys::before { content: "\e332"; }
+.icon-trending-down::before { content: "\e8e3"; }
+.icon-trending-up::before { content: "\e8e5"; }
+.icon-tune::before { content: "\e429"; }
+.icon-undo::before { content: "\e166"; }
+.icon-unfold-less::before { content: "\e5d6"; }
+.icon-unfold-more::before { content: "\e5d7"; }
+.icon-unpublished::before { content: "\f236"; }
+.icon-upload::before { content: "\e2c6"; }
+.icon-videogame-asset::before { content: "\e338"; }
+.icon-view-list::before { content: "\e8ef"; }
+.icon-visibility::before { content: "\e417"; }
+.icon-visibility-off::before { content: "\e8f5"; }
+.icon-volume-off::before { content: "\e04f"; }
+.icon-volume-up::before { content: "\e050"; }
+.icon-vpn-key::before { content: "\e0da"; }
+.icon-warning::before { content: "\e002"; }
+.icon-water-drop::before { content: "\e798"; }
+.icon-west::before { content: "\f1e6"; }
+.icon-wifi::before { content: "\e63e"; }
+.icon-zoom-in::before { content: "\e8ff"; }
+.icon-zoom-out::before { content: "\e900"; }
+/* ICONS END */
 
 /* SPRITES BEGIN (generated by tools/make_sprites_rcss.py: do not edit) */
 /* .sprite-N: the game UI image N at its natural size (the sprite-browser mod lists them with their numbers). */

@@ -22,7 +22,6 @@ button.crow:hover { border-color: #ffe030; }
 .tier.warn { color: #e0a030; }
 .tier.bad { color: #c04040; }
 .foot { margin-top: 8dp; }
-.small { font-size: 12dp; }
 button.game-button.dim { opacity: 0.55; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */

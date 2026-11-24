@@ -1,6 +1,5 @@
 #panel { position: absolute; left: 590dp; top: 40dp; width: 410dp; }
 .msg { white-space: pre-wrap; }
-.small { font-size: 12dp; }
 .list { max-height: 360dp; overflow-y: auto; }
 .ach { padding: 3dp 6dp; margin: 0 0 4dp 0; background-color: #ffffff16; }
 .ach.done { background-color: #4a3814c8; }

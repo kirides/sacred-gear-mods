@@ -18,7 +18,6 @@
 .ptext { display: inline-block; vertical-align: middle; }
 .pname { color: #ffd780; font-size: 14dp; }
 .pkind { color: #9a9a9a; font-size: 12dp; }
-button.mini { padding: 0 6dp; margin: 0; font-size: 12dp; }
+button.mini { margin: 0; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

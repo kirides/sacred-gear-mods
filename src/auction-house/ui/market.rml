@@ -5,7 +5,7 @@
 </head>
 <body data-model="model">
 <div id="open" data-panel="open" data-title="Auction house" data-if="open_shown">
-    <button id="ah-toggle" class="open-btn" data-attrif-disabled="!open_enabled" data-attr-title="open_tip"><span class="padkey a"></span>{{ open_label }}</button>
+    <button id="ah-toggle" class="mini open-btn" data-attrif-disabled="!open_enabled" data-attr-title="open_tip"><span class="padkey a"></span>{{ open_label }}</button>
 </div>
 
 <div id="market" class="window" data-panel="market" data-title="Auction house" data-if="market_open">
@@ -18,21 +18,21 @@
         <div data-if="tab == 'browse'">
             <div class="frow">
                 <input type="text" class="field grow" data-value="q_text" maxlength="40" placeholder="Search name or any tooltip line"/>
-                <button class="mini" id="kbd-q" title="Type with an on-screen keyboard"><span class="padkey a"></span>Kbd</button>
-                <div class="ah-dd" data-class-open="dd == 'cat'"><button class="mini wide" id="ah-cat"><span class="padkey a"></span>{{ cat }}<span class="caret">&#9662;</span></button><div data-if="dd == 'cat'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_cat" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-                <div class="ah-dd" data-class-open="dd == 'qual'"><button class="mini wide" id="ah-qual"><span class="padkey a"></span>{{ qual }}<span class="caret">&#9662;</span></button><div data-if="dd == 'qual'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_qual" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <button class="ibtn" id="kbd-q" title="Type with an on-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span> Kbd</button>
+                <div class="dd ah-dd" data-class-open="dd == 'cat'"><button class="game-dropdown" id="ah-cat"><span class="padkey a"></span>{{ cat }}</button><div data-if="dd == 'cat'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_cat" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div class="dd ah-dd" data-class-open="dd == 'qual'"><button class="game-dropdown" id="ah-qual"><span class="padkey a"></span>{{ qual }}</button><div data-if="dd == 'qual'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_qual" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
             </div>
             <div class="frow">
-                <div class="ah-dd" data-class-open="dd == 'level'"><button class="mini wide" id="ah-lvl"><span class="padkey a"></span>{{ level }}<span class="caret">&#9662;</span></button><div data-if="dd == 'level'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_level" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-                <div class="ah-dd" data-class-open="dd == 'price'"><button class="mini wide" id="ah-price"><span class="padkey a"></span>{{ price }}<span class="caret">&#9662;</span></button><div data-if="dd == 'price'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_price" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div class="dd ah-dd" data-class-open="dd == 'level'"><button class="game-dropdown" id="ah-lvl"><span class="padkey a"></span>{{ level }}</button><div data-if="dd == 'level'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_level" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div class="dd ah-dd" data-class-open="dd == 'price'"><button class="game-dropdown" id="ah-price"><span class="padkey a"></span>{{ price }}</button><div data-if="dd == 'price'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_price" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <button class="mini" id="ah-class" data-class-on="mine_class"><span class="padkey a"></span>{{ class_label }}</button>
-                <div class="ah-dd" data-class-open="dd == 'sort'"><button class="mini wide" id="ah-sort"><span class="padkey a"></span>{{ sort }}<span class="caret">&#9662;</span></button><div data-if="dd == 'sort'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_sort" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-                <button class="mini" id="ah-desc" title="Sort order"><span class="padkey a"></span>{{ order }}</button>
+                <div class="dd ah-dd" data-class-open="dd == 'sort'"><button class="game-dropdown" id="ah-sort"><span class="padkey a"></span>{{ sort }}</button><div data-if="dd == 'sort'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_sort" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <button class="ibtn" id="ah-desc" title="Sort order"><span class="padkey a"></span><span class="icon icon-swap-vert"></span> {{ order }}</button>
             </div>
             <div class="frow">
-                <button class="mini" id="ah-search"><span class="padkey a"></span>Search</button>
+                <button class="ibtn" id="ah-search"><span class="padkey a"></span><span class="icon icon-search"></span> Search</button>
                 <span class="muted small grow">{{ count }}</span>
-                <button class="mini" id="ah-prev" data-attrif-disabled="!can_prev"><span class="padkey a"></span>&lt;</button><span class="pn">{{ pg }}</span><button class="mini" id="ah-next" data-attrif-disabled="!can_next"><span class="padkey a"></span>&gt;</button>
+                <button class="ibtn" id="ah-prev" data-attrif-disabled="!can_prev"><span class="padkey a"></span><span class="icon icon-chevron-left"></span></button><span class="pn">{{ pg }}</span><button class="ibtn" id="ah-next" data-attrif-disabled="!can_next"><span class="padkey a"></span><span class="icon icon-chevron-right"></span></button>
             </div>
             <p data-if="browse_msg != ''" class="muted">{{ browse_msg }}</p>
             <div class="lst">
@@ -40,22 +40,22 @@
                     <img class="mi" data-attr-src="r.src"/>
                     <div class="lbody"><div data-style-color="r.color" class="lname">{{ r.name }}</div><div class="muted small">{{ r.detail }}</div></div>
                     <div class="lprice"><div class="gold">{{ r.price }}</div><div class="muted small">{{ r.median }}</div></div>
-                    <button class="mini" data-attrif-disabled="r.disabled" data-attr-id="r.buy_id" data-attr-title="r.buy_tip"><span class="padkey a"></span>{{ r.buy }}</button>
+                    <button class="ibtn" data-attrif-disabled="r.disabled" data-attr-id="r.buy_id" data-attr-title="r.buy_tip"><span class="padkey a"></span><span class="icon icon-shopping-cart"></span> {{ r.buy }}</button>
                 </div>
             </div>
         </div>
 
         <div data-if="tab == 'sell'">
-            <div class="frow"><span class="accent grow">Your backpack and chest: pick an item</span><button class="mini" id="ah-sp" data-attrif-disabled="!sp_prev"><span class="padkey a"></span>&lt;</button><span class="pn">{{ sp_n }}</span><button class="mini" id="ah-sn" data-attrif-disabled="!sp_next"><span class="padkey a"></span>&gt;</button></div>
+            <div class="frow"><span class="accent grow">Your backpack and chest: pick an item</span><button class="ibtn" id="ah-sp" data-attrif-disabled="!sp_prev"><span class="padkey a"></span><span class="icon icon-chevron-left"></span></button><span class="pn">{{ sp_n }}</span><button class="ibtn" id="ah-sn" data-attrif-disabled="!sp_next"><span class="padkey a"></span><span class="icon icon-chevron-right"></span></button></div>
             <div id="sgrid" class="grid">
                 <button data-for="c : cells" class="cell" data-attr-id="c.id" data-class-off="!c.ok" data-class-sel="c.sel" data-style-left="c.x" data-style-top="c.y" data-style-width="c.w" data-style-height="c.h" data-style-border-color="c.color"><img class="icon" data-attr-src="c.src" data-style-width="c.iw" data-style-height="c.ih"/></button>
             </div>
             <p data-if="!has_sel" class="muted">Pick the item to sell above.</p>
             <div data-if="has_sel">
                 <div class="listing"><img class="mi" data-attr-src="sel.src"/><div class="lbody"><div data-style-color="sel.color" class="lname">{{ sel.name }}</div><div class="muted small">{{ sel.detail }}</div></div></div>
-                <div class="frow"><span class="lab">Price</span><input type="text" class="field price" data-value="price_in" maxlength="10" placeholder="gold"/><button class="mini" id="kbd-price"><span class="padkey a"></span>Kbd</button>
+                <div class="frow"><span class="lab">Price</span><input type="text" class="field price" data-value="price_in" maxlength="10" placeholder="gold"/><button class="ibtn" id="kbd-price"><span class="padkey a"></span><span class="icon icon-keyboard"></span> Kbd</button>
                     <button data-for="s : steps" class="mini" data-attr-id="s.id"><span class="padkey a"></span>{{ s.label }}</button></div>
-                <div class="frow"><span class="lab">For</span><div class="ah-dd" data-class-open="dd == 'days'"><button class="mini wide" id="ah-days"><span class="padkey a"></span>{{ days }}<span class="caret">&#9662;</span></button><div data-if="dd == 'days'" class="ah-ddlist" data-nav-scroll><button data-for="o : dd_days" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div><span class="muted small">{{ fee }}</span></div>
+                <div class="frow"><span class="lab">For</span><div class="dd ah-dd" data-class-open="dd == 'days'"><button class="game-dropdown" id="ah-days"><span class="padkey a"></span>{{ days }}</button><div data-if="dd == 'days'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_days" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div><span class="muted small">{{ fee }}</span></div>
                 <button class="game-button" id="ah-list" data-attrif-disabled="!can_list" title="The item leaves your inventory now; it comes back by the mailbox if it does not sell"><span class="padkey a"></span>Put up for sale</button>
             </div>
         </div>
@@ -66,7 +66,7 @@
                 <div data-for="r : mine_rows" class="listing">
                     <img class="mi" data-attr-src="r.src"/>
                     <div class="lbody"><div data-style-color="r.color" class="lname">{{ r.name }}</div><div class="muted small">{{ r.detail }}</div></div>
-                    <button class="mini" data-attrif-disabled="busy" data-attr-id="r.cancel_id" title="Take it off the market; it goes to your mailbox (the fee is not returned)"><span class="padkey a"></span>Cancel</button>
+                    <button class="ibtn" data-attrif-disabled="busy" data-attr-id="r.cancel_id" title="Take it off the market; it goes to your mailbox (the fee is not returned)"><span class="padkey a"></span><span class="icon icon-close"></span> Cancel</button>
                 </div>
                 <p data-if="mine_more != ''" class="muted small">{{ mine_more }}</p>
             </div>
@@ -74,20 +74,20 @@
 
         <div data-if="tab == 'mail'">
             <p class="gold">{{ wallet }}</p>
-            <div class="frow"><input type="text" class="field price" data-value="gold_in" maxlength="10" placeholder="amount"/><button class="mini" id="kbd-gold"><span class="padkey a"></span>Kbd</button>
-                <button class="mini" id="ah-dep" data-attrif-disabled="!can_dep" title="Gold you carry into the wallet (buying and fees use it)"><span class="padkey a"></span>Deposit</button>
-                <button class="mini" id="ah-wd" data-attrif-disabled="!can_dep" title="Gold from the wallet to your hero"><span class="padkey a"></span>Withdraw</button>
-                <button class="mini" id="ah-wall" data-attrif-disabled="!can_all" title="The whole wallet"><span class="padkey a"></span>All</button></div>
-            <div class="frow"><span class="accent grow">{{ mail_title }}</span><button class="mini" id="ah-call" data-attrif-disabled="!can_collect"><span class="padkey a"></span>Collect all</button></div>
+            <div class="frow"><input type="text" class="field price" data-value="gold_in" maxlength="10" placeholder="amount"/><button class="ibtn" id="kbd-gold"><span class="padkey a"></span><span class="icon icon-keyboard"></span> Kbd</button>
+                <button class="ibtn" id="ah-dep" data-attrif-disabled="!can_dep" title="Gold you carry into the wallet (buying and fees use it)"><span class="padkey a"></span><span class="icon icon-savings"></span> Deposit</button>
+                <button class="ibtn" id="ah-wd" data-attrif-disabled="!can_dep" title="Gold from the wallet to your hero"><span class="padkey a"></span><span class="icon icon-payments"></span> Withdraw</button>
+                <button class="ibtn" id="ah-wall" data-attrif-disabled="!can_all" title="The whole wallet"><span class="padkey a"></span>All</button></div>
+            <div class="frow"><span class="accent grow">{{ mail_title }}</span><button class="ibtn" id="ah-call" data-attrif-disabled="!can_collect"><span class="padkey a"></span><span class="icon icon-done-all"></span> Collect all</button></div>
             <div class="lst">
                 <div data-for="e : returns" class="listing ret">
                     <img class="mi" data-attr-src="e.src"/><div class="lbody"><div class="lname">{{ e.name }}</div></div>
-                    <button class="mini" data-attr-id="e.take_id"><span class="padkey a"></span>Take</button>
+                    <button class="ibtn" data-attr-id="e.take_id"><span class="padkey a"></span><span class="icon icon-download"></span> Take</button>
                 </div>
                 <div data-for="m : mails" class="listing">
                     <img data-if="m.src != ''" class="mi" data-attr-src="m.src"/>
                     <div class="lbody"><div data-style-color="m.color" class="lname">{{ m.name }}</div><div class="muted small">{{ m.reason }}</div></div>
-                    <button class="mini" data-attrif-disabled="busy" data-attr-id="m.col_id"><span class="padkey a"></span>Collect</button>
+                    <button class="ibtn" data-attrif-disabled="busy" data-attr-id="m.col_id"><span class="padkey a"></span><span class="icon icon-download"></span> Collect</button>
                 </div>
                 <p data-if="mail_more != ''" class="muted small">{{ mail_more }}</p>
             </div>

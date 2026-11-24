@@ -1,30 +1,21 @@
 /* the opener: a plain small button (no window frame), still a layout panel the player moves while Alt is held */
 #open { position: absolute; left: 780dp; top: 572dp; width: 150dp; }
-button.open-btn { display: block; border: 1px #8c7440; background-color: #14141f; color: #e8d8a8; font-family: "Sacred Game"; width: 100%; margin: 0; padding: 3dp 0; text-align: center; font-size: 13dp; white-space: nowrap; flex: none; }
+button.open-btn { display: block; width: 100%; margin: 0; }
 #market { position: absolute; left: 228dp; top: 16dp; width: 640dp; }
 #osk { position: absolute; left: 300dp; top: 260dp; width: 470dp; }
 .tabs { display: flex; flex-direction: row; margin-bottom: 4dp; }
 button.tab { margin-right: 4dp; font-family: "Sacred Game"; }
 button.tab.on { border-color: #ffd780; color: #ffd780; }
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
-.grow { flex: 1 1 auto; }
 .lab { width: 46dp; flex: none; }
-.small { font-size: 12dp; }
 .gold { color: #ffe080; }
 .pn { width: 56dp; text-align: center; }
 input.price { width: 150dp; margin-right: 4dp; }
-button.mini { padding: 0 8dp; margin: 0 4dp 0 0; font-size: 13dp; }
+button.mini { margin: 0 4dp 0 0; }
 button.mini.wide { min-width: 120dp; }
 button.mini.on { border-color: #ffd780; color: #ffd780; }
-button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; }
 button.game-button.dis { opacity: 0.55; color: #8a8a8a; }
-.ah-dd { position: relative; z-index: 10; }
-.ah-dd.open { z-index: 100; }
-.ah-dd .caret { margin-left: 7dp; color: #ffd780; }
-.ah-ddlist { position: absolute; left: 16dp; top: 29dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
-.ah-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-.ah-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
 #ah-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 .lst { height: 300dp; overflow-y: auto; }
 .listing { display: flex; flex-direction: row; align-items: center; padding: 2dp 4dp; margin-bottom: 2dp; background-color: #12121c; border: 1px #2a2a38; }
@@ -46,5 +37,3 @@ button.cell img.icon { position: absolute; left: 1px; top: 1px; }
 button.key { min-width: 34dp; margin-right: 4dp; text-align: center; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
-button.open-btn:hover, button.open-btn:focus { border-color: #ffd780; color: #ffe030; background-color: #24243a; }

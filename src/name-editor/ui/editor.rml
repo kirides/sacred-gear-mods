@@ -15,14 +15,14 @@
     <div id="ne-prev" class="ne-prev"></div>
     <div class="ne-rawrow">
         <div id="ne-raw" class="ne-raw"></div>
-        <button id="act-copy" class="ne-btn" title="Copy the raw text">Copy</button>
-        <button id="act-paste" class="ne-btn" title="Replace the name with the raw text on the clipboard">Paste</button>
+        <button id="act-copy" class="ibtn" title="Copy the raw text"><span class="icon icon-content-copy"></span> Copy</button>
+        <button id="act-paste" class="ibtn" title="Replace the name with the raw text on the clipboard"><span class="icon icon-content-paste"></span> Paste</button>
     </div>
     <div class="ne-fieldrow">
         <div id="ne-pill" class="ne-pill" tabindex="0"></div>
-        <button id="act-left" class="ne-btn ne-sq" title="Cursor left">&lt;</button>
-        <button id="act-right" class="ne-btn ne-sq" title="Cursor right">&gt;</button>
-        <button id="act-back" class="ne-btn ne-sq" title="Backspace">&#9003;</button>
+        <button id="act-left" class="ibtn" title="Cursor left"><span class="icon icon-chevron-left"></span></button>
+        <button id="act-right" class="ibtn" title="Cursor right"><span class="icon icon-chevron-right"></span></button>
+        <button id="act-back" class="ibtn" title="Backspace"><span class="icon icon-backspace"></span></button>
     </div>
     <div id="ne-info" class="ne-info"></div>
     <div class="tabbar">
@@ -32,8 +32,8 @@
         <a id="tab-grd" class="link tab" tabindex="0">Gradient</a>
         <span id="ne-rb" class="padkey rb"></span>
         <span class="ne-sp"></span>
-        <button id="act-example" class="ne-btn ne-sm" title="Fill in an example name">Example</button>
-        <button id="act-clear" class="ne-btn ne-sm" title="Empty the name">Clear</button>
+        <button id="act-example" class="ibtn" title="Fill in an example name">Example</button>
+        <button id="act-clear" class="ibtn" title="Empty the name"><span class="icon icon-delete"></span> Clear</button>
     </div>
     <div id="ne-p-col" class="ne-panel">
         <div id="ne-colors" class="ne-grid"></div>
@@ -45,17 +45,17 @@
     <div id="ne-p-grd" class="ne-panel ne-hide">
         <div id="ne-gbar" class="ne-gbar"></div>
         <div class="ne-grow">
-            <button id="slot-A" class="ne-btn ne-slot" title="Pick the start color below"><span id="slot-A-dot" class="ne-dot"></span><span id="slot-A-txt"></span></button>
-            <button id="slot-B" class="ne-btn ne-slot" title="Pick the end color below"><span id="slot-B-dot" class="ne-dot"></span><span id="slot-B-txt"></span></button>
-            <button id="act-swap" class="ne-btn" title="Swap start and end">Swap</button>
-            <button id="scope-all" class="ne-btn on" title="Color every letter of the name">Whole name</button>
-            <button id="scope-cursor" class="ne-btn" title="Color the letters after the cursor">From cursor</button>
+            <button id="slot-A" class="mini ne-slot" title="Pick the start color below"><span id="slot-A-dot" class="ne-dot"></span><span id="slot-A-txt"></span></button>
+            <button id="slot-B" class="mini ne-slot" title="Pick the end color below"><span id="slot-B-dot" class="ne-dot"></span><span id="slot-B-txt"></span></button>
+            <button id="act-swap" class="ibtn" title="Swap start and end"><span class="icon icon-swap-horiz"></span> Swap</button>
+            <button id="scope-all" class="ibtn on" title="Color every letter of the name">Whole name</button>
+            <button id="scope-cursor" class="ibtn" title="Color the letters after the cursor">From cursor</button>
         </div>
         <div id="ne-presets" class="ne-presets"></div>
         <div id="ne-gcolors" class="ne-grid"></div>
         <div class="ne-grow">
-            <button id="act-apply" class="ne-btn ne-go" title="One color code per letter, spaces skipped">Apply gradient</button>
-            <button id="act-nocol" class="ne-btn" title="Take every color code out of the name">Remove colors</button>
+            <button id="act-apply" class="mini ne-go" title="One color code per letter, spaces skipped">Apply gradient</button>
+            <button id="act-nocol" class="ibtn" title="Take every color code out of the name"><span class="icon icon-close"></span> Remove colors</button>
             <span id="ne-gcost" class="ne-hint"></span>
         </div>
     </div>

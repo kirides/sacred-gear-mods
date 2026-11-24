@@ -12,18 +12,18 @@
         <a class="link tab" id="mode-load" data-class-on="load_on">Load</a><span class="tab-sep"></span><a class="link tab" id="mode-save" data-class-on="save_on">Save</a>
     </div>
     <div class="tool">
-        <div class="ddwrap" data-class-open="dd == 'hero'"><button class="mini cyc" id="hero" title="Character"><span class="padkey a"></span>{{ hero_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'hero'" class="ddlist" data-nav-scroll><button data-for="o : dd_hero" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-        <div class="ddwrap" data-class-open="dd == 'class'"><button class="mini cyc" id="class" title="Class"><span class="padkey a"></span>{{ class_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'class'" class="ddlist" data-nav-scroll><button data-for="o : dd_class" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-        <div class="ddwrap" data-class-open="dd == 'sort'"><button class="mini cyc" id="sort" title="Order"><span class="padkey a"></span>{{ sort_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'sort'" class="ddlist" data-nav-scroll><button data-for="o : dd_sort" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+        <div class="dd ddwrap" data-class-open="dd == 'hero'"><button class="game-dropdown" id="hero" title="Character"><span class="padkey a"></span>{{ hero_label }}</button><div data-if="dd == 'hero'" class="dd-list ddlist" data-nav-scroll><button data-for="o : dd_hero" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+        <div class="dd ddwrap" data-class-open="dd == 'class'"><button class="game-dropdown" id="class" title="Class"><span class="padkey a"></span>{{ class_label }}</button><div data-if="dd == 'class'" class="dd-list ddlist" data-nav-scroll><button data-for="o : dd_class" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+        <div class="dd ddwrap" data-class-open="dd == 'sort'"><button class="game-dropdown" id="sort" title="Order"><span class="padkey a"></span>{{ sort_label }}</button><div data-if="dd == 'sort'" class="dd-list ddlist" data-nav-scroll><button data-for="o : dd_sort" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
     </div>
 
     <div class="srow">
         <div class="sfield"><input id="search" type="text" class="field grow" data-value="q" maxlength="40" placeholder="Search: hero, class, name, date, number"/><span class="cnt">{{ count_text }}</span></div>
-        <button class="mini" id="search_kbd" title="Type the search with an on-screen keyboard (for a controller)"><span class="padkey a"></span>{{ search_kbd }}</button>
-        <button class="mini" id="jump1" data-attrif-disabled="no_rows"><span class="padkey a"></span>Top</button>
-        <button class="mini" id="jump2" data-attrif-disabled="no_rows"><span class="padkey a"></span>Page up</button>
-        <button class="mini" id="jump3" data-attrif-disabled="no_rows"><span class="padkey a"></span>Page down</button>
-        <button class="mini" id="jump4" data-attrif-disabled="no_rows"><span class="padkey a"></span>End</button>
+        <button class="ibtn" id="search_kbd" title="Type the search with an on-screen keyboard (for a controller)"><span class="padkey a"></span>{{ search_kbd }}</button>
+        <button class="ibtn" id="jump1" data-attrif-disabled="no_rows"><span class="padkey a"></span>Top</button>
+        <button class="ibtn" id="jump2" data-attrif-disabled="no_rows"><span class="padkey a"></span>Page up</button>
+        <button class="ibtn" id="jump3" data-attrif-disabled="no_rows"><span class="padkey a"></span>Page down</button>
+        <button class="ibtn" id="jump4" data-attrif-disabled="no_rows"><span class="padkey a"></span>End</button>
     </div>
 
     <div class="main">
@@ -33,8 +33,8 @@
                 <button data-for="r : rows" class="row" data-attr-id="r.id" data-attrif-data-nav-home="r.first" data-class-sel="r.sel" data-class-bad="!r.ok">
                     <img data-if="r.pic != ''" class="thumb" data-attr-src="r.pic"/>
                     <span data-if="r.pic == ''" class="thumb nopic">{{ r.nopic }}</span>
-                    <img data-if="r.port != ''" class="port" data-attr-src="r.port"/>
                     <div class="rbody"><div class="rtop"><span class="rtitle" data-class-dim="!r.ok">{{ r.title }}</span><span class="rsub">{{ r.sub }}</span></div><div class="rline">{{ r.line2 }}</div></div>
+                    <img data-if="r.port != ''" class="port" data-attr-src="r.port"/>
                 </button>
                 <div data-style-height="spacer_bot"></div>
                 <p data-if="empty_msg != ''" class="muted pad">{{ empty_msg }}</p>
@@ -56,7 +56,7 @@
 
     <div data-if="save_on &amp;&amp; in_game" class="namerow">
         <span class="muted lab">Name</span><input id="name" type="text" class="field grow" data-value="name" maxlength="60"/>
-        <button class="mini" id="kbd" title="Type the name with an on-screen keyboard (for a controller)"><span class="padkey a"></span>{{ name_kbd }}</button>
+        <button class="ibtn" id="kbd" title="Type the name with an on-screen keyboard (for a controller)"><span class="padkey a"></span><span class="icon icon-keyboard"></span> {{ name_kbd }}</button>
     </div>
 
     <div class="btns">
@@ -64,7 +64,7 @@
         <div data-if="!confirm" class="confirm">
             <button data-if="save_on" class="game-button" id="save" data-attrif-disabled="!can_primary"><span class="padkey a"></span>{{ primary_label }}</button>
             <button data-if="!save_on" class="game-button" id="load" data-attrif-disabled="!can_load"><span class="padkey a"></span>Load</button>
-            <button class="game-button" id="delete" data-attrif-disabled="!can_delete" title="Deletes the savegame file"><span class="padkey a"></span>Delete</button>
+            <button class="ibtn" id="delete" data-attrif-disabled="!can_delete" title="Deletes the savegame file"><span class="padkey a"></span><span class="icon icon-delete"></span> Delete</button>
             <span data-class-good="msg_ok" data-class-bad="!msg_ok" class="grow msg small">{{ msg }}</span>
             <button class="game-button" id="close"><span class="padkey b"></span>Back</button>
         </div>

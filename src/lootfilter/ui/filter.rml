@@ -9,7 +9,7 @@
 <div id="overlay" class="bare" data-style-left="overlay_x" data-style-top="overlay_y" data-panel="overlay" data-title="Loot filter overlay" data-if="overlay_visible">
     <div class="oh"><span data-class-off="!enabled" class="ot">Loot filter</span><span data-class-bad="!enabled" class="good">{{ on_text }}</span></div>
     <div data-for="l : olines" class="ol"><span data-class-sub="l.sub">{{ l.k }}</span><span data-class-magic="l.q == 'magic'" data-class-rare="l.q == 'rare'" data-class-set="l.q == 'set'" data-class-unique="l.q == 'unique'" data-class-bad="l.q == 'never'" class="ov">{{ l.v }}</span></div>
-    <button data-if="!editing" class="game-button" id="open-settings" title="Change the rules in game"><span class="padkey a"></span>{{ settings_label }}</button>
+    <button data-if="!editing" class="ibtn" id="open-settings" title="Change the rules in game"><span class="padkey a"></span><span class="icon icon-settings"></span> {{ settings_label }}</button>
 </div>
 
 <div id="settings" class="window" data-panel="settings" data-title="Loot filter settings" data-if="settings_open">
@@ -29,9 +29,9 @@
         </div>
 
         <div class="check-row"><span class="heading" title="Items below it are left on the ground">Lowest quality</span>
-            <div class="quality-dd" data-class-open="dd == 'quality'">
-                <button class="game-button" id="min_quality"><span class="padkey a"></span>{{ min_quality }}<span class="caret">&#9662;</span></button>
-                <div data-if="dd == 'quality'" class="ddlist" data-nav-scroll>
+            <div class="dd quality-dd" data-class-open="dd == 'quality'">
+                <button class="game-dropdown" id="min_quality"><span class="padkey a"></span>{{ min_quality }}</button>
+                <div data-if="dd == 'quality'" class="dd-list ddlist" data-nav-scroll>
                     <button data-for="o : dd_quality" class="mini opt quality-opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
                 </div>
             </div>
@@ -39,9 +39,9 @@
         <div class="cats">
             <div data-for="c : cats" class="cat" data-class-open="c.open">
                 <span class="text small">{{ c.name }}</span>
-                <div class="cat-dd">
-                    <button data-attr-id="c.id" class="mini catb"><span class="padkey a"></span>{{ c.rule }}<span class="caret">&#9662;</span></button>
-                    <div data-if="dd == c.dd" class="ddlist" data-nav-scroll>
+                <div class="dd cat-dd">
+                    <button data-attr-id="c.id" class="game-dropdown catb"><span class="padkey a"></span>{{ c.rule }}</button>
+                    <div data-if="dd == c.dd" class="dd-list ddlist" data-nav-scroll>
                         <button data-for="o : c.options" class="mini opt category-opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
                     </div>
                 </div>
