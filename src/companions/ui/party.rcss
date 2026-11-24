@@ -1,4 +1,4 @@
-#party { position: absolute; left: 192dp; top: 60dp; width: 700dp; }
+#party { position: absolute; left: 120dp; top: 60dp; width: 780dp; }
 .lab { width: 110dp; flex: none; }
 .small { font-size: 13dp; }
 .amber { color: #ffc060; }
@@ -27,7 +27,7 @@ button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; marg
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
 .pname { width: 330dp; }
 .tlist { max-height: 330dp; overflow-y: auto; }   /* 11 abilities before it scrolls (at 200 only 6 showed and the rest looked missing) */
-.check-row.small { height: 30dp; }
+.check-row.small { height: 36dp; }
 input.game-check.chk { width: 40dp; height: 40dp; }
 
 /* portraits */
@@ -52,3 +52,22 @@ button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
 
 /* Many companions: the hero rows scroll (about seven show), so the rows below stay on the screen. */
 .herolist { max-height: 340dp; overflow-y: auto; }
+
+/* Tactics: priority arrows (the game's round arrow button, images 73 / 74 pressed, which points down; the up one is the same turned round) and the run-away stepper (the theme's a.arrow). */
+.mvs { display: inline-block; width: 80dp; flex: none; }
+a.mv { display: inline-block; width: 34dp; height: 34dp; margin-right: 4dp; vertical-align: middle; cursor: pointer; decorator: image(gear:image/73 scale-none center center); }
+a.mv.up { transform: rotate(180deg); }
+a.mv:active { decorator: image(gear:image/74 scale-none center center); }
+a.mv:hover, a.mv:focus { opacity: 0.8; }
+a.mv.off, a.mv.off:hover, a.mv.off:focus { opacity: 0.3; cursor: default; }
+.fleetext { display: inline-block; width: 150dp; text-align: center; }
+
+/* the window grows with the tactics list: its body scrolls (a pad scrolls it with the stick) when it would not fit the screen */
+#party .body { max-height: 540dp; overflow-y: auto; }
+.tlist { max-height: 230dp; }
+
+/* checkbox on the left, the name next to it, the priority arrows at the right edge */
+.arow { justify-content: flex-start; }
+.cbox { display: inline-block; width: 48dp; flex: none; }
+.aname { flex: 1; text-align: left; }
+.mvs { margin-left: auto; text-align: right; }

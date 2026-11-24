@@ -45,6 +45,21 @@ do: *As the game does* (default, nothing changes), *Assist* (they attack the ene
 idle) or *Passive* (they stay with you). Their own combat AI, their quests and escort scripts stay the game's; the mod
 never teleports them or changes what they are.
 
+**Tactics in the party window** (*Tactics* on a hero's row; the window then shows only the heroes and the tactics): *Fights with*
+(weapon and combat arts, combat arts only, weapon first, ranged, protector); *Run away* (the arrows set a share of health, 5 to 60 %:
+below it the hero runs to your side and stays out of the fight until they have 60 % again; *Never* by default); *Move to another
+spot when shots miss* (ranged weapon: a target that has not lost health for 3 s makes the hero walk to another spot around it, a
+spot not reached in 4 s counts as blocked for a while); *All off* / *All on* / *Reset priority* for the combat arts; and the list of
+combat arts, spells and combos: the **up and down arrows** move one in the priority (the top one that is ready is used first; without
+changes the higher level goes first) and the box switches it off. Other buttons: *To me* on a hero's row (a stuck companion joins you),
+*All companions*: *No combat arts*, *Combat arts on*, *All to me*.
+
+**Keeping heroes between savegames:** *Keep* on a hero's row (amber while the hero is *not kept yet*, *Kept* once written, *Keep again*
+after a level up) writes that hero to a hero file together with their tactics (behaviour, fighting style, run away, priorities,
+switched-off arts); *Keep all* / *Keep the new ones* do it for the whole party (each hero is played for a moment, you get control back).
+*Bring all* brings every kept hero that is not in the party yet, as far as there is room; a hero brought from a file gets their tactics back.
+With *Separate purses* each hero row shows the hero's gold (*Purses* gives and takes, *All* sends everything).
+
 What the companions do on their own: they keep up with you (a companion left far behind or on another level joins
 you), pick the enemy nearest to you, attack it with their weapon, and use their abilities like a player would: combos
 and attack arts and spells on the target as soon as they have regenerated, auras and buffs (Steinhaut, Ehrfurcht ...)

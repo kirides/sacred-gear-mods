@@ -16,6 +16,9 @@
 --   env.setting(id, fallback)      a setting of the mod
 --   env.may_be_in_party(f)         a hero file whose class and name match a hero of the party (a warning, not a block)
 --   env.separate(), env.purse_of(c), env.give_gold(c, n|'all'), env.take_gold(c, n|'all')   separate purses (setting)
+--   env.bring_all()                bring every kept hero that is not in the party (while there is room)
+--   env.keep_hero(c), env.keep_all(only_new)   keep one hero / every hero (only the ones not kept yet) for other savegames
+--   env.move_to_me(c), env.move_all_to_me()    a stuck companion joins the hero you play
 --   env.NAMES, env.CLASS_LABEL     names per class, class labels
 -- Returns {draw = fn, open = fn, toggle = fn, rect = fn}.
 
@@ -30,6 +33,7 @@ function M.new(env)
     local play, recruit, dismiss, keep, bring = env.play, env.recruit, env.dismiss, env.keep, env.bring
     local name_of, record, setting = env.name_of, env.record, env.setting
     local may_be_in_party = env.may_be_in_party
+    local bring_all, keep_hero, keep_all, move_to_me, move_all_to_me = env.bring_all, env.keep_hero, env.keep_all, env.move_to_me, env.move_all_to_me
     local separate, purse_of, give_gold, take_gold = env.separate, env.purse_of, env.give_gold, env.take_gold
     local store, prefs, files, refresh_files = env.store, env.prefs, env.files, env.refresh_files
     local NAMES, CLASS_LABEL = env.NAMES, env.CLASS_LABEL
@@ -174,30 +178,76 @@ function M.new(env)
         end
     end
 
-    local function tactics_model(m, c)
+    -- The abilities of a hero for the tactics list: the ones the AI uses, in their priority (the top one first), then the others.
+    local FLEE_STEPS = {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60}
+    local function ability_entries(c)
         local r = record(c.id)
-        local t = {title = 'Tactics of ' .. name_of(c), style = STYLE_LABEL[r.style or 'balanced'], style_tip = STYLE_TIP, none = false, abilities = {}}
         local list = c:abilities() or {}
         for _, k in ipairs(c:combos() or {}) do
             local names = {}
             for _, a in ipairs(k.arts) do names[#names + 1] = ai.ability_info(a).name end
             list[#list + 1] = {id = k.id, level = 0, bonus = 0, combo = 'Combo ' .. (k.slot + 1) .. ': ' .. table.concat(names, ', ')}
         end
-        t.none = #list == 0
-        for _, a in ipairs(list) do
-            local info = a.combo and {name = a.combo} or ai.ability_info(a.id)
+        local rank = {}
+        for i, id in ipairs(r.order or {}) do rank[id] = i end
+        local used, unused = {}, {}
+        for i, a in ipairs(list) do
+            a.natural = i
             local use = a.combo and 'target' or ai.use_of(a.id)
+            a.use = use
+            if use then used[#used + 1] = a else unused[#unused + 1] = a end
+        end
+        table.sort(used, function(x, y)
+            local rx, ry = rank[x.id] or (10000 + x.natural), rank[y.id] or (10000 + y.natural)
+            return rx < ry
+        end)
+        return used, unused
+    end
+
+    local function flee_index(r)
+        for i, v in ipairs(FLEE_STEPS) do if r.flee and math.abs(r.flee * 100 - v) < 1 then return i end end
+        return 0
+    end
+
+    local function tactics_model(m, c)
+        local r = record(c.id)
+        local t = {title = 'Tactics of ' .. name_of(c), style = STYLE_LABEL[r.style or 'balanced'], style_tip = STYLE_TIP, none = false, abilities = {},
+            repos = r.reposition == true}
+        local flee_at = flee_index(r)
+        t.flee_text = flee_at == 0 and 'Never' or ('Below %d%% health'):format(FLEE_STEPS[flee_at])
+        t.flee_prev_off, t.flee_next_off = flee_at == 0, flee_at == #FLEE_STEPS
+        local used, unused = ability_entries(c)
+        t.none = #used + #unused == 0
+        for i, a in ipairs(used) do
+            local info = a.combo and {name = a.combo} or ai.ability_info(a.id)
             local id = 'use' .. c.id .. '_' .. a.id
-            if use then
-                by_id[id] = {hero = c, ability = a.id}
-                t.abilities[#t.abilities + 1] = {id = id, used = true, on = r.abilities[tostring(a.id)] ~= false,
-                    text = a.combo and info.name or ('%s (level %d)'):format(info.name, a.level + a.bonus), tip = 'Used ' .. USE_LABEL[use]}
-            else
-                t.abilities[#t.abilities + 1] = {id = id, used = false, on = false, text = info.name, tip = ''}
-            end
+            by_id[id] = {hero = c, ability = a.id}
+            by_id['mup' .. c.id .. '_' .. a.id] = {hero = c, ability = a.id}
+            by_id['mdn' .. c.id .. '_' .. a.id] = {hero = c, ability = a.id}
+            t.abilities[#t.abilities + 1] = {id = id, used = true, on = r.abilities[tostring(a.id)] ~= false,
+                id_up = 'mup' .. c.id .. '_' .. a.id, id_dn = 'mdn' .. c.id .. '_' .. a.id, off_up = i == 1, off_dn = i == #used,
+                text = a.combo and info.name or ('%s (level %d)'):format(info.name, a.level + a.bonus),
+                tip = ('Used %s. Priority %d of %d: the arrows move it up or down, the one at the top is used first'):format(USE_LABEL[a.use], i, #used)}
+        end
+        for _, a in ipairs(unused) do
+            local info = ai.ability_info(a.id)
+            t.abilities[#t.abilities + 1] = {id = 'use' .. c.id .. '_' .. a.id, used = false, on = false, text = info.name, tip = ''}
         end
         m.tac = t
         m.tac_on = true
+    end
+
+    local function hero_by_id(id)
+        for _, h in ipairs(party.heroes()) do if h.id == id then return h end end
+    end
+
+    local function arts_of(c, on)
+        local r = record(c.id)
+        r.abilities = {}
+        if not on then
+            local used = ability_entries(c)
+            for _, a in ipairs(used) do r.abilities[tostring(a.id)] = false end
+        end
     end
 
     local function window_model(m)
@@ -217,6 +267,11 @@ function M.new(env)
             for i, b in ipairs(BEHAVIOURS) do if r.behaviour == b then index = i + 1 end end
             by_id['play' .. c.id], by_id['name' .. c.id], by_id['beh' .. c.id] = c, c, c
             by_id['tac' .. c.id], by_id['dis' .. c.id] = c, c
+            by_id['tome' .. c.id], by_id['kp' .. c.id] = c, c
+            local kept_text = not r.kept and 'Not kept yet: it is not in a hero file another savegame can bring' or
+                (r.kept.level == (c:level() or 0) and 'Kept for other savegames (click to write it again)' or
+                ('Kept at level ' .. tostring(r.kept.level) .. ' (click to write the hero as they are now)'))
+            local gold = separate() and purse_of(c) or (controlled and (c:gold() or 0) or nil)
             local can_dismiss = companion and not controlled
             local behaviour_options = {}
             behaviour_options[1] = {id = 'beh-' .. c.id .. '-0', label = BEHAVIOUR_LABEL.default, on = r.behaviour == nil}
@@ -225,8 +280,12 @@ function M.new(env)
             end
             m.heroes[#m.heroes + 1] = {
                 id_play = 'play' .. c.id, id_name = 'name' .. c.id, id_beh = 'beh' .. c.id, id_tac = 'tac' .. c.id, id_dis = 'dis' .. c.id,
+                id_me = 'tome' .. c.id, id_kp = 'kp' .. c.id, can_me = not controlled and not dead,
+                keep_text = not r.kept and 'Keep' or (r.kept.level == (c:level() or 0) and 'Kept' or 'Keep again'), kept_new = not r.kept, can_keep = not dead,
+                tip_kp = kept_text .. '. Keeping writes this hero to a hero file, with their tactics, that another savegame can bring into its party',
                 image = image_url(c:portrait()), name = name_of(c), controlled = controlled, dead = dead,
-                sub = ('%s, level %s%s'):format(CLASS_LABEL[c:class() or ''] or '?', tostring(c:level()), dead and ', fallen' or ''),
+                sub = ('%s, level %s%s%s'):format(CLASS_LABEL[c:class() or ''] or '?', tostring(c:level()), dead and ', fallen' or '',
+                    gold and (separate() or controlled) and (', ' .. group(gold) .. ' gold' .. '') or ''),
                 hp = px(130 * math.min(1, math.max(0, (c:hp() or 0) / math.max(1, c:max_hp() or 1)))),
                 play = controlled and 'Playing' or 'Play', can_play = not controlled and not dead,
                 tip_play = controlled and 'You play this hero' or 'Play this hero',
@@ -263,7 +322,8 @@ function M.new(env)
         if picked then
             m.picked = ('%s, %s, level %d'):format(picked.name ~= '' and picked.name or '?', CLASS_LABEL[picked.class or ''] or '?', picked.level or 0)
         end
-        m.keep_label = 'Keep ' .. name_of(leader) .. ' for other savegames'
+        m.keep_label = 'Keep ' .. name_of(leader)
+        m.can_bring_all = not full and #files.list > 0
         local mi = 1
         for i, b in ipairs(MB) do if prefs.data.merc_behaviour == b then mi = i end end
         m.merc_label = ML[mi]
@@ -290,9 +350,9 @@ function M.new(env)
     local function snapshot()
         local m = {portraits_on = false, px = '932dp', py = '260dp', pheight = '132dp', pwidth = '92dp', pinner = '92dp', pscale = 'scale(1)', pfollow = true, portraits = {}, open = false, title = '', msg = '', heroes = {},
             class_name = '', full = false, companions_text = '', no_files = true, file_label = '', can_bring = false, bring_tip = '', maybe = false,
-            picked = '', keep_label = '', merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
+            picked = '', keep_label = '', can_bring_all = false, merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
             dd = open_filter, dd_classes = {}, dd_files = {}, dd_mercs = {}, dd_amounts = {}, dd_styles = {},
-            tac_on = false, tac = {title = '', style = '', style_tip = '', none = false, abilities = {}}}
+            tac_on = false, tac = {title = '', style = '', style_tip = '', none = false, abilities = {}, flee_text = '', flee_prev_off = true, flee_next_off = false, repos = false}}
         by_id = {}
         portraits_model(m)
         window_model(m)
@@ -403,6 +463,48 @@ function M.new(env)
             local c, leader = target(e), leader_of()
             if c and c ~= leader and purse_of(c) > 0 then take_gold(c, AMOUNTS[win.amount]) end
         end)
+        on('#bringall', function() bring_all() end)
+        on('#keepall', function() keep_all(false) end)
+        on('#keepnew', function() keep_all(true) end)
+        on('#allme', function() move_all_to_me() end)
+        on('#artsoff', function() for _, c in ipairs(party.companions()) do arts_of(c, false) end store:changed() end)
+        on('#artson', function() for _, c in ipairs(party.companions()) do arts_of(c, true) end store:changed() end)
+        on('[id^=tome]', function(e) local c = target(e); if c then move_to_me(c) end end)
+        on('[id^=kp]', function(e) local c = target(e); if c and not c:is_dead() then keep_hero(c); refresh_files() end end)
+        -- the tactics of the hero in the list
+        local function tac_hero() return win.tactics and hero_by_id(win.tactics) end
+        local function flee_step(by)
+            local c = tac_hero(); if not c then return end
+            local r = record(c.id)
+            local at = math.max(0, math.min(#FLEE_STEPS, flee_index(r) + by))
+            r.flee = at > 0 and FLEE_STEPS[at] / 100 or nil
+            store:changed()
+        end
+        on('#fleeprev', function() flee_step(-1) end)
+        on('#fleenext', function() flee_step(1) end)
+        on('#repos', function()
+            local c = tac_hero(); if not c then return end
+            local r = record(c.id)
+            r.reposition = (not r.reposition) or nil
+            store:changed()
+        end)
+        on('#heroartsoff', function() local c = tac_hero(); if c then arts_of(c, false); store:changed() end end)
+        on('#heroartson', function() local c = tac_hero(); if c then arts_of(c, true); store:changed() end end)
+        on('#prioreset', function() local c = tac_hero(); if c then record(c.id).order = nil; store:changed() end end)
+        local function move(e, step)
+            local t = target(e)
+            if not t then return end
+            local used = ability_entries(t.hero)
+            local order, at = {}, nil
+            for i, a in ipairs(used) do order[i] = a.id; if a.id == t.ability then at = i end end
+            local to = at and at + step
+            if not at or to < 1 or to > #order then return end
+            order[at], order[to] = order[to], order[at]
+            record(t.hero.id).order = order
+            store:changed()
+        end
+        on('[id^=mup]', function(e) move(e, -1) end)
+        on('[id^=mdn]', function(e) move(e, 1) end)
         on('#style', function() open_filter = open_filter == 'style' and '' or 'style' end)
         on('[id^=use]', function(e)
             local t = target(e)

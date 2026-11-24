@@ -61,7 +61,12 @@ local function click_element(sel)
     gear.emit('companions.rect', out)
     local r = out.rect and out.rect(sel)
     if not r then return false end
-    A.ui_click(r.x + r.w / 2, r.y + r.h / 2)
+    -- the cursor rests on the element first: the first press after a move only hovers it
+    local px, py = A.ui_to_pixels(r.x + r.w / 2, r.y + r.h / 2)
+    A.move(px, py)
+    gear.wait(0.25)
+    A.click(px, py)
+    gear.wait(0.2)
     return true
 end
 
@@ -173,6 +178,77 @@ gear.task(function()
     gear.wait(1.5)
     check('PageDown plays the next hero', party.leader() == main)
     A.screenshot('companions-4-back')
+
+    -- (before the controller checks: after them the window answers the pad, not the mouse)
+    do
+        local w2
+        for _ = 1, 3 do
+            A.press(0x24)
+            gear.wait(1)
+            w2 = panel_rect('companions:party')
+            if w2 then break end
+        end
+    -- Tactics: the arrows move an ability down the priority, the run-away stepper and the shots-miss box store in the record,
+        -- a stuck companion joins the leader ("To me"), Keep all writes every hero and Bring all brings them back with their tactics.
+        local rec = {}
+        gear.emit('companions.record', rec)
+        local multi
+        for _, c in ipairs(party.companions()) do if #(c:abilities() or {}) >= 3 then multi = c end end
+        multi = multi or party.companions()[1]
+        if multi and rec.record then
+            local function open_tactics()
+                for _ = 1, 4 do
+                    local out = {}
+                    gear.emit('companions.rect', out)
+                    local fr = out.rect('#fleenext')
+                    if fr and fr.w > 0 then return true end
+                    click_element('#tac' .. multi.id)
+                    gear.wait(1)
+                end
+            end
+            check('the tactics open', open_tactics())
+            A.screenshot('companions-7-tactics')
+            local ids = {}
+            for _, a in ipairs(multi:abilities() or {}) do
+                local out = {}
+                gear.emit('companions.rect', out)
+                local ar = out.rect('#mdn' .. multi.id .. '_' .. a.id)
+                if ar and ar.w > 0 then ids[#ids + 1] = a.id end   -- the ones the AI uses have arrows
+            end
+            if #ids >= 2 then
+                click_element('#mdn' .. multi.id .. '_' .. ids[1])
+                gear.wait(0.5)
+                local order = rec.record(multi.id).order
+                check('the down arrow lowers the first ability', order ~= nil and order[2] == ids[1], order and table.concat(order, ','))
+                check('the priority reaches the AI', rec.tactics(multi.id).priority[ids[1]] == 2)
+                click_element('#prioreset')
+                gear.wait(0.5)
+                check('Reset priority clears the order', rec.record(multi.id).order == nil)
+            end
+            click_element('#fleenext')
+            gear.wait(0.5)
+            check('the run-away stepper sets a share', rec.record(multi.id).flee ~= nil, rec.record(multi.id).flee)
+            click_element('#repos')
+            gear.wait(0.5)
+            check('the shots-miss box is stored', rec.record(multi.id).reposition == true)
+            click_element('#heroartsoff')
+            gear.wait(0.5)
+            local off = 0
+            for _, v in pairs(rec.record(multi.id).abilities) do if v == false then off = off + 1 end end
+            check('All off switches the combat arts off', off >= 1, off)
+            click_element('#heroartson')
+            gear.wait(0.5)
+            check('All on switches them on', next(rec.record(multi.id).abilities) == nil)
+            local x, y, l = main:position()
+            multi:teleport(x + 900, y + 900, l)
+            gear.wait(0.5)
+            click_element('#tome' .. multi.id)
+            gear.wait(1)
+            check('To me brings a stuck companion', dist(multi, party.leader()) < 6 * gear.world.TILE, math.floor(dist(multi, party.leader())))
+        end
+        A.press(0x24)   -- Home: closes the window
+        gear.wait(0.5)
+    end
 
     -- The controller: the portrait is a D-pad stop, and the mod menu (LT + LB) plays the next hero. Its entries:
     -- the Mods screen, then the companions' keys (next, previous, window), rows of 30 from the content.
