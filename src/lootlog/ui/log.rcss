@@ -11,4 +11,3 @@
 .tail { color: #a0a0a0; text-align: right; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
