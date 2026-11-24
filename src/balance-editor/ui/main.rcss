@@ -1,0 +1,44 @@
+#balance { position: absolute; left: 100dp; top: 40dp; width: 824dp; }
+.toolbar { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; margin-bottom: 4dp; position: relative; }
+.toolbar .label { margin: 0 6dp 0 0; color: #9a9a9a; }
+.toolbar .dd { margin: 0 6dp 0 0; position: relative; flex: none; }
+.row.foot { align-items: center; }
+.foot .count { margin-left: auto; }
+button.mini { margin: 0 4dp 0 0; flex: none; }
+button.mini.on { border-color: #ffd780; color: #ffd780; }
+input.search { width: 150dp; margin: 0 4dp 0 0; }
+input.pname { width: 300dp; margin: 0 4dp 0 6dp; }
+.rows { height: 410dp; overflow-y: auto; margin: 2dp 0 4dp 0; }
+.rows.short { height: 150dp; }
+.rows.imp { height: 200dp; }
+.bhead { margin: 8dp 0 2dp 0; padding: 0 0 1dp 0; font-family: "Sacred Game"; font-size: 16dp; color: #ffd780; border-bottom: 1px #8c7440; }
+.bline { display: flex; flex-direction: row; align-items: center; height: 30dp; padding: 0 4dp; }
+.bline:hover { background-color: #ffffff10; }
+.blabel { width: 250dp; flex: none; font-size: 14dp; color: #d8d8d8; }
+.bline input.game-slider { width: 220dp; flex: none; margin: 0 8dp; }
+.bval { width: 70dp; flex: none; text-align: right; font-size: 14dp; color: #efefef; margin-right: 10dp; }
+.bdef { width: 120dp; flex: none; font-size: 12dp; color: #808080; }
+.brow.changed .blabel, .brow.changed .bval { color: #ffd780; }
+.brow.changed .bdef { color: #c8aa5a; }
+button.bal-reset { margin: 0; flex: none; }
+.row.foot { margin-top: 4dp; }
+button.game-button.small { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; margin-right: 8dp; }
+button.game-button.danger { color: #ff8a70; border-color: #ff8a70; }
+.irow { display: flex; flex-direction: row; padding: 1dp 6dp; font-size: 13dp; }
+.irow .ilabel { color: #d8d8d8; width: 450dp; flex: none; }
+.irow .ivals { color: #ffd780; }
+.irow.same .ivals { color: #808080; }
+.irow.bad .ivals { color: #ff8a70; }
+.state { margin: 4dp 0 0 0; font-size: 13dp; color: #b0b0b0; }
+.state.good { color: #8fce7a; }
+.state.warn { color: #e8b060; }
+.status { margin: 4dp 0; }
+.status.bad { color: #ff8a70; }
+#bal-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
+.dd-list.bal-ddlist { min-width: 260dp; max-height: 360dp; overflow-y: auto; }
+.osk { margin: 4dp 0; }
+.oskrow { display: flex; flex-direction: row; margin: 2dp 0; }
+button.key { min-width: 34dp; text-align: center; padding: 0 4dp; }
+button.key.wide { min-width: 160dp; }
+
+/* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */

@@ -1,0 +1,107 @@
+<rml>
+<head>
+    <title>Balance editor</title>
+    <link type="text/rcss" href="main.rcss"/>
+    <link type="text/template" href="dropdown.rml"/>
+</head>
+<body data-model="model">
+<div id="balance" class="window" data-panel="main" data-title="Balance editor" data-if="open">
+    <div class="titlebar">{{ win_title }}</div>
+    <div class="body">
+        <div class="tabbar"><a data-for="t : tabs" class="link tab" data-attr-id="t.id" data-class-on="t.on" data-attr-title="t.tip">{{ t.name }}</a></div>
+
+        <div data-if="tab != 'share'">
+            <div class="toolbar">
+                <div data-if="dd != ''" id="bal-ddshade"></div>
+                <div class="dd bal-dd group" data-class-open="dd == 'group'" data-if="q == ''"
+                     data-alias-key="group.key" data-alias-title="group.title" data-alias-label="group.label" data-alias-options="group.options">
+                    <template src="balance-dropdown"></template>
+                </div>
+                <span class="label" data-if="q != ''">Search, all tabs:</span>
+                <input id="search" type="text" class="field search" data-value="q" maxlength="30" placeholder="Search values"/>
+                <button class="mini" id="kbd-search" title="On-screen keyboard"><span class="padkey a"></span>Kbd</button>
+                <button class="mini" id="clear-search" data-attrif-disabled="q == ''"><span class="padkey a"></span>Clear</button>
+                <button class="mini" id="only-changed" data-class-on="only_changed" title="Show only the values you changed"><span class="padkey a"></span>Changed only</button>
+            </div>
+            <div data-if="osk_open" class="osk">
+                <div class="oskrow" data-for="row : osk_rows">
+                    <button data-for="k : row" class="mini key" data-attr-id="k.id">{{ k.label }}</button>
+                </div>
+                <div class="oskrow">
+                    <button class="mini key" id="osk-shift" data-class-on="osk_shift">Shift</button>
+                    <button class="mini key wide" id="osk-space">Space</button>
+                    <button class="mini key" id="osk-back">Back</button>
+                    <button class="mini key" id="osk-clear">Clear</button>
+                    <button class="mini key" id="osk-done">Done</button>
+                </div>
+            </div>
+            <div class="rows" data-class-short="osk_open" data-nav-scroll>
+                <div data-for="r : rows" class="brow" data-class-changed="r.changed">
+                    <div class="bhead" data-if="r.head != ''">{{ r.head }}</div>
+                    <div class="bline">
+                        <span class="blabel" data-attr-title="r.tip">{{ r.label }}</span>
+                        <input type="range" class="game-slider bal-slider" data-attr-id="r.rid" data-attr-min="r.min" data-attr-max="r.max" data-attr-step="r.step" data-attr-value="r.value"/>
+                        <span class="bval">{{ r.text }}</span>
+                        <span class="bdef">game: {{ r.vanilla }}</span>
+                        <button class="mini bal-reset" data-attr-id="r.xid" data-attrif-disabled="!r.changed" title="Back to the game's value">Reset</button>
+                    </div>
+                </div>
+                <p class="muted" data-if="empty_text != ''">{{ empty_text }}</p>
+            </div>
+            <div class="row foot">
+                <button class="game-button small" id="reset-group" data-attrif-disabled="group_changed == 0" title="Reset the values listed here"><span class="padkey a"></span>{{ reset_group_text }}</button>
+                <button class="game-button small" id="reset-tab" data-attrif-disabled="tab_changed == 0"><span class="padkey a"></span>Reset tab</button>
+                <button class="game-button small" id="reset-all" data-attrif-disabled="total_changed == 0" data-class-danger="confirm_all"><span class="padkey a"></span>{{ reset_all_text }}</button>
+                <span class="muted count">{{ count_text }}</span>
+            </div>
+        </div>
+
+        <div data-if="tab == 'share'">
+            <p class="heading">Balance patches</p>
+            <p class="muted">A balance patch is a small data file with the values you changed. It holds no code: importing only reads numbers, checks each against its range and shows what will change before anything does.</p>
+            <div class="row">
+                <span class="label">Name</span>
+                <input id="pname" type="text" class="field pname" data-value="pname" maxlength="40" placeholder="Name of the patch"/>
+                <button class="mini" id="kbd-name" title="On-screen keyboard"><span class="padkey a"></span>Kbd</button>
+            </div>
+            <div data-if="osk_open" class="osk">
+                <div class="oskrow" data-for="row : osk_rows">
+                    <button data-for="k : row" class="mini key" data-attr-id="k.id">{{ k.label }}</button>
+                </div>
+                <div class="oskrow">
+                    <button class="mini key" id="osk-shift" data-class-on="osk_shift">Shift</button>
+                    <button class="mini key wide" id="osk-space">Space</button>
+                    <button class="mini key" id="osk-back">Back</button>
+                    <button class="mini key" id="osk-clear">Clear</button>
+                    <button class="mini key" id="osk-done">Done</button>
+                </div>
+            </div>
+            <div class="row">
+                <button class="game-button small" id="export" data-attrif-disabled="total_changed == 0" title="Writes export.json in the mod's folder and copies it to the clipboard"><span class="padkey a"></span>Export</button>
+                <button class="game-button small" id="import-clip" title="Read a balance patch from the clipboard"><span class="padkey a"></span>Import clipboard</button>
+                <button class="game-button small" id="import-file" title="Read import.json from the mod's folder"><span class="padkey a"></span>Import file</button>
+                <button class="game-button small" id="undo-import" data-attrif-disabled="!can_undo"><span class="padkey a"></span>Undo import</button>
+            </div>
+            <p class="status" data-class-bad="share_bad" data-if="share_msg != ''">{{ share_msg }}</p>
+            <div data-if="imp_open">
+                <p class="heading">{{ imp_title }}</p>
+                <p class="muted" data-if="imp_note != ''">{{ imp_note }}</p>
+                <p>{{ imp_counts }}</p>
+                <div class="rows imp" data-nav-scroll>
+                    <div data-for="r : imp_rows" class="irow" data-class-same="r.same" data-class-bad="r.bad">
+                        <span class="ilabel">{{ r.label }}</span>
+                        <span class="ivals">{{ r.change }}</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <button class="game-button small" id="imp-apply" data-attrif-disabled="imp_changes == 0"><span class="padkey a"></span>Apply {{ imp_changes }} changes</button>
+                    <button class="game-button small" id="imp-cancel"><span class="padkey a"></span>Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <p class="state" data-class-good="state_good" data-class-warn="state_warn">{{ state_text }}</p>
+    </div>
+</div>
+</body>
+</rml>
