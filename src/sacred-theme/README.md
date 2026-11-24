@@ -13,3 +13,7 @@ Every UI image of the game is a class: `.sprite-N` (N = the image number, as in 
 ## Core widgets
 
 The widgets of Sacred Gear's `gear.kit` (window, tabs, buttons, check boxes, sliders, rows, bars, lists, the confirm dialog) are plain markup with the classes this stylesheet styles, so every mod that builds its screen from the kit gets this look from here, and Gear's plain base style without it. Add a new widget by giving `gear.kit` the markup and this stylesheet its classes; a mod never needs to carry a look of its own.
+
+## Icons
+
+The theme ships a bigger icon set than Sacred Gear's built-in one (`icons.ttf`, 172 icons of Google's Material Symbols Sharp, Apache License 2.0; `<span class="icon icon-swords"></span>`). Without this mod the same classes work for the 85 icons Gear has built in, so a mod that only needs those looks right everywhere. To add or update icons edit `tools/icons.txt` and run `python tools/make_icons.py <MaterialSymbolsSharp-Regular.ttf>` (writes `icons.ttf` and the ICONS block of `theme.rcss`, then `theme-dp.rcss`); no new Gear is needed.

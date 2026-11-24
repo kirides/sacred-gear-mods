@@ -1,0 +1,13 @@
+# The icons the theme ships (Material Symbols names, one per line; # comments). Edit, then run tools/make_icons.py <MaterialSymbolsSharp-Regular.ttf>.
+refresh restart_alt arrow_back arrow_forward arrow_upward arrow_downward chevron_left chevron_right expand_more expand_less unfold_more unfold_less
+first_page last_page skip_previous skip_next fast_forward fast_rewind delete delete_forever close check done done_all clear add remove add_circle remove_circle cancel
+settings tune build search zoom_in zoom_out content_copy content_paste content_cut backspace save folder_open folder upload download file_open description
+home star star_half info warning error help edit undo redo sort filter_alt filter_list keyboard visibility visibility_off lock lock_open play_arrow pause stop
+more_horiz more_vert swap_horiz swap_vert person group groups shopping_cart sell paid savings payments inventory_2 backpack flag emoji_events military_tech
+map explore my_location place bolt favorite heart_broken shield security local_fire_department water_drop eco air bug_report pets swords
+open_in_full close_fullscreen grid_view list view_list link history schedule timer hourglass_empty palette format_color_fill drag_indicator menu
+arrow_drop_down arrow_drop_up north south east west north_east south_east expand_circle_down radio_button_checked radio_button_unchecked check_box check_box_outline_blank
+notifications notifications_off volume_up volume_off mic music_note chat chat_bubble mail send share bookmark label tag
+sync sync_alt cached autorenew loop power_settings_new logout login key vpn_key wifi cloud cloud_download cloud_upload
+trending_up trending_down bar_chart show_chart pie_chart calculate leaderboard
+casino sports_esports videogame_asset extension toys auto_fix_high magic_button science psychology
