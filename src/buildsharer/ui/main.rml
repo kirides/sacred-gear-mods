@@ -14,7 +14,7 @@
             <div class="row">
                 <div data-if="dd != ''" id="build-ddshade"></div>
                 <span class="label">Class</span>
-                <div class="build-dd class" data-class-open="dd == 'class'"
+                <div class="dd build-dd class" data-class-open="dd == 'class'"
                      data-alias-key="filters.class.key"
                      data-alias-title="filters.class.title"
                      data-alias-label="filters.class.label"
@@ -22,7 +22,7 @@
                     <template src="buildsharer-dropdown"></template>
                 </div>
                 <span class="label">Sort</span>
-                <div class="build-dd sort" data-class-open="dd == 'sort'"
+                <div class="dd build-dd sort" data-class-open="dd == 'sort'"
                      data-alias-key="filters.sort.key"
                      data-alias-title="filters.sort.title"
                      data-alias-label="filters.sort.label"
