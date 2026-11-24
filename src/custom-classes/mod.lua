@@ -2,7 +2,7 @@
 return {
     id = 'custom-classes',
     name = 'Custom classes',
-    version = '0.3.0',
+    version = '0.3.1',
     author = 'Sacred Gear',
     description = 'Heroes with a class of your own: a Seraphim body with Battle Mage fire, a Gladiator that casts. A class is a '
         .. 'profile on one of the eight hero bodies (skills, arts from any class, runes) made with the Sacred Class Editor or '
