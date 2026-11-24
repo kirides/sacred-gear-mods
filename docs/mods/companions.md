@@ -100,6 +100,10 @@ Open the Mods screen with **F11** and pick the mod.
 | Buffs and auras | In fights and again when they run out (default), or whenever they are ready. |
 | Steinhaut / Glaubensstärke / Katarakt der Wendigkeit / Reiki on the others (%) | How strong the other heroes get it (default 50, 0: off). |
 | Follow distance / Fight enemies within | In tiles. |
+| Formation | Loose behind you (default), a line (melee in front, ranged and combat arts behind) or a square (combat arts in the middle); their combat style decides their place, facing your nearest enemy. |
+| Spread between companions (tiles) | How far apart they stand as they follow. |
+| Focus the enemy you fight | The most wounded enemy near you first. |
+| One enemy each | A companion leaves an enemy another one already fights while there is another one. |
 
 ## Limits
 

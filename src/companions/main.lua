@@ -398,6 +398,11 @@ local function ai_opts()
         use_abilities = setting('use_abilities', true),
         potion_below = setting('potions', 30) / 100,
         heal_priority = setting('heal_priority', 'hero'),
+        focus = setting('focus', false),
+        separate = setting('separate', false),
+        spread = setting('spread', 1) * TILE,
+        formation = setting('formation', 'none'),
+        protect_range = 5 * TILE,
         heal_below = setting('heal_below', 60) / 100,
         buffs = setting('buffs', 'combat'),
         buff_strength = {[2] = setting('buff_2', 50) / 100, [21] = setting('buff_21', 50) / 100,
@@ -465,6 +470,10 @@ gear.on('frame', guard('frame', function(dt)
         next_think.mercs = clock + 0.5
         for _, m in ipairs(party.mercenaries()) do ai.think_merc(m, leader, clock, opts, merc_behaviour) end
     end
+    -- the formation's roles (combat styles) and its front, once per round
+    opts.styles = {}
+    for i = 2, #heroes do opts.styles[heroes[i].id] = tactics(heroes[i].id).style or 'balanced' end
+    ai.begin_round(leader, opts)
     local step = cfg.think or 0.25
     for i = 2, #heroes do
         local c = heroes[i]
