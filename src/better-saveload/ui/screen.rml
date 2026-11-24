@@ -33,8 +33,8 @@
                 <button data-for="r : rows" class="row" data-attr-id="r.id" data-attrif-data-nav-home="r.first" data-class-sel="r.sel" data-class-bad="!r.ok">
                     <img data-if="r.pic != ''" class="thumb" data-attr-src="r.pic"/>
                     <span data-if="r.pic == ''" class="thumb nopic">{{ r.nopic }}</span>
-                    <img data-if="r.port != ''" class="port" data-attr-src="r.port"/>
                     <div class="rbody"><div class="rtop"><span class="rtitle" data-class-dim="!r.ok">{{ r.title }}</span><span class="rsub">{{ r.sub }}</span></div><div class="rline">{{ r.line2 }}</div></div>
+                    <img data-if="r.port != ''" class="port" data-attr-src="r.port"/>
                 </button>
                 <div data-style-height="spacer_bot"></div>
                 <p data-if="empty_msg != ''" class="muted pad">{{ empty_msg }}</p>
