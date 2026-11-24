@@ -169,14 +169,19 @@ local function name_font(name, max_w, max_h)
     end
 end
 
-local function overlay(f, sel, hot)
+local function overlay(f, sel, hot, sl, st, sr, sb)
     local top = {layer = 'top'}
     local fill = sel and (hot and COLOR.sel_hover or COLOR.sel_fill) or (hot and COLOR.fill_hover or COLOR.fill)
     ui.rect(f.x, f.y, f.w, f.h, fill, top)
     ui.frame(f.x, f.y, f.w, f.h, sel and COLOR.sel_edge or COLOR.edge, sel and 3 or 1, top)
-    local font, tw, th = name_font(f.name, f.w - 12, f.h - 4)
+    -- The label sits in the part of the frame that lies on the screen: a frame that hangs over the screen's edge (a wide row of
+    -- portraits) would otherwise have its label centred off screen and cut.
+    local vx0, vy0 = math.max(f.x, sl), math.max(f.y, st)
+    local vx1, vy1 = math.min(f.x + f.w, sr), math.min(f.y + f.h, sb)
+    if vx1 - vx0 < 8 or vy1 - vy0 < 8 then vx0, vy0, vx1, vy1 = f.x, f.y, f.x + f.w, f.y + f.h end
+    local font, tw, th = name_font(f.name, vx1 - vx0 - 12, vy1 - vy0 - 4)
     if font then
-        local tx, ty = math.floor(f.x + (f.w - tw) / 2), math.floor(f.y + (f.h - th) / 2)
+        local tx, ty = math.floor(vx0 + (vx1 - vx0 - tw) / 2), math.floor(vy0 + (vy1 - vy0 - th) / 2)
         ui.text(f.name, tx, ty, {size = font.size, bold = true, outline = true,
             color = sel and COLOR.sel_name or COLOR.name, layer = 'top'})
     end
@@ -304,7 +309,7 @@ local function editor(state)
                 drag = nil
             end
         end
-        overlay(f, f.key == selected, r.hover or (g and g.hover) or (drag and drag.key == f.key))
+        overlay(f, f.key == selected, r.hover or (g and g.hover) or (drag and drag.key == f.key), sl, st, sr, sb)
     end
     for _, gl in ipairs(guides) do
         if gl.vertical then ui.rect(gl.vertical, st, 1, sb - st, COLOR.guide, top) end
