@@ -2,7 +2,7 @@
 return {
     id = 'companions',
     name = 'Companions',
-    version = '0.3.5',
+    version = '0.4.0',
     author = 'Sacred Gear',
     description = 'A party of heroes in single player: recruit companions of any class, each with their own inventory, '
         .. 'equipment, attributes, skills, combat arts and experience. Click a portrait (or use the controller\'s mod menu) '
