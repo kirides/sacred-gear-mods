@@ -7,7 +7,6 @@
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
 .frow.top { align-items: flex-start; }
 .lab { width: 140dp; flex: none; color: #9a9a9a; font-size: 13dp; }
-.grow { flex: 1 1 auto; }
 .val { width: 60dp; text-align: right; margin-left: 6dp; }
 input.game-slider { width: 250dp; }
 .slider-row { height: 40dp; }
