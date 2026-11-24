@@ -9,3 +9,7 @@ It has no code and no settings, and the other mods do not need it: without a the
 ## Sprites
 
 Every UI image of the game is a class: `.sprite-N` (N = the image number, as in `gear:image/N`) gives an element that image at its natural size, e.g. `<span class="sprite sprite-218"></span>`. The classes are generated (`tools/make_sprites_rcss.py`); the [Sprite browser](../../docs/mods/sprite-browser.md) mod lists them all with their numbers.
+
+## Core widgets
+
+The widgets of Sacred Gear's `gear.kit` (window, tabs, buttons, check boxes, sliders, rows, bars, lists, the confirm dialog) are plain markup with the classes this stylesheet styles, so every mod that builds its screen from the kit gets this look from here, and Gear's plain base style without it. Add a new widget by giving `gear.kit` the markup and this stylesheet its classes; a mod never needs to carry a look of its own.
