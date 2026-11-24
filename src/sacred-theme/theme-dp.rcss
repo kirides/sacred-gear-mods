@@ -179,6 +179,8 @@ button.mini {
 button.mini:hover, button.mini:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
 button.mini:active { color: #fff2a0; }
 button.mini.on { color: #ffd54a; }
+/* The close button of a window: in its title bar at the right (<button class="ibtn titlex" data-close-key="panel">; Gear fires that declared key of the mod, the pad's B does the same). */
+.titlebar .titlex { float: right; margin: -2px 0 0 8dp; padding: 0 6dp; font-size: 15dp; }
 /* Icon buttons (class ibtn on a <button> that holds only an icon: pagers, backspace, close ...): no frame, the glow text of .link; the icon takes the text colour. */
 button.ibtn {
     display: inline-block;

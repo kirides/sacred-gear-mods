@@ -30,7 +30,7 @@
 
 <!-- Extended and detailed: a window. -->
 <div id="full" class="window" data-panel="meter_full" data-title="Damage meter" data-if="view != 'compact'">
-    <div class="titlebar">{{ title }}</div>
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="panel" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
     <div class="body">
         <div data-if="nohero" class="muted">no hero</div>
         <div data-if="view == 'extended' &amp;&amp; !nohero">

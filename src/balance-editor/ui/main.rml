@@ -6,7 +6,7 @@
 </head>
 <body data-model="model">
 <div id="balance" class="window" data-panel="main" data-title="Balance editor" data-if="open">
-    <div class="titlebar">{{ win_title }}</div>
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="toggle" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ win_title }}</div>
     <div class="body">
         <div class="tabbar"><a data-for="t : tabs" class="link tab" data-attr-id="t.id" data-class-on="t.on" data-attr-title="t.tip">{{ t.name }}</a></div>
 

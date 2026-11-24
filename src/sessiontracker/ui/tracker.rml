@@ -5,7 +5,7 @@
 </head>
 <body data-model="model">
 <div id="tracker" class="window" data-panel="tracker" data-title="Session">
-    <div class="titlebar">{{ title }}</div>
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="panel" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
     <div class="body">
         <div class="stat"><span class="label">Time played</span><span class="value">{{ s.played }}</span></div>
         <div class="stat"><span class="label">Kills</span><span class="value">{{ s.kills }}</span></div>

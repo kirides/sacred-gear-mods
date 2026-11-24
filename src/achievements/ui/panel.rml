@@ -5,7 +5,7 @@
 </head>
 <body data-model="model">
 <div id="panel" class="window" data-panel="panel" data-title="Achievements">
-    <div class="titlebar">{{ title }}</div>
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="panel" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
     <div class="body">
         <p data-if="!has_state" class="muted msg">{{ msg }}</p>
         <div data-if="has_state">

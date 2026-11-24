@@ -22,7 +22,7 @@
     <div data-if="dd != ''" id="party-ddshade"></div>
     <!-- the hero rows scroll (and clip): the list of a row's behaviour drop-down lives here at the window, above everything, and is placed by the Lua side under its button -->
     <div data-if="beh_pop.open" class="dd-list party-ddlist" data-nav-scroll data-style-left="beh_pop.left" data-style-top="beh_pop.top"><button data-for="o : beh_pop.options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div>
-    <div class="titlebar">{{ title }}</div>
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="window" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
     <div class="body" data-nav-scroll>
         <p data-if="msg != ''" class="muted">{{ msg }}</p>
         <div data-if="msg == ''">
