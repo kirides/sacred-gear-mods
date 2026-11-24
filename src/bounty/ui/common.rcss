@@ -15,9 +15,8 @@
 .tracker { position: absolute; width: 240dp; }
 .tracker .th { font-family: "Sacred Game"; font-size: 15dp; color: #ffd780; }
 .tracker .tl { font-size: 13dp; color: #e0e0e0; }
-button.mini { padding: 0 8dp; margin: 0 4dp 0 0; }
+button.mini { margin: 0 4dp 0 0; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; margin-right: 8dp; }
 button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
