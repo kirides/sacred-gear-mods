@@ -139,6 +139,10 @@ function M.new(env)
             cols = math.ceil(#list / rows)
         else
             cols = math.max(1, math.min(#list, setting('portrait_columns', 1)))
+            -- no wider than the screen (the layout then keeps the whole grid on it, as the game keeps its windows): wraps earlier
+            local st = ui.state()
+            local fit = math.floor(((st.screen_right or 1024) - (st.screen_left or 0)) / (CW * scale))
+            cols = math.max(1, math.min(cols, fit))
             rows = math.ceil(#list / cols)
         end
         m.pfollow = follow
