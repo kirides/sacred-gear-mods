@@ -352,10 +352,24 @@ function M.new(env)
             class_name = '', full = false, companions_text = '', no_files = true, file_label = '', can_bring = false, bring_tip = '', maybe = false,
             picked = '', keep_label = '', can_bring_all = false, merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
             dd = open_filter, dd_classes = {}, dd_files = {}, dd_mercs = {}, dd_amounts = {}, dd_styles = {},
+            beh_pop = {open = false, left = '0dp', top = '0dp', options = {{id = '', label = '', on = false}}},
             tac_on = false, tac = {title = '', style = '', style_tip = '', none = false, abilities = {}, flee_text = '', flee_prev_off = true, flee_next_off = false, repos = false}}
         by_id = {}
         portraits_model(m)
         window_model(m)
+        -- the behaviour list of the hero row whose button was clicked: placed at the window under that button (a row's own list would be clipped by the scrolling hero list)
+        if open_filter:sub(1, 4) == 'beh-' and doc then
+            for _, h in ipairs(m.heroes) do
+                if h.beh_dd == open_filter then
+                    local b, w = doc:query('#' .. h.id_beh), doc:query('#party')
+                    local br, wr = b and b:rect(), w and w:rect()
+                    if br and wr then
+                        m.beh_pop = {open = true, left = ('%ddp'):format(math.floor(br.x - wr.x)), top = ('%ddp'):format(math.floor(br.y + br.h - wr.y)), options = h.beh_options}
+                    end
+                    break
+                end
+            end
+        end
         for i, style in ipairs(STYLES) do
             local r
             for _, h in ipairs(party.heroes()) do if h.id == win.tactics then r = record(h.id) end end
