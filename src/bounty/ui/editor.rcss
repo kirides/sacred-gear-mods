@@ -18,7 +18,6 @@ button.opt { display: block; width: 100%; margin: 0; padding: 1px 8dp; text-alig
 button.mini.wide { min-width: 200dp; }
 .bounty-dd { position: relative; z-index: 10; }
 .bounty-dd.open { z-index: 100; }
-.bounty-dd .caret { margin-left: 7dp; color: #ffd780; }
 .bounty-ddlist { position: absolute; left: 16dp; top: 29dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
 .bounty-ddlist button.opt { display: block; width: 100%; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
 .bounty-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }

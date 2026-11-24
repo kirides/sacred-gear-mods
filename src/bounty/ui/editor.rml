@@ -52,8 +52,8 @@
             <div class="slider-row"><span class="lab">Gold</span><input type="range" class="game-slider" min="0" max="100000" step="100" data-value="f_gold"/><span class="val">{{ f_gold }}</span></div>
 
             <div class="frow"><span class="lab">Item</span>
-                <div class="bounty-dd" data-class-open="dd == 'mode'"><button class="mini wide" id="mode"><span class="padkey a"></span>{{ mode_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'mode'" class="bounty-ddlist" data-nav-scroll><button data-for="o : dd_modes" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-                <div data-if="show_tier" class="bounty-dd" data-class-open="dd == 'tier'"><button class="mini" id="tier"><span class="padkey a"></span>{{ tier_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'tier'" class="bounty-ddlist" data-nav-scroll><button data-for="o : dd_tiers" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div class="bounty-dd" data-class-open="dd == 'mode'"><button class="game-dropdown" id="mode"><span class="padkey a"></span>{{ mode_label }}</button><div data-if="dd == 'mode'" class="bounty-ddlist" data-nav-scroll><button data-for="o : dd_modes" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+                <div data-if="show_tier" class="bounty-dd" data-class-open="dd == 'tier'"><button class="game-dropdown" id="tier"><span class="padkey a"></span>{{ tier_label }}</button><div data-if="dd == 'tier'" class="bounty-ddlist" data-nav-scroll><button data-for="o : dd_tiers" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
             </div>
             <div data-if="show_items" class="frow"><span class="lab">Items</span>
                 <button class="mini" id="finditem" title="Search by the name of the item in your language; typos are fine"><span class="padkey a"></span>Find an item...</button>
