@@ -25,6 +25,16 @@ body { font-size: 15dp; color: #f0f0f0; }
 .window > .body { padding: 10dp 14dp 12dp 14dp; }
 .window.plain { padding: 14dp 16dp; }
 
+/* Utilities every screen needs (they used to be repeated in each mod's stylesheet; Gear's plain base style has the same rules): .small a smaller line, .wrap keeps line breaks,
+   .grow takes the free room of a flex row, .warn / .gold / .xp colour a text, button.dis a button that cannot be used now (it stays a pad stop). */
+.small { font-size: 12dp; }
+.wrap { white-space: pre-wrap; }
+.grow { flex: 1 1 auto; }
+.warn { color: #ffc878; }
+.gold { color: #ffd778; }
+.xp { color: #9cd0ff; }
+button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
+
 /* Text: .heading is a section title in the gold of the legacy headings; .label / .value are a grey name and its white value. */
 .heading { font-family: "Sacred Game"; color: #f0c860; margin: 8dp 0 4dp 0; }
 .label { color: #9a9a9a; }
