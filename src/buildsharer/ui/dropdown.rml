@@ -1,8 +1,6 @@
 <template name="buildsharer-dropdown">
     <head>
         <style>
-            .build-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-            .build-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
             button.button-dd { padding: 4dp 8dp 6dp 8dp; margin: 0 4dp 0 0; }
         </style>
     </head>

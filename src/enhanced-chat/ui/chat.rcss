@@ -13,8 +13,6 @@ button.newer { position: absolute; right: 18dp; bottom: 2dp; }
 .chat-dd.open { z-index: 100; }
 .chat-dd .caret { margin-left: 5dp; color: #ffd780; }
 .chat-ddlist { position: absolute; right: 0dp; top: 20dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
-.chat-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-.chat-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

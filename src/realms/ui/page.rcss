@@ -3,8 +3,6 @@
 .lab { width: 70dp; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; }
 .realm-ddlist { min-width: 200dp; }
-.realm-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-.realm-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }

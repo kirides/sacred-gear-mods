@@ -15,8 +15,6 @@ button.mini.wide { min-width: 120dp; }
 button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
 button.game-button.amber { color: #ffc060; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; margin-right: 8dp; }
-.party-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-.party-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
 #party-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 .sep { height: 1px; background-color: #6a5a3c80; margin: 6dp 0; }
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }

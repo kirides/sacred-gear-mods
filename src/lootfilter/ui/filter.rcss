@@ -31,8 +31,6 @@ button.mini { padding: 0 8dp; margin: 0; }
 .cat-dd { width: 118dp; }
 button.catb { width: 118dp; min-width: 118dp; }
 .caret { margin-left: 7dp; color: #ffd780; }
-button.mini.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-button.mini.opt.on { color: #ffe030; border-color: #ffd780; }
 #ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */

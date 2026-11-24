@@ -50,5 +50,3 @@ button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
 
 /* the drop-down lists of the filters: a button with a caret opens a list of entries under it; the shade behind it takes the click that closes it */
 #ddshade { position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; z-index: 5; }
-button.mini.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-button.mini.opt.on { color: #ffe030; border-color: #ffd780; }
