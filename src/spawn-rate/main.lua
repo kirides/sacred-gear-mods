@@ -261,7 +261,9 @@ end))
 gear.on('savegame.saving', gear.guard('savegame.saving', write_marks))
 gear.on('savegame.leaving', forget_all)
 gear.on('savegame.changed', gear.guard('savegame.changed', read_marks))
-gear.on('session.stop', forget_all)
+-- Not 'session.stop': Sacred Gear sends it whenever the hero id changes, also when the player takes control of a companion
+-- (gear.party.control). Forgetting then made every creature around look new and multiplied it again at each switch. A game that
+-- really ends or changes is covered by savegame.leaving / savegame.changed.
 gear.on('unload', forget_all)
 gear.on('settings.changed', function(id) if id == 'rate' and rate() <= 1 then queue:clear(); pending = {} end end)
 

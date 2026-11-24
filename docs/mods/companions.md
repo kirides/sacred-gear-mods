@@ -33,11 +33,12 @@ hero slots belong to the players).
    control, so it is with the main hero when you play them); none is lost. The same happens when a companion is dismissed or lost for
    good, and when a savegame is loaded with the setting off.
 5. In the party window each hero has a **behaviour** for the time you play someone else (*Aggressive*: fights what
-   comes near; *Defensive*: protects the hero you play; *Passive*: only follows), a **name**, and **tactics**: how they fight
+   comes near; *Defensive*: protects the hero you play; *Passive*: only follows; *Wait here*: stays at the spot where they stand, fights what comes near and walks back to the spot afterwards), a **name**, and **tactics**: how they fight
    (weapon and combat arts; combat arts only, keeping back in between, for a battle mage; weapon first; or
    ranged weapon: they take up the bow, crossbow or musket of their weapon slots when a fight starts) and the
    combat arts, spells and combos they may use on their own. *Dismiss* sends a companion away for good (empty their backpack first:
-   what they wear is lost).
+   what they wear is lost). A companion who is hit fights back at whoever hit them, also when you (or the hero you play) are far
+   away, instead of running back to you in the middle of the fight.
 
 **The game's own mercenaries** follow the hero you play. Under *Mercenaries* in the party window you choose what they
 do: *As the game does* (default, nothing changes), *Assist* (they attack the enemy the party fights when they stand
