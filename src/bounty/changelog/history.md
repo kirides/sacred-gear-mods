@@ -28,22 +28,29 @@
 
 ## v0.4.0 (2026-11-19)
 
-- New: Daily and weekly quests with streak rewards, in their own window.
+- New: Daily and weekly quests with streak bonuses, in their own window (Ctrl+Shift+D).
+- New: Finished quest rewards are paid at once, or wait for a Claim button.
+- New: An optional quest tracker shows open quests on screen.
 - Improved: The editor's creature picker lists creature groups and single creatures, with a filter.
-- Improved: Creature and item search in the editor finds matches in any word order, even with typos.
+- Improved: Item and creature search in the editor is forgiving: typos are fine.
 - Improved: Bounties and their automatic starts can now ask for up to 1000 kills.
 
 ## v0.3.0 (2026-11-18)
 
-- New: A bounty editor to make your own bounties: creatures, count, time limit, level and gold.
+- New: A bounty editor (Ctrl+Shift+J) makes your own bounties: creatures, count, time limit, level, gold.
 - New: Own bounties can reward a random item, a random item for your class, or chosen items.
 - New: Own bounties can start by themselves after some kills, then wait a set time.
+- New: Own bounties can have no time limit at all.
+- New: A "Pool bounties" setting turns off the built-in bounties, leaving only your own.
+- Improved: Pop-up messages are larger and wrap long text onto more lines.
 
 ## v0.2.0 (2026-11-18)
 
 - New: In single player you get your own bounty board: it posts, counts and pays.
 - New: Your single player bounties are saved per hero, and their time runs only while you play.
-- New: Bounty gold grows with your hero's level, so low-level heroes get less.
+- New: Finished bounties pay gold, more at higher levels, and sometimes an item at your feet.
+- New: Pop-up messages show new, finished and ended bounties and their rewards.
+- New: A setting turns the single player board off.
 - Improved: The bounty board key is now Ctrl+J instead of F8.
 
 ## v0.1.0 (2026-11-17)

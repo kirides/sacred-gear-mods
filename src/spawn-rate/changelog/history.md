@@ -9,9 +9,10 @@
 
 ## v1.0.3 (2026-11-20)
 
-- New: Creatures already placed in visited areas and saved games can be multiplied too, nearest first.
-- Improved: Loading a savegame no longer multiplies the creatures it already multiplied.
-- Improved: The status page shows how many extras came from the world and how many were newly spawned.
+- New: 'Creatures already there' setting, on by default, multiplies creatures from savegames and visited areas.
+- Improved: loading a savegame no longer multiplies creatures it already multiplied.
+- Improved: the nearest creatures are multiplied first.
+- Improved: the status page shows extras from the world and newly spawned ones separately.
 
 ## v1.0.1 (2026-11-19)
 

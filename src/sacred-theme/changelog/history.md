@@ -1,9 +1,9 @@
 ## v0.2.0 (2026-11-24)
 
-- New: drop-down buttons in the game's style, with a matching list of entries.
-- New: smaller game buttons and icon buttons for toolbars, pagers and tabs.
-- New: a set of 172 icons for buttons and window title bars.
-- New: windows without a close button in the title bar now get one.
+- New: drop-down buttons in the game's style, with a list of options.
+- New: smaller game-style buttons and icon buttons for toolbars, pagers and tabs.
+- New: a set of 172 icons that mods can show in their buttons.
+- New: a close button for the title bar of windows.
 - Fixed: scroll bar arrows and the slider's minus button sit in the right place.
 
 ## v0.1.6 (2026-11-24)

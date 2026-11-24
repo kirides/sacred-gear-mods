@@ -9,7 +9,7 @@
 - New: skill priority arrows in Tactics; the ability at the top of the list is used first.
 - New: companions can run away when their health drops below a share you choose.
 - New: "Wait here" is a default behaviour choice for all companions.
-- New: No combat arts, Combat arts on and All to me buttons for the whole party.
+- New: No combat arts, Combat arts on, All to me and To me buttons for the party.
 - New: Keep all and Bring all; each hero keeps their tactics between sessions.
 - New: ranged companions move to a better spot when their shots keep missing.
 
@@ -55,7 +55,7 @@
 ## v0.1.1 (2026-11-19)
 
 - New: fallen companions get up beside you after a fight (optional hardcore mode: they stay gone).
-- New: companions drink a healing potion when low, and healers mend the hero you play first.
+- New: companions drink potions when low, heal the hero you play first, and share buffs.
 - New: keep a hero for other savegames, then bring them into your party.
 - New: tactics per companion: fighting style, combat arts switched on or off, ranged weapons.
 - Improved: companion portraits look like the game's own, with health ring and experience beads.

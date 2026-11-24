@@ -26,10 +26,11 @@
 
 - Improved: The panel now uses the game's own look, with game-style tabs and buttons.
 - Improved: Buttons show controller button prompts, and unavailable buttons are greyed out.
+- Improved: Class and sort are chosen by clicking a button that steps through the options.
 
 ## v0.1.1 (2026-11-19)
 
-- Improved: The panel now opens with Ctrl+K instead of F7.
+- Improved: The panel opens with Ctrl+K instead of F7, and its title shows that key.
 - Improved: Hero class names and carried item names use the game's own language.
 
 ## v0.1.0 (2026-11-17)

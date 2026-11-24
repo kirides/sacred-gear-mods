@@ -12,8 +12,8 @@
 
 ## v0.1.1 (2026-11-19)
 
-- Improved: the comparison sits right beside the item tooltip.
-- Improved: stat differences are matched by each item's real data, so they are more accurate.
+- Improved: The comparison sits right beside the item tooltip, in the game's own frame.
+- Improved: Stat differences are matched by each item's real data, so they are more accurate.
 
 ## v0.1.0 (2026-11-19)
 

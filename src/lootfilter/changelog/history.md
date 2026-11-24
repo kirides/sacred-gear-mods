@@ -23,19 +23,19 @@
 
 - Improved: The overlay and settings window now use the game's own look.
 - Improved: Buttons show controller button prompts and no longer wrap their text.
+- Improved: Quality and category rules now change by clicking their button, cycling through options.
 
 ## v0.2.1 (2026-11-19)
 
 - Fixed: Choosing "never", "any" or "leave" in the settings works again.
-- Improved: The overlay shows only while Alt is held, like the game's own labels.
-- Improved: The overlay can be moved in the layout editor.
+- Improved: The overlay shows only while Alt is held, and can be moved in the layout editor.
 - Improved: The settings panel is laid out in neat rows and columns.
 - Improved: Class names in the settings are spelled like the game.
-- Improved: Button hints show the key you have bound.
+- Improved: The settings panel key is now F5 (it was F8), and button hints show your bound key.
 
 ## v0.2.0 (2026-11-15)
 
-- New: In-game settings panel for the loot rules, so no config file needs editing.
+- New: In-game settings panel (F8) for the loot rules, so no config file needs editing.
 - New: The rules in force are shown on a small overlay, with a Settings button.
 - New: The same rules can also be changed in the Mods screen.
 

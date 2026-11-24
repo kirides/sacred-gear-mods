@@ -31,7 +31,7 @@
 
 ## v1.4.0 (2026-11-21)
 
-- Improved: the savegame screen now uses the game's own menu frame, scroll bar and style.
+- Improved: the savegame screen uses the game's own menu frame and style.
 - Improved: Load and Save are tabs across the top of the screen.
 - Improved: text buttons show controller button prompts and no longer wrap.
 
@@ -42,8 +42,9 @@
 ## v1.3.0 (2026-11-19)
 
 - New: search savegames by hero, class, name, date or number.
-- New: sort by oldest first, by character, by highest level, or by number.
+- New: sort oldest first, by character, highest level first, or by number.
 - New: no limit on savegames; Top, Page up, Page down and End buttons jump through long lists.
+- Improved: the Back button clears the search first, before it closes the screen.
 
 ## v1.2.0 (2026-11-18)
 
@@ -55,10 +56,11 @@
 
 ## v1.1.0 (2026-11-18)
 
-- New: name your savegames yourself by typing on the Save tab.
+- New: type your own name for a savegame on the Save tab, umlauts included.
 - New: an on-screen keyboard for savegame names, for controllers.
 - Fixed: umlauts and accented letters in names are kept, not replaced by question marks.
 - Improved: overwriting a savegame starts with its old name.
+- Improved: the setting for new names is now called Default name of new savegames.
 
 ## v1.0.0 (2026-11-18)
 

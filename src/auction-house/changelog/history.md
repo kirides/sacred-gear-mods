@@ -23,9 +23,10 @@
 
 ## v0.2.0 (2026-11-21)
 
-- Improved: The market window is redrawn in the game's newer window style.
-- Improved: Buttons show controller prompts and never wrap their text.
-- Improved: Lists use the game's scroll bar, and tabs use the game's tab bar.
+- Improved: The market window, its tabs and on-screen keyboard use the game's newer window style.
+- Improved: Buttons show controller button prompts and never wrap their text.
+- Improved: Long lists scroll inside their own box.
+- Improved: Filters and the sell duration switch to the next option on each click.
 
 ## v0.1.2 (2026-11-20)
 
@@ -33,11 +34,12 @@
 
 ## v0.1.1 (2026-11-19)
 
-- New: Hide in Singleplayer setting hides the Auction house button and panel in single player.
-- Improved: The market window opens beside the chest window, clear of the Auction house button.
-- Improved: The market window has new tabs, filters, page bars and clearer rows for listings, auctions and mail.
-- Improved: Item names show without color codes, and item levels are read in any language.
-- Improved: Network games use the game server's market when there is one.
+- New: A Hide in Singleplayer setting hides the Auction house button and window in single player.
+- Improved: Network games use the game server's market when the server has one, and the panel says where it is.
+- Improved: In Closed Net, the market only runs on the game server; without one it shows as closed.
+- Improved: Item names show without the game's color codes, and levels are read in several languages.
+- Improved: The market window has tidier rows and filters, and sits clear of the Auction house button.
+- Fixed: A delivery that never reached your hero on the game server can be collected again.
 
 ## v0.1.0 (2026-11-17)
 

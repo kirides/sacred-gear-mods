@@ -12,14 +12,16 @@
 
 ## v0.2.0 (2026-11-21)
 
-- Improved: The meter is drawn in the game's theme, with a bare translucent compact panel.
+- Improved: The meter is drawn in the game's theme, with a bare translucent compact view.
+- Improved: Buttons show controller button prompts.
 
 ## v0.1.1 (2026-11-19)
 
 - New: Three views: compact, extended and detailed, switched with a button or the controller's menu.
 - New: The compact view lists the DPS of every player in a network game who has the mod.
+- New: A setting lets you stop sharing your DPS with other players.
 - New: Mercenaries and escorted NPCs, such as Wilbur, are listed with their damage.
-- Improved: The panel opens with Ctrl+D instead of F7, which the game keeps.
+- Improved: The panel opens with Ctrl+D instead of F7.
 - Improved: Creature names are shown in the game's language.
 
 ## v0.1.0 (2026-11-17)

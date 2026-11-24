@@ -6,9 +6,9 @@
 ## v0.3.0 (2026-11-23)
 
 - New: Custom arts can drop as runes, with their own drop chance and price.
-- New: A combo master window, in the game's look, for combos and exchanging duplicate runes.
+- New: A combo master window in the game's look, for custom combos and rune exchanges.
 - New: Custom arts can change the colour and textures of their particle effects.
-- New: Rune drop rate and exchange fees are set in the Mods screen.
+- New: Rune drop rate and exchange fees can be set in the Mods screen.
 
 ## v0.2.1 (2026-11-21)
 
@@ -20,11 +20,12 @@
 
 ## v0.1.1 (2026-11-19)
 
-- New: Combat arts can be copied, with their own name, numbers and icon.
+- New: Combat arts can be copied, with their own name, description, icon and numbers.
 - New: Chains of two to eight arts or spells that are used one after the other.
-- New: Buffs can be put on art copies and chains.
-- Improved: The class window shows the game's icons and skill names.
-- Improved: Class names follow the game's language.
+- New: Art copies and chains can give buffs, such as a poison debuff or a short armour boost.
+- New: Battle Caster gets Venom Strike and Double Strike, then Strike and Fire at level 3.
+- Improved: The class window shows the game's icons and skill names, and can be resized.
+- Improved: Hero body names follow the game's language.
 
 ## v0.1.0 (2026-11-19)
 

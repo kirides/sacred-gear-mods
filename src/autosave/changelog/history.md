@@ -17,10 +17,10 @@
 ## v1.1.1 (2026-11-19)
 
 - New: A More tab on the mod's page shows the next save, the last slot and a Save now button.
-- New: The Save now key (F6 by default) autosaves right away; rebind it on the Keys page.
-- New: The autosave slots can be set as a list of numbers in the Mods screen.
+- New: The F6 key autosaves right away; rebind it on the Keys page.
+- New: Autosave slots are set as a list in the Mods screen; the old settings panel is gone.
 - Improved: Manual saves never take an autosave slot, however many savegames you have.
-- Improved: A save you make, or one the game makes, restarts the autosave timer.
+- Improved: Your own saves and the game's saves restart the autosave timer.
 - Improved: The More tab warns when the game's own Auto-Save is turned on.
 
 ## v1.1.0 (2026-11-15)
