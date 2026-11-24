@@ -92,6 +92,8 @@ Open the Mods screen with **F11** and pick the mod.
 | Play a living companion when your hero falls | Switch to a companion when the hero you play dies. |
 | Companion portraits | The portraits under the game's own, in the game's portrait ring and with its health bar. |
 | Portraits under the game's own | On (default): they continue the game's column of portraits at the right edge. Off: the layout editor (hold Alt) moves them. |
+| Portrait size (%) | Smaller portraits (30 to 100 %). |
+| Portraits per row (placed by hand) | With the portraits not under the game's own: this many side by side, then the next row (14: one row, e.g. along the top of the screen; the layout editor, hold Alt, moves them). |
 | Companions act on their own | Off: the companions stand where they are. |
 | Default behaviour | Aggressive, defensive or passive, for companions without their own. |
 | Use combat arts and spells | Off: companions fight with their weapons only. |
@@ -100,6 +102,10 @@ Open the Mods screen with **F11** and pick the mod.
 | Buffs and auras | In fights and again when they run out (default), or whenever they are ready. |
 | Steinhaut / Glaubensstärke / Katarakt der Wendigkeit / Reiki on the others (%) | How strong the other heroes get it (default 50, 0: off). |
 | Follow distance / Fight enemies within | In tiles. |
+| Formation | Loose behind you (default), a line (melee in front, ranged and combat arts behind) or a square (combat arts in the middle); their combat style decides their place, facing your nearest enemy. |
+| Spread between companions (tiles) | How far apart they stand as they follow. |
+| Focus the enemy you fight | The most wounded enemy near you first. |
+| One enemy each | A companion leaves an enemy another one already fights while there is another one. |
 
 ## Limits
 

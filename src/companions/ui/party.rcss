@@ -26,15 +26,18 @@ button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; marg
 .sep { height: 1px; background-color: #6a5a3c80; margin: 6dp 0; }
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
 .pname { width: 330dp; }
-.tlist { max-height: 200dp; overflow-y: auto; }
+.tlist { max-height: 330dp; overflow-y: auto; }   /* 11 abilities before it scrolls (at 200 only 6 showed and the rest looked missing) */
 .check-row.small { height: 30dp; }
 input.game-check.chk { width: 40dp; height: 40dp; }
 
 /* portraits */
 /* The game's pictures in decorators without "?dp": the document already scales px of a picture by the canvas (1dp = one
    layout unit), and "?dp" scaled them once more (twice as large at 2560x1440). */
-#portraits { position: absolute; width: 92dp; }   /* as wide as the game's column: a wider panel is pushed left off the screen edge */
-button.pt { display: block; position: relative; width: 96dp; height: 132dp; padding: 0; margin: 0 0 24dp 0; border: 0; background-color: transparent; }
+#portraits { position: absolute; width: 92dp; }
+/* the grid inside, scaled by the size setting: from the right edge under the game's column, from the left when placed by hand */
+.ptgrid { position: absolute; left: 0px; top: 0px; height: 10dp; transform-origin: left top; }
+.ptgrid.follow { left: auto; right: 0px; transform-origin: right top; }   /* as wide as the game's column: a wider panel is pushed left off the screen edge */
+button.pt { display: block; position: absolute; width: 96dp; height: 132dp; padding: 0; margin: 0; border: 0; background-color: transparent; }
 .pt .ring { position: absolute; left: 0px; top: 0px; width: 96dp; height: 108dp; decorator: image(gear:image/42 scale-none left top); }
 .pt .redring { position: absolute; left: 0px; width: 96dp; decorator: image(gear:image/41 scale-none left bottom); }
 .pt:hover .ring { opacity: 0.85; }

@@ -88,21 +88,30 @@ end
 
 -- The enemy a companion fights: living enemies within `engage` of the companion and within `leash` of the leader,
 -- the one nearest to the leader first (protect the controlled hero), then the nearest to the companion.
+-- opts.focus: the most wounded enemy near the leader first (the game does not tell the mod the target of the hero you
+-- play; the one being fought is usually the wounded one). opts.taken: enemy id -> true, the other companions' targets,
+-- left to them while another enemy is there (one enemy each); with one enemy left, all take it.
 local function pick_target(c, cx, cy, layer, lx, ly, opts)
-    local best, best_score
-    for _, e in ipairs(W.creatures_near(cx, cy, opts.engage, {layer = layer, limit = 24})) do
-        if not e:is_hero() and not e:is_dead() and c:is_enemy(e) then
-            local ex, ey = e:position()
-            if ex then
-                local dl = dist(ex, ey, lx, ly)
-                if dl <= opts.leash then
-                    local score = dl + 0.5 * dist(ex, ey, cx, cy)
-                    if not best_score or score < best_score then best, best_score = e, score end
+    local function search(skip_taken)
+        local best, best_score
+        for _, e in ipairs(W.creatures_near(cx, cy, opts.engage, {layer = layer, limit = 24})) do
+            local free = not (skip_taken and opts.taken and opts.taken[e.id])
+            if free and not e:is_hero() and not e:is_dead() and c:is_enemy(e) then
+                local ex, ey = e:position()
+                if ex then
+                    local dl = dist(ex, ey, lx, ly)
+                    if dl <= opts.leash then
+                        local score = dl + 0.5 * dist(ex, ey, cx, cy)
+                        if opts.focus then score = hp_frac(e) * 4000 + dl end
+                        if not best_score or score < best_score then best, best_score = e, score end
+                    end
                 end
             end
         end
+        return best
     end
-    return best
+    if opts.taken then return search(true) or search(false) end
+    return search(false)
 end
 
 -- Whether a living enemy of `c` is within `radius` of it.
@@ -314,9 +323,119 @@ local function heal_step(c, s, now, leader, heroes, opts, tactics)
 end
 
 -- A spot next to the leader for companion number `slot` of `count`, behind it in a fan.
-local function formation(lx, ly, slot, count, distance)
+local function formation(lx, ly, slot, count, distance, spread)
     local angle = math.pi * 0.75 + (slot - 0.5) / math.max(count, 1) * math.pi * 0.5
-    return lx + math.cos(angle) * distance, ly + math.sin(angle) * distance
+    local fx, fy = lx + math.cos(angle) * distance, ly + math.sin(angle) * distance
+    if spread and spread > 0 then
+        -- spread sideways: each one a step further from the middle of the party
+        local k = slot - (count + 1) / 2
+        fx, fy = fx - math.sin(angle) * k * spread, fy + math.cos(angle) * k * spread
+    end
+    return fx, fy
+end
+
+-- Line and square formations (setting). The front faces the nearest enemy of the hero you play (kept while none is
+-- near). Roles from the companion's combat style: weapon users (melee), ranged weapon, combat arts only.
+--   line:   melee in a row in front, ranged and combat arts in a row behind
+--   square: combat arts in the middle, melee and ranged in a ring around them
+local front_angle = math.pi * 0.25
+
+-- Once per think round: the front, from the hero you play to its nearest enemy.
+function M.begin_round(leader, opts)
+    if not opts.formation or opts.formation == 'none' then return end
+    local lx, ly, ll = leader:position()
+    if not lx then return end
+    local t = pick_target(leader, lx, ly, ll, lx, ly, {engage = opts.engage, leash = opts.leash})
+    if t then
+        local ex, ey = t:position()
+        if ex then front_angle = math.atan2(ey - ly, ex - lx) end
+    end
+end
+
+local function role_of(id, opts)
+    local s = opts.styles and opts.styles[id]
+    if s == 'ranged' or s == 'arts' then return s end
+    return 'melee'
+end
+
+local function formation_spot(c, lx, ly, heroes, opts)
+    local ids = {}
+    for i = 2, #heroes do ids[#ids + 1] = heroes[i].id end
+    table.sort(ids)
+    local melee, back, arts, ring = {}, {}, {}, {}
+    for _, id in ipairs(ids) do
+        local r = role_of(id, opts)
+        if r == 'melee' then melee[#melee + 1] = id else back[#back + 1] = id end
+        if r == 'arts' then arts[#arts + 1] = id else ring[#ring + 1] = id end
+    end
+    local function index_of(list)
+        for i, id in ipairs(list) do if id == c.id then return i, #list end end
+    end
+    local tile = W.TILE or 54
+    local D = opts.follow * 0.6
+    local fx_, fy_ = math.cos(front_angle), math.sin(front_angle)
+    local px, py = -fy_, fx_
+    local role = role_of(c.id, opts)
+    if opts.formation == 'line' then
+        local list, dir = melee, 1
+        if role ~= 'melee' then list, dir = back, -1 end
+        local i, n = index_of(list)
+        if not i then return nil end
+        local L = math.max(opts.spread or 0, tile * 1.2)
+        local k = i - (n + 1) / 2
+        return lx + fx_ * D * dir + px * k * L, ly + fy_ * D * dir + py * k * L
+    end
+    if role == 'arts' then
+        local i, n = index_of(arts)
+        if not i then return nil end
+        local k = i - (n + 1) / 2
+        local d = tile * 0.8
+        return lx - fx_ * d + px * k * d, ly - fy_ * d + py * k * d
+    end
+    local j, n = index_of(ring)
+    if not j then return nil end
+    local angle = front_angle + 2 * math.pi * (j - 1) / math.max(n, 1)
+    return lx + math.cos(angle) * D, ly + math.sin(angle) * D
+end
+
+-- Where a companion stands while following: its place in the formation, else the loose fan behind the leader.
+local function place(c, lx, ly, heroes, opts, slot, count)
+    if opts.formation == 'line' or opts.formation == 'square' then
+        local fx, fy = formation_spot(c, lx, ly, heroes, opts)
+        if fx then return fx, fy end
+    end
+    return formation(lx, ly, slot, count, opts.follow * 0.6, opts.spread)
+end
+
+-- Protector style: a slow round about the hero it guards, attacking the enemy that comes nearest to that hero.
+local function protect(c, s, now, lx, ly, ll, slot, count, opts)
+    local radius = opts.follow * 0.5
+    local angle = now * 0.6 + slot / math.max(count, 1) * math.pi * 2
+    local fx, fy = lx + math.cos(angle) * radius, ly + math.sin(angle) * radius
+    local best, best_d
+    for _, e in ipairs(W.creatures_near(lx, ly, opts.protect_range, {layer = ll, limit = 24})) do
+        if not e:is_hero() and not e:is_dead() and c:is_enemy(e) then
+            local ex, ey = e:position()
+            if ex then
+                local dl = dist(ex, ey, lx, ly)
+                if not best_d or dl < best_d then best, best_d = e, dl end
+            end
+        end
+    end
+    local action = c:action() or 'idle'
+    if best then
+        if action == 'ability' then return end
+        if s.target ~= best.id or action == 'idle' then
+            if c:order_attack(best) then s.target, s.ordered = best.id, now end
+        end
+        return
+    end
+    s.target = nil
+    local cx, cy = c:position()
+    if cx and now - s.ordered > 0.5 and dist(cx, cy, fx, fy) > (W.TILE or 54) * 0.7 then
+        if action == 'attacking' then c:order_stop() end
+        if c:order_move(fx, fy) then s.ordered = now end
+    end
 end
 
 -- One think of companion `c`. opts: engage, leash, follow, teleport, behaviour ('aggressive', 'defensive',
@@ -328,12 +447,31 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     local lx, ly, ll = leader:position()
     if not cx or not lx then return end
     local d = dist(cx, cy, lx, ly)
-    -- Left behind (a portal, another level, a teleport): join the leader.
-    if cl ~= ll or d > opts.teleport then
+    -- Stuck (a cave's narrow ways, a wall between them): no headway toward a leader far off for 6 s.
+    local stuck = false
+    local act0 = c:action()
+    if d > opts.follow * 2 and (act0 == 'walking' or act0 == 'idle') then
+        if not s.stuck_at or math.abs(cx - s.stuck_x) + math.abs(cy - s.stuck_y) > 40 then
+            s.stuck_at, s.stuck_x, s.stuck_y = now, cx, cy
+        elseif now - s.stuck_at > 6 then
+            stuck = true
+        end
+    else
+        s.stuck_at = nil
+    end
+    -- Left behind (a portal, another level, a cave, a teleport) or stuck: join the leader, close to them (a cave has
+    -- little room: the spot in the formation may lie in rock, then right beside the leader, then on the leader's spot).
+    if cl ~= ll or d > opts.teleport or stuck then
         if now - s.teleported > 2 then
-            local fx, fy = formation(lx, ly, slot, count, opts.follow * 0.6)
-            c:teleport(fx, fy, ll)
-            s.teleported, s.target = now, nil
+            local fx, fy = formation(lx, ly, slot, count, math.min(opts.follow * 0.6, 120))
+            local spots = {{fx, fy}, {lx + 40, ly + 40}, {lx - 40, ly + 40}, {lx, ly}}
+            for _, p in ipairs(spots) do
+                if c:teleport(p[1], p[2], ll) then
+                    local nx, ny, nl = c:position()
+                    if nl == ll and nx and dist(nx, ny, lx, ly) < 400 then break end
+                end
+            end
+            s.teleported, s.target, s.stuck_at = now, nil, nil
         end
         return
     end
@@ -347,9 +485,21 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     share_step(c, s, now, heroes, opts)
     if action ~= 'ability' and heal_step(c, s, now, leader, heroes, opts, tactics) then return end
     local target
+    if tactics.style == 'protector' and behaviour ~= 'passive' then
+        return protect(c, s, now, lx, ly, ll, slot, count, opts)
+    end
+    local taken
+    if opts.separate then
+        taken = {}
+        for _, h in ipairs(heroes) do
+            local o = h.id ~= c.id and state[h.id]
+            if o and o.target then taken[o.target] = true end
+        end
+    end
     if behaviour ~= 'passive' and d <= opts.leash then
         local engage = behaviour == 'defensive' and math.min(opts.engage, 450) or opts.engage
-        target = pick_target(c, cx, cy, cl, lx, ly, {engage = engage, leash = behaviour == 'defensive' and 450 or opts.leash})
+        target = pick_target(c, cx, cy, cl, lx, ly, {engage = engage, leash = behaviour == 'defensive' and 450 or opts.leash,
+            focus = opts.focus, taken = taken})
     end
     if M.debug and target then print(('think %d d=%d action=%s target=%s'):format(c.id, d, action, tostring(target.id))) end
     if target then
@@ -386,7 +536,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
             if action == 'attacking' then c:order_stop() end
             s.target = target.id
             if d > opts.follow and now - s.ordered > 0.5 then
-                local fx, fy = formation(lx, ly, slot, count, opts.follow * 0.6)
+                local fx, fy = place(c, lx, ly, heroes, opts, slot, count)
                 if c:order_move(fx, fy) then s.ordered = now end
             end
             return
@@ -425,8 +575,14 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
         s.target = nil
         if action ~= 'idle' then c:order_stop() end
     end
-    if d > opts.follow and now - s.ordered > 0.5 then
-        local fx, fy = formation(lx, ly, slot, count, opts.follow * 0.6)
+    if opts.formation == 'line' or opts.formation == 'square' then
+        -- a formation: each to their own spot, also near the leader (the loose way only moves when left behind)
+        local fx, fy = place(c, lx, ly, heroes, opts, slot, count)
+        if dist(cx, cy, fx, fy) > (W.TILE or 54) * 1.2 and now - s.ordered > 0.7 then
+            if c:order_move(fx, fy) then s.ordered = now end
+        end
+    elseif d > opts.follow and now - s.ordered > 0.5 then
+        local fx, fy = place(c, lx, ly, heroes, opts, slot, count)
         if c:order_move(fx, fy) then s.ordered = now end
     end
 end

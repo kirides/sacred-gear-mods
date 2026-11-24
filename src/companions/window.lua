@@ -42,12 +42,13 @@ function M.new(env)
     local MB = {'vanilla', 'assist', 'passive'}
     local ML = {'As the game does', 'Assist (fight the party\'s target)', 'Passive (stay with you)'}
     local USE_LABEL = {target = 'on the target', self = 'in a fight, on themselves', heal = 'when someone is hurt', form = 'when a fight starts (and to change back after it)'}
-    local STYLES = {'balanced', 'arts', 'weapon', 'ranged'}
-    local STYLE_LABEL = {balanced = 'Weapon and combat arts', arts = 'Combat arts only', weapon = 'Weapon first', ranged = 'Ranged weapon'}
+    local STYLES = {'balanced', 'arts', 'weapon', 'ranged', 'protector'}
+    local STYLE_LABEL = {balanced = 'Weapon and combat arts', arts = 'Combat arts only', weapon = 'Weapon first', ranged = 'Ranged weapon',
+        protector = 'Protector (guards you)'}
     local STYLE_TIP = 'How they fight: combat arts and spells as soon as they are ready, the weapon in between (default); '
         .. 'combat arts and spells only, keeping back from the fight in between (a battle mage); or the weapon first, '
         .. 'combat arts now and then; or with the ranged weapon of their weapon slots (bow, crossbow, musket), taking it up '
-        .. 'when a fight starts'
+        .. 'when a fight starts; or as a protector: close around you, fighting whatever comes nearest to you'
 
     local function key_hint(id)
         local k = gear.keys.label(id)
@@ -94,17 +95,19 @@ function M.new(env)
     local placed_at
     local function column_place()
         local w = ui.window('UI_WND_MERC')
-        local b = w and w.drawn and w.bounds
         local x, y
-        if b and b.w and b.w > 0 then
-            x, y = b.x, b.y + 2 + math.floor(b.h / 120 + 0.5) * ROW
+        if w and w.drawn then
+            -- the window's own place, not what it drew last frame (its portraits shake when the hero takes heavy damage, and
+            -- the column slid sideways with them); its rows: the hero you play and each mercenary
+            x = (w.x or 0) + (w.frame_x or 0)
+            y = (w.y or 0) + (w.frame_y or 0) + 16 + (1 + #party.mercenaries()) * ROW
         elseif w then
             local st = ui.state()
             x, y = (st.screen_right or 1024) - PW, 16
         else
             return nil
         end
-        return math.floor(x + 0.5) - 2, math.floor(y + 0.5) - 2
+        return math.floor(x + 0.5), math.floor(y + 0.5) - 2
     end
 
     local function same(a, b)
@@ -121,7 +124,31 @@ function M.new(env)
         m.portraits_on = true
         local x, y = column_place()
         m.px, m.py = px(x or cfg.portraits_x or 932), px(y or cfg.portraits_y or 260)
-        for _, c in ipairs(list) do
+        -- The size (setting) scales the whole grid. Under the game's column: as many rows as fit down the screen's right edge
+        -- (the taskbar is in the middle), then a further column to the left. Placed by hand: a grid of the columns setting,
+        -- left to right, then top to bottom (1 column: one under the other).
+        local scale = math.max(0.3, math.min(1, setting('portrait_size', 100) / 100))
+        local follow = setting('portraits_follow', true) and x ~= nil
+        local CW = PW + 6
+        local rows, cols
+        if follow then
+            local st = ui.state()
+            rows = math.max(1, math.floor(((st.screen_bottom or 768) - 24 - y) / (ROW * scale)))
+            cols = math.ceil(#list / rows)
+        else
+            cols = math.max(1, math.min(#list, setting('portrait_columns', 1)))
+            rows = math.ceil(#list / cols)
+        end
+        m.pfollow = follow
+        m.pscale = ('scale(%.3f)'):format(scale)
+        m.pwidth = follow and px(PW - 4) or px(cols * CW * scale)
+        m.pinner = follow and px(PW - 4) or px(cols * CW)
+        m.pheight = px(math.min(#list, rows) * ROW * scale)
+        local function place_of(i)
+            if follow then return -math.floor((i - 1) / rows) * CW, ((i - 1) % rows) * ROW end
+            return ((i - 1) % cols) * CW, math.floor((i - 1) / cols) * ROW
+        end
+        for i, c in ipairs(list) do
             local dead = c:is_dead()
             local hp, max = c:hp() or 0, c:max_hp() or 1
             local frac = dead and 0 or math.min(1, math.max(0, hp / math.max(1, max)))
@@ -130,12 +157,13 @@ function M.new(env)
             by_id[id] = c
             m.portraits[#m.portraits + 1] = {
                 id = id, dead = dead, image = image_url(c:portrait()), level = tostring(c:level() or ''),
+                left = px((place_of(i))), top = px(select(2, place_of(i))),
                 xp = px(71 * xp_fraction(c)), red_top = px(top * RH), red_h = frac > 0 and px(RH - top * RH) or '0dp',
                 tip = name_of(c) .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level())
                     .. ')\n' .. (dead and 'Fallen' or ('Click to play' .. key_hint('next'))),
             }
         end
-        if x and setting('portraits_follow', true) and (not placed_at or placed_at[1] ~= x or placed_at[2] ~= y) then
+        if follow and (not placed_at or placed_at[1] ~= x or placed_at[2] ~= y) then
             if ui.set_panel_rect('companions:portraits', x, y) then placed_at = {x, y} end
         end
     end
@@ -254,7 +282,7 @@ function M.new(env)
     end
 
     local function snapshot()
-        local m = {portraits_on = false, px = '932dp', py = '260dp', portraits = {}, open = false, title = '', msg = '', heroes = {},
+        local m = {portraits_on = false, px = '932dp', py = '260dp', pheight = '132dp', pwidth = '92dp', pinner = '92dp', pscale = 'scale(1)', pfollow = true, portraits = {}, open = false, title = '', msg = '', heroes = {},
             class_name = '', full = false, companions_text = '', no_files = true, file_label = '', can_bring = false, bring_tip = '', maybe = false,
             picked = '', keep_label = '', merc_label = '', merc_count = '', purses_on = false, amount_label = '', purses = {},
             dd = open_filter, dd_classes = {}, dd_files = {}, dd_mercs = {}, dd_amounts = {}, dd_styles = {},
