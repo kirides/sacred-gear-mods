@@ -1,0 +1,15 @@
+#beasts { position: absolute; left: 150dp; top: 90dp; width: 640dp; }
+.cols { display: flex; flex-direction: row; }
+.col { display: flex; flex-direction: column; flex: 1 1 0px; margin-right: 12dp; }
+.head { margin: 2dp 0 6dp 0; }
+.head .small { margin-left: 8dp; }
+.small { font-size: 13dp; }
+.amber { color: #ffc060; }
+button.game-button.sp { min-width: 0; margin: 0 0 4dp 0; padding: 0 20dp; font-size: 16dp; }
+.sep { height: 1px; background-color: #6a5a3c80; margin: 8dp 0; }
+.frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
+.fname { width: 170dp; font-size: 16dp; }
+.frole { width: 60dp; }
+.hbar { width: 120dp; height: 6dp; background-color: #000000c0; margin-right: 12dp; }
+.hfill { height: 6dp; background-color: #60c060; }
+.hbar.nobar { background-color: transparent; }

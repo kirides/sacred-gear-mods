@@ -1,0 +1,35 @@
+<rml>
+<head>
+    <title>Beastmaster</title>
+    <link type="text/rcss" href="beasts.rcss"/>
+</head>
+<body data-model="model">
+<div id="beasts" class="window" data-panel="beasts" data-title="Beastmaster" data-if="open">
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="window" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
+    <div class="body" data-nav-scroll>
+        <p data-if="msg != ''" class="amber">{{ msg }}</p>
+        <div class="cols">
+            <div class="col">
+                <div class="head"><span class="accent">Allies</span> <span class="muted small">{{ ally_text }} - they fight for you</span></div>
+                <button data-for="a : allies" class="game-button sp" data-attr-id="a.id"><span class="padkey a"></span>{{ a.name }}</button>
+            </div>
+            <div class="col">
+                <div class="head"><span class="accent">Pets</span> <span class="muted small">{{ pet_text }} - they only follow</span></div>
+                <button data-for="p : pets" class="game-button sp" data-attr-id="p.id"><span class="padkey a"></span>{{ p.name }}</button>
+            </div>
+        </div>
+        <div class="sep"></div>
+        <div class="head"><span class="accent">With you now</span></div>
+        <p data-if="!has_followers" class="muted">Nobody yet. Pick an animal above.</p>
+        <div data-for="f : followers" class="frow">
+            <span class="fname">{{ f.name }}</span>
+            <span class="muted small frole">{{ f.role }}</span>
+            <div class="hbar" data-if="f.show_hp"><div class="hfill" data-style-width="f.hp"></div></div><div class="hbar nobar" data-if="!f.show_hp"></div>
+            <button class="ibtn" data-attr-id="f.id" title="Send this animal away"><span class="padkey a"></span><span class="icon icon-close"></span> Dismiss</button>
+        </div>
+        <div class="sep"></div>
+        <button id="dismiss-all" class="game-button" data-attrif-disabled="!has_followers"><span class="padkey a"></span>Dismiss all</button>
+    </div>
+</div>
+</body>
+</rml>
