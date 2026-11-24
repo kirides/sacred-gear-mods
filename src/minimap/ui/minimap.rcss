@@ -1,0 +1,21 @@
+body { font-size: 13dp; color: #ffd780; }
+#mm { position: absolute; left: 790dp; top: 110dp; overflow: hidden; background-color: #00000000; }
+.strip { position: absolute; overflow: hidden; }
+.world { position: absolute; left: 0dp; top: 0dp; width: 1dp; height: 1dp; }
+.tile { position: absolute; }
+.shade { position: absolute; left: 0dp; top: 0dp; width: 100%; height: 100%; }
+.markers { position: absolute; left: 0dp; top: 0dp; overflow: hidden; }
+.mark { position: absolute; width: 14dp; height: 14dp; }
+.hero { position: absolute; width: 20dp; height: 20dp; }
+.frame { position: absolute; }
+.frame.outer { left: 0dp; top: 0dp; border: 2dp #c8aa5a; }
+.frame.inner { left: 2dp; top: 2dp; border: 1dp #3a2e1a; }
+.ring { position: absolute; display: block; left: 0dp; top: 0dp; }
+.ring.in { left: 3dp; top: 3dp; }
+.dir { position: absolute; font-family: "Sacred Game"; font-size: 14dp; color: #ffd780; text-align: center; }
+.dir.n { left: 0dp; top: 4dp; }
+.dir.w { left: 5dp; }
+.zoombtns { position: absolute; display: none; flex-direction: row; align-items: center; background-color: #000000b0; border: 1dp #806a3c; padding: 1dp 3dp; }
+#mm:hover .zoombtns { display: flex; }
+.zoombtns .level { margin: 0 6dp; color: #f0f0f0; font-size: 12dp; }
+.zoombtns button.mini { margin: 0; }

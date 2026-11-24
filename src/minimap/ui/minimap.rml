@@ -1,0 +1,45 @@
+<rml>
+<head>
+    <title>Minimap</title>
+    <link type="text/rcss" href="minimap.rcss"/>
+</head>
+<body data-model="model">
+<div id="mm" data-if="vis" data-panel="minimap" data-title="Minimap" data-style-width="w + 'dp'" data-style-height="h + 'dp'">
+    <!-- the map: one clipping strip for a rectangle, thin rows for a circle; each holds its tiles and the dimming layer -->
+    <div class="strip" data-for="s : strips" data-style-left="s.x + 'dp'" data-style-top="s.y + 'dp'" data-style-width="s.w + 'dp'" data-style-height="s.h + 'dp'">
+        <div class="world" data-style-left="(wx - s.x) + 'dp'" data-style-top="(wy - s.y) + 'dp'">
+            <img class="tile" data-for="t : s.tiles" data-attr-src="t.src" data-style-left="t.x + 'dp'" data-style-top="t.y + 'dp'" data-style-width="t.w + 'dp'" data-style-height="t.h + 'dp'"/>
+        </div>
+        <div class="shade" data-style-background-color="shade"></div>
+    </div>
+
+    <!-- the trader symbols, in the view's own coordinates -->
+    <div class="markers" data-style-width="w + 'dp'" data-style-height="h + 'dp'">
+        <img class="mark" data-for="k : markers" data-attr-src="k.src" data-style-left="(k.x + wx) + 'dp'" data-style-top="(k.y + wy) + 'dp'"/>
+    </div>
+
+    <!-- the hero is always in the middle -->
+    <img class="hero" src="gear:texture/WORLDMAP_WAYPOINT.TGA" data-style-left="(w / 2 - 10) + 'dp'" data-style-top="(h / 2 - 10) + 'dp'"/>
+
+    <!-- the frame: gold lines, a ring for the circle -->
+    <div class="frame outer" data-if="!round" data-style-width="(w - 4) + 'dp'" data-style-height="(h - 4) + 'dp'"></div>
+    <div class="frame inner" data-if="!round" data-style-width="(w - 6) + 'dp'" data-style-height="(h - 6) + 'dp'"></div>
+    <gear-ring data-if="round" class="ring" value="1" thickness="3" on="#c8aa5a" off="#00000000" segments="120" data-style-width="w + 'dp'" data-style-height="h + 'dp'"/>
+    <gear-ring data-if="round" class="ring in" value="1" thickness="1" on="#3a2e1a" off="#00000000" segments="120" data-style-width="(w - 6) + 'dp'" data-style-height="(h - 6) + 'dp'"/>
+
+    <div data-if="compass">
+        <span class="dir n" data-style-width="w + 'dp'">N</span>
+        <span class="dir s" data-style-width="w + 'dp'" data-style-top="(h - 22) + 'dp'">S</span>
+        <span class="dir e" data-style-left="(w - 18) + 'dp'" data-style-top="(h / 2 - 9) + 'dp'">E</span>
+        <span class="dir w" data-style-top="(h / 2 - 9) + 'dp'">W</span>
+    </div>
+
+    <!-- mouse: the buttons show while the pointer is over the map; the keys and the controller's mod menu zoom as well -->
+    <div class="zoombtns" data-style-left="(w / 2 - 36) + 'dp'" data-style-top="(h - 34) + 'dp'">
+        <button class="mini" data-event-click="zoom_out" title="Zoom out"><span class="icon icon-remove"></span></button>
+        <span class="level">{{ level_text }}</span>
+        <button class="mini" data-event-click="zoom_in" title="Zoom in"><span class="icon icon-add"></span></button>
+    </div>
+</div>
+</body>
+</rml>

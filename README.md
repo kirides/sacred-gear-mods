@@ -35,6 +35,7 @@ The pictures are screenshots from the game, taken by a script ([how](docs/Screen
 | [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.jpg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
 | [**Spawn rate**](docs/mods/spawn-rate.md) | <img src="docs/images/spawn-rate.jpg" width="220" alt="Spawn rate"> | Multiply the creatures the game spawns, from 1x to 100x, with safeguards for the frame rate. Single player. |
 | [**Spell tuning**](docs/mods/spell-tuning.md) | | Shorten or strengthen root, stun, fear, spell strength and damage by who casts the spell: you, companions, enemies, neutrals or traps. Single player. |
+| [**Minimap**](docs/mods/minimap.md) | | The game's world map as a round or square overlay that follows the hero, with zoom levels, a frame and compass, and the trader symbols. |
 | [**Region counter**](docs/mods/region-counter.md) | <img src="docs/images/region-counter.jpg" width="220" alt="Region counter"> | The kills a region needs before its Region Boss quest: set your own number, and keep the count when you leave the region or quit. |
 | [**Layout editor**](docs/mods/layout.md) | <img src="docs/images/layout.jpg" width="220" alt="Layout editor"> | Move the game's windows and mod panels where you want them. Hold Alt. |
 | [**Realm picker**](docs/mods/realms.md) | <img src="docs/images/realms.jpg" width="220" alt="Realm picker"> | Choose the online play server for Closed and Open Internet. |
@@ -117,6 +118,7 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/sacred-theme` | The shared RmlUi look (game frame, buttons, orbs, sliders, tab bars, controller prompts); optional: the mods look plainer without it |
 | `src/sessiontracker`, `src/lootlog`, `src/damagemeter` | Session mods. [Doc](docs/SessionMods.md); logic test `tests/session_mods_test.lua` |
 | `src/item-compare`, `src/item-compare_selftest` | Item comparison tooltips and its self test. [Doc](docs/mods/item-compare.md) |
+| `src/minimap` | The world map as a hero-centred overlay. [Doc](docs/mods/minimap.md); logic test `tests/minimap_test.lua` |
 | `src/region-counter` | Region Boss kill counters on `gear.data.regions`. [Doc](docs/mods/region-counter.md); logic test `tests/region_counter_test.lua` |
 | `tests/modmock` | Smoke tests of buildsharer and questhelper without the game ([how](tests/modmock/README.md)) |
 | `src/shared-stash` | The shared stash, built on `gear.inv`; includes its self tests. [README](src/shared-stash/README.md) |
