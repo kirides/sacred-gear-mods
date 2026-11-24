@@ -15,14 +15,14 @@
     <div id="ne-prev" class="ne-prev"></div>
     <div class="ne-rawrow">
         <div id="ne-raw" class="ne-raw"></div>
-        <button id="act-copy" class="mini" title="Copy the raw text">Copy</button>
-        <button id="act-paste" class="mini" title="Replace the name with the raw text on the clipboard">Paste</button>
+        <button id="act-copy" class="mini" title="Copy the raw text"><span class="icon icon-content-copy"></span> Copy</button>
+        <button id="act-paste" class="mini" title="Replace the name with the raw text on the clipboard"><span class="icon icon-content-paste"></span> Paste</button>
     </div>
     <div class="ne-fieldrow">
         <div id="ne-pill" class="ne-pill" tabindex="0"></div>
-        <button id="act-left" class="mini ne-sq" title="Cursor left">&lt;</button>
-        <button id="act-right" class="mini ne-sq" title="Cursor right">&gt;</button>
-        <button id="act-back" class="mini ne-sq" title="Backspace">&#9003;</button>
+        <button id="act-left" class="mini ne-sq" title="Cursor left"><span class="icon icon-chevron-left"></span></button>
+        <button id="act-right" class="mini ne-sq" title="Cursor right"><span class="icon icon-chevron-right"></span></button>
+        <button id="act-back" class="mini ne-sq" title="Backspace"><span class="icon icon-backspace"></span></button>
     </div>
     <div id="ne-info" class="ne-info"></div>
     <div class="tabbar">
@@ -33,7 +33,7 @@
         <span id="ne-rb" class="padkey rb"></span>
         <span class="ne-sp"></span>
         <button id="act-example" class="mini ne-sm" title="Fill in an example name">Example</button>
-        <button id="act-clear" class="mini ne-sm" title="Empty the name">Clear</button>
+        <button id="act-clear" class="mini ne-sm" title="Empty the name"><span class="icon icon-delete"></span> Clear</button>
     </div>
     <div id="ne-p-col" class="ne-panel">
         <div id="ne-colors" class="ne-grid"></div>
