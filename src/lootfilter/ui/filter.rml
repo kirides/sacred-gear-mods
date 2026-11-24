@@ -29,9 +29,9 @@
         </div>
 
         <div class="check-row"><span class="heading" title="Items below it are left on the ground">Lowest quality</span>
-            <div class="quality-dd" data-class-open="dd == 'quality'">
+            <div class="dd quality-dd" data-class-open="dd == 'quality'">
                 <button class="game-dropdown" id="min_quality"><span class="padkey a"></span>{{ min_quality }}</button>
-                <div data-if="dd == 'quality'" class="ddlist" data-nav-scroll>
+                <div data-if="dd == 'quality'" class="dd-list ddlist" data-nav-scroll>
                     <button data-for="o : dd_quality" class="mini opt quality-opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
                 </div>
             </div>
@@ -41,7 +41,7 @@
                 <span class="text small">{{ c.name }}</span>
                 <div class="cat-dd">
                     <button data-attr-id="c.id" class="mini catb"><span class="padkey a"></span>{{ c.rule }}<span class="caret">&#9662;</span></button>
-                    <div data-if="dd == c.dd" class="ddlist" data-nav-scroll>
+                    <div data-if="dd == c.dd" class="dd-list ddlist" data-nav-scroll>
                         <button data-for="o : c.options" class="mini opt category-opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
                     </div>
                 </div>

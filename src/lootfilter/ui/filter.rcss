@@ -25,14 +25,12 @@ input.game-check.small { width: 36dp; height: 36dp; margin-right: 4dp; }
 button.catb { min-width: 90dp; }
 button.mini { padding: 0 8dp; margin: 0; }
 .quality-dd, .cat-dd { position: relative; z-index: 10; }
-.quality-dd.open { z-index: 100; }
 .cat { position: relative; }
 .cat.open { z-index: 100; }
 .quality-dd button.game-button { width: 150dp; min-width: 150dp; max-width: 150dp; padding-left: 28dp; padding-right: 28dp; }
 .cat-dd { width: 118dp; }
 button.catb { width: 118dp; min-width: 118dp; }
 .caret { margin-left: 7dp; color: #ffd780; }
-.ddlist { position: absolute; left: 16dp; top: 31dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
 button.mini.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
 button.mini.opt.on { color: #ffe030; border-color: #ffd780; }
 #ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
