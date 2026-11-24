@@ -35,8 +35,8 @@ function M.new(env)
     local NAMES, CLASS_LABEL = env.NAMES, env.CLASS_LABEL
 
     local CLASS_ORDER = {'seraphim', 'gladiator', 'battlemage', 'darkelf', 'woodelf', 'vampiress', 'dwarf', 'daemon'}
-    local BEHAVIOURS = {'aggressive', 'defensive', 'passive'}
-    local BEHAVIOUR_LABEL = {aggressive = 'Aggressive', defensive = 'Defensive', passive = 'Passive', default = 'Default'}
+    local BEHAVIOURS = {'aggressive', 'defensive', 'passive', 'hold'}
+    local BEHAVIOUR_LABEL = {aggressive = 'Aggressive', defensive = 'Defensive', passive = 'Passive', hold = 'Wait here', default = 'Default'}
     local AMOUNTS = {100, 1000, 10000, 'all'}
     local AMOUNT_LABELS = {'100', '1,000', '10,000', 'All'}
     local MB = {'vanilla', 'assist', 'passive'}

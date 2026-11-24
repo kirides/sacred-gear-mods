@@ -13,6 +13,11 @@
 
 local M = {}
 
+M.HURT_SECONDS = 6      -- after a hit, the attacker is fought regardless of the leader's distance
+M.HURT_ENGAGE = 700     -- how far the one who hit a companion may stand
+M.HOLD_ENGAGE = 450     -- a held companion fights what comes this close to its spot
+M.HOLD_RETURN = 200     -- and walks back when a fight took it farther than this
+
 local W = gear.world
 
 -- Combos are the combo master's slots: ids 0x200 + slot (creature:combos()).
@@ -328,8 +333,17 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     local lx, ly, ll = leader:position()
     if not cx or not lx then return end
     local d = dist(cx, cy, lx, ly)
-    -- Left behind (a portal, another level, a teleport): join the leader.
-    if cl ~= ll or d > opts.teleport then
+    local behaviour = tactics.behaviour or opts.behaviour
+    local holding = behaviour == 'hold'
+    if holding then s.hold = s.hold or {x = cx, y = cy} else s.hold = nil end
+    -- Hit since the last think: for a few seconds the one who hit them is fought wherever it stands, instead of running back
+    -- to the leader (they were seen to run away from a fight with the leader out of reach)
+    local hp = c:hp() or 0
+    if s.hp and hp < s.hp - 0.5 then s.hurt_at = now end
+    s.hp = hp
+    local hurt = s.hurt_at ~= nil and now - s.hurt_at < M.HURT_SECONDS
+    -- Left behind (a portal, another level, a teleport): join the leader. A held companion only follows to another level.
+    if cl ~= ll or (d > opts.teleport and not holding) then
         if now - s.teleported > 2 then
             local fx, fy = formation(lx, ly, slot, count, opts.follow * 0.6)
             c:teleport(fx, fy, ll)
@@ -341,13 +355,18 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     if opts.potion_below > 0 and hp_frac(c) < opts.potion_below and now - (s.potion_at or -100) > 5 then
         s.potion_at = c:drink_potion() and now or now + 10   -- none: ask again in 15 s
     end
-    local behaviour = tactics.behaviour or opts.behaviour
     local action = c:action() or 'idle'
     finish_heal(c, s, now)
     share_step(c, s, now, heroes, opts)
     if action ~= 'ability' and heal_step(c, s, now, leader, heroes, opts, tactics) then return end
     local target
-    if behaviour ~= 'passive' and d <= opts.leash then
+    if hurt and behaviour ~= 'passive' then
+        -- no leash: the nearest enemy to the companion (the leader's position does not matter when one is hit)
+        target = pick_target(c, cx, cy, cl, cx, cy, {engage = math.max(opts.engage, M.HURT_ENGAGE), leash = math.huge})
+    elseif holding then
+        -- on guard at the spot: only what comes close
+        target = pick_target(c, cx, cy, cl, s.hold.x, s.hold.y, {engage = M.HOLD_ENGAGE, leash = M.HOLD_ENGAGE * 1.5})
+    elseif behaviour ~= 'passive' and d <= opts.leash then
         local engage = behaviour == 'defensive' and math.min(opts.engage, 450) or opts.engage
         target = pick_target(c, cx, cy, cl, lx, ly, {engage = engage, leash = behaviour == 'defensive' and 450 or opts.leash})
     end
@@ -420,10 +439,17 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
             return
         end
     end
-    -- No fight: keep up with the leader.
+    -- No fight: keep up with the leader (a held companion goes back to its spot instead and waits there).
     if s.target then
         s.target = nil
         if action ~= 'idle' then c:order_stop() end
+    end
+    if holding then
+        local h = s.hold
+        if h and dist(cx, cy, h.x, h.y) > M.HOLD_RETURN and now - s.ordered > 1 and action == 'idle' then
+            if c:order_move(h.x, h.y) then s.ordered = now end
+        end
+        return
     end
     if d > opts.follow and now - s.ordered > 0.5 then
         local fx, fy = formation(lx, ly, slot, count, opts.follow * 0.6)
