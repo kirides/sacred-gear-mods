@@ -8,4 +8,3 @@ button.game-button { min-width: 0; margin-right: 4dp; padding: 0 38dp 0 37dp; fo
 input.game-slider { width: 220dp; margin-right: 8dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
