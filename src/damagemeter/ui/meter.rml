@@ -19,12 +19,12 @@
         </div>
     </div>
     <div class="icons" data-if="!solo">
-        <button class="mini" data-event-click="next_view" title="Bigger view"><span class="padkey a"></span>^</button>
-        <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span>x</button>
+        <button class="mini" data-event-click="next_view" title="Bigger view"><span class="padkey a"></span><span class="icon icon-unfold-more"></span></button>
+        <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span><span class="icon icon-restart-alt"></span></button>
     </div>
     <div class="icons" data-if="solo">
-        <button class="mini" data-event-click="next_view" title="Bigger view"><span class="padkey a"></span>^</button>
-        <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span>x</button>
+        <button class="mini" data-event-click="next_view" title="Bigger view"><span class="padkey a"></span><span class="icon icon-unfold-more"></span></button>
+        <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span><span class="icon icon-restart-alt"></span></button>
     </div>
 </div>
 
@@ -73,7 +73,7 @@
         </div>
         <div class="icons">
             <button class="mini" data-event-click="next_view" data-attr-title="view_tip"><span class="padkey a"></span>{{ view_mark }}</button>
-            <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span>x</button>
+            <button class="mini" data-event-click="reset" title="Clear the counters"><span class="padkey a"></span><span class="icon icon-restart-alt"></span></button>
         </div>
     </div>
 </div>
