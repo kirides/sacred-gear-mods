@@ -510,6 +510,10 @@ local window = require('window').new({
 })
 
 
+-- For the self test: sets a companion's behaviour like the party window ({id = hero id, behaviour = 'hold' | nil}).
+gear.on('companions.set', function(v)
+    if type(v) == 'table' and v.id then record(v.id).behaviour = v.behaviour; store:changed() end
+end)
 gear.on('companions.rect', function(out) out.rect = window.rect end)   -- for the self test
 
 gear.on('draw', guard('draw', function(state)

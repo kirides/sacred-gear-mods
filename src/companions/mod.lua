@@ -34,7 +34,7 @@ return {
         {id = 'ai', type = 'bool', label = 'Companions act on their own', default = true, section = 'Behaviour',
             tooltip = 'Off: the companions stand where they are'},
         {id = 'behaviour', type = 'choice', label = 'Default behaviour', default = 'aggressive', section = 'Behaviour',
-            choices = {{value = 'aggressive', label = 'Aggressive (fight what comes near)'}, {value = 'defensive', label = 'Defensive (protect the hero you play)'}, {value = 'passive', label = 'Passive (only follow)'}},
+            choices = {{value = 'aggressive', label = 'Aggressive (fight what comes near)'}, {value = 'defensive', label = 'Defensive (protect the hero you play)'}, {value = 'passive', label = 'Passive (only follow)'}, {value = 'hold', label = 'Wait here (stay where they stand)'}},
             tooltip = 'Each companion can have their own in the party window'},
         {id = 'potions', type = 'number', label = 'Drink a healing potion below (% health, 0: never)', min = 0, max = 90, step = 5, default = 30, section = 'Behaviour',
             tooltip = "From the companion's own backpack, as Space does for you"},
