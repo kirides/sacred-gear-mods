@@ -180,6 +180,16 @@ button.game-dropdown {
 button.game-dropdown:hover, button.game-dropdown:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
 button.game-dropdown:disabled, button.game-dropdown[disabled], button.game-dropdown[disabled]:hover, button.game-dropdown[disabled]:focus { color: #8a8a8a; opacity: 0.55; }
 
+/* Drop-down popups (made to flow, absolute only where a popup must float): <div class="dd" data-class-open="..."><button class="game-dropdown">..</button><div class="dd-list">
+   <button class="mini opt on">..</button></div></div>. .dd is the anchor (the list opens right below the button, over what follows), .dd-list the floating list, .opt its entries,
+   .dd-shade a full-size layer behind an open list that takes the click that closes it. */
+.dd { position: relative; display: inline-block; z-index: 10; }
+.dd.open { z-index: 100; }
+.dd-list { position: absolute; left: 0; top: 100%; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
+.dd-list button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
+.dd-list button.opt.on { color: #ffe030; border-color: #ffd780; }
+.dd-shade { position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 5; }
+
 /* The game's own button (class game-button on a <button>): the orb caps (images 280 / 282) keep their size, only the middle (281) is tiled, so a button
    of any width works; the label is centred in the middle part and the pad prompt (.padkey) sits in front of it. Normal grey-white label, hover
    yellow (and with the pad focus; the glow is for the frameless .link only), pressed the other plate (283 to 285), disabled dim. */
