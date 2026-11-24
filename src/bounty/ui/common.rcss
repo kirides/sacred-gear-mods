@@ -11,14 +11,12 @@
 .brow .bar .num { position: absolute; left: 0px; right: 0px; top: -3px; text-align: center; font-size: 11dp; color: #ffffff; }
 .brow .reward { color: #b0b0b0; font-size: 12dp; }
 .blist { overflow-y: auto; }
-.small { font-size: 12dp; }
 .msg { color: #b0b0b0; white-space: pre-wrap; }
 .tracker { position: absolute; width: 240dp; }
 .tracker .th { font-family: "Sacred Game"; font-size: 15dp; color: #ffd780; }
 .tracker .tl { font-size: 13dp; color: #e0e0e0; }
 button.mini { padding: 0 8dp; margin: 0 4dp 0 0; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; margin-right: 8dp; }
-button.dis { color: #8c8c8c; border-color: #3c3c3c; opacity: 0.6; }
 button.game-button.dis { color: #8a8a8a; opacity: 0.55; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
