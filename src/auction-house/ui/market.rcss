@@ -11,7 +11,7 @@ button.tab.on { border-color: #ffd780; color: #ffd780; }
 .gold { color: #ffe080; }
 .pn { width: 56dp; text-align: center; }
 input.price { width: 150dp; margin-right: 4dp; }
-button.mini { padding: 0 8dp; margin: 0 4dp 0 0; font-size: 13dp; }
+button.mini { margin: 0 4dp 0 0; }
 button.mini.wide { min-width: 120dp; }
 button.mini.on { border-color: #ffd780; color: #ffd780; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; }
@@ -37,5 +37,4 @@ button.cell img.icon { position: absolute; left: 1px; top: 1px; }
 button.key { min-width: 34dp; margin-right: 4dp; text-align: center; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
 button.open-btn:hover, button.open-btn:focus { border-color: #ffd780; color: #ffe030; background-color: #24243a; }
