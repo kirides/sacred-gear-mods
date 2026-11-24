@@ -49,3 +49,6 @@ button.pt { display: block; position: absolute; width: 96dp; height: 132dp; padd
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
 button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
+
+/* Many companions: the hero rows scroll (about seven show), so the rows below stay on the screen. */
+.herolist { max-height: 340dp; overflow-y: auto; }

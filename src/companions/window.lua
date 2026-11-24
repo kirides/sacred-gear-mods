@@ -118,7 +118,9 @@ function M.new(env)
     end
 
     local function portraits_model(m)
-        if not setting('portraits', true) or not party.available() then return end
+        -- Hidden while the party window is open: it lists every hero, and with many companions the portrait columns reach under
+        -- the window, whose frame is drawn behind the document (the portraits would show through it).
+        if shown or not setting('portraits', true) or not party.available() then return end
         local list = party.companions()
         if #list == 0 then return end
         m.portraits_on = true

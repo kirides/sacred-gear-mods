@@ -24,6 +24,7 @@
     <div class="body">
         <p data-if="msg != ''" class="muted">{{ msg }}</p>
         <div data-if="msg == ''">
+            <div class="herolist" data-nav-scroll>
             <div data-for="h : heroes" class="hero">
                 <div class="hinfo">
                     <img class="himg" data-attr-src="h.image"/>
@@ -45,6 +46,7 @@
                     <button class="mini" data-attr-id="h.id_tac" title="How this hero fights and the combat arts and spells they use on their own"><span class="padkey a"></span>{{ h.tactics }}</button>
                     <button class="mini" data-attrif-disabled="!h.can_dismiss" data-attr-id="h.id_dis" data-attr-title="h.tip_dismiss"><span class="padkey a"></span>Dismiss</button>
                 </div>
+            </div>
             </div>
 
             <div class="sep"></div>
