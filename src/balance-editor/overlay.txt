@@ -1,0 +1,2 @@
+# The game reads its balance.bin with the changes of balance.lua (written by the editor); its own file is never touched.
+bin\balance.bin = patch:balance.lua

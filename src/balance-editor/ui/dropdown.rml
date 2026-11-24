@@ -1,0 +1,15 @@
+<template name="balance-dropdown">
+    <head>
+        <style>
+            button.button-dd { padding: 4dp 8dp 6dp 8dp; margin: 0 4dp 0 0; }
+        </style>
+    </head>
+    <body>
+        <button class="game-dropdown" data-attr-id="key" data-attr-title="title">
+            <span class="padkey a"></span>{{ label }}
+        </button>
+        <div data-if="dd == key" class="dd-list bal-ddlist" data-nav-scroll>
+            <button data-for="o : options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+        </div>
+    </body>
+</template>
