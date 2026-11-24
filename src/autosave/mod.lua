@@ -2,7 +2,7 @@
 return {
     id = 'autosave',
     name = 'Autosave',
-    version = '1.2.2',
+    version = '1.2.3',
     author = 'kirides',
     description = 'Saves the game every few minutes of play into its own slots.',
     -- The defaults; the player's choices (Mods screen, F11) override them. Saved in mods\gear_mods.json.
