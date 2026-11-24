@@ -11,7 +11,7 @@
         <div data-if="!nohero">
             <div class="row space">
                 <span class="accent head">{{ head }}</span>
-                <button class="game-button" id="reload" title="Reads the class and art files again"><span class="padkey a"></span>Reload files</button>
+                <button class="ibtn" id="reload" title="Reads the class and art files again"><span class="padkey a"></span><span class="icon icon-refresh"></span> Reload files</button>
             </div>
             <p data-if="no_profiles" class="muted">No class profiles found. Put them in mods\custom-classes\classes (see the mod's page).</p>
             <div class="cols">
@@ -43,7 +43,7 @@
                 </div>
             </div>
             <div class="row space foot">
-                <button data-if="can_leave" class="game-button" id="leave" title="Keeps the arts the hero learned; the profile's skills, runes and routing stop"><span class="padkey a"></span>Back to the game's class</button>
+                <button data-if="can_leave" class="ibtn" id="leave" title="Keeps the arts the hero learned; the profile's skills, runes and routing stop"><span class="padkey a"></span><span class="icon icon-undo"></span> Back to the game's class</button>
                 <span data-if="!can_leave"></span>
                 <span data-if="sel">
                     <span data-if="!usable" class="bad small">{{ not_usable }}</span>
