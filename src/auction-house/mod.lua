@@ -2,7 +2,7 @@
 return {
     id = 'auction-house',
     name = 'Auction house',
-    version = '0.2.4',
+    version = '0.2.5',
     author = 'kirides',
     description = 'Buy and sell items with the other players of a game, from the chest window. The host keeps the market.',
     automation = true,      -- only for its self test (-gear-auto)
