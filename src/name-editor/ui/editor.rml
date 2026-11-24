@@ -47,15 +47,15 @@
         <div class="ne-grow">
             <button id="slot-A" class="mini ne-slot" title="Pick the start color below"><span id="slot-A-dot" class="ne-dot"></span><span id="slot-A-txt"></span></button>
             <button id="slot-B" class="mini ne-slot" title="Pick the end color below"><span id="slot-B-dot" class="ne-dot"></span><span id="slot-B-txt"></span></button>
-            <button id="act-swap" class="mini" title="Swap start and end">Swap</button>
-            <button id="scope-all" class="mini on" title="Color every letter of the name">Whole name</button>
-            <button id="scope-cursor" class="mini" title="Color the letters after the cursor">From cursor</button>
+            <button id="act-swap" class="ibtn" title="Swap start and end"><span class="icon icon-swap-horiz"></span> Swap</button>
+            <button id="scope-all" class="ibtn on" title="Color every letter of the name">Whole name</button>
+            <button id="scope-cursor" class="ibtn" title="Color the letters after the cursor">From cursor</button>
         </div>
         <div id="ne-presets" class="ne-presets"></div>
         <div id="ne-gcolors" class="ne-grid"></div>
         <div class="ne-grow">
             <button id="act-apply" class="mini ne-go" title="One color code per letter, spaces skipped">Apply gradient</button>
-            <button id="act-nocol" class="mini" title="Take every color code out of the name">Remove colors</button>
+            <button id="act-nocol" class="ibtn" title="Take every color code out of the name"><span class="icon icon-close"></span> Remove colors</button>
             <span id="ne-gcost" class="ne-hint"></span>
         </div>
     </div>
