@@ -34,7 +34,7 @@
         </div>
         <div class="row space">
             <span class="label">{{ count }}</span>
-            <button class="game-button" data-event-click="clear" title="Empties the log (also the file)"><span class="padkey a"></span>Clear</button>
+            <button class="ibtn" data-event-click="clear" title="Empties the log (also the file)"><span class="padkey a"></span><span class="icon icon-delete"></span>Clear</button>
         </div>
         <div class="rows">
             <div data-for="r : rows" class="entry">
