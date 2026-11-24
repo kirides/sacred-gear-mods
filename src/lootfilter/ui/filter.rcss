@@ -23,7 +23,7 @@
 .text.small, .small { font-size: 14dp; }
 input.game-check.small { width: 36dp; height: 36dp; margin-right: 4dp; }
 button.catb { min-width: 90dp; }
-button.mini { padding: 0 8dp; margin: 0; }
+button.mini { margin: 0; }
 .quality-dd, .cat-dd { position: relative; z-index: 10; }
 .cat { position: relative; }
 .cat.open { z-index: 100; }
@@ -34,4 +34,3 @@ button.catb { width: 118dp; min-width: 118dp; }
 #ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
