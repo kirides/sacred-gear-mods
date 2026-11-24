@@ -22,4 +22,3 @@ button.mini.wide { min-width: 200dp; }
 .opts { max-height: 96dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
