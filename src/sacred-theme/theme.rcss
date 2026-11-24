@@ -205,13 +205,13 @@ button.game-dropdown:disabled, button.game-dropdown[disabled], button.game-dropd
 /* Drop-down popups (made to flow, absolute only where a popup must float): <div class="dd" data-class-open="..."><button class="game-dropdown">..</button><div class="dd-list">
    <button class="mini opt on">..</button></div></div>. .dd is the anchor (the list opens right below the button, over what follows), .dd-list the floating list, .opt its entries,
    .dd-shade a full-size layer behind an open list that takes the click that closes it. */
-.dd { position: relative; display: inline-block; z-index: 10; }
+.dd { position: relative; display: inline-block; flex: none; z-index: 10; }
 .dd.open { z-index: 100; }
 .dd-list { position: absolute; left: 0; top: 100%; min-width: 150px; max-height: 300px; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2px; }
 .dd-list button.opt { display: block; width: auto; margin: 0; padding: 3px 10px; text-align: left; white-space: nowrap; color: #e8e8e8; border: 0; background-color: transparent; }
 .dd-list button.opt:hover, .dd-list button.opt:focus, .dd-list button.opt.on { background-color: #ffd78030; border: 0; color: #ffe030; }
 .dd-shade a full-size layer behind an open list that takes the click that closes it. */
-.dd { position: relative; display: inline-block; z-index: 10; }
+.dd { position: relative; display: inline-block; flex: none; z-index: 10; }
 .dd.open { z-index: 100; }
 .dd-list { position: absolute; left: 0; top: 100%; min-width: 150px; max-height: 300px; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2px; }
 .dd-list button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4px 10px; }
