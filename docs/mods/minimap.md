@@ -17,5 +17,5 @@ The map is the 8 x 11 tiles `UI_WORLDMAP*.TGA` (Underworld above Ancaria), drawn
 position goes to the picture with the engine's own world-to-map transform. An element cannot be cut round, so the circle is
 stacked from thin clipping rows. The geometry is in `src/minimap/projection.lua` (`luajit tests/minimap_test.lua`).
 
-Not tested in the game yet: the transform comes from the engine remake's notes of the game's code; the first line of the log
+Tested in the game at 1600x900 (self test `src/minimap_selftest`, `-gear-auto`): the hero lands on the map where the villages and trader symbols line up with the map. The first line of the log
 (`minimap: hero at world ...`) shows where the mod puts the hero on the map.

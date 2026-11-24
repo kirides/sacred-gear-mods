@@ -1,12 +1,13 @@
 body { font-size: 13dp; color: #ffd780; }
-#mm { position: absolute; left: 790dp; top: 110dp; overflow: hidden; background-color: #00000000; }
-.strip { position: absolute; overflow: hidden; }
+#mm { position: absolute; left: 790dp; top: 110dp; overflow: hidden; clip: always; background-color: #00000000; }
+.strip { position: absolute; overflow: hidden; clip: always; }
 .world { position: absolute; left: 0dp; top: 0dp; width: 1dp; height: 1dp; }
 .tile { position: absolute; }
+.tile img, .mark img { display: block; width: 100%; height: 100%; }
 .shade { position: absolute; left: 0dp; top: 0dp; width: 100%; height: 100%; }
-.markers { position: absolute; left: 0dp; top: 0dp; overflow: hidden; }
-.mark { position: absolute; width: 14dp; height: 14dp; }
-.hero { position: absolute; width: 20dp; height: 20dp; }
+.markers { position: absolute; left: 0dp; top: 0dp; overflow: hidden; clip: always; }
+.mark { position: absolute; }
+.hero { position: absolute; width: 10dp; height: 10dp; background-color: #ffd780; border: 1dp #000000; transform: rotate(45deg); }
 .frame { position: absolute; }
 .frame.outer { left: 0dp; top: 0dp; border: 2dp #c8aa5a; }
 .frame.inner { left: 2dp; top: 2dp; border: 1dp #3a2e1a; }

@@ -7,19 +7,17 @@
 <div id="mm" data-if="vis" data-panel="minimap" data-title="Minimap" data-style-width="w + 'dp'" data-style-height="h + 'dp'">
     <!-- the map: one clipping strip for a rectangle, thin rows for a circle; each holds its tiles and the dimming layer -->
     <div class="strip" data-for="s : strips" data-style-left="s.x + 'dp'" data-style-top="s.y + 'dp'" data-style-width="s.w + 'dp'" data-style-height="s.h + 'dp'">
-        <div class="world" data-style-left="(wx - s.x) + 'dp'" data-style-top="(wy - s.y) + 'dp'">
-            <img class="tile" data-for="t : s.tiles" data-attr-src="t.src" data-style-left="t.x + 'dp'" data-style-top="t.y + 'dp'" data-style-width="t.w + 'dp'" data-style-height="t.h + 'dp'"/>
-        </div>
+        <div class="tile" data-for="t : s.tiles" data-style-left="(t.x + wx - s.x) + 'dp'" data-style-top="(t.y + wy - s.y) + 'dp'" data-style-width="t.w + 'dp'" data-style-height="t.h + 'dp'"><img data-attr-src="t.src"/></div>
         <div class="shade" data-style-background-color="shade"></div>
     </div>
 
     <!-- the trader symbols, in the view's own coordinates -->
     <div class="markers" data-style-width="w + 'dp'" data-style-height="h + 'dp'">
-        <img class="mark" data-for="k : markers" data-attr-src="k.src" data-style-left="(k.x + wx) + 'dp'" data-style-top="(k.y + wy) + 'dp'"/>
+        <div class="mark" data-for="k : markers" data-style-left="(k.x + wx) + 'dp'" data-style-top="(k.y + wy) + 'dp'" data-style-width="k.s + 'dp'" data-style-height="k.s + 'dp'"><img data-attr-src="k.src"/></div>
     </div>
 
     <!-- the hero is always in the middle -->
-    <img class="hero" src="gear:texture/WORLDMAP_WAYPOINT.TGA" data-style-left="(w / 2 - 10) + 'dp'" data-style-top="(h / 2 - 10) + 'dp'"/>
+    <div class="hero" data-style-left="(w / 2 - 5) + 'dp'" data-style-top="(h / 2 - 5) + 'dp'"></div>
 
     <!-- the frame: gold lines, a ring for the circle -->
     <div class="frame outer" data-if="!round" data-style-width="(w - 4) + 'dp'" data-style-height="(h - 4) + 'dp'"></div>

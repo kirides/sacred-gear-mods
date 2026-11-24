@@ -24,6 +24,8 @@ end
 
 local MARKER_TEXTURE = {[0] = 'MOUSE_TRADER', 'MOUSE_BLACKSMITH', 'MOUSE_COMBO', 'MOUSE_HORSETRADER'}
 local MARKER_SIZE = 14
+local MARKER_SLOTS = 40
+local DUMMY = 'gear:texture/UI_WORLDMAPX00.TGA'
 
 ---------------------------------------------------------------------------------------------------------------
 -- Markers: the game's service symbols as map pixels, loaded once.
@@ -41,6 +43,7 @@ local function load_markers()
             markers[#markers + 1] = {px = px, py = py, kind = m.kind}
         end
     end
+    gear.log(('minimap: %d trader symbols on the map'):format(#markers))
     return markers
 end
 
@@ -94,7 +97,9 @@ local function strip_tiles(set, z, wy, s)
 end
 
 local function snapshot()
-    local m = {vis = false}
+    -- Every key the document binds must exist from the first model on (a key added later is not seen by its bindings).
+    local m = {vis = false, round = true, w = 200, h = 200, wx = 0, wy = 0, shade = '#00000000', compass = true,
+        level_text = '', strips = {}, markers = {}, strips_sig = '', markers_sig = ''}
     if not setting('show', true) then return m end
     local px, py = hero_map_position()
     if not px then return m end
@@ -114,9 +119,12 @@ local function snapshot()
 
     -- Strips with their tiles; the signature says whether the set changed since the last frame (rebuilding the model's lists is
     -- what costs, moving the map is only wx / wy).
+    -- Lists keep their length (padded with empty entries): RmlUi warns for every binding of an element that outlives a shrinking list.
+    local tile_slots = (math.ceil(w / (P.TILE_PX * z)) + 1) * 2
     local strips, sig = {}, {tostring(w), tostring(h), tostring(z)}
     for i, s in ipairs(strips_for(round, w, h)) do
         local tiles, key = strip_tiles(set, z, wy, s)
+        while #tiles < tile_slots do tiles[#tiles + 1] = {src = DUMMY, x = 0, y = 0, w = 0, h = 0} end
         strips[i] = {x = s.x, y = s.y, w = s.w, h = s.h, tiles = tiles}
         sig[#sig + 1] = key
     end
@@ -130,12 +138,15 @@ local function snapshot()
         for i, mk in ipairs(load_markers()) do
             local dx, dy = mk.px - px, mk.py - py
             if math.abs(dx) < rx and math.abs(dy) < ry and (not round or dx * dx + dy * dy <= rr * rr) then
-                list[#list + 1] = {x = mk.px * z - MARKER_SIZE / 2, y = mk.py * z - MARKER_SIZE / 2,
+                list[#list + 1] = {x = mk.px * z - MARKER_SIZE / 2, y = mk.py * z - MARKER_SIZE / 2, s = MARKER_SIZE,
                     src = 'gear:texture/' .. (MARKER_TEXTURE[mk.kind] or MARKER_TEXTURE[0]) .. '.TGA'}
                 msig[#msig + 1] = i
+                if #list >= MARKER_SLOTS then break end
             end
         end
     end
+    m.marker_count = #list
+    while #list < MARKER_SLOTS do list[#list + 1] = {x = 0, y = 0, s = 0, src = DUMMY} end
     m.markers, m.markers_sig = list, table.concat(msig, ',')
     return m
 end
@@ -151,6 +162,7 @@ local function apply(m)
         end
         return
     end
+    if m.marker_count ~= last.marker_count and m.marker_count then gear.log(('minimap: %d trader symbols in view'):format(m.marker_count)) end
     for k, v in pairs(m) do
         if k == 'strips' or k == 'markers' or v ~= last[k] then doc.model[k] = v end
     end
@@ -190,6 +202,8 @@ local function toggle() gear.settings.set('show', not setting('show', true)) end
 
 gear.keys.on('zoom_in', guard('zoom_in', function() zoom_by(1) end))
 gear.keys.on('zoom_out', guard('zoom_out', function() zoom_by(-1) end))
+-- For the self test (and other mods): gear.emit('minimap.set', id, value) changes one of the settings.
+gear.on('minimap.set', guard('set', function(id, value) gear.settings.set(id, value) end))
 gear.keys.on('toggle', guard('toggle', toggle))
 
 if ui.menu_item then
