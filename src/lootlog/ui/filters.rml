@@ -1,24 +1,8 @@
 <template name="lootlog-dropdown">
     <head>
         <style>
-            .filters button.game-button { font-size: 15dp; margin-right: 4dp; }
-            .filters .ddwrap.quality button.game-button,
-            .filters .ddwrap.category button.game-button {
-                width: 140px;
-                margin-left: 5px;
-                margin-right: 5px;
-            }
-            .filters .ddwrap.kind button.game-button {
-                width: 220px;
-                margin-left: 5px;
-                margin-right: 5px;
-            }
-            .filters .ddwrap { position: relative; z-index: 10; }
-            .filters .ddwrap.open { z-index: 100; }
-            .filters .ddwrap button.game-button { margin-right: 4dp; }
-.ddlist { min-width: 170dp; }
-            button.mini.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
-            button.mini.opt.on { color: #ffe030; border-color: #ffd780; }
+            .filters button.game-dropdown { margin-right: 4dp; }
+            .ddlist { min-width: 170dp; }
         </style>
     </head>
     <body>
