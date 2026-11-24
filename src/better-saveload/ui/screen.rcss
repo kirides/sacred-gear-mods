@@ -29,7 +29,7 @@ button.row.sel { background-color: #4a3f2a; border-color: #ffd780; }
 .port { flex: none; width: 36dp; height: 48dp; margin-left: 6dp; }
 .rbody { flex: 1 1 auto; min-width: 0; overflow: hidden; }
 .rtop { display: flex; flex-direction: row; justify-content: space-between; align-items: center; height: 22dp; line-height: 20dp; }
-.rtitle { line-height: 18dp; font-size: 15dp; font-weight: bold; color: #ffd780; }
+.rtitle { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; line-height: 18dp; font-size: 15dp; font-weight: bold; color: #ffd780; }
 .rtitle.dim { color: #8c8c8c; }
 .rsub { flex: none; margin-left: 8dp; font-size: 12dp; color: #f0f0f0; }
 .rline { height: 18dp; line-height: 16dp; font-size: 12dp; color: #8c8c8c; white-space: nowrap; overflow: hidden; }
