@@ -129,6 +129,12 @@ function M.enemy_near(c, radius)
     return false
 end
 
+-- With a priority list (the party window's tactics: the arrows move an ability up or down) the ability nearest the top that
+-- is ready is used; abilities not in the list come after it.
+function M.priority_score(tactics, id)
+    return 100000 - (tactics.priority[id] or 50000)
+end
+
 -- The ability to use now, and on whom ('target' or 'self'), or nil.
 local function pick_ability(c, s, now, target, heroes, tactics, opts)
     local best, best_use, best_score
@@ -145,6 +151,7 @@ local function pick_ability(c, s, now, target, heroes, tactics, opts)
             end
             if ok then
                 local score = (a.level + a.bonus) + (use == 'self' and 500 or 0)
+                if tactics.priority then score = M.priority_score(tactics, a.id) end
                 if not best_score or score > best_score then best, best_use, best_score = a, use, score end
             end
         end
@@ -155,6 +162,7 @@ local function pick_ability(c, s, now, target, heroes, tactics, opts)
             if k.ready and tactics.abilities[k.id] ~= false then
                 local score = 800
                 for _, l in ipairs(k.levels) do score = score + l end
+                if tactics.priority then score = M.priority_score(tactics, k.id) end
                 if not best_score or score > best_score then best, best_use, best_score = k, 'target', score end
             end
         end
@@ -443,6 +451,125 @@ local function protect(c, s, now, lx, ly, ll, slot, count, opts)
     end
 end
 
+-- Puts a companion beside the leader: its place in the loose fan, else right beside them, else on their spot (a cave has
+-- little room: the first may lie in rock).
+function M.join(c, lx, ly, ll, slot, count, follow)
+    local fx, fy = formation(lx, ly, slot, count, math.min(follow * 0.6, 120))
+    local spots = {{fx, fy}, {lx + 40, ly + 40}, {lx - 40, ly + 40}, {lx, ly}}
+    for _, p in ipairs(spots) do
+        if c:teleport(p[1], p[2], ll) then
+            local nx, ny, nl = c:position()
+            if nl == ll and nx and dist(nx, ny, lx, ly) < 400 then return true end
+        end
+    end
+    return false
+end
+
+-- "Move to me": a companion who is stuck joins the leader at once.
+function M.move_to_me(c, leader, slot, count, follow)
+    local lx, ly, ll = leader:position()
+    if not lx or c:is_dead() then return false end
+    local s = st(c.id)
+    s.target, s.stuck_at, s.teleported = nil, nil, os.clock()
+    return M.join(c, lx, ly, ll, slot, count, follow)
+end
+
+-- Run away (tactics: below a share of health): from the nearest enemy to the leader's far side, until the health is back
+-- (the threshold and 20 points) or no enemy is near. True while running.
+local function flee_step(c, s, now, lx, ly, opts, tactics)
+    local thr = tactics.flee
+    if not thr then s.fleeing = nil return false end
+    local f = hp_frac(c)
+    local enemy_near = M.enemy_near(c, opts.engage)
+    if s.fleeing then
+        if f >= math.max(0.6, thr + 0.1) or not enemy_near then s.fleeing = nil end
+    elseif f < thr and enemy_near then
+        s.fleeing = true
+    end
+    if not s.fleeing then return false end
+    local cx, cy, cl = c:position()
+    local nearest, nd
+    for _, e in ipairs(W.creatures_near(cx, cy, opts.engage, {layer = cl, limit = 24})) do
+        if not e:is_hero() and not e:is_dead() and c:is_enemy(e) then
+            local ex, ey = e:position()
+            local de = ex and dist(ex, ey, cx, cy)
+            if de and (not nd or de < nd) then nearest, nd = {ex, ey}, de end
+        end
+    end
+    s.target = nil
+    local tx, ty = lx, ly
+    if nearest then
+        -- the leader's side, one step further from the enemy than the leader
+        local ax, ay = lx - nearest[1], ly - nearest[2]
+        local len = math.max(1, math.sqrt(ax * ax + ay * ay))
+        local tile = W.TILE or 54
+        tx, ty = lx + ax / len * tile * 2, ly + ay / len * tile * 2
+    end
+    local action = c:action() or 'idle'
+    if action ~= 'ability' and dist(cx, cy, tx, ty) > (W.TILE or 54) * 1.2 and now - s.ordered > 0.7 then
+        if c:order_move(tx, ty) then s.ordered = now end
+    end
+    return true
+end
+
+-- Shots that miss (tactics, ranged weapons only): a target whose health has not moved for 3 s while the companion attacks it
+-- is out of reach of the shots (a wall, a rock, a corner): the companion goes to a spot 4 to 6 tiles around the target, the nearest
+-- one first. A spot not reached within 4 s counts as blocked for 30 s and another one is tried. (The idea of the player's fork.)
+local function ranged_now(c, tactics)
+    if tactics.style == 'ranged' then return true end
+    local w = c.weapon_slots and c:weapon_slots()
+    local cur = w and w.slots and w.slots[w.active]
+    return cur and M.is_ranged(cur.main) or false
+end
+
+-- True while the companion walks to a new spot (the caller leaves it alone).
+local function reposition_step(c, s, now, target, action, tactics, lx, ly, opts)
+    if not tactics.reposition or not ranged_now(c, tactics) then s.rep, s.repos = nil, nil return false end
+    local tile = W.TILE or 54
+    local cx, cy = c:position()
+    if s.repos then
+        local rp = s.repos
+        if cx and dist(cx, cy, rp.x, rp.y) < tile * 1.2 then s.repos, s.rep = nil, nil return false end
+        if now - rp.since > 4 then
+            s.bad_spots[rp.key] = now + 30
+            s.repos = nil
+        else
+            return true
+        end
+    end
+    if action == 'ability' then return false end
+    local hp = target:hp() or 0
+    local r = s.rep
+    if not r or r.id ~= target.id or hp < r.hp - 0.5 then
+        s.rep = {id = target.id, hp = hp, since = now}
+        return false
+    end
+    if now - r.since < 3 then return false end
+    local tx, ty = target:position()
+    if not tx or not cx then return false end
+    s.bad_spots = s.bad_spots or {}
+    local best, best_score
+    for _, rad in ipairs({4, 6}) do
+        for k = 0, 7 do
+            local a = k * math.pi / 4 + (math.random() - 0.5) * 0.3
+            local x, y = tx + math.cos(a) * rad * tile, ty + math.sin(a) * rad * tile
+            local key = math.floor(x / tile) .. ':' .. math.floor(y / tile)
+            local bad = s.bad_spots[key] and now < s.bad_spots[key]
+            if not bad and dist(x, y, lx, ly) <= opts.leash then
+                local score = dist(x, y, cx, cy) + (rad == 4 and 0 or 2 * tile)
+                if not best_score or score < best_score then best, best_score = {x = x, y = y, key = key}, score end
+            end
+        end
+    end
+    s.rep = nil
+    if best and c:order_move(best.x, best.y) then
+        best.since = now
+        s.repos, s.ordered, s.target = best, now, nil
+        return true
+    end
+    return false
+end
+
 -- One think of companion `c`. opts: engage, leash, follow, teleport, behaviour ('aggressive', 'defensive',
 -- 'passive'), use_abilities; tactics: {abilities = {[id] = false}}.
 function M.think(c, leader, slot, count, now, heroes, opts, tactics)
@@ -477,14 +604,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     -- little room: the spot in the formation may lie in rock, then right beside the leader, then on the leader's spot).
     if cl ~= ll or (not holding and (d > opts.teleport or stuck)) then
         if now - s.teleported > 2 then
-            local fx, fy = formation(lx, ly, slot, count, math.min(opts.follow * 0.6, 120))
-            local spots = {{fx, fy}, {lx + 40, ly + 40}, {lx - 40, ly + 40}, {lx, ly}}
-            for _, p in ipairs(spots) do
-                if c:teleport(p[1], p[2], ll) then
-                    local nx, ny, nl = c:position()
-                    if nl == ll and nx and dist(nx, ny, lx, ly) < 400 then break end
-                end
-            end
+            M.join(c, lx, ly, ll, slot, count, opts.follow)
             s.teleported, s.target, s.stuck_at = now, nil, nil
         end
         return
@@ -497,6 +617,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     finish_heal(c, s, now)
     share_step(c, s, now, heroes, opts)
     if action ~= 'ability' and heal_step(c, s, now, leader, heroes, opts, tactics) then return end
+    if flee_step(c, s, now, lx, ly, opts, tactics) then return end
     local target
     if tactics.style == 'protector' and behaviour ~= 'passive' and not holding then
         return protect(c, s, now, lx, ly, ll, slot, count, opts)
@@ -528,6 +649,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
         if action == 'ability' then return end
         s.fight_end = nil
         local style = tactics.style or 'balanced'
+        if reposition_step(c, s, now, target, action, tactics, lx, ly, opts) then return end   -- walking to another spot
         if style == 'ranged' then take_ranged(c, s, now) end
         -- weapon first: combat arts and spells only every 8 s
         local gap = style == 'weapon' and 8 or 2

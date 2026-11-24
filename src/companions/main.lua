@@ -165,7 +165,29 @@ local function tactics(id)
     for k, v in pairs(r.abilities) do
         if v == false then off[tonumber(k)] = false end
     end
-    return {behaviour = r.behaviour, style = r.style, abilities = off}
+    local priority
+    if r.order then
+        priority = {}
+        for i, id in ipairs(r.order) do priority[id] = i end
+    end
+    return {behaviour = r.behaviour, style = r.style, abilities = off, priority = priority, flee = r.flee, reposition = r.reposition}
+end
+
+-- The tactics a hero file carries: kept next to the file (per mod, all savegames) when a hero is kept, given back when they are
+-- brought again, so a hero keeps their tactics from one session to the next.
+local TACTIC_KEYS = {'name', 'behaviour', 'style', 'abilities', 'order', 'flee', 'reposition'}
+local function tactics_copy(r)
+    local t = {}
+    for _, k in ipairs(TACTIC_KEYS) do
+        local v = r[k]
+        if type(v) == 'table' then
+            local c = {}
+            for a, b in pairs(v) do c[a] = b end
+            v = c
+        end
+        t[k] = v
+    end
+    return t
 end
 
 local function default_name(c)
@@ -264,6 +286,7 @@ local function recruit(class)
     r.fallen = nil
     r.behaviour = nil
     r.abilities = {}
+    r.kept, r.order, r.flee, r.reposition, r.style = nil, nil, nil, nil, nil
     r.name = default_name(c)
     store:changed()
     c:set_name(r.name)
@@ -309,23 +332,84 @@ local function bring(f)
     r.fallen = nil
     r.purse = nil
     r.abilities = {}
+    r.kept, r.order, r.flee, r.reposition, r.style = nil, nil, nil, nil, nil
     local file_name = clean_name(f.name)
     r.name = (file_name ~= '' and file_name ~= 'Anonymous') and clean_name(file_name:sub(1, 30)) or default_name(c)
+    local kept = prefs.data.kept and prefs.data.kept[f.file]
+    if kept then
+        -- tactics kept with the hero file (their name too, unless another companion has it)
+        for _, k in ipairs(TACTIC_KEYS) do
+            if k ~= 'name' then r[k] = kept[k] end
+        end
+        r.abilities = r.abilities or {}
+        r.kept = {level = c:level() or 0}
+    end
     store:changed()
     c:set_name(r.name)
     toast(r.name .. ' (' .. (CLASS_LABEL[c:class() or ''] or '?') .. ', level ' .. tostring(c:level()) .. ') joins the party')
     return c
 end
 
--- Keeps the hero you play for other savegames: a hero file in the mod's heroes folder.
-local function keep()
-    local c = party.leader()
-    if not c then return end
-    local name = name_of(c)
-    local file, err = party.export_hero((name .. '_' .. (c:class() or 'hero')):gsub('[^%w_%-]', '_'))
-    if not file then return toast('Cannot keep ' .. name .. ': ' .. tostring(err)) end
-    toast(name .. ' is kept: another savegame can bring this hero into its party (party window, Bring)')
+-- Everything in kept hero files that is not in the party yet (a file matching class and name of a party hero is left out).
+local function bring_all()
+    local ok, why = party.available()
+    if not ok then return toast(why or 'Not now') end
     refresh_files()
+    local n, skipped = 0, 0
+    for _, f in ipairs(files.list) do
+        if #party.companions() >= setting('max_companions', 3) then break end
+        if may_be_in_party(f) then skipped = skipped + 1 elseif bring(f) then n = n + 1 end
+    end
+    toast(('%d heroes joined%s'):format(n, skipped > 0 and (', %d already in the party'):format(skipped) or ''))
+end
+
+-- Keeps a hero for other savegames: a hero file in the mod's heroes folder, with their tactics next to it. The game writes the
+-- hero it is played by, so another hero is played for a moment (the leader gets control back). True when written.
+local function keep_hero(c, quiet)
+    local leader = party.leader()
+    if not c or not leader or c:is_dead() then return false end
+    local name = name_of(c)
+    local switched = c ~= leader
+    if switched and not party.control(c) then return false end
+    local file, err = party.export_hero((name .. '_' .. (c:class() or 'hero')):gsub('[^%w_%-]', '_'))
+    if switched then party.control(leader) end
+    if not file then toast('Cannot keep ' .. name .. ': ' .. tostring(err)) return false end
+    local r = record(c.id)
+    r.kept = {level = c:level() or 0, file = file}
+    prefs.data.kept = prefs.data.kept or {}
+    prefs.data.kept[file] = tactics_copy(r)
+    prefs:changed()
+    store:changed()
+    if not quiet then toast(name .. ' is kept: another savegame can bring this hero into its party (party window, Bring)') end
+    return true
+end
+
+local function keep() if keep_hero(party.leader()) then refresh_files() end end
+
+-- Every hero of the party: the ones not kept yet, or all (again, for the level they have now).
+local function keep_all(only_new)
+    local n = 0
+    for _, c in ipairs(party.heroes()) do
+        local r = record(c.id)
+        if not (only_new and r.kept) and keep_hero(c, true) then n = n + 1 end
+    end
+    refresh_files()
+    toast(('%d heroes kept for other savegames'):format(n))
+end
+
+-- "Move to me": a companion who is stuck joins the hero you play at once.
+local function move_to_me(c)
+    local leader = party.leader()
+    if not leader or not c or c == leader then return end
+    local heroes = party.heroes()
+    local slot = 1
+    for i, h in ipairs(heroes) do if h == c then slot = i - 1 end end
+    if not ai.move_to_me(c, leader, math.max(1, slot), math.max(1, #heroes - 1), setting('follow', 5) * TILE) then
+        toast(name_of(c) .. ' cannot move to you from there')
+    end
+end
+local function move_all_to_me()
+    for _, c in ipairs(party.companions()) do move_to_me(c) end
 end
 
 local confirm = {id = nil, at = 0}   -- a dismiss waits for a second click
@@ -503,7 +587,8 @@ end))
 apply_share()
 
 local window = require('window').new({
-    play = play, recruit = recruit, dismiss = dismiss, keep = keep, bring = bring, name_of = name_of, record = record,
+    play = play, recruit = recruit, dismiss = dismiss, keep = keep, bring = bring, bring_all = bring_all, keep_hero = keep_hero,
+    keep_all = keep_all, move_to_me = move_to_me, move_all_to_me = move_all_to_me, name_of = name_of, record = record,
     may_be_in_party = may_be_in_party, purse_of = purse_of, give_gold = give_gold, take_gold = take_gold, separate = separate,
     setting = setting, store = store, prefs = prefs, files = files, refresh_files = refresh_files,
     NAMES = NAMES, CLASS_LABEL = CLASS_LABEL,
@@ -511,6 +596,7 @@ local window = require('window').new({
 
 
 gear.on('companions.rect', function(out) out.rect = window.rect end)   -- for the self test
+gear.on('companions.record', function(out) out.record, out.tactics = record, tactics end)
 
 gear.on('draw', guard('draw', function(state)
     if type(state) ~= 'table' or state.mode ~= 'game' or state.exclusive then return end

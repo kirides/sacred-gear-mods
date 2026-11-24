@@ -21,7 +21,7 @@
 <div id="party" class="window" data-panel="party" data-title="Party" data-if="open">
     <div data-if="dd != ''" id="party-ddshade"></div>
     <div class="titlebar">{{ title }}</div>
-    <div class="body">
+    <div class="body" data-nav-scroll>
         <p data-if="msg != ''" class="muted">{{ msg }}</p>
         <div data-if="msg == ''">
             <div class="herolist" data-nav-scroll>
@@ -43,12 +43,15 @@
                             <button data-for="o : h.beh_options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
                         </div>
                     </div>
+                    <button class="mini" data-attrif-disabled="!h.can_me" data-attr-id="h.id_me" title="Stuck? This hero joins you where you stand"><span class="padkey a"></span>To me</button>
                     <button class="mini" data-attr-id="h.id_tac" title="How this hero fights and the combat arts and spells they use on their own"><span class="padkey a"></span>{{ h.tactics }}</button>
+                    <button class="mini" data-class-amber="h.kept_new" data-attrif-disabled="!h.can_keep" data-attr-id="h.id_kp" data-attr-title="h.tip_kp"><span class="padkey a"></span>{{ h.keep_text }}</button>
                     <button class="mini" data-attrif-disabled="!h.can_dismiss" data-attr-id="h.id_dis" data-attr-title="h.tip_dismiss"><span class="padkey a"></span>Dismiss</button>
                 </div>
             </div>
             </div>
 
+            <div data-if="!tac_on">
             <div class="sep"></div>
             <div class="frow">
                 <span class="accent lab">Recruit</span>
@@ -61,16 +64,26 @@
                 <span data-if="no_files" class="muted small">No kept heroes yet: "Keep" your hero below.</span>
                 <div data-if="!no_files" class="party-dd" data-class-open="dd == 'heroes'"><button class="mini wide" id="heroes" title="Heroes kept from other savegames, and your network characters"><span class="padkey a"></span>{{ file_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'heroes'" class="party-ddlist" data-nav-scroll><button data-for="o : dd_files" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <button class="game-button" id="bring" data-attrif-disabled="!can_bring" data-attr-title="bring_tip" data-class-amber="maybe"><span class="padkey a"></span>Bring</button>
+                <button class="game-button" id="bringall" data-attrif-disabled="!can_bring_all" title="Brings every kept hero that is not in the party yet, as far as there is room, each with the tactics they were kept with"><span class="padkey a"></span>Bring all</button>
             </div>
             <div class="frow" data-if="picked != ''"><span class="lab"></span><span class="small">{{ picked }}</span><span data-if="maybe" class="amber small">May be in the party</span></div>
             <div class="frow">
                 <span class="accent lab">Keep</span>
                 <button class="game-button" id="keep" title="Writes the hero you play to a hero file another savegame can bring into its party"><span class="padkey a"></span>{{ keep_label }}</button>
+                <button class="game-button" id="keepall" title="Writes every hero of the party to a hero file, with their tactics (each is played for a moment)"><span class="padkey a"></span>Keep all</button>
+                <button class="game-button" id="keepnew" title="Only the heroes marked 'Not kept yet'"><span class="padkey a"></span>Keep the new ones</button>
             </div>
             <div class="frow">
                 <span class="accent lab">Mercenaries</span>
                 <div class="party-dd" data-class-open="dd == 'mercs'"><button class="mini wide" id="mercs" title="What the game's own mercenaries do (they follow the hero you play). Escorts and quest followers keep their scripts"><span class="padkey a"></span>{{ merc_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'mercs'" class="party-ddlist" data-nav-scroll><button data-for="o : dd_mercs" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <span class="muted small">{{ merc_count }}</span>
+            </div>
+
+            <div class="frow">
+                <span class="accent lab">All companions</span>
+                <button class="mini" id="artsoff" title="Switches off every combat art and spell of every companion: they fight with their weapons"><span class="padkey a"></span>No combat arts</button>
+                <button class="mini" id="artson" title="Every combat art and spell of every companion may be used again"><span class="padkey a"></span>Combat arts on</button>
+                <button class="mini" id="allme" title="Every companion joins you where you stand"><span class="padkey a"></span>All to me</button>
             </div>
 
             <div data-if="purses_on">
@@ -86,13 +99,26 @@
                 </div>
             </div>
 
+            </div>
+
             <div data-if="tac_on">
                 <div class="sep"></div>
                 <p class="accent">{{ tac.title }}</p>
                 <div class="frow"><span class="muted lab">Fights with</span><div class="party-dd" data-class-open="dd == 'style'"><button class="mini wide" id="style" data-attr-title="tac.style_tip"><span class="padkey a"></span>{{ tac.style }}<span class="caret">&#9662;</span></button><div data-if="dd == 'style'" class="party-ddlist" data-nav-scroll><button data-for="o : dd_styles" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div></div>
+                <div class="frow"><span class="muted lab">Run away</span>
+                    <a id="fleeprev" class="arrow prev" data-class-off="tac.flee_prev_off" title="Less health: runs away later, or never"></a><span class="fleetext">{{ tac.flee_text }}</span><a id="fleenext" class="arrow next" data-class-off="tac.flee_next_off" title="More health: runs away sooner"></a>
+                    <span class="muted small">to your side, back in the fight at 60% health</span></div>
+                <div class="check-row small"><span class="text small" title="With a ranged weapon: a target that is not hurt for 3 seconds (a wall or rock in the way, shots that miss): the hero goes to another spot around it and shoots again">Move to another spot when shots miss</span><input id="repos" type="checkbox" class="game-check chk" data-checked="tac.repos"/></div>
+                <div class="frow">
+                    <span class="muted lab">Combat arts</span>
+                    <button class="mini" id="heroartsoff" title="Switches off all combat arts and spells of this hero"><span class="padkey a"></span>All off</button>
+                    <button class="mini" id="heroartson" title="Switches on all combat arts and spells of this hero"><span class="padkey a"></span>All on</button>
+                    <button class="mini" id="prioreset" title="The order the hero uses them in goes back to the default (the highest level first)"><span class="padkey a"></span>Reset priority</button>
+                </div>
                 <p data-if="tac.none" class="muted small">No combat arts or spells learned yet.</p>
                 <div class="tlist">
                     <div data-for="a : tac.abilities" class="check-row small">
+                        <span class="mvs"><a data-if="a.used" data-attr-id="a.id_up" class="mv up" data-class-off="a.off_up" title="Higher priority: used before the ones below"></a><a data-if="a.used" data-attr-id="a.id_dn" class="mv down" data-class-off="a.off_dn" title="Lower priority: used after the ones above"></a></span>
                         <span class="text small" data-attr-title="a.tip">{{ a.text }}</span>
                         <input data-if="a.used" data-attr-id="a.id" type="checkbox" class="game-check chk" data-checked="a.on"/>
                         <span data-if="!a.used" class="muted small">not used by the AI</span>

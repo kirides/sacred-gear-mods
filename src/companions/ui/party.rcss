@@ -1,4 +1,4 @@
-#party { position: absolute; left: 192dp; top: 60dp; width: 700dp; }
+#party { position: absolute; left: 120dp; top: 60dp; width: 780dp; }
 .lab { width: 110dp; flex: none; }
 .small { font-size: 13dp; }
 .amber { color: #ffc060; }
@@ -52,3 +52,16 @@ button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
 
 /* Many companions: the hero rows scroll (about seven show), so the rows below stay on the screen. */
 .herolist { max-height: 340dp; overflow-y: auto; }
+
+/* Tactics: priority arrows (the game's white up / down arrows, images 234 / 235) and the run-away stepper (the theme's a.arrow). */
+.mvs { display: inline-block; width: 64dp; flex: none; }
+a.mv { display: inline-block; width: 30dp; height: 30dp; vertical-align: middle; cursor: pointer; }
+a.mv.up { decorator: image(gear:image/234 scale-none center center); }
+a.mv.down { decorator: image(gear:image/235 scale-none center center); }
+a.mv:hover, a.mv:focus { opacity: 0.7; background-color: #ffd78030; }
+a.mv.off, a.mv.off:hover, a.mv.off:focus { opacity: 0.25; background-color: transparent; cursor: default; }
+.fleetext { display: inline-block; width: 150dp; text-align: center; }
+
+/* the window grows with the tactics list: its body scrolls (a pad scrolls it with the stick) when it would not fit the screen */
+#party .body { max-height: 540dp; overflow-y: auto; }
+.tlist { max-height: 230dp; }
