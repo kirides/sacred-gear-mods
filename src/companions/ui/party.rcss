@@ -17,7 +17,6 @@ button.game-button.amber { color: #ffc060; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; margin-right: 8dp; }
 .party-dd { position: relative; z-index: 10; }
 .party-dd.open { z-index: 100; }
-.party-dd .caret { margin-left: 7dp; color: #ffd780; }
 .party-ddlist { position: absolute; left: 16dp; top: 29dp; min-width: 150dp; max-height: 300dp; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2dp; }
 .party-ddlist button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
 .party-ddlist button.opt.on { color: #ffe030; border-color: #ffd780; }
