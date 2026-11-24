@@ -123,7 +123,7 @@
       "id": "companions",
       "path": "mods/companions",
       "name": "Companions",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "author": "Sacred Gear",
       "description": "A party of heroes in single player: recruit companions of any class, each with their own inventory, equipment, attributes, skills, combat arts and experience. Click a portrait (or use the controller's mod menu) to play that hero; the others follow and fight on their own, with their combat arts and spells.",
       "tags": [
@@ -226,7 +226,7 @@
       "id": "layout",
       "path": "mods/layout",
       "name": "Layout editor",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "author": "Sacred Gear",
       "description": "Move the game's windows and mod panels where you want them: an edit mode like an MMO's.",
       "tags": [
@@ -387,6 +387,14 @@
       "author": "kirides",
       "description": "Multiplies the creatures the game spawns, from 1x (the game as it is) up to 100x. Every hostile creature around you, those the world creates and those already there, brings extra ones of its kind with it. Single player only; safeguards keep the frame rate up.",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/spawn-rate.jpg"
+    },
+    {
+      "id": "spell-tuning",
+      "path": "mods/spell-tuning",
+      "name": "Spell tuning",
+      "version": "0.1.0",
+      "author": "kirides",
+      "description": "Changes what spells do, by who casts them: the hero you play, companions, enemies, neutral creatures or traps. Shorten (or lengthen) root, stun and fear, weaken (or strengthen) the changes of attack, defence and speed, and the damage. Single player only."
     },
     {
       "id": "sprite-browser",
