@@ -12,9 +12,9 @@
         <a class="link tab" id="mode-load" data-class-on="load_on">Load</a><span class="tab-sep"></span><a class="link tab" id="mode-save" data-class-on="save_on">Save</a>
     </div>
     <div class="tool">
-        <div class="ddwrap" data-class-open="dd == 'hero'"><button class="mini cyc" id="hero" title="Character"><span class="padkey a"></span>{{ hero_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'hero'" class="ddlist" data-nav-scroll><button data-for="o : dd_hero" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-        <div class="ddwrap" data-class-open="dd == 'class'"><button class="mini cyc" id="class" title="Class"><span class="padkey a"></span>{{ class_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'class'" class="ddlist" data-nav-scroll><button data-for="o : dd_class" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
-        <div class="ddwrap" data-class-open="dd == 'sort'"><button class="mini cyc" id="sort" title="Order"><span class="padkey a"></span>{{ sort_label }}<span class="caret">&#9662;</span></button><div data-if="dd == 'sort'" class="ddlist" data-nav-scroll><button data-for="o : dd_sort" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+        <div class="ddwrap" data-class-open="dd == 'hero'"><button class="game-dropdown" id="hero" title="Character"><span class="padkey a"></span>{{ hero_label }}</button><div data-if="dd == 'hero'" class="ddlist" data-nav-scroll><button data-for="o : dd_hero" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+        <div class="ddwrap" data-class-open="dd == 'class'"><button class="game-dropdown" id="class" title="Class"><span class="padkey a"></span>{{ class_label }}</button><div data-if="dd == 'class'" class="ddlist" data-nav-scroll><button data-for="o : dd_class" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
+        <div class="ddwrap" data-class-open="dd == 'sort'"><button class="game-dropdown" id="sort" title="Order"><span class="padkey a"></span>{{ sort_label }}</button><div data-if="dd == 'sort'" class="ddlist" data-nav-scroll><button data-for="o : dd_sort" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
     </div>
 
     <div class="srow">
