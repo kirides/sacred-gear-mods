@@ -2,6 +2,7 @@
 .tabs { display: flex; flex-direction: row; margin-bottom: 8dp; }
 button.tab { margin-right: 4dp; font-family: "Sacred Game"; }
 button.tab.on { border-color: #ffd780; color: #ffd780; }
+.row { flex-wrap: wrap; }
 .row .label { margin: 0 4dp 0 8dp; align-self: center; }
 button.mini { margin: 0 4dp 0 0; }
 .blist { height: 270dp; overflow-y: auto; margin-top: 6dp; }
