@@ -156,6 +156,30 @@ span.padkey.right { decorator: image(gear:pad/right contain); }
 .thick-frame { padding: 29dp 26dp 32dp 26dp; }
 /* Where the dark fill starts inside the border (the game sets it per window; Gear reads these classes): bg-fill-settings is the bigger gap (22 / 24.5 / 22 / 24.5, the character selection and the settings screens), bg-fill-dialog the thin one (16 / 20 / 15 / 18, the confirmation popup); without either the default is the settings gap. data-fill-inset="l t r b" overrides. */
 
+/* The game's drop-down button (class game-dropdown on a <button>): the arrow orbs of the options screens, the left cap (image 267) and the right cap (270) keep their
+   size and the middle (281) is tiled, so it is as wide as its label needs (never put a chevron into the label). The list it opens is a .list of .item buttons below it
+   (the mod keeps the open state); wrap both in an element with position: relative if the list floats. */
+button.game-dropdown {
+    display: inline-block;
+    height: 37dp;
+    min-width: 130dp;
+    margin: 0 8dp 0 0;
+    padding: 0 42dp;
+    border: 0;
+    background-color: transparent;
+    decorator: image(gear:image/281 repeat-x) content-box, image(gear:image/267 scale-none left center) border-box, image(gear:image/270 scale-none right center) border-box;
+    color: #e4e4e4;
+    font-family: "Sacred Game";
+    font-size: 16dp;
+    line-height: 31dp;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    transform: none;
+}
+button.game-dropdown:hover, button.game-dropdown:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
+button.game-dropdown:disabled, button.game-dropdown[disabled], button.game-dropdown[disabled]:hover, button.game-dropdown[disabled]:focus { color: #8a8a8a; opacity: 0.55; }
+
 /* The game's own button (class game-button on a <button>): the orb caps (images 280 / 282) keep their size, only the middle (281) is tiled, so a button
    of any width works; the label is centred in the middle part and the pad prompt (.padkey) sits in front of it. Normal grey-white label, hover
    yellow (and with the pad focus; the glow is for the frameless .link only), pressed the other plate (283 to 285), disabled dim. */
