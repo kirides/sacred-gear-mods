@@ -5,7 +5,7 @@
 </head>
 <body data-model="model">
 <div id="panel" class="window" data-panel="panel" data-title="Sector tools">
-    <div class="titlebar">Sector tools</div>
+    <div class="titlebar"><button id="sector-x" class="ibtn titlex" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>Sector tools</div>
     <div class="body">
         <p data-if="!hero" class="muted">No hero yet.</p>
         <div data-if="hero">

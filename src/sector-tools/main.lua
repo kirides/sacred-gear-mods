@@ -310,6 +310,7 @@ local function load_doc()
     end})
     if not doc then gear.log('sector tools: ui/panel.rml failed: ' .. tostring(err)) return end
     local function on(id, fn) doc:on('#' .. id, 'click', gear.guard('click ' .. id, fn)) end
+    on('sector-x', function() pinned = false; alt_until = 0 end)
     on('rec', function() if rec.on then actions.stop() else actions.start() end end)
     on('add', actions.add)
     on('clear', actions.clear)

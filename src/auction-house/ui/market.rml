@@ -10,7 +10,7 @@
 
 <div id="market" class="window" data-panel="market" data-title="Auction house" data-if="market_open">
     <div data-if="dd != ''" id="ah-ddshade"></div>
-    <div class="titlebar">Auction house</div>
+    <div class="titlebar"><button id="ah-x" class="ibtn titlex" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>Auction house</div>
     <div class="body">
         <div class="tabbar"><a data-for="t : tabs" class="link tab" data-attr-id="t.id" data-class-on="t.on">{{ t.name }}</a></div>
         <p data-class-bad="status_bad" class="muted small">{{ status }}</p>

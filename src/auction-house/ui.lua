@@ -468,6 +468,7 @@ local function load_doc(client, cfg, st)
     local function on(sel, fn) doc:on(sel, 'click', gear.guard('click ' .. sel, fn)) end
     local function target(e) return ids[tostring(e.current)] end
     local c = function() return pending_client end
+    on('#ah-x', function() M.close() end)
     on('#ah-toggle', function()
         local cl = c()
         if not (cl and last.open_enabled) then return end

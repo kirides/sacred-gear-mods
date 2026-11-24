@@ -277,6 +277,7 @@ local function load_doc(m)
     on('#toggle', function()
         if transfer.chest_window_open() and not ui.edit_mode() then stash_open = not stash_open end
     end)
+    on('#stash-x', function() stash_open = false end)
     on('#sp-prev', function() view.stash_page = math.max(0, view.stash_page - 1) end)
     on('#sp-next', function() view.stash_page = view.stash_page + 1 end)
     on('#xp-prev', function() view.source_page = math.max(0, view.source_page - 1) end)

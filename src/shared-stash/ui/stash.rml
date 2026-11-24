@@ -9,7 +9,7 @@
 </div>
 
 <div id="stash" class="window" data-panel="stash" data-title="Shared stash" data-if="stash_open">
-    <div class="titlebar">Shared stash</div>
+    <div class="titlebar"><button id="stash-x" class="ibtn titlex" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>Shared stash</div>
     <div class="body">
         <p data-if="notice != ''" data-class-bad="notice_bad" class="muted wrap">{{ notice }}</p>
         <p data-if="notice2 != ''" class="muted small">{{ notice2 }}</p>
