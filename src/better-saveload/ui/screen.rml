@@ -56,7 +56,7 @@
 
     <div data-if="save_on &amp;&amp; in_game" class="namerow">
         <span class="muted lab">Name</span><input id="name" type="text" class="field grow" data-value="name" maxlength="60"/>
-        <button class="mini" id="kbd" title="Type the name with an on-screen keyboard (for a controller)"><span class="padkey a"></span>{{ name_kbd }}</button>
+        <button class="ibtn" id="kbd" title="Type the name with an on-screen keyboard (for a controller)"><span class="padkey a"></span><span class="icon icon-keyboard"></span> {{ name_kbd }}</button>
     </div>
 
     <div class="btns">
@@ -64,7 +64,7 @@
         <div data-if="!confirm" class="confirm">
             <button data-if="save_on" class="game-button" id="save" data-attrif-disabled="!can_primary"><span class="padkey a"></span>{{ primary_label }}</button>
             <button data-if="!save_on" class="game-button" id="load" data-attrif-disabled="!can_load"><span class="padkey a"></span>Load</button>
-            <button class="game-button" id="delete" data-attrif-disabled="!can_delete" title="Deletes the savegame file"><span class="padkey a"></span>Delete</button>
+            <button class="ibtn" id="delete" data-attrif-disabled="!can_delete" title="Deletes the savegame file"><span class="padkey a"></span><span class="icon icon-delete"></span> Delete</button>
             <span data-class-good="msg_ok" data-class-bad="!msg_ok" class="grow msg small">{{ msg }}</span>
             <button class="game-button" id="close"><span class="padkey b"></span>Back</button>
         </div>
