@@ -2,7 +2,7 @@
 return {
     id = 'shared-stash',
     name = 'Shared stash',
-    version = '0.3.2',
+    version = '0.3.3',
     author = 'kirides',
     description = 'A stash shared by all your heroes, in a panel beside the chest window.',
     automation = true,      -- only for its self test (-gear-auto)
