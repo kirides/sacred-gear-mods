@@ -4,7 +4,7 @@
 .tool { display: flex; flex-direction: row; align-items: center; height: 34dp; }
 .tabs { margin-right: 10dp; }
 button.tab.on { color: #ffe030; }
-button.mini { padding: 0 6dp; margin: 0 3dp 0 0; font-size: 13dp; }
+button.mini { margin: 0 3dp 0 0; }
 button.cyc { min-width: 140dp; }
 button.mini.key { min-width: 38dp; text-align: center; }
 button.mini.wide { min-width: 110dp; }
@@ -46,7 +46,6 @@ button.row.sel { background-color: #4a3f2a; border-color: #ffd780; }
 .msg { margin: 0 8dp; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */
-button.game-button, button.mini, button.tab { flex: none; white-space: nowrap; }
 
 /* the drop-down lists of the filters: a button with a caret opens a list of entries under it; the shade behind it takes the click that closes it */
 #ddshade { position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; z-index: 5; }
