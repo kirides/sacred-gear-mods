@@ -33,7 +33,10 @@ input.game-check.chk { width: 40dp; height: 40dp; }
 /* portraits */
 /* The game's pictures in decorators without "?dp": the document already scales px of a picture by the canvas (1dp = one
    layout unit), and "?dp" scaled them once more (twice as large at 2560x1440). */
-#portraits { position: absolute; width: 92dp; }   /* as wide as the game's column: a wider panel is pushed left off the screen edge */
+#portraits { position: absolute; width: 92dp; }
+/* the grid inside, scaled by the size setting: from the right edge under the game's column, from the left when placed by hand */
+.ptgrid { position: absolute; left: 0px; top: 0px; height: 10dp; transform-origin: left top; }
+.ptgrid.follow { left: auto; right: 0px; transform-origin: right top; }   /* as wide as the game's column: a wider panel is pushed left off the screen edge */
 button.pt { display: block; position: absolute; width: 96dp; height: 132dp; padding: 0; margin: 0; border: 0; background-color: transparent; }
 .pt .ring { position: absolute; left: 0px; top: 0px; width: 96dp; height: 108dp; decorator: image(gear:image/42 scale-none left top); }
 .pt .redring { position: absolute; left: 0px; width: 96dp; decorator: image(gear:image/41 scale-none left bottom); }
