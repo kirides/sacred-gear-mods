@@ -196,7 +196,10 @@ button.ibtn {
     cursor: pointer;
     transform: none;
 }
-button.ibtn:hover, button.ibtn:focus { color: #fff6d0; background-color: transparent; border: 0; transform: none; font-effect: glow(2px 6px 0px 0px #ffb840e6); }
+button.ibtn:hover, button.ibtn:focus { color: #fff6d0; background-color: transparent; transform: none; font-effect: glow(2px 6px 0px 0px #ffb840e6); }
+/* Icon / text buttons side by side are separated by a thin vertical bar, as the tabs of a .tabbar are: */
+button.ibtn + button.ibtn { border-left: 1px #8c744099; margin-left: 4px; padding-left: 12px; }
+button.ibtn + button.ibtn:hover, button.ibtn + button.ibtn:focus, button.ibtn + button.ibtn:active { border-color: #8c744099; }
 button.ibtn:active { color: #ffffff; font-effect: glow(3px 8px 0px 0px #ffe9a8ff); }
 button.ibtn:disabled, button.ibtn[disabled] { color: #6a6a6a; font-effect: none; }
 
