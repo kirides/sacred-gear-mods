@@ -1,6 +1,5 @@
 #chat { position: absolute; left: 8dp; top: 420dp; width: 420dp; padding: 2dp; }
 .tabs { display: flex; flex-direction: row; height: 20dp; margin-bottom: 3dp; }
-.grow { flex: 1 1 auto; }
 button.tab { margin: 0 2dp 0 0; padding: 0 7dp; font-size: 12dp; height: 18dp; line-height: 16dp; }
 button.tab.on { border-color: #ffd780; color: #ffd780; }
 .lwrap { position: relative; }
