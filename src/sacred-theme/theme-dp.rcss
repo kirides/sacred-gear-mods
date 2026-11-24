@@ -156,6 +156,30 @@ span.padkey.right { decorator: image(gear:pad/right contain); }
 .thick-frame { padding: 29dp 26dp 32dp 26dp; }
 /* Where the dark fill starts inside the border (the game sets it per window; Gear reads these classes): bg-fill-settings is the bigger gap (22 / 24.5 / 22 / 24.5, the character selection and the settings screens), bg-fill-dialog the thin one (16 / 20 / 15 / 18, the confirmation popup); without either the default is the settings gap. data-fill-inset="l t r b" overrides. */
 
+/* The compact game button (class mini on a <button>, for pagers, row actions and toolbars): the same orb caps and middle (280 / 281 / 282) scaled to the height of the
+   button, so it fits where the big game-button does not. Mods only choose its margin (and min-width with .wide / .key). Every button keeps its label on one line. */
+button { flex: none; white-space: nowrap; }
+button.mini {
+    display: inline-block;
+    height: 28dp;
+    min-width: 56dp;
+    margin: 0 4dp 0 0;
+    padding: 0 24dp;
+    border: 0;
+    background-color: transparent;
+    decorator: tiled-horizontal(gear:image/280, gear:image/281, gear:image/282);
+    color: #e4e4e4;
+    font-family: "Sacred Game";
+    font-size: 14dp;
+    line-height: 28dp;
+    text-align: center;
+    cursor: pointer;
+    transform: none;
+}
+button.mini:hover, button.mini:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
+button.mini:active { color: #fff2a0; }
+button.mini:disabled, button.mini[disabled], button.mini.dis { color: #8a8a8a; opacity: 0.55; border: 0; }
+
 /* The game's drop-down button (class game-dropdown on a <button>): the arrow orbs of the options screens, the left cap (image 267) and the right cap (270) keep their
    size and the middle (281) is tiled, so it is as wide as its label needs (never put a chevron into the label). The list it opens is a .list of .item buttons below it
    (the mod keeps the open state); wrap both in an element with position: relative if the list floats. */
