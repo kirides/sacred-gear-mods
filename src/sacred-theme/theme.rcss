@@ -208,7 +208,7 @@ button.game-dropdown:disabled, button.game-dropdown[disabled], button.game-dropd
 .dd { position: relative; display: inline-block; flex: none; z-index: 10; }
 .dd.open { z-index: 100; }
 .dd-list { position: absolute; left: 0; top: 100%; min-width: 150px; max-height: 300px; overflow-y: auto; z-index: 200; background-color: #0c0c14; border: 1px #ffd780; padding: 2px; }
-.dd-list button.opt { display: block; width: auto; margin: 0; padding: 3px 10px; text-align: left; white-space: nowrap; color: #e8e8e8; border: 0; background-color: transparent; }
+.dd-list button.opt { display: block; width: auto; min-width: 0; height: auto; margin: 0; padding: 3px 10px; text-align: left; white-space: nowrap; color: #e8e8e8; border: 0; background-color: transparent; decorator: none; font-family: "Segoe UI"; font-size: 15px; line-height: 1.4; transform: none; }
 .dd-list button.opt:hover, .dd-list button.opt:focus, .dd-list button.opt.on { background-color: #ffd78030; border: 0; color: #ffe030; }
 .dd-shade a full-size layer behind an open list that takes the click that closes it. */
 .dd { position: relative; display: inline-block; flex: none; z-index: 10; }
