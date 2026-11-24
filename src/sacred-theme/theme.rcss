@@ -191,7 +191,7 @@ button.game-dropdown {
     height: 37px;
     min-width: 130px;
     margin: 0 8px 0 0;
-    padding: 0 42px;
+    padding: 0 40px;
     border: 0;
     background-color: transparent;
     decorator: image(gear:image/281 repeat-x) content-box, image(gear:image/267 scale-none left center) border-box, image(gear:image/270 scale-none right center) border-box;
