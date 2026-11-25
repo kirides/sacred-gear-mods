@@ -19,10 +19,6 @@
             <button class="ibtn" id="kbd-q" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
             <button class="ibtn" id="clear-q" data-attrif-disabled="q_text == ''" title="Clear the filter"><span class="padkey a"></span><span class="icon icon-close"></span></button>
         </div>
-        <div data-if="osk_open" class="osk">
-            <div class="oskrow" data-for="row : osk_rows"><button data-for="k : row" class="mini key" data-attr-id="k.id"><span class="padkey a"></span>{{ k.label }}</button></div>
-            <div class="oskrow"><button class="mini key wide" id="osk-shift"><span class="padkey a"></span>Shift</button><button class="mini key wide" id="osk-back"><span class="padkey a"></span>Backspace</button><button class="mini key wide" id="osk-done"><span class="padkey a"></span>Done</button></div>
-        </div>
         <div class="muted small">A click on an animal takes it along as {{ mode_text }}. The percentage is the species' base size: change it with the minus and plus buttons.</div>
         <div class="splist" data-nav-scroll>
             <p data-if="none" class="muted">No animal matches.</p>

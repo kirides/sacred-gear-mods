@@ -8,13 +8,18 @@ function M.new(env)
     local shown = false
     local mode = 'ally'                 -- what a click on an animal makes
     local doc, last, msg, refresh_at = nil, {}, '', 0
-    local q, osk, shift = '', false, false     -- the filter text, whether the on-screen keyboard is open, its shift state
-    local OSK = {
-        {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'},
-        {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'},
-        {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'},
-        {'z', 'x', 'c', 'v', 'b', 'n', 'm', '-', ' '},
-    }
+    local q = ''                        -- the filter text
+    local kb = gear.kit.osk and gear.kit.osk{}      -- the on-screen keyboard (gear.kit.osk)
+    local function set_q(t)
+        q = t:sub(1, 30)
+        if doc then doc.model.q_text = q; last.q_text = q end
+    end
+    local function open_osk(on)
+        if not kb then return end
+        if on == false then kb:close() return end
+        if on == true and kb:is_open() then return end
+        kb:toggle{title = 'Filter', text = q, max = 30, on_change = set_q, get = function() return q end}
+    end
     local lookup = gear.lookup
     local core = require('core')
     local open_dd = ''                  -- the open drop-down: 'ord-<i>' (one animal), 'oall' (all of them), or ''
@@ -58,14 +63,6 @@ function M.new(env)
         m.mode_text = mode == 'ally' and 'a fighting ally' or 'a pet'
         m.q_text = q
         m.none = false
-        m.osk_open = osk
-        m.osk_rows = {}
-        for r, line in ipairs(OSK) do
-            m.osk_rows[r] = {}
-            for c, ch in ipairs(line) do
-                m.osk_rows[r][c] = {id = ('osk-%d_%d'):format(r, c), label = ch == ' ' and 'Space' or (shift and ch:upper() or ch)}
-            end
-        end
         if shown then
             -- every animal with its name (two of the same name get (2), (3)), then the ones the filter keeps, the best match first:
             -- a forgiving search (words in any order, a beginning is enough, one typo is forgiven) over the name and the family
@@ -163,23 +160,8 @@ function M.new(env)
             if i then env.dismiss(i) end
             msg = ''
         end)
-        local function set_q(t)
-            q = t:sub(1, 30)
-            if doc then doc.model.q_text = q; last.q_text = q end
-        end
-        on('#kbd-q', function() osk = not osk end)
+        on('#kbd-q', function() open_osk() end)
         on('#clear-q', function() set_q('') end)
-        on('[id^=osk-]', function(e)
-            local id = tostring(e.current)
-            if id == 'osk-back' then set_q(q:sub(1, -2))
-            elseif id == 'osk-shift' then shift = not shift
-            elseif id == 'osk-done' then osk = false
-            else
-                local r, c = id:match('^osk%-(%d+)_(%d+)$')
-                local ch = r and OSK[tonumber(r)] and OSK[tonumber(r)][tonumber(c)]
-                if ch then set_q(q .. (shift and ch:upper() or ch)) end
-            end
-        end)
         on('#mode-ally', function() mode = 'ally' end)
         on('#mode-pet', function() mode = 'pet' end)
         on('#dismiss-all', function() env.dismiss_all(); msg = ''; open_dd = '' end)
@@ -234,6 +216,10 @@ function M.new(env)
             end
         end
         if shown then doc:draw({layer = 'hud'}) end
+        if kb then
+            if not shown then kb:close() end
+            kb:draw()
+        end
         local pe = shown and last.pop and last.pop.open and doc:query('#beasts-pop')
         pop_rect = pe and pe:exists() and pe:rect() or nil
     end
@@ -250,7 +236,7 @@ function M.new(env)
         return names_
     end
 
-    return {draw = draw, set_filter = set_filter, set_osk = function(on) osk = on ~= false end, toggle = function() shown = not shown; open_dd = ''; refresh_at = 0 end,
+    return {draw = draw, set_filter = set_filter, set_osk = function(on) open_osk(on ~= false) end, toggle = function() shown = not shown; open_dd = ''; refresh_at = 0 end,
         open = function(on) shown = on ~= false; open_dd = ''; refresh_at = 0 end,
         open_dropdown = function(id) open_dd = id or ''; refresh_at = 0 end}
 end

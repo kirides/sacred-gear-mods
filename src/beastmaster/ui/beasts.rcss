@@ -19,8 +19,6 @@ button.game-dropdown.ord { min-width: 0; width: 160dp; box-sizing: border-box; }
 .hfill { height: 6dp; background-color: #60c060; }
 .hbar.nobar { background-color: transparent; }
 input.search { flex: 1 1 0px; margin-right: 8dp; }
-.osk { margin: 4dp 0; }
-.oskrow { display: flex; flex-direction: row; margin: 2dp 0; }
 button.key { min-width: 40dp; text-align: center; padding: 0 4dp; margin-right: 3dp; }
 button.key.wide { min-width: 120dp; }
 button.mini { margin: 0 3dp 0 0; }
