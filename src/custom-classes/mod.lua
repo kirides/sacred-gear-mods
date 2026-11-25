@@ -4,6 +4,7 @@ return {
     name = 'Custom classes',
     version = '0.3.2',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Heroes with a class of your own: a Seraphim body with Battle Mage fire, a Gladiator that casts. A class is a '
         .. 'profile on one of the eight hero bodies (skills, arts from any class, runes) made with the Sacred Class Editor or '
         .. 'by hand. Needs the mod on every computer in a LAN game.',

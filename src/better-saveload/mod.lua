@@ -4,6 +4,7 @@ return {
     name = 'Better SaveLoad',
     version = '1.4.7',
     author = 'kirides',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'The savegame screen made new: hero, class, level and picture of every savegame, filters by '
         .. 'character and class, a search, several orders, and room for thousands of savegames (the game stops at '
         .. '100 on its own screen). Works with the mouse, the keyboard and the controller.',

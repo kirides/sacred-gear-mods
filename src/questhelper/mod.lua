@@ -4,6 +4,7 @@ return {
     name = 'Quest helper',
     version = '0.2.3',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'A panel with the quest items in your backpack (read here) and the quest records of your hero, with hints, '
         .. 'which the game server reports (Sacred.GameServer with scripts-examples/quest_helper.lua and hero data). '
         .. 'Limits: neither Gear nor the server can read the game\'s quest journal.',

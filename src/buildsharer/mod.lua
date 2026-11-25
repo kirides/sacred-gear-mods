@@ -4,6 +4,7 @@ return {
     name = 'Build sharer',
     version = '0.2.5',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Publish your hero build to the game server and browse the builds other players shared. '
         .. 'Needs the Sacred.GameServer of the SacredEngineRemake with scripts-examples/build_sharer.lua; the server reads your skills and '
         .. 'equipment itself, this mod only sends a title, a note, tags and the items you carry.',

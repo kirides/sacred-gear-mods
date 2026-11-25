@@ -10,6 +10,7 @@ return {
     name = 'Loot filter',
     version = '0.3.5',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Picks up only the items you want: by class, quality and category; dims the rest on the ground.',
     automation = true,      -- only for its self test (-gear-auto)
     -- Defaults of what the Mods screen does not list; config.lua in this folder overrides them (see config.lua and
