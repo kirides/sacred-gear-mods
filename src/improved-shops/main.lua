@@ -4,10 +4,12 @@
 
 local S = gear.settings
 
--- The equipment categories of the item picker (see GearDrops): weapon, chest armour, ring, shield, helmet, boots, belt, amulet, shoulders, arms,
--- legs, gloves, wings, horse equipment. Potions (9) and the rest are left alone.
-local EQUIPMENT = {[5] = true, [6] = true, [8] = true, [13] = true, [17] = true, [18] = true, [19] = true, [20] = true, [21] = true,
-                   [22] = true, [23] = true, [24] = true, [25] = true, [29] = true}
+-- The equipment categories of the item picker; potions and the rest are left alone.
+local C = gear.shop.CATEGORY
+local EQUIPMENT = {}
+for _, c in ipairs({C.WEAPON, C.CHEST_ARMOUR, C.RING, C.SHIELD, C.HELMET, C.BOOTS, C.BELT, C.AMULET, C.SHOULDERS, C.ARMS, C.LEGS, C.GLOVES, C.WINGS, C.HORSE}) do
+    EQUIPMENT[c] = true
+end
 
 local stats = {events = 0, rolled = 0, added = 0, failed = 0}
 
