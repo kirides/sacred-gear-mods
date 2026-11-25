@@ -16,7 +16,7 @@
 
 ## v1.4.3 (2026-11-21)
 
-- Small fixes and improvements.
+- Improved: the savegame screen is its own panel, so it can have its own panel key.
 
 ## v1.4.2 (2026-11-21)
 

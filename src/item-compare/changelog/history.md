@@ -1,10 +1,10 @@
 ## v0.2.2 (2026-11-23)
 
-- Small fixes and improvements.
+- Under the hood: the comparison panel uses resolution-independent sizes.
 
 ## v0.2.1 (2026-11-21)
 
-- Small fixes and improvements.
+- No changes to this mod in this release.
 
 ## v0.2.0 (2026-11-21)
 

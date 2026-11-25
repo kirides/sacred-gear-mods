@@ -8,7 +8,8 @@
 
 ## v0.2.4 (2026-11-24)
 
-- Small fixes and improvements.
+- Improved: small buttons in the build sharer window are a little taller.
+- Under the hood: the Class and Sort dropdowns share one template.
 
 ## v0.2.3 (2026-11-23)
 
@@ -20,7 +21,7 @@
 
 ## v0.2.1 (2026-11-21)
 
-- Small fixes and improvements.
+- No changes to this mod in this release.
 
 ## v0.2.0 (2026-11-21)
 

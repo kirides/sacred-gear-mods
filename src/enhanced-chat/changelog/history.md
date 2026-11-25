@@ -18,7 +18,7 @@
 
 ## v1.1.1 (2026-11-21)
 
-- Small fixes and improvements.
+- No changes to this mod in this release.
 
 ## v1.1.0 (2026-11-21)
 

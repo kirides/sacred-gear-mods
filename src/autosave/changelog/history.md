@@ -4,11 +4,11 @@
 
 ## v1.2.2 (2026-11-23)
 
-- Small fixes and improvements.
+- Improved: the autosave message and the More tab use resolution-independent sizes.
 
 ## v1.2.1 (2026-11-21)
 
-- Small fixes and improvements.
+- No changes to this mod in this release.
 
 ## v1.2.0 (2026-11-21)
 

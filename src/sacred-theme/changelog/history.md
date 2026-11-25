@@ -8,11 +8,11 @@
 
 ## v0.1.6 (2026-11-24)
 
-- Small fixes and improvements.
+- Documentation only: the readme describes the core widgets the theme styles; nothing changes in the game.
 
 ## v0.1.5 (2026-11-23)
 
-- Small fixes and improvements.
+- Under the hood: the theme sizes the game pictures (icons, buttons, sliders, scroll bars) differently.
 
 ## v0.1.4 (2026-11-23)
 
