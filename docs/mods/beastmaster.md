@@ -9,7 +9,7 @@ Animals that travel with your hero, in two roles. One mod, because both share th
 
 ## What you need
 
-Sacred Gear with the speed buffs (`gear.buffs` `speeds`), `creature:set_level`, `creature:set_pet`, `creature:copy_allegiance` and `creature:order_move` on any creature, and SacredBild with the pets module (draw scale of the model and its shadow, pick filter). Single player only.
+Sacred Gear with the speed buffs (`gear.buffs` `speeds`), `creature:gait` (running), `creature:set_level`, `creature:set_pet`, `creature:copy_allegiance` and `creature:order_move` on any creature, and SacredBild with the pets module (draw scale of the model and its shadow, pick filter). Single player only.
 
 ## How to use it
 
@@ -35,7 +35,7 @@ Under *With you now* every animal has an **orders** drop-down, the same idea as 
 
 ## Pace
 
-A creature that is ordered to move *walks*, and there is no order for the run animation, so animals fell far behind a running hero. Beastmaster gives each animal a movement speed buff of its own (`beastmaster:pace`): the hero's movement speed times `core.WALK_TO_RUN` (2.8: a walk covers about a third of the ground of the hero's run at the same speed value), and 1.5 times that when the animal is more than about three follow distances away, so it catches up. It never slows an animal down (a shared speed buff stays) and is off while an ally is going for an enemy. The walk animation runs faster with it; the Mods screen has *Animals keep up with the hero* to switch it off. The factor comes from rough measurements: adjust `WALK_TO_RUN` if the animals still lag or race ahead.
+A creature that is ordered to move *walks*, and the hero runs about 2.5 times as fast, so animals fell far behind. When an animal is more than about two follow distances behind, Beastmaster follows its move order with Gear's `creature:gait(2)`: the run animation the game's creatures use when they chase an enemy (measured on a wolf: 133 units a second walking, 335 running). An animal slower than the hero also gets a movement speed buff of its own (`beastmaster:pace`) up to the hero's speed (a shared speed buff or a faster animal keeps what it has). The Mods screen has *Animals run to keep up with the hero* to switch both off. Needs a Sacred Gear with `creature:gait`; without it the animals walk as before.
 
 ## Party buffs
 

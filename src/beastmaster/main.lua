@@ -193,18 +193,24 @@ local function order_for(e)
     return core.order_of(e.role, e.order, setting('behaviour', 'aggressive'))
 end
 
--- Pace: an animal keeps up with the hero, and goes faster when it is far behind (so it catches up). A creature ordered to move walks, the
--- hero runs (measured: a wolf at the same speed value covers about a third of the hero's ground), and there is no order for the run animation,
--- so the movement speed is set with a buff of ours ('speeds' are added past the engine's cap, and the animation runs value / 100 as fast):
--- the hero's speed times core.WALK_TO_RUN, and 1.5 times that beyond about 3 follow distances.
--- `e.pace` is what the buff adds now, so the animal's own speed (with other buffs) is what the speed reads without it.
+-- Pace: an animal keeps up with the hero. A creature ordered to move walks (the hero runs, about 2.5 times as fast), so when it is
+-- far behind the order is followed by creature:gait(2), the run it uses when it chases an enemy; its movement speed is lifted to the
+-- hero's with a buff of ours ('speeds' are added past the engine's cap) when it is slower. `e.pace` is what the buff adds now, so the
+-- animal's own speed (with other buffs) is what the speed reads without it.
+-- Ordered to a spot: running when far from the hero (Gear's creature:gait, 2 = run), else walking.
+local function go(c, x, y, run)
+    if not c:order_move(x, y) then return false end
+    if run and c.gait and setting('match_speed', true) then c:gait(2) end
+    return true
+end
+
 local pace_off = false     -- (the self test switches it off to measure the animals' own speed)
 local function pace(c, e, hero, d, follow, fighting)
     if not (gear.buffs and gear.buffs.speeds and setting('match_speed', true)) or pace_off then return end
     local mine, theirs = gear.buffs.speeds(c), gear.buffs.speeds(hero)
     if not (mine and theirs and mine.move_speed and theirs.move_speed) then return end
     local base = mine.move_speed - (e.pace or 0)
-    local want = theirs.move_speed * core.WALK_TO_RUN * (d > follow * 3 and 1.5 or 1)
+    local want = theirs.move_speed
     local delta = fighting and 0 or math.max(0, math.floor(math.min(600, want) - base + 0.5))   -- never slower than it is (a shared speed buff stays)
     if math.abs(delta - (e.pace or 0)) < 6 then return end
     e.pace = delta
@@ -288,7 +294,7 @@ local function think()
                         s.target = nil
                         if d > follow * 1.6 and clock - s.at > 0.8 then
                             local tx, ty = core.spot(hx, hy, slot.ally, total.ally, follow * 0.8, 0)
-                            if c:order_move(tx, ty) then s.at = clock end
+                            if go(c, tx, ty, d > follow * 2) then s.at = clock end
                         end
                     end
                 else
@@ -297,7 +303,7 @@ local function think()
                     local ally = e.role == 'ally'
                     if d > follow * (ally and 1.6 or 1.4) and clock - s.at > 0.8 then
                         local tx, ty = core.spot(hx, hy, slot[e.role], total[e.role], follow * (ally and 0.8 or 0.7), 0)
-                        if c:order_move(tx, ty) then s.at = clock end
+                        if go(c, tx, ty, d > follow * 2) then s.at = clock end
                     end
                 end
             end

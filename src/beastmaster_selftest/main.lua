@@ -82,19 +82,21 @@ gear.task(function()
     local ws = wolf and gear.buffs.speeds(wolf)
     local rs = rabbit and gear.buffs.speeds(rabbit)
     print(('NOTE move speed: hero %s, ally %s, pet %s'):format(tostring(hs and hs.move_speed), tostring(ws and ws.move_speed), tostring(rs and rs.move_speed)))
-    check("the ally has the hero's pace", hs and ws and math.abs(ws.move_speed - hs.move_speed * 2.8) <= 12, ('%s vs %s'):format(tostring(ws and ws.move_speed), tostring(hs and hs.move_speed)))
-    check("the pet has the hero's pace", hs and rs and math.abs(rs.move_speed - hs.move_speed * 2.8) <= 12, ('%s vs %s'):format(tostring(rs and rs.move_speed), tostring(hs and hs.move_speed)))
-    -- far behind: faster than the hero, to catch up
-    if wolf then
+    check("the ally is at least as fast as the hero", hs and ws and ws.move_speed >= hs.move_speed - 8, ('%s vs %s'):format(tostring(ws and ws.move_speed), tostring(hs and hs.move_speed)))
+    check("the pet is at least as fast as the hero", hs and rs and rs.move_speed >= hs.move_speed - 8, ('%s vs %s'):format(tostring(rs and rs.move_speed), tostring(hs and hs.move_speed)))
+    -- far behind: the ally runs (gait 2, the run it uses when it chases)
+    if wolf and wolf.gait then
         local wx2, wy2, wl2 = wolf:position()
-        hero:teleport(wx2 + 1400, wy2, wl2)
-        gear.wait(1.0)
-        local fs = gear.buffs.speeds(wolf)
-        print(('NOTE far behind: ally %s'):format(tostring(fs and fs.move_speed)))
-        check('far behind the ally is faster than the hero', fs and hs and fs.move_speed > hs.move_speed * 2.8 * 1.3, ('%s vs %s'):format(tostring(fs and fs.move_speed), tostring(hs and hs.move_speed)))
+        hero:teleport(wx2 - 700, wy2 - 420, wl2)
+        local gait
+        for _ = 1, 6 do
+            gear.wait(0.4)
+            gait = wolf:gait()
+            if gait == 2 then break end
+        end
+        check('far behind the ally runs (gait 2)', gait == 2, gait)
         gear.wait(8)
     end
-    -- probe: real walking speed (units per second) of the hero and the animals, without and with the pace buff
     A.screenshot('beasts_follow')
 
     -- fight: a hostile creature the game placed, with the ally next to it

@@ -96,7 +96,4 @@ end
 -- ("To me" calls it).
 function M.joins_hero(order) return order ~= 'hold' end
 
--- How much faster than a walk the hero's run is at the same movement speed value (measured in the game: about 3).
-M.WALK_TO_RUN = 2.8
-
 return M

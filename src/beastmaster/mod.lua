@@ -34,8 +34,8 @@ return {
             choices = {{value = 'aggressive', label = 'Aggressive (fight what comes near you)'}, {value = 'defensive', label = 'Defensive (only what comes close)'},
                 {value = 'passive', label = 'Passive (only follow)'}, {value = 'hold', label = 'Wait here (stay where they stand)'}},
             tooltip = 'What an animal does unless you gave it other orders in the Beastmaster window. A pet only follows (any order but Wait here) or waits'},
-        {id = 'match_speed', type = 'bool', label = "Animals keep up with the hero (faster when far behind)", default = true, section = 'Behaviour',
-            tooltip = "Their own walk is slow: this gives them a speed that keeps up with the hero, and more when they are far behind, so they catch up"},
+        {id = 'match_speed', type = 'bool', label = "Animals run to keep up with the hero", default = true, section = 'Behaviour',
+            tooltip = "Their own walk is slow: they run (the run animation of a chase) when they are far behind, and are as fast as the hero, so they catch up"},
         {id = 'follow', type = 'number', label = 'Follow distance (tiles)', min = 2, max = 12, step = 1, default = 4, section = 'Behaviour'},
     },
     keys = {
