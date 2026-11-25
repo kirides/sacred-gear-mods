@@ -41,6 +41,10 @@
         "combat"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/art-bars.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/art-bars.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/art-bars-cooldown.jpg"
+      ],
       "changelog": "mods/art-bars/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -80,6 +84,10 @@
         "saves"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/autosave.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/autosave.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/autosave-more.jpg"
+      ],
       "changelog": "mods/autosave/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -95,6 +103,7 @@
       "version": "0.1.2",
       "author": "kirides",
       "description": "Edit the game's balance.bin from inside the game: difficulty multipliers and levels, creature health, skill curves, loot chances, item prices, movement speed and more, with the game's own value next to yours. Your changes live in this mod only, as an overlay the game reads instead of its file (switch the mod off or delete it and the game is as before); the game's own balance.bin is never touched. Changes apply the next time the game starts. Balance patches can be exported and imported as plain data files.",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/balance-editor.jpg",
       "changelog": "mods/balance-editor/changelog/history.md",
       "recommended": [
         "sacred-theme"
@@ -107,6 +116,11 @@
       "version": "0.3.1",
       "author": "Sacred Gear",
       "description": "Animals that travel with your hero: wolves, bears, boars, deer, horses, spiders, scorpions, crabs, lizards, birds ... every animal of the game. Allies fight for you, have the level of the hero you play (so their damage grows with you) and grow bigger every 18 levels up to level 216. Pets are drawn larger, follow you around, cannot be targeted or hurt and do nothing else. Each species has its own base size (big monsters like spiders are drawn smaller). Pick them in the Beastmaster window (Ctrl+B, or the controller's mod menu). Single player only.",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/beastmaster.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/beastmaster.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/beastmaster-pets.jpg"
+      ],
       "changelog": "mods/beastmaster/changelog/history.md",
       "requires": [
         "sacred-theme"
@@ -143,6 +157,11 @@
         "quests"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/bounty.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/bounty.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/bounty-editor.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/quests.jpg"
+      ],
       "changelog": "mods/bounty/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -182,6 +201,11 @@
         "companions"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/companions.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/companions.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/companions-party.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/companions-portraits.png"
+      ],
       "changelog": "mods/companions/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -201,6 +225,15 @@
         "classes"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes-caster.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes-chain.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes-copy.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes-master-exchange.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes-master.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/custom-classes-spell.jpg"
+      ],
       "changelog": "mods/custom-classes/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -240,6 +273,10 @@
         "loot"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/drop-tuning.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/drop-tuning.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/drop-tuning-more.jpg"
+      ],
       "changelog": "mods/drop-tuning/changelog/history.md"
     },
     {
@@ -254,6 +291,10 @@
         "ui"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/enhanced-chat.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/enhanced-chat.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/enhanced-chat-codes.jpg"
+      ],
       "changelog": "mods/enhanced-chat/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -355,6 +396,7 @@
       "version": "0.1.2",
       "author": "Sacred Gear",
       "description": "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/minimap.jpg",
       "changelog": "mods/minimap/changelog/history.md",
       "recommended": [
         "sacred-theme"
@@ -367,6 +409,13 @@
       "version": "0.1.3",
       "author": "Sacred Gear",
       "description": "Build character names with the game's colors and little pictures: type, pick colors and icons, or color a name with a gradient, and copy the raw text (\\cffRRGGBB colors, \\gffffffff00000XXX icons) that Sacred stores. Pasted raw names are read back. The same editor also runs as a web page (docs/name-editor).",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/name-editor.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/name-editor.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/name-editor-gradient.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/name-editor-icons.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/name-editor-web.jpg"
+      ],
       "changelog": "mods/name-editor/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -407,6 +456,10 @@
         "tools"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/realms.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/realms.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/realm-more.jpg"
+      ],
       "changelog": "mods/realms/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -489,6 +542,10 @@
         "multiplayer"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/shared-stash.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/shared-stash.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/shared-stash-tooltip.jpg"
+      ],
       "changelog": "mods/shared-stash/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -514,6 +571,7 @@
       "version": "0.1.1",
       "author": "kirides",
       "description": "Changes what spells do, by who casts them: the hero you play, companions, enemies, neutral creatures or traps. Shorten (or lengthen) root, stun and fear, weaken (or strengthen) the changes of attack, defence and speed, and the damage. Single player only.",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/spell-tuning.jpg",
       "changelog": "mods/spell-tuning/changelog/history.md"
     },
     {
@@ -523,6 +581,11 @@
       "version": "0.1.3",
       "author": "Sacred Gear",
       "description": "Every UI image of the game in a grid with its number, in the mod's page of the Mods screen. The numbers are the N of the .sprite-N classes of the Sacred theme and of gear:image/N: a quick lookup for modders. Click a picture to copy its class.",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/sprite-browser.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/sprite-browser.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/sprite-browser-preview.jpg"
+      ],
       "changelog": "mods/sprite-browser/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
@@ -570,6 +633,10 @@
         "server"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/world-events.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/world-events.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/world-events-boss.jpg"
+      ],
       "changelog": "mods/world-events/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
