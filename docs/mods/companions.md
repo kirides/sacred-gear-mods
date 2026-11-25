@@ -60,6 +60,8 @@ switched-off arts); *Keep all* / *Keep the new ones* do it for the whole party (
 *Bring all* brings every kept hero that is not in the party yet, as far as there is room; a hero brought from a file gets their tactics back.
 With *Separate purses* each hero row shows the hero's gold (*Purses* gives and takes, *All* sends everything).
 
+![The party window](../images/companions-party.jpg)
+
 What the companions do on their own: they keep up with you (a companion left far behind or on another level joins
 you), pick the enemy nearest to you, attack it with their weapon, and use their abilities like a player would: combos
 and attack arts and spells on the target as soon as they have regenerated, auras and buffs (Steinhaut, Ehrfurcht ...)

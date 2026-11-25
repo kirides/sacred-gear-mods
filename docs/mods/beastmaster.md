@@ -1,5 +1,7 @@
 # Beastmaster
 
+![Beastmaster window](../images/beastmaster.jpg)
+
 Animals that travel with your hero, in two roles. One mod, because both share the same spawning, following, savegame storage and window. Every animal of the game is on the list (122 species: wolves, bears, boars, deer, horses, cows, pigs, sheep, chickens, birds, bats, snakes, spiders, scorpions, crabs, lizards, insects, worms ...).
 
 - **Allies** follow you in a half circle behind, attack the enemy nearest to you, and have the **level of the hero you play** (the engine derives their health and damage from their type and level, as for the creatures it places, so they grow with you; *Ally level* scales it, *Ally damage* multiplies their bites). They are drawn at the species' base size times a growth factor that **steps up every 18 levels until level 216** (75% at level 1 to 125% at level 216 by default: 12 steps of about 4%).
@@ -13,7 +15,9 @@ Sacred Gear with the speed buffs (`gear.buffs` `speeds`), `creature:set_level`, 
 
 Press **Ctrl+B** (or open the controller's mod menu) for the Beastmaster window. Choose *Ally* or *Pet*, type in the **filter row** (a forgiving search over the names: words in any order, a beginning is enough, one typo is forgiven; the keyboard button opens an on-screen keyboard for the controller), then pick an animal from the list to take it along; *Dismiss* sends one away. Next to each species the **base size** is changed with - and + (5% a step, kept for all games): big monsters such as spiders, scorpions and crabs start much smaller than their wild kind, so they fit beside a hero. The animals belong to the savegame. The Mods screen (**F11**) has the limits (allies and pets at most), ally strength, pet size, follow distance and how far allies fight from you.
 
-The window uses the shared theme; every button is a stop for the controller (A presses).
+![A pet next to an ordinary animal of its kind](../images/beastmaster-pets.jpg)
+
+The window uses the shared theme (`sacred-theme`, required); every button is a stop for the controller (A presses).
 
 ## Party buffs
 
@@ -23,9 +27,12 @@ The buffs a companion shares with the heroes (Steinhaut, Wieselflink, Sturm und 
 
 The game has no fox or dove creature types. `species.lua` is the list: a creature type id, the model family (WOLF.GRN covers Silberwolf, Grauwolf, Panzerwolf ...) and the default base scale (spiders 0.3 to 0.7, scorpion 0.5, crabs 0.4 to 0.5, lizards 0.6 and so on; a wolf 1.0). The names come from the game, in your language. The default sizes are set by eye: adjust them in the window.
 
-## Notes for tinkerers
+## Development
+
+- **Files:** `src/beastmaster/mod.lua` (manifest, settings, keys), `core.lua` (growth steps, limits: logic without the game), `species.lua` (the animal list with model families and default base sizes), `main.lua` (spawning, following, orders, buffs, the savegame store), `window.lua` and `ui/beasts.rml` / `beasts.rcss` (the window, on the shared theme).
+- **Depends on:** Sacred Gear (`gear.buffs`, `creature:set_level`, `set_pet`, `copy_allegiance`, `order_move`), SacredBild's pets module, `sacred-theme`; optional: Companions (shared buffs, `companions.buff` events).
+- **Test it:** `luajit tests/beastmaster_test.lua` runs the logic outside the game. `src/beastmaster_selftest` (`Sacred.exe -gear-auto -gear-instance=beasts -gear-load=10 -gear-mods=sacred-theme,beastmaster,beastmaster_selftest`, in a copy of the game folder) takes an ally and two pets along and checks following, fighting, the shared buffs, growth with the hero's level and the filter row; `src/beastmaster_buffs_selftest` covers the buffs alone. The pictures on this page come from the first one ([Screenshots](../Screenshots.md)).
 
 - Pets are `creature:set_pet{scale, untargetable}` plus `set_modifiers{taken = 0}`. SacredBild scales the model about the object's render position (object +0x7C / +0x80) with a matrix applied before the draw, so the shadow grows with it.
 - Allies are spawned plain, join the hero's side with `copy_allegiance` (enemies fight them), get `set_level(hero level * Ally level %)` and are ordered with `order_attack` / `order_move` every few tenths of a second. Measured: a level 1 wolf bites for about 8.5 with 65 health, a level 50 one for about 84 with 1990 health, so the damage grows steeply with the level.
 - Growth: `core.stage(level)` is one step per 18 levels up to 12 at level 216; `core.growth` runs linearly from *Ally size at level 1* to *at level 216*.
-- Self test: `src/beastmaster_selftest` (run it in a copy of the game folder).

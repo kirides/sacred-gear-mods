@@ -1,5 +1,7 @@
 # Minimap
 
+![The minimap in the top right corner](../images/minimap.jpg)
+
 The game's own world map as a small overlay that follows the hero: the same map pictures the world map window shows,
 cut to a rectangle or a circle, with a gold frame, compass letters and the trader symbols of the map.
 
@@ -19,3 +21,9 @@ stacked from thin clipping rows. The geometry is in `src/minimap/projection.lua`
 
 Tested in the game at 1600x900 (self test `src/minimap_selftest`, `-gear-auto`): the hero lands on the map where the villages and trader symbols line up with the map. The first line of the log
 (`minimap: hero at world ...`) shows where the mod puts the hero on the map.
+
+## Development
+
+- **Files:** `src/minimap/mod.lua` (manifest, settings, keys), `projection.lua` (world position to map picture, zoom and clipping rows: logic without the game), `main.lua` (the panel, markers, zoom buttons, controller menu entries) and `ui/` (the RmlUi document).
+- **Depends on:** Sacred Gear (`gear:texture/` for the map tiles, `gear.game.map_markers` for the trader symbols), `gear.settings`; the layout editor moves the panel.
+- **Test it:** `luajit tests/minimap_test.lua` checks the projection and the clipping. `src/minimap_selftest` (`Sacred.exe -gear-auto -gear-instance=minimap -gear-load=10 -gear-mods=sacred-theme,minimap,minimap_selftest`, in a copy of the game folder) takes pictures at every zoom level, of the rectangle and of the view without markers. `gear.emit('minimap.set', id, value)` changes a setting from another mod or a test.

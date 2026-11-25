@@ -19,3 +19,9 @@ game started the region over (the saved progress is written back). After the bos
 from 0.
 
 Not tested in the game yet: the table layout is taken from the game's code and from the Persistent Region Counter mod.
+
+## Development
+
+- **Files:** `src/region-counter/mod.lua` (manifest, settings) and `main.lua` (the half-second comparison, the per savegame store).
+- **Depends on:** `gear.data.regions` and the savegame store (`gear.store.game`); the progress pill comes from World events.
+- **Test it:** `luajit tests/region_counter_test.lua` runs the logic outside the game. Pictures: [Screenshots](../Screenshots.md).
