@@ -111,10 +111,10 @@ end
 
 -- Loads the ring around the view ahead of time (a few per frame).
 local function prefetch(px, py, w, h, z, scale)
-    if not tex_api then return end
+    if not tex_api then return false end
     local size = P.TILE_PX / scale * z
     local ring = P.visible_tiles(px, py, w + 2 * size, h + 2 * size, z, scale)
-    local loaded = 0
+    local loaded, pending = 0, false
     for _, t in ipairs(ring) do
         local key = ('s%d:%d:%d'):format(scale, t.r, t.c)
         local e = tile_cache[key]
@@ -123,8 +123,11 @@ local function prefetch(px, py, w, h, z, scale)
         elseif loaded < PREFETCH_PER_FRAME then
             loaded = loaded + 1
             tile_source(scale, t.r, t.c)
+        else
+            pending = true
         end
     end
+    return pending or loaded > 0     -- more to load now or next frame
 end
 
 local function release_tiles(all)
@@ -176,6 +179,7 @@ local function game_strip_tiles(set, wy, s)
     return out, table.concat(parts, ',')
 end
 
+local still = {}     -- the inputs of the last model and the model (see snapshot)
 local function snapshot()
     -- Every key the document binds must exist from the first model on (a key added later is not seen by its bindings).
     local m = {vis = false, round = true, w = 200, h = 200, wx = 0, wy = 0, shade = '#00000000', compass = true,
@@ -191,11 +195,20 @@ local function snapshot()
     local z, level = (game and P.game_zoom_of or P.zoom_of)(setting('zoom', 3))
     local wx, wy = w / 2 - px * z, h / 2 - py * z       -- where the map's top left lies in the view
     local scale = setting('map', 'render') == 'render' and P.render_scale(z) or nil   -- nil: the game's own map tiles
+    local opacity = math.max(30, math.min(100, tonumber(setting('opacity', 90)) or 90))
+    -- Nothing that the model is made of changed since the last frame (the hero stands still, no setting moved) and the ring of tiles
+    -- around the view is loaded: the model is the same one. (The tile bookkeeping below only counts frames while the view changes, so a
+    -- tile that is still on the screen is not released.) This skips building the strips and markers tables, about 90 KB of garbage a frame.
+    local c = still
+    if c.m and not c.loading and c.px == px and c.py == py and c.w == w and c.h == h and c.z == z and c.scale == scale and c.game == game and
+        c.round == round and c.opacity == opacity and c.compass == setting('compass', true) and c.msize == setting('marker_size', 22) and
+        c.hero == setting('hero_size', 6) and c.markers == setting('markers', true) then
+        return c.m
+    end
     local set = game and P.game_tiles(px, py, w, h, z, SECTORS) or P.visible_tiles(px, py, w, h, z, scale)
     frame = frame + 1
-    if scale then prefetch(px, py, w, h, z, scale) end
+    c.loading = scale and prefetch(px, py, w, h, z, scale) or false
     if frame % 15 == 0 or not scale then release_tiles(not scale) end   -- no scale: the pictures are the game's own textures, nothing of ours to release
-    local opacity = math.max(30, math.min(100, tonumber(setting('opacity', 90)) or 90))
     local alpha = math.floor(255 * (1 - opacity / 100) + 0.5)
 
     m.vis, m.round, m.w, m.h, m.wx, m.wy = true, round, w, h, wx, wy
@@ -239,6 +252,8 @@ local function snapshot()
     m.marker_count = #list
     while #list < MARKER_SLOTS do list[#list + 1] = {x = 0, y = 0, s = 0, src = DUMMY} end
     m.markers, m.markers_sig = list, table.concat(msig, ',')
+    c.m, c.px, c.py, c.w, c.h, c.z, c.scale, c.game, c.round, c.opacity = m, px, py, w, h, z, scale, game, round, opacity
+    c.compass, c.msize, c.hero, c.markers = setting('compass', true), setting('marker_size', 22), setting('hero_size', 6), setting('markers', true)
     return m
 end
 
