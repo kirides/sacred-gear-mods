@@ -29,7 +29,7 @@ gear.task(function()
     set('map', 'render')
     set('zoom', 1); set('hero_size', 28); set('marker_size', 40)
     A.screenshot('mm-big-icons')
-    set('hero_size', 14); set('marker_size', 22); set('zoom', 3)
+    set('hero_size', 6); set('marker_size', 22); set('zoom', 3)
     local function panel() for _, p in ipairs(gear.ui.panels()) do if p.key == 'minimap:minimap' then return p end end end
     local p = panel()
     if p then

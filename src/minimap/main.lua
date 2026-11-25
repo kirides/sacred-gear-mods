@@ -179,7 +179,7 @@ end
 local function snapshot()
     -- Every key the document binds must exist from the first model on (a key added later is not seen by its bindings).
     local m = {vis = false, round = true, w = 200, h = 200, wx = 0, wy = 0, shade = '#00000000', compass = true,
-        level_text = '', hero = 14, strips = {}, markers = {}, strips_sig = '', markers_sig = ''}
+        level_text = '', hero = 6, strips = {}, markers = {}, strips_sig = '', markers_sig = ''}
     if not setting('show', true) then return m end
     local px, py, htx, hty = hero_map_position()
     if not px then return m end
@@ -202,7 +202,7 @@ local function snapshot()
     m.shade = ('#000000%02x'):format(alpha)
     m.compass = (not game) and setting('compass', true) and true or false   -- the Game map is isometric: no north up
     local msize = math.max(10, math.min(48, math.floor(tonumber(setting('marker_size', 22)) or 22)))
-    m.hero = math.max(6, math.min(40, math.floor(tonumber(setting('hero_size', 14)) or 14)))
+    m.hero = math.max(3, math.min(40, math.floor(tonumber(setting('hero_size', 6)) or 6)))
     m.level_text = tostring(level) .. '/' .. #P.ZOOMS
 
     -- Strips with their tiles; the signature says whether the set changed since the last frame (rebuilding the model's lists is

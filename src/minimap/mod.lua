@@ -18,7 +18,7 @@ return {
         {id = 'zoom', type = 'number', label = 'Zoom level (1 = widest)', min = 1, max = 8, step = 1, default = 3, section = 'Look',
             tooltip = 'The zoom keys and buttons change this as well. The map is centred on the hero at every level'},
         {id = 'opacity', type = 'number', label = 'Opacity (%)', min = 30, max = 100, step = 5, default = 90, section = 'Look'},
-        {id = 'hero_size', type = 'number', label = 'Hero marker size', min = 6, max = 40, step = 2, default = 14, section = 'Look',
+        {id = 'hero_size', type = 'number', label = 'Hero marker size', min = 3, max = 40, step = 1, default = 6, section = 'Look',
             tooltip = 'The gold diamond in the middle of the map'},
         {id = 'marker_size', type = 'number', label = 'Trader symbol size', min = 10, max = 48, step = 2, default = 22, section = 'Look'},
         {id = 'compass', type = 'bool', label = 'Compass letters (N, E, S, W)', default = true, section = 'Look'},
