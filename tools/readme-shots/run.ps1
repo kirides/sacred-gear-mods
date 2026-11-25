@@ -56,6 +56,8 @@ if (-not $CropOnly) {
     Step 'st'         'sector-tools,sector-tools_selftest'
     Step 'companions' 'companions,companions_selftest'
     Step 'compare'    'item-compare,item-compare_selftest,companions'
+    Step 'beasts'     'beastmaster,beastmaster_selftest'
+    Step 'minimap'    'minimap,minimap_selftest'
     Step 'we'         'world-events,world-events_selftest'
     Step 'boss'       'world-events,world-events_bosstest'
     Step 'chat'       'enhanced-chat,enhanced-chat_selftest' @{ 'enhanced-chat_selftest' = "{slot = $Save, quit = true}" }
@@ -78,7 +80,7 @@ if (-not $CropOnly) {
     $script:seedFiles = @{}
     Phase 'twitch'   'twitch_integration' "{phase = 'twitch'}" @('twi_sacred')
     foreach ($w in 'achievements', 'buildsharer', 'serverfeed') {
-        Phase "srv-$w" $w "{phase = 'server', which = '$w', press = true, wait = 8}"
+        Phase "srv-$w" $w "{phase = 'server', which = '$w', press = true, wait = $(if ($w -eq 'serverfeed') { 1 } else { 8 })}"
     }
     Phase 'srv-questhelper' 'questhelper' "{phase = 'server', which = 'questhelper', press = true, clicks = {{570, 137}}}"
     # the Mods screen (F11): the tours 'mm-*' click through the real window (the coordinates are for 1600x900 and a list with a scroll bar: they are the Settings link of the
@@ -99,6 +101,7 @@ if (-not $CropOnly) {
     Phase 'autopage' 'autosave' "{phase = 'modscreen', open = {mod = 'autosave', tab = 'page'}}"
     Phase 'sprites'  'sprite-browser' "{phase = 'modscreen', open = {mod = 'sprite-browser', tab = 'page'}}" @() '-'
     Phase 'spawn'    'spawn-rate' "{phase = 'modscreen', open = {mod = 'spawn-rate'}}"
+    Phase 'spelltune' 'spell-tuning' "{phase = 'modscreen', open = {mod = 'spell-tuning'}}"
     Phase 'region'   'region-counter' "{phase = 'modscreen', open = {mod = 'region-counter'}}"
     Phase 'twibase'  'twitch_integration' "{phase = 'modscreen', clicks = {}}" @('twi_sacred')
 }

@@ -200,6 +200,12 @@ game's window lists the arts in a fixed layout per class and knows only its own 
   `price` costs that), because the game's price formula is not known. Custom runes (with `combo_master`) are among the offered ones; a hero with a
   class is offered only what its profile lists. *Read the new rune now* learns the art at once.
 
+![The combo master's window: a combo of two arts](../images/custom-classes-master.jpg)
+
+The *Exchange* tab turns runes into another rune:
+
+![The rune exchange](../images/custom-classes-master-exchange.jpg)
+
 The window is controller-playable like all window widgets (D-pad, A). It replaces the game's window only while art files exist; setting
 *Combo master window with custom arts* turns that off.
 

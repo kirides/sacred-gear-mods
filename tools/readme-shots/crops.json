@@ -38,5 +38,12 @@
   "world-events.jpg":            {"src": "shot-we/pill-alt", "box": [650, 25, 1075, 350]},
   "world-events-boss.jpg":       {"src": "shot-boss/boss-bar", "box": [525, 0, 1075, 270]},
   "autosave-more.jpg":           {"src": "shot-autopage/modscreen", "box": [350, 100, 1320, 420]},
-  "realm-more.jpg":              {"src": "shot-realms/modscreen", "box": [350, 100, 1320, 420]}
+  "realm-more.jpg":              {"src": "shot-realms/modscreen", "box": [350, 100, 1320, 420]},
+  "beastmaster.jpg":             {"src": "shot-beasts/beasts_window", "box": [365, 40, 1150, 885]},
+  "beastmaster-pets.jpg":        {"src": "shot-beasts/beasts_scale", "box": [440, 280, 1060, 540]},
+  "minimap.jpg":                 {"src": "shot-minimap/mm-round-z3", "box": [1110, 120, 1375, 380]},
+  "companions-party.jpg":        {"src": "shot-companions/companions-1-window", "box": [325, 60, 1475, 445]},
+  "custom-classes-master.jpg":   {"src": "shot-cc/cc-master-combo2", "box": [0, 0, 760, 400]},
+  "custom-classes-master-exchange.jpg": {"src": "shot-cc/cc-master-exchange4", "box": [0, 0, 760, 400]},
+  "spell-tuning.jpg":            {"src": "shot-spelltune/modscreen", "box": [335, 38, 1325, 880]}
 }

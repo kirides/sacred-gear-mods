@@ -10,6 +10,8 @@ tools\readme-shots\run.ps1 -Game "B:\Games\sacred-copy" -Only fight,chat   # som
 tools\readme-shots\run.ps1 -Game "B:\Games\sacred-copy" -CropOnly          # only cut the images again
 ```
 
+Every step runs with the shared theme (`sacred-theme` from this repository's `src`), as a player has it.
+
 The copy needs `ddraw.dll` (SacredBild) and `SacredGear.dll` of the build you want shown, a window of 1600x900 and a
 savegame (`-Save`, default slot 10) with a hero and a few hostile creatures near (the author's test savegame: a Wood Elf
 of level 1 with a Dark Elf beside her, a chest, wolves). For every step `run.ps1` empties the copy's `mods` folder, puts the
@@ -26,10 +28,13 @@ look run the step and check the box in `crops.json` (the shots are 1600x900, the
 
 | Step (`shot-<step>`) | Mods | Pictures |
 |---|---|---|
-| `companions` | companions, companions_selftest | `companions.jpg`, `companions-portraits.png` |
+| `companions` | companions, companions_selftest | `companions.jpg`, `companions-portraits.png`, `companions-party.jpg` |
+| `beasts` | beastmaster, beastmaster_selftest | `beastmaster.jpg`, `beastmaster-pets.jpg` |
+| `minimap` | minimap, minimap_selftest | `minimap.jpg` |
+| `spelltune` | spell-tuning, shots (`phase = 'modscreen'`) | `spell-tuning.jpg` |
 | `compare` | item-compare, item-compare_selftest, companions | `item-compare.jpg` |
 | `artbars` | art-bars, art-bars_selftest, companions | `art-bars.jpg`, `art-bars-cooldown.jpg` |
-| `cc` | custom-classes, custom-classes_selftest, companions | `custom-classes*.jpg` |
+| `cc` | custom-classes, custom-classes_selftest, companions | `custom-classes*.jpg` (also the combo master's window) |
 | `st` | sector-tools, sector-tools_selftest | `sector-tools.jpg` |
 | `we`, `boss` | world-events, world-events_selftest / world-events_bosstest | `world-events.jpg`, `world-events-boss.jpg` |
 | `chat` | enhanced-chat, enhanced-chat_selftest | `enhanced-chat.jpg` |

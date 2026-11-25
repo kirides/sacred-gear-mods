@@ -1,5 +1,7 @@
 # Spell tuning
 
+![Spell tuning settings](../images/spell-tuning.jpg)
+
 Changes what spells do, depending on **who casts them**: the hero you play, a companion, an enemy, a neutral creature or a trap. Typical use: shorten the root (Pflanzenkäfig) and the stun (Fleisch zu Stein) enemies put on you, without touching what your own spells do to them.
 
 ## What you need
