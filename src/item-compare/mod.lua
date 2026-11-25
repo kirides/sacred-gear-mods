@@ -4,6 +4,7 @@ return {
     name = 'Item comparison',
     version = '0.2.2',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Hover an item (backpack, chest, shop, the pad\'s cursor too) and a panel beside the game\'s tooltip shows what it changes compared with the item your hero wears in that slot: green for better, red for worse. Optionally for your companions too.',
     settings = {
         {id = 'enabled', type = 'bool', label = 'Compare items', default = true, section = 'General',

@@ -158,7 +158,7 @@ also point at other indexes. The full format is in [Mod index](docs/ModIndex.md)
 | `schema` | Format version, `1` |
 | `name`, `author`, `description`, `homepage` | Who publishes the index |
 | `download` | `url` of the zip and its `version` (the latest tag, or `latest`) |
-| `mods[]` | One entry per mod: `id` (the id of its `mod.lua`), `path` (the folder inside the zip, `mods/<name>`), `name`, `version`, `author`, `description`, optional `tags`, `thumbnail`, `requires`, `defaultEnabled`, `download` |
+| `mods[]` | One entry per mod: `id` (the id of its `mod.lua`), `path` (the folder inside the zip, `mods/<name>`), `name`, `version`, `author`, `description`, optional `tags`, `thumbnail`, `requires`, `recommended`, `defaultEnabled`, `download` |
 | `indexes[]` | Optional: other indexes to follow, each `url` (absolute https, or relative to this index) and an optional `name` |
 
 ## Versioning
@@ -171,5 +171,5 @@ number, a commit message with `feat(<mod>)` raises **minor**, one with `break(<m
 ```
 python tools/bump_versions.py            # show the plan
 python tools/bump_versions.py --commit   # bump, one commit per mod, refresh mod-index.json
-python -m unittest tools/test_bump_versions.py
+python -m unittest tools/test_bump_versions.py tools/test_make_mod_index.py
 ```

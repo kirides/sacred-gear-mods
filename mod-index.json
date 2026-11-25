@@ -24,6 +24,9 @@
       "changelog": "mods/achievements/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -41,6 +44,9 @@
       "changelog": "mods/art-bars/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -58,6 +64,9 @@
       "changelog": "mods/auction-house/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -74,6 +83,9 @@
       "changelog": "mods/autosave/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -83,7 +95,10 @@
       "version": "0.1.1",
       "author": "kirides",
       "description": "Edit the game's balance.bin from inside the game: difficulty multipliers and levels, creature health, skill curves, loot chances, item prices, movement speed and more, with the game's own value next to yours. Your changes live in this mod only, as an overlay the game reads instead of its file (switch the mod off or delete it and the game is as before); the game's own balance.bin is never touched. Changes apply the next time the game starts. Balance patches can be exported and imported as plain data files.",
-      "changelog": "mods/balance-editor/changelog/history.md"
+      "changelog": "mods/balance-editor/changelog/history.md",
+      "recommended": [
+        "sacred-theme"
+      ]
     },
     {
       "id": "beastmaster",
@@ -112,6 +127,9 @@
       "changelog": "mods/better-saveload/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -128,6 +146,9 @@
       "changelog": "mods/bounty/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -145,6 +166,9 @@
       "changelog": "mods/buildsharer/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -161,6 +185,9 @@
       "changelog": "mods/companions/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -177,6 +204,9 @@
       "changelog": "mods/custom-classes/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -194,6 +224,9 @@
       "changelog": "mods/damagemeter/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -224,6 +257,9 @@
       "changelog": "mods/enhanced-chat/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -241,6 +277,9 @@
       "changelog": "mods/item-compare/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -284,6 +323,9 @@
       "changelog": "mods/lootfilter/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -301,6 +343,9 @@
       "changelog": "mods/lootlog/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -310,7 +355,10 @@
       "version": "0.1.1",
       "author": "Sacred Gear",
       "description": "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
-      "changelog": "mods/minimap/changelog/history.md"
+      "changelog": "mods/minimap/changelog/history.md",
+      "recommended": [
+        "sacred-theme"
+      ]
     },
     {
       "id": "name-editor",
@@ -322,6 +370,9 @@
       "changelog": "mods/name-editor/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -339,6 +390,9 @@
       "changelog": "mods/questhelper/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -356,6 +410,9 @@
       "changelog": "mods/realms/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -415,6 +472,9 @@
       "changelog": "mods/sessiontracker/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -432,6 +492,9 @@
       "changelog": "mods/shared-stash/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -463,6 +526,9 @@
       "changelog": "mods/sprite-browser/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     },
     {
@@ -507,6 +573,9 @@
       "changelog": "mods/world-events/changelog/history.md",
       "requires": [
         "sacred-gear>=0.4.1"
+      ],
+      "recommended": [
+        "sacred-theme"
       ]
     }
   ]

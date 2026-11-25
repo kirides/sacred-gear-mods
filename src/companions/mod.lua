@@ -4,6 +4,7 @@ return {
     name = 'Companions',
     version = '0.5.3',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'A party of heroes in single player: recruit companions of any class, each with their own inventory, '
         .. 'equipment, attributes, skills, combat arts and experience. Click a portrait (or use the controller\'s mod menu) '
         .. 'to play that hero; the others follow and fight on their own, with their combat arts and spells.',

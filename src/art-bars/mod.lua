@@ -22,6 +22,7 @@ return {
     name = 'Art bars',
     version = '0.2.3',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'More combat arts at hand than the game\'s skill bar holds: extra bars of slots for your hero\'s combat arts and spells '
         .. '(copies and chains of the Custom classes mod too), with keys, cooldowns and the controller. Single player.',
     settings = {

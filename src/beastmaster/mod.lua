@@ -4,6 +4,7 @@ return {
     name = 'Beastmaster',
     version = '0.3.0',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     requires = {'sacred-theme'},
     description = 'Animals that travel with your hero: wolves, bears, boars, deer, horses, spiders, scorpions, crabs, lizards, birds ... every '
         .. 'animal of the game. Allies fight for you, have the level of the hero you play (so their damage grows with you) and grow bigger '

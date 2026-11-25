@@ -4,6 +4,7 @@ return {
     name = 'Minimap',
     version = '0.1.1',
     author = 'Sacred Gear',
+    recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
     settings = {
         {id = 'shape', type = 'choice', label = 'Shape', default = 'round', section = 'Look',

@@ -8,7 +8,7 @@ A re-run keeps hand-written top-level fields, `indexes`, the tags/thumbnail/imag
 import argparse, difflib, fnmatch, json, os, re, subprocess, sys
 
 ESC = {'n': '\n', 't': '\t', 'r': '\r', 'a': '\a', 'b': '\b', 'f': '\f', 'v': '\v'}
-ORDER = ['id', 'path', 'name', 'version', 'author', 'description', 'tags', 'thumbnail', 'images', 'changelog', 'requires', 'defaultEnabled']
+ORDER = ['id', 'path', 'name', 'version', 'author', 'description', 'tags', 'thumbnail', 'images', 'changelog', 'requires', 'recommended', 'defaultEnabled']
 LONG = re.compile(r'\[(=*)\[')
 
 
@@ -105,6 +105,22 @@ def merge_requires(plain, extra):
     return out or None
 
 
+def req_id(entry):
+    return re.split(r'\s*>=', entry, maxsplit=1)[0].strip()
+
+
+def clean_recommended(listed, mod_id, requires):
+    """mod.lua's `recommended` (ids, or `id>=version`; Sacred Gear ignores the field): trimmed, without duplicates, without the mod itself and without what it already requires."""
+    skip = {mod_id} | {req_id(r) for r in requires or []}
+    out, seen = [], set()
+    for r in listed or []:
+        r = r.strip()
+        if r and req_id(r) not in skip and req_id(r) not in seen:
+            seen.add(req_id(r))
+            out.append(r)
+    return out or None
+
+
 def git_remote():
     try:
         url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'], stderr=subprocess.DEVNULL, text=True).strip()
@@ -169,8 +185,9 @@ def main():
         if f.get('enabled') is False:
             gen['defaultEnabled'] = False
         gen['requires'] = merge_requires(f.get('requires'), extra.get(f['id']))
+        gen['recommended'] = clean_recommended(f.get('recommended'), f['id'], gen['requires'])
         e = dict(old_mods.get(f['id'], {}))
-        for k in ('author', 'description', 'requires'):  # regenerated fields win, even by disappearing
+        for k in ('author', 'description', 'requires', 'recommended'):  # regenerated fields win, even by disappearing
             e.pop(k, None)
         e.update({k: v for k, v in gen.items() if v not in (None, '', [])})
         if not e.get('thumbnail'):

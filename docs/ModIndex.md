@@ -41,6 +41,7 @@ needed when `mods` is present, unless every mod carries its own `download`.
 | `images` | string[] | no | Pictures for the viewer: clicking the mod's picture opens a carousel (arrow keys, dots, Esc). Each is a path relative to the zip root or an absolute https URL; at most 24. Without a `thumbnail` the first image is the list picture; without `images` the thumbnail is the only picture |
 | `changelog` | string | no | A markdown file with the mod's release notes: one `## vX.Y.Z (date)` section per version, newest first, bullets below. A path relative to the zip root or an absolute https URL. The manager shows what is new between the installed and the available version (mod details, and the Update all list) |
 | `requires` | string[] | no | Ids of mods this one needs, copied from `mod.lua` |
+| `recommended` | string[] | no | Ids of mods that go well with this one, copied from `mod.lua`; same syntax as `requires` (`"sacred-theme"`, or `"sacred-theme>=0.3.0"`). The manager shows them in the mod's details and offers the missing ones when the mod is installed (the player opts in; they are never installed on their own) |
 | `defaultEnabled` | boolean | no | `false` when `mod.lua` says `enabled = false`; leave out otherwise |
 | `download` | object | no | `{ "url": ..., "version": ..., "sha256": ... }`: overrides the index's `download` for this mod |
 
@@ -94,7 +95,13 @@ The newest release that is not a draft (and not a pre-release, unless asked) wit
 of an entry that has none (`v1.2` is shown as `1.2`); the checksum GitHub publishes for the asset (`digest`) is checked after the download. `download.github` works in an
 entry's own `download` and in the index's `download`.
 
-### Examples
+#### Recommended mods
+
+`recommended = {'sacred-theme'}` in `mod.lua` (Sacred Gear ignores the field, so a minimum version can be written right there) ends up as `recommended` in the index. Every mod with RmlUi
+windows recommends `sacred-theme`: they work without it, but it gives them the look of the game. A recommendation is not a requirement: nothing is installed or switched off because of it. The
+generator drops the mod's own id and ids the mod already `requires`.
+
+## Examples
 
 ```json
 {
