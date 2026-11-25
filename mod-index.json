@@ -307,7 +307,7 @@
       "id": "improved-shops",
       "path": "mods/improved-shops",
       "name": "Improved shops",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": "kirides",
       "description": "Merchants that sell gear sometimes stock a few better pieces, picked for your hero's level: magic and rare items you would otherwise only find as drops. The extras come when the game fills a shop, and the shop keeps them until the game itself resets its stock, so reopening it shows the same wares.",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/improved-shops.jpg",

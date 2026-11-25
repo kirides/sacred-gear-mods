@@ -1,3 +1,7 @@
+## v0.1.1 (2026-11-25)
+
+- Under the hood: the mod names the equipment categories it stocks with Gear's `gear.shop.CATEGORY` instead of bare numbers; the shops behave as before.
+
 ## v0.1.0 (2026-11-25)
 
 - New: Improved shops. Merchants that sell gear sometimes stock a few magic or rare pieces made for your hero's level, on top of what the game stocks.
