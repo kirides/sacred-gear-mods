@@ -66,6 +66,10 @@ jobs:
         shell: bash
         run: python3 tools/make_mod_index.py --check
 
+      - name: Check the changelog histories are up to date
+        shell: bash
+        run: python3 tools/make_changelog.py --check
+
       - name: Assemble the mods folder
         shell: bash
         run: |

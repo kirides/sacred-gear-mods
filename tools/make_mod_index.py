@@ -8,7 +8,7 @@ A re-run keeps hand-written top-level fields, `indexes`, the tags/thumbnail/imag
 import argparse, difflib, fnmatch, json, os, re, subprocess, sys
 
 ESC = {'n': '\n', 't': '\t', 'r': '\r', 'a': '\a', 'b': '\b', 'f': '\f', 'v': '\v'}
-ORDER = ['id', 'path', 'name', 'version', 'author', 'description', 'tags', 'thumbnail', 'images', 'requires', 'defaultEnabled']
+ORDER = ['id', 'path', 'name', 'version', 'author', 'description', 'tags', 'thumbnail', 'images', 'changelog', 'requires', 'defaultEnabled']
 LONG = re.compile(r'\[(=*)\[')
 
 
@@ -181,6 +181,9 @@ def main():
                 e['thumbnail'] = '%s/%s' % (zpath, local[0])
             elif doc and o.thumb_base:
                 e['thumbnail'] = o.thumb_base.rstrip('/') + '/' + doc[0]
+        e.pop('changelog', None)  # regenerated: the history.md that tools/make_changelog.py writes, as a path inside the zip
+        if os.path.isfile(os.path.join(o.src, folder, 'changelog', 'history.md')):
+            e['changelog'] = '%s/changelog/history.md' % zpath
         if not e.get('images'):  # pictures for the viewer: <mod>/images/ or <mod>/screenshots/ (png, jpg, webp), in name order
             for sub in ('images', 'screenshots'):
                 d = os.path.join(o.src, folder, sub)
