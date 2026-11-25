@@ -23,6 +23,22 @@ gear.task(function()
         gear.wait(0.5)
         A.screenshot('mm-round-z' .. level)
     end
+    local function panel() for _, p in ipairs(gear.ui.panels()) do if p.key == 'minimap:minimap' then return p end end end
+    local p = panel()
+    if p then
+        print(('panel at %.0f,%.0f size %.0fx%.0f'):format(p.x, p.y, p.w, p.h))
+        local px, py = A.ui_to_pixels(p.x + p.w / 2, p.y + p.h / 2)
+        A.move(px, py); gear.wait(0.6)
+        A.screenshot('mm-hover')
+        A.move(5, 5)
+    end
+    for _, spot in ipairs({{'left', -150, -60}, {'right', 1400, 900}}) do
+        gear.ui.set_panel_rect('minimap:minimap', spot[2], spot[3]); gear.wait(1.2)
+        local q = panel()
+        if q then print(('clamp %s: panel at %.0f,%.0f'):format(spot[1], q.x, q.y)) end
+        A.screenshot('mm-clamp-' .. spot[1])
+    end
+    gear.ui.reset_panel('minimap:minimap'); gear.wait(1)
     set('width', 400); set('zoom', 1)
     A.screenshot('mm-wide')
     set('width', 200)

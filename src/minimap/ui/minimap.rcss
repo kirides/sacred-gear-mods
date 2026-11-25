@@ -1,5 +1,5 @@
 body { font-size: 13dp; color: #ffd780; }
-#mm { position: absolute; left: 790dp; top: 110dp; overflow: hidden; clip: always; background-color: #00000000; }
+#mm { position: absolute; left: 700dp; top: 110dp; overflow: hidden; clip: always; background-color: #00000000; }
 .strip { position: absolute; overflow: hidden; clip: always; }
 .world { position: absolute; left: 0dp; top: 0dp; width: 1dp; height: 1dp; }
 .tile { position: absolute; }
@@ -16,7 +16,7 @@ body { font-size: 13dp; color: #ffd780; }
 .dir { position: absolute; font-family: "Sacred Game"; font-size: 14dp; color: #ffd780; text-align: center; }
 .dir.n { left: 0dp; top: 4dp; }
 .dir.w { left: 5dp; }
-.zoombtns { position: absolute; display: none; flex-direction: row; align-items: center; background-color: #000000b0; border: 1dp #806a3c; padding: 1dp 3dp; }
+.zoombtns { position: absolute; display: none; flex-direction: row; align-items: center; justify-content: center; width: 68dp; height: 24dp; background-color: #000000a0; }
 #mm:hover .zoombtns { display: flex; }
-.zoombtns .level { margin: 0 6dp; color: #f0f0f0; font-size: 12dp; }
-.zoombtns button.mini { margin: 0; }
+.zoombtns .level { margin: 0 2dp; color: #f0f0f0; font-size: 12dp; }
+.zoombtns button.ibtn { margin: 0; padding: 0 4dp; font-size: 16dp; border: 0; }

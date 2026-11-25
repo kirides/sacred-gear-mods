@@ -151,6 +151,33 @@ local function snapshot()
     return m
 end
 
+-- Keeps the panel fully on the screen whatever the resolution, the UI scale or a layout saved on another screen. The first time (no
+-- place saved) it also sits left of the game's own minimap column (x 932 on) and below the party portraits.
+local KEY = 'minimap:minimap'
+local placed = false
+local function keep_on_screen(w, h)
+    if not (ui.panels and ui.set_panel_rect) then return end
+    local st = ui.state and ui.state()
+    if not st then return end
+    local info
+    for _, p in ipairs(ui.panels()) do
+        if p.key == KEY then info = p break end
+    end
+    if not info then return end
+    local left, top = st.screen_left or 0, st.screen_top or 0
+    local right, bottom = st.screen_right or 1024, st.screen_bottom or 768
+    local x, y = info.x, info.y
+    local pw, ph = info.w or w, info.h or h
+    if not placed then
+        placed = true
+        local saved = ui.layout and ui.layout()[KEY]
+        if not saved then x, y = math.min(right, 932) - pw - 8, math.max(top, 110) end
+    end
+    local nx = math.max(left + 4, math.min(x, right - pw - 4))
+    local ny = math.max(top + 4, math.min(y, bottom - ph - 4))
+    if math.abs(nx - info.x) > 0.5 or math.abs(ny - info.y) > 0.5 then ui.set_panel_rect(KEY, nx, ny) end
+end
+
 local CHEAP = {'wx', 'wy', 'shade', 'compass', 'level_text', 'w', 'h', 'round'}
 
 local function apply(m)
@@ -187,7 +214,10 @@ gear.on('draw', guard('draw', function(state)
     if not doc then load_doc() end
     if not doc then return end
     apply(m)
-    if m.vis then doc:draw({layer = 'hud'}) end
+    if m.vis then
+        doc:draw({layer = 'hud'})
+        keep_on_screen(m.w, m.h)
+    end
 end))
 
 ---------------------------------------------------------------------------------------------------------------
