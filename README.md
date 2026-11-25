@@ -35,6 +35,7 @@ The pictures are screenshots from the game, taken by a script ([how](docs/Screen
 | [**Damage meter**](docs/mods/damagemeter.md) | <img src="docs/images/damagemeter.jpg" width="220" alt="Damage meter"> | Damage and DPS, for you and your party. Ctrl+D. |
 | [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.jpg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
 | [**Spawn rate**](docs/mods/spawn-rate.md) | <img src="docs/images/spawn-rate.jpg" width="220" alt="Spawn rate"> | Multiply the creatures the game spawns, from 1x to 100x, with safeguards for the frame rate. Single player. |
+| [**Improved shops**](docs/mods/improved-shops.md) | <img src="docs/images/improved-shops.jpg" width="220" alt="Improved shops"> | Merchants that sell gear sometimes stock magic and rare pieces made for your hero's level. They stay until the game resets the shop, so reopening it shows the same wares. |
 | [**Spell tuning**](docs/mods/spell-tuning.md) | <img src="docs/images/spell-tuning.jpg" width="220" alt="Spell tuning"> | Shorten or strengthen root, stun, fear, spell strength and damage by who casts the spell: you, companions, enemies, neutrals or traps. Single player. |
 | [**Minimap**](docs/mods/minimap.md) | <img src="docs/images/minimap.jpg" width="220" alt="Minimap"> | The game's world map as a round or square overlay that follows the hero, with zoom levels, a frame and compass, and the trader symbols. |
 | [**Region counter**](docs/mods/region-counter.md) | <img src="docs/images/region-counter.jpg" width="220" alt="Region counter"> | The kills a region needs before its Region Boss quest: set your own number, and keep the count when you leave the region or quit. |
@@ -95,6 +96,8 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 |---|---|
 | `src/autosave` | Periodic autosave. [README](src/autosave/README.md) |
 | `src/autosave_selftest` | Automation self test of the autosave mod |
+| `src/improved-shops` | Better pieces in merchants' stock, added when the game stocks a shop. [Doc](docs/mods/improved-shops.md) |
+| `src/improved-shops_selftest` | Automation self test of Improved shops (opens a merchant, checks the finds and that a reopened shop keeps its stock) |
 | `src/better-saveload` | The savegame screen on Gear's replaced windows. [README](src/better-saveload/README.md) |
 | `src/better-saveload_selftest` | Automation self test of Better SaveLoad |
 | `src/enhanced-chat` | A chat window with scrollback, tabs and rarity colours, on `gear.chat`. [Doc](docs/mods/enhanced-chat.md) |
