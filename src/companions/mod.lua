@@ -66,6 +66,8 @@ return {
             tooltip = 'When a companion casts it, the heroes near them get this much of it, for as long as the caster has it (0: off)'},
         {id = 'buff_32', type = 'number', label = '{ability:32} for others (%)', min = 0, max = 100, step = 5, default = 50, section = 'Buffs',
             tooltip = 'When a companion casts it, the heroes near them get this much of it, for as long as the caster has it (0: off)'},
+        {id = 'buff_37', type = 'number', label = '{ability:37} for others (%)', min = 0, max = 100, step = 5, default = 50, section = 'Buffs',
+            tooltip = 'When a companion casts it, the heroes near them get this much of it, for as long as the caster has it (0: off)'},
     },
     keys = {
         -- Not F8: the game's quick load. PageDown / PageUp are also what SacredBild's controller actions "Next / Previous

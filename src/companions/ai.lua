@@ -255,10 +255,10 @@ local function finish_heal(c, s, now)
 end
 
 -- Buffs the game meant for others too ("or a chosen companion": Steinhaut, Glaubensstaerke, Katarakt der Wendigkeit,
--- Reiki) but casts only on the caster: Gear's buffs (gear.buffs) pass them on to the other heroes near the caster, at
+-- Reiki; and Wieselflink, the Wood Elf's speed) but casts only on the caster: Gear's buffs (gear.buffs) pass them on to the other heroes near the caster, at
 -- the setting's strength, for as long as the caster's own lasts. What a cast gave the caster (its values before and
 -- after) is what the others get.
-M.ALLY_BUFFS = {[2] = true, [21] = true, [27] = true, [32] = true}
+M.ALLY_BUFFS = {[2] = true, [21] = true, [27] = true, [32] = true, [37] = true}
 
 local function share_end(s)
     local sh = s.share
@@ -271,7 +271,7 @@ end
 local function share_start(c, s, a, now, opts)
     if not (gear.buffs and M.ALLY_BUFFS[a.id] and (opts.buff_strength[a.id] or 0) > 0) then return end
     share_end(s)
-    s.share = {ability = a.id, before = gear.buffs.fields(c), at = now}
+    s.share = {ability = a.id, before = gear.buffs.fields(c), speeds = gear.buffs.speeds and gear.buffs.speeds(c), at = now}
 end
 
 -- After the cast: the others get it; once the caster's own has ended, theirs ends too.
@@ -282,16 +282,31 @@ local function share_step(c, s, now, heroes, opts)
         if now - sh.at < 1.5 then return end
         local after = gear.buffs.fields(c)
         local stats, factors = gear.buffs.change(sh.before or {}, after or {})
+        -- the speeds (attack, cast, movement): the game works them out from the speed factor before Gear adds its buffs,
+        -- so a shared factor alone left the others as fast as before; they get what the cast added to the caster's speeds
+        local speeds
+        local now_speeds = sh.speeds and gear.buffs.speeds(c)
+        if now_speeds then
+            for name, v in pairs(now_speeds) do
+                local d = v - (sh.speeds[name] or v)
+                if d > 0 then speeds = speeds or {}; speeds[name] = d end
+            end
+        end
         local probe = next(stats) or next(factors)
-        if not probe then
+        if not probe and not speeds then
             if now - sh.at > 4 then s.share = nil end
             return
         end
         local overlay, seconds = gear.buffs.overlay(c)
         local def = {id = 'shared_' .. sh.ability, name = M.ability_info(sh.ability).name, stats = stats, factors = factors,
-            overlay = overlay or 0}
+            speeds = speeds, overlay = overlay or 0}
         sh.key = 'companions:' .. c.id .. ':' .. sh.ability
-        sh.probe, sh.was, sh.now = probe, sh.before[probe], after[probe]
+        if probe then
+            sh.probe, sh.was, sh.now = probe, sh.before[probe], after[probe]
+        else
+            local name = next(speeds)
+            sh.speed_probe, sh.was, sh.now = name, sh.speeds[name], now_speeds[name]
+        end
         sh.targets = {}
         local cx, cy = c:position()
         for _, h in ipairs(heroes) do
@@ -305,8 +320,14 @@ local function share_step(c, s, now, heroes, opts)
         end
         return
     end
-    local f = gear.buffs.fields(c)
-    local v = f and f[sh.probe]
+    local v
+    if sh.probe then
+        local f = gear.buffs.fields(c)
+        v = f and f[sh.probe]
+    else
+        local sp = gear.buffs.speeds(c)
+        v = sp and sp[sh.speed_probe]
+    end
     if not v or c:is_dead() or math.abs(v - sh.now) > math.abs(v - sh.was) then share_end(s) end
 end
 
