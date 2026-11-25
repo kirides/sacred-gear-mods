@@ -16,7 +16,7 @@ local SAVE_DELAY = 0.6
 
 local edits = {}                     -- field id -> the value you picked (only values that differ from the game's)
 local view = {
-    tab = 'difficulty', group = 1, q = '', only_changed = false, dd = '', osk = false, shift = false, osk_target = 'q',
+    tab = 'difficulty', group = 1, q = '', only_changed = false, dd = '',
     confirm_all = false, confirm_until = 0, pname = '', share_msg = '', share_bad = false, imp = nil, undo = nil,
 }
 local shown = false
@@ -155,37 +155,24 @@ local function counts()
 end
 
 ---------------------------------------------------------------------------------------------------------- the on-screen keyboard
-local OSK = {
-    {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'},
-    {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'},
-    {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'},
-    {'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.'},
-}
-local function osk_model()
-    local rows_ = {}
-    for r, line in ipairs(OSK) do
-        rows_[r] = {}
-        for c, ch in ipairs(line) do
-            rows_[r][c] = {id = ('k%d_%d'):format(r, c), label = view.shift and ch:upper() or ch}
-        end
-    end
-    return rows_
+-- gear.kit.osk (a small window of its own, bordered keys, pad and mouse); it types into the search or the patch name like the player's own keys.
+local kb = gear.kit.osk and gear.kit.osk{}
+local function set_search(t)
+    view.q = t:sub(1, 30)
+    if doc then doc.model.q = view.q; last.q = view.q end
+    rows_dirty = true
 end
-
-local function osk_text()
-    if view.osk_target == 'name' then return view.pname end
-    return view.q
+local function set_pname(t)
+    view.pname = t:sub(1, 40)
+    if doc then doc.model.pname = view.pname; last.pname = view.pname end
+    touch()
 end
-
-local function set_osk_text(t)
-    if view.osk_target == 'name' then
-        view.pname = t:sub(1, 40)
-        if doc then doc.model.pname = view.pname; last.pname = view.pname end
-        touch()
+local function open_osk(name)
+    if not kb then return end
+    if name == 'name' then
+        kb:toggle{title = 'Patch name', text = view.pname, max = 40, on_change = set_pname, get = function() return view.pname end}
     else
-        view.q = t:sub(1, 30)
-        if doc then doc.model.q = view.q; last.q = view.q end
-        rows_dirty = true
+        kb:toggle{title = 'Search', text = view.q, max = 30, on_change = set_search, get = function() return view.q end}
     end
 end
 
@@ -244,7 +231,7 @@ local function light()
         group_changed = group_changed, tab_changed = per_tab[view.tab] or 0, total_changed = total,
         reset_group_text = (view.q ~= '' and 'Reset these') or (view.group > 1 and 'Reset group') or 'Reset all shown',
         reset_all_text = view.confirm_all and 'Really reset everything?' or 'Reset all',
-        osk_open = view.osk, osk_shift = view.shift, pname = view.pname,
+        pname = view.pname,
         share_msg = view.share_msg, share_bad = view.share_bad, can_undo = view.undo ~= nil,
         tabs = {},
     }
@@ -278,7 +265,6 @@ local function full_model()
     rows = list
     m.rows = list
     m.group = group_model()
-    m.osk_rows = osk_model()
     local shown_n = #list
     m.count_text = total > shown_n and ('%d of %d shown'):format(shown_n, total) or ('%d value%s'):format(total, total == 1 and '' or 's')
     m.empty_text = total == 0 and (view.only_changed and 'You have not changed anything here.' or 'Nothing matches.') or ''
@@ -332,8 +318,7 @@ local function set_tab(id)
     view.q = ''
     if doc then doc.model.q = '' ; last.q = '' end
     view.confirm_all = false
-    if id == 'share' then view.osk_target = 'name' elseif view.osk_target == 'name' then view.osk_target = 'q' end
-    view.osk = false
+    if kb then kb:close() end
     rows_dirty = true
 end
 
@@ -450,21 +435,8 @@ local function load_doc()
     end)
     click('#only-changed', function() view.only_changed = not view.only_changed; rows_dirty = true end)
     click('#clear-search', function() view.q = ''; doc.model.q = ''; last.q = ''; rows_dirty = true end)
-    click('#kbd-search', function() view.osk = not view.osk; view.osk_target = 'q' end)
-    click('#kbd-name', function() view.osk = not view.osk; view.osk_target = 'name' end)
-    click('.key', function(e)
-        local r, c = tostring(e.current):match('^k(%d+)_(%d+)$')
-        r, c = tonumber(r), tonumber(c)
-        local ch = r and OSK[r] and OSK[r][c]
-        if not ch then return end
-        set_osk_text(osk_text() .. (view.shift and ch:upper() or ch))
-        if view.shift then view.shift = false end
-    end)
-    click('#osk-shift', function() view.shift = not view.shift end)
-    click('#osk-space', function() set_osk_text(osk_text() .. ' ') end)
-    click('#osk-back', function() local t = osk_text(); set_osk_text(t:sub(1, math.max(0, #t - 1))) end)
-    click('#osk-clear', function() set_osk_text('') end)
-    click('#osk-done', function() view.osk = false end)
+    click('#kbd-search', function() open_osk('q') end)
+    click('#kbd-name', function() open_osk('name') end)
     click('#reset-group', function()
         reset_fields(fields_in_view())
         view.confirm_all = false
@@ -498,7 +470,11 @@ end
 local function open_close(on)
     if on == nil then on = not shown end
     shown = on
-    if not shown then view.osk, view.dd = false, '' ; write_files() end
+    if not shown then
+        if kb then kb:close() end
+        view.dd = ''
+        write_files()
+    end
 end
 
 gear.keys.on('toggle', function() open_close() end)
@@ -526,6 +502,7 @@ gear.on('draw', gear.guard('draw', function(state)
         end
     end
     doc:draw({layer = state.mode == 'game' and 'hud' or 'top'})
+    if kb then kb:draw() end
 end))
 
 gear.on('unload', function()

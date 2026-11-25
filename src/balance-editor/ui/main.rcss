@@ -9,7 +9,6 @@ button.mini.on { border-color: #ffd780; color: #ffd780; }
 input.search { width: 150dp; margin: 0 4dp 0 0; }
 input.pname { width: 300dp; margin: 0 4dp 0 6dp; }
 .rows { height: 410dp; overflow-y: auto; margin: 2dp 0 4dp 0; }
-.rows.short { height: 150dp; }
 .rows.imp { height: 200dp; }
 .bhead { margin: 8dp 0 2dp 0; padding: 0 0 1dp 0; font-family: "Sacred Game"; font-size: 16dp; color: #ffd780; border-bottom: 1px #8c7440; }
 .bline { display: flex; flex-direction: row; align-items: center; height: 30dp; padding: 0 4dp; }
@@ -36,8 +35,6 @@ button.game-button.danger { color: #ff8a70; border-color: #ff8a70; }
 .status.bad { color: #ff8a70; }
 #bal-ddshade { position: absolute; left: 0dp; top: 0dp; right: 0dp; bottom: 0dp; z-index: 5; }
 .dd-list.bal-ddlist { min-width: 260dp; max-height: 360dp; overflow-y: auto; }
-.osk { margin: 4dp 0; }
-.oskrow { display: flex; flex-direction: row; margin: 2dp 0; }
 button.key { min-width: 34dp; text-align: center; padding: 0 4dp; }
 button.key.wide { min-width: 160dp; }
 

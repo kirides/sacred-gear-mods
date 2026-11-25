@@ -19,23 +19,11 @@
                 </div>
                 <span class="label" data-if="q != ''">Search, all tabs:</span>
                 <input id="search" type="text" class="field search" data-value="q" maxlength="30" placeholder="Search values"/>
-                <button class="mini" id="kbd-search" title="On-screen keyboard"><span class="padkey a"></span>Kbd</button>
+                <button class="ibtn" id="kbd-search" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
                 <button class="mini" id="clear-search" data-attrif-disabled="q == ''"><span class="padkey a"></span>Clear</button>
                 <button class="mini" id="only-changed" data-class-on="only_changed" title="Show only the values you changed"><span class="padkey a"></span>Changed only</button>
             </div>
-            <div data-if="osk_open" class="osk">
-                <div class="oskrow" data-for="row : osk_rows">
-                    <button data-for="k : row" class="mini key" data-attr-id="k.id">{{ k.label }}</button>
-                </div>
-                <div class="oskrow">
-                    <button class="mini key" id="osk-shift" data-class-on="osk_shift">Shift</button>
-                    <button class="mini key wide" id="osk-space">Space</button>
-                    <button class="mini key" id="osk-back">Back</button>
-                    <button class="mini key" id="osk-clear">Clear</button>
-                    <button class="mini key" id="osk-done">Done</button>
-                </div>
-            </div>
-            <div class="rows" data-class-short="osk_open" data-nav-scroll>
+            <div class="rows" data-nav-scroll>
                 <div data-for="r : rows" class="brow" data-class-changed="r.changed">
                     <div class="bhead" data-if="r.head != ''">{{ r.head }}</div>
                     <div class="bline">
@@ -62,19 +50,7 @@
             <div class="row">
                 <span class="label">Name</span>
                 <input id="pname" type="text" class="field pname" data-value="pname" maxlength="40" placeholder="Name of the patch"/>
-                <button class="mini" id="kbd-name" title="On-screen keyboard"><span class="padkey a"></span>Kbd</button>
-            </div>
-            <div data-if="osk_open" class="osk">
-                <div class="oskrow" data-for="row : osk_rows">
-                    <button data-for="k : row" class="mini key" data-attr-id="k.id">{{ k.label }}</button>
-                </div>
-                <div class="oskrow">
-                    <button class="mini key" id="osk-shift" data-class-on="osk_shift">Shift</button>
-                    <button class="mini key wide" id="osk-space">Space</button>
-                    <button class="mini key" id="osk-back">Back</button>
-                    <button class="mini key" id="osk-clear">Clear</button>
-                    <button class="mini key" id="osk-done">Done</button>
-                </div>
+                <button class="ibtn" id="kbd-name" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
             </div>
             <div class="row">
                 <button class="game-button small" id="export" data-attrif-disabled="total_changed == 0" title="Writes export.json in the mod's folder and copies it to the clipboard"><span class="padkey a"></span>Export</button>
