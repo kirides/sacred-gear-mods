@@ -33,7 +33,7 @@
       "id": "art-bars",
       "path": "mods/art-bars",
       "name": "Art bars",
-      "version": "0.2.4",
+      "version": "0.2.5",
       "author": "Sacred Gear",
       "description": "More combat arts at hand than the game's skill bar holds: extra bars of slots for your hero's combat arts and spells (copies and chains of the Custom classes mod too), with keys, cooldowns and the controller. Single player.",
       "tags": [
@@ -410,7 +410,7 @@
       "id": "minimap",
       "path": "mods/minimap",
       "name": "Minimap",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "author": "Sacred Gear",
       "description": "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/minimap.jpg",
