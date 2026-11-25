@@ -537,7 +537,8 @@ gear.on('frame', guard('frame', function(dt)
                 local quiet = not ai.enemy_near(leader, setting('engage', 12) * TILE)
                 if x and (quiet and clock - fallen[c.id] > 3 or clock - fallen[c.id] > 12) then
                     if c:revive() then
-                        c:teleport(x + 60, y + 60, l)
+                        -- a companion told to wait is helped up where they fell
+                        if (tactics(c.id).behaviour or setting('behaviour', 'aggressive')) ~= 'hold' then c:teleport(x + 60, y + 60, l) end
                         fallen[c.id] = nil
                         toast(name_of(c) .. ' is back on their feet')
                     end
