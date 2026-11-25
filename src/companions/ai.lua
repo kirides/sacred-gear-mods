@@ -265,6 +265,7 @@ local function share_end(s)
     if sh and sh.targets then
         for _, id in ipairs(sh.targets) do gear.buffs.remove(id, sh.key) end
     end
+    if sh and sh.key then gear.emit('companions.buff_end', sh.key) end   -- other mods (Beastmaster's allies and pets) end theirs too
     s.share = nil
 end
 
@@ -318,6 +319,9 @@ local function share_step(c, s, now, heroes, opts)
                 if M.debug then print('share', c.id, '->', h.id, sh.ability, ok) end
             end
         end
+        -- Other mods share the buff too (Beastmaster: the animals that follow the hero): the definition, the strength, how long it lasts.
+        gear.emit('companions.buff', {key = sh.key, def = def, strength = opts.buff_strength[sh.ability] or 0.5,
+            seconds = overlay and overlay > 0 and seconds or 0, ability = sh.ability, source = c.id})
         return
     end
     local v

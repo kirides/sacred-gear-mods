@@ -1,0 +1,48 @@
+<rml>
+<head>
+    <title>Beastmaster</title>
+    <link type="text/rcss" href="beasts.rcss"/>
+</head>
+<body data-model="model">
+<div id="beasts" class="window" data-panel="beasts" data-title="Beastmaster" data-if="open">
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="window" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
+    <div class="body">
+        <p data-if="msg != ''" class="amber">{{ msg }}</p>
+        <div class="frow modes">
+            <span class="accent lab">Take along as</span>
+            <button id="mode-ally" class="game-button" data-class-on="mode_ally"><span class="padkey a"></span>Ally ({{ ally_text }})</button>
+            <button id="mode-pet" class="game-button" data-class-on="mode_pet"><span class="padkey a"></span>Pet ({{ pet_text }})</button>
+        </div>
+        <div class="frow">
+            <input id="search" type="text" class="field search" data-value="q_text" maxlength="30" placeholder="Filter animals (wolf, bear, spider ...)"/>
+            <button class="ibtn" id="kbd-q" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
+            <button class="ibtn" id="clear-q" data-attrif-disabled="q_text == ''" title="Clear the filter"><span class="padkey a"></span><span class="icon icon-close"></span></button>
+        </div>
+        <div data-if="osk_open" class="osk">
+            <div class="oskrow" data-for="row : osk_rows"><button data-for="k : row" class="mini key" data-attr-id="k.id"><span class="padkey a"></span>{{ k.label }}</button></div>
+            <div class="oskrow"><button class="mini key wide" id="osk-shift"><span class="padkey a"></span>Shift</button><button class="mini key wide" id="osk-back"><span class="padkey a"></span>Backspace</button><button class="mini key wide" id="osk-done"><span class="padkey a"></span>Done</button></div>
+        </div>
+        <div class="muted small">A click on an animal takes it along as {{ mode_text }}. The percentage is the species' base size: change it with the minus and plus buttons.</div>
+        <div class="splist" data-nav-scroll>
+            <p data-if="none" class="muted">No animal matches.</p>
+            <div data-for="s : species" class="srow">
+                <button class="game-button sp" data-attr-id="s.id"><span class="padkey a"></span>{{ s.name }}</button>
+                <button class="ibtn sz" data-attr-id="s.minus" title="Smaller"><span class="padkey a"></span><span class="icon icon-remove"></span></button>
+                <span class="szv">{{ s.scale }}</span>
+                <button class="ibtn sz" data-attr-id="s.plus" title="Larger"><span class="padkey a"></span><span class="icon icon-add"></span></button>
+            </div>
+        </div>
+        <div class="sep"></div>
+        <div class="head"><span class="accent">With you now</span></div>
+        <p data-if="!has_followers" class="muted">Nobody yet.</p>
+        <div data-for="f : followers" class="frow">
+            <span class="fname">{{ f.name }}</span>
+            <span class="muted small frole">{{ f.role }} {{ f.level }}</span>
+            <div class="hbar" data-if="f.show_hp"><div class="hfill" data-style-width="f.hp"></div></div><div class="hbar nobar" data-if="!f.show_hp"></div>
+            <button class="ibtn" data-attr-id="f.id" title="Send this animal away"><span class="padkey a"></span><span class="icon icon-close"></span> Dismiss</button>
+        </div>
+        <button id="dismiss-all" class="game-button" data-attrif-disabled="!has_followers"><span class="padkey a"></span>Dismiss all</button>
+    </div>
+</div>
+</body>
+</rml>
