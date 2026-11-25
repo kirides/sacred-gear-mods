@@ -207,6 +207,25 @@ button.ibtn + button.ibtn:hover, button.ibtn + button.ibtn:focus, button.ibtn + 
 button.ibtn:active { color: #ffffff; font-effect: glow(3px 8px 0px 0px #ffe9a8ff); }
 button.ibtn:disabled, button.ibtn[disabled] { color: #6a6a6a; font-effect: none; }
 
+/* The on-screen keyboard (gear.kit.osk): the typed text in a dark field, rows of keys. The keys are plain bordered buttons (a thin gold edge on a dark fill, no game orb):
+   a keyboard has too many of them for the big game buttons, and the pad cursor reads better on a bright edge. */
+.kit-osk > .body { background-color: #0d0c12f5; }
+.kit-osk .osk-line { display: flex; flex-direction: row; align-items: center; height: 32px; margin: 0 0 10px 0; padding: 0 10px; background-color: #0c0c14; border: 1px #6e5e3a; white-space: pre; overflow: hidden; }
+.kit-osk .osk-text { color: #f0f0f0; font-size: 16px; }
+.kit-osk .osk-caret { color: #ffd780; font-size: 16px; }
+.kit-osk .osk-count { margin-left: auto; padding-left: 10px; color: #8c8c8c; font-size: 12px; }
+.kit-osk .osk-row { display: flex; flex-direction: row; justify-content: center; margin: 4px 0; }
+button.osk-key { display: inline-block; flex: none; width: 42px; height: 34px; margin: 0 3px; padding: 0; border: 1px #8c7440; background-color: #14141f; color: #e4e4e4; font-family: "Sacred Game"; font-size: 16px; line-height: 32px; text-align: center; cursor: pointer; transform: none; }
+button.osk-key:hover, button.osk-key:focus { color: #ffe030; border-color: #ffe030; background-color: #262636; transform: none; }
+button.osk-key:active { color: #fff2a0; background-color: #34344e; }
+button.osk-key.wide { width: 62px; font-size: 14px; }
+button.osk-key.space { width: 182px; font-size: 14px; }
+button.osk-key.pad { width: 64px; height: 44px; line-height: 42px; font-size: 20px; }
+button.osk-key.txt { font-size: 14px; }
+button.osk-key.half { width: 100px; font-size: 14px; }
+button.osk-key.on { color: #ffd54a; border-color: #ffd54a; background-color: #3a3020; }
+button.osk-key.done { border-color: #c8aa5a; color: #ffd780; }
+button.osk-key .icon { font-size: 16px; }
 /* Tab buttons (class tab on a <button>, where a window keeps its own tab row): the look of the .tabbar links, the open one (.on) bright with a bar under it. */
 button.tab { display: inline-block; flex: none; margin: 0 4px 0 0; padding: 3px 12px; border: 0; background-color: transparent; color: #e8d8a8; font-family: "Sacred Game"; font-size: 15px; white-space: nowrap; cursor: pointer; transform: none; }
 button.tab:hover, button.tab:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }
