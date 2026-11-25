@@ -3,9 +3,9 @@
 .bar .slot.edit { border-color: #ffd780; }
 .bar .slot:hover, .bar .slot:focus { border-color: #ffe030; }
 .slot .icon { position: absolute; left: 3dp; top: 3dp; }
-.slot .glyph { position: absolute; left: 0px; right: 0px; top: 30%; text-align: center; color: #e8c878; font-size: 18dp; }
+.slot .glyph { position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; display: flex; align-items: center; justify-content: center; line-height: 1; color: #e8c878; font-size: 18dp; }
 .slot .cd { position: absolute; left: 3dp; right: 3dp; top: 3dp; background-color: #000000a0; }
-.slot .cdn { position: absolute; left: 0px; right: 0px; top: 38%; text-align: center; color: #ffffff; font-size: 14dp; font-weight: bold; }
+.slot .cdn { position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; display: flex; align-items: center; justify-content: center; line-height: 1; color: #ffffff; font-size: 14dp; font-weight: bold; }
 .slot .key { position: absolute; left: 4dp; bottom: 2dp; color: #ffffff; font-size: 10dp; }
 .bar .side { position: absolute; left: 100%; top: 4dp; margin-left: 4dp; }
 .page { display: block; font-size: 11dp; }

@@ -7,9 +7,9 @@
 <div id="bar1" class="bar" data-panel="bar1" data-title="Art bar" data-if="b1.show" data-style-left="b1.left" data-style-top="b1.top" data-style-width="b1.width">
     <button data-for="s : b1.slots" class="slot" data-attr-id="s.id" data-attr-title="s.tip" data-class-edit="edit" data-class-dim="!s.known" data-style-width="px" data-style-height="px">
         <img data-if="s.icon != ''" class="icon" data-style-width="ipx" data-style-height="ipx" data-attr-src="s.icon" data-style-image-color="s.tint"/>
-        <span data-if="s.label != ''" class="glyph">{{ s.label }}</span>
+        <span data-if="s.label != ''" class="glyph"><span>{{ s.label }}</span></span>
         <div data-if="s.cd &gt; 0" class="cd" data-style-height="s.cd + '%'"></div>
-        <span data-if="s.cd &gt; 0" class="cdn">{{ s.cdn }}</span>
+        <span data-if="s.cd &gt; 0" class="cdn"><span>{{ s.cdn }}</span></span>
         <span data-if="s.key != ''" class="key">{{ s.key }}</span>
     </button>
     <div class="side">
@@ -21,9 +21,9 @@
 <div id="bar2" class="bar" data-panel="bar2" data-title="Art bar" data-if="b2.show" data-style-left="b2.left" data-style-top="b2.top" data-style-width="b2.width">
     <button data-for="s : b2.slots" class="slot" data-attr-id="s.id" data-attr-title="s.tip" data-class-edit="edit" data-class-dim="!s.known" data-style-width="px" data-style-height="px">
         <img data-if="s.icon != ''" class="icon" data-style-width="ipx" data-style-height="ipx" data-attr-src="s.icon" data-style-image-color="s.tint"/>
-        <span data-if="s.label != ''" class="glyph">{{ s.label }}</span>
+        <span data-if="s.label != ''" class="glyph"><span>{{ s.label }}</span></span>
         <div data-if="s.cd &gt; 0" class="cd" data-style-height="s.cd + '%'"></div>
-        <span data-if="s.cd &gt; 0" class="cdn">{{ s.cdn }}</span>
+        <span data-if="s.cd &gt; 0" class="cdn"><span>{{ s.cdn }}</span></span>
         <span data-if="s.key != ''" class="key">{{ s.key }}</span>
     </button>
 </div>
@@ -31,9 +31,9 @@
 <div id="bar3" class="bar" data-panel="bar3" data-title="Art bar" data-if="b3.show" data-style-left="b3.left" data-style-top="b3.top" data-style-width="b3.width">
     <button data-for="s : b3.slots" class="slot" data-attr-id="s.id" data-attr-title="s.tip" data-class-edit="edit" data-class-dim="!s.known" data-style-width="px" data-style-height="px">
         <img data-if="s.icon != ''" class="icon" data-style-width="ipx" data-style-height="ipx" data-attr-src="s.icon" data-style-image-color="s.tint"/>
-        <span data-if="s.label != ''" class="glyph">{{ s.label }}</span>
+        <span data-if="s.label != ''" class="glyph"><span>{{ s.label }}</span></span>
         <div data-if="s.cd &gt; 0" class="cd" data-style-height="s.cd + '%'"></div>
-        <span data-if="s.cd &gt; 0" class="cdn">{{ s.cdn }}</span>
+        <span data-if="s.cd &gt; 0" class="cdn"><span>{{ s.cdn }}</span></span>
         <span data-if="s.key != ''" class="key">{{ s.key }}</span>
     </button>
 </div>
