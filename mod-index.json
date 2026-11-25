@@ -57,7 +57,7 @@
       "id": "auction-house",
       "path": "mods/auction-house",
       "name": "Auction house",
-      "version": "0.2.6",
+      "version": "0.3.0",
       "author": "kirides",
       "description": "Buy and sell items with the other players of a game, from the chest window. The host keeps the market.",
       "tags": [
@@ -67,7 +67,7 @@
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/auction-house.jpg",
       "changelog": "mods/auction-house/changelog/history.md",
       "requires": [
-        "sacred-gear>=0.4.1"
+        "sacred-gear>=0.14.0"
       ],
       "recommended": [
         "sacred-theme"
@@ -100,11 +100,14 @@
       "id": "balance-editor",
       "path": "mods/balance-editor",
       "name": "Balance editor",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "author": "kirides",
       "description": "Edit the game's balance.bin from inside the game: difficulty multipliers and levels, creature health, skill curves, loot chances, item prices, movement speed and more, with the game's own value next to yours. Your changes live in this mod only, as an overlay the game reads instead of its file (switch the mod off or delete it and the game is as before); the game's own balance.bin is never touched. Changes apply the next time the game starts. Balance patches can be exported and imported as plain data files.",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/balance-editor.jpg",
       "changelog": "mods/balance-editor/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.14.0"
+      ],
       "recommended": [
         "sacred-theme"
       ]
@@ -113,9 +116,9 @@
       "id": "beastmaster",
       "path": "mods/beastmaster",
       "name": "Beastmaster",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "author": "Sacred Gear",
-      "description": "Animals that travel with your hero: wolves, bears, boars, deer, horses, spiders, scorpions, crabs, lizards, birds ... every animal of the game. Allies fight for you, have the level of the hero you play (so their damage grows with you) and grow bigger every 18 levels up to level 216. Pets are drawn larger, follow you around, cannot be targeted or hurt and do nothing else. Each species has its own base size (big monsters like spiders are drawn smaller). Pick them in the Beastmaster window (Ctrl+B, or the controller's mod menu). Single player only.",
+      "description": "Animals that travel with your hero: wolves, bears, boars, deer, horses, spiders, scorpions, crabs, lizards, birds ... every animal of the game. Allies fight for you, have the level of the hero you play (so their damage grows with you) and grow bigger every 18 levels up to level 216. Pets are drawn larger, follow you around, cannot be targeted or hurt and do nothing else. Each species has its own base size (big monsters like spiders are drawn smaller). Pick them in the Beastmaster window (Ctrl+B, or the controller's mod menu), where each animal also gets orders (aggressive, defensive, passive, wait here). Single player only.",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/beastmaster.jpg",
       "images": [
         "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/beastmaster.jpg",
@@ -123,14 +126,15 @@
       ],
       "changelog": "mods/beastmaster/changelog/history.md",
       "requires": [
-        "sacred-theme"
+        "sacred-theme",
+        "sacred-gear>=0.14.0"
       ]
     },
     {
       "id": "better-saveload",
       "path": "mods/better-saveload",
       "name": "Better SaveLoad",
-      "version": "1.4.8",
+      "version": "1.5.0",
       "author": "kirides",
       "description": "The savegame screen made new: hero, class, level and picture of every savegame, filters by character and class, a search, several orders, and room for thousands of savegames (the game stops at 100 on its own screen). Works with the mouse, the keyboard and the controller.",
       "tags": [
@@ -140,7 +144,7 @@
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/better-saveload.jpg",
       "changelog": "mods/better-saveload/changelog/history.md",
       "requires": [
-        "sacred-gear>=0.4.1"
+        "sacred-gear>=0.14.0"
       ],
       "recommended": [
         "sacred-theme"
@@ -511,7 +515,7 @@
       "id": "sacred-theme",
       "path": "mods/sacred-theme",
       "name": "Sacred theme",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": "Sacred Gear",
       "description": "The look of the game for the RmlUi screens of the other mods: the thick frame, game buttons, check orbs, sliders, tab bars, scroll bars and the controller prompts. Gear puts its stylesheet in front of every RmlUi document. The mods do not need it: without a theme they use the plain base style of Sacred Gear and look plainer; this one gives them the look of the game.",
       "tags": [
