@@ -44,14 +44,14 @@ local function dress_pet(c)
     return ok, err
 end
 
--- A creature of the same kind that the game placed (not one of ours): its level, combat values and health are what a plain create
+-- A creature of the same kind (same model name: Silberwolf and Grauwolf are both WOLF.GRN) that the game placed (not one of ours): its level, combat values and health are what a plain create
 -- lacks (a creature made by gear.world.spawn is level 1 with 100 health and bites for nothing).
 local function donor_of(c, hero)
     local ours = {}
     for _, e in ipairs(followers) do ours[e.id] = true end
     local x, y, layer = hero:position()
     for _, o in ipairs(W.creatures_near(x, y, 6000, {layer = layer, limit = 200})) do
-        if o.id ~= c.id and not ours[o.id] and not o:is_hero() and not o:is_dead() and o:type() == c:type() then return o end
+        if o.id ~= c.id and not ours[o.id] and not o:is_hero() and not o:is_dead() and o:type_name() == c:type_name() then return o end
     end
 end
 
@@ -84,10 +84,23 @@ local function recruit(sp)
     end
     local x, y, layer = hero:position()
     local sx, sy = core.spot(x, y, 1, 1, TILE * 2, 0)
-    local c, err = W.spawn(sp.type, sx, sy, {layer = layer, like = hero})
+    -- Not `like = hero`: that would also copy the hero's level and values onto the animal. Only the allegiance is wanted here.
+    local c, err = W.spawn(sp.type, sx, sy, {layer = layer})
     if not c then return nil, err or 'Could not be made.' end
+    if sp.role == 'ally' and c.copy_stats then
+        -- The combat values copy_stats takes from a placed creature fit that creature's own type only (a Silberwolf copied from a
+        -- Grauwolf bites for 1): the ally is made as the type of the donor, which is the same kind (WOLF.GRN) when one is near.
+        local donor = donor_of(c, hero)
+        if donor and donor:type() ~= c:type() then
+            c:remove()
+            c, err = W.spawn(donor:type(), sx, sy, {layer = layer})
+            if not c then return nil, err or 'Could not be made.' end
+        end
+    end
+    local ok, why = c:copy_allegiance(hero)
+    if not ok then c:remove() return nil, why or 'Could not join your side.' end
     if sp.role == 'pet' then dress_pet(c) else strengthen(c, hero) end
-    followers[#followers + 1] = {id = c.id, type = sp.type, role = sp.role}
+    followers[#followers + 1] = {id = c.id, type = c:type(), role = sp.role, key = sp.key}
     store:changed()
     return c
 end

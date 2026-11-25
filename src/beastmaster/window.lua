@@ -25,7 +25,7 @@ function M.new(env)
             local c = env.object_of(e)
             local nm = e.type
             for _, sp in ipairs(env.species) do
-                if sp.type == e.type then nm = name_of(sp) end
+                if sp.key == e.key or (not e.key and sp.type == e.type) then nm = name_of(sp) end
             end
             local hp = c and c:hp() or 0
             local mx = c and c:max_hp() or 1
