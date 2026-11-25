@@ -2,7 +2,7 @@
 return {
     id = 'world-events',
     name = 'World events',
-    version = '0.2.2',
+    version = '0.2.3',
     author = 'kirides',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Shows the game server\'s world event (a realm-wide goal such as "slay 1000 orcs in 2 hours") as a small movable indicator (a pill with progress and time rings). Needs a Sacred Gear game server with the world_events script.',
