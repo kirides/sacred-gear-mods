@@ -2,7 +2,7 @@
 return {
     id = 'better-saveload',
     name = 'Better SaveLoad',
-    version = '1.4.8',
+    version = '1.5.0',
     author = 'kirides',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'The savegame screen made new: hero, class, level and picture of every savegame, filters by '
