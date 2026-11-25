@@ -1,3 +1,9 @@
+## v0.5.3 (2026-11-25)
+
+- Fixed: shared speed buffs (Katarakt der Wendigkeit) now really make the other heroes faster: attack, cast and move speed.
+- New: Wieselflink, the Wood Elf's speed buff, is shared with the heroes nearby too (setting under Buffs, default 50%).
+- Fixed: a companion you play no longer fights and runs away on their own when hit (needs Gear 0.10.1).
+
 ## v0.5.2 (2026-11-25)
 
 - Fixed: party window drop-down lists work even where they reach past the window.
