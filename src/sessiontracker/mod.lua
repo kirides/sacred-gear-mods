@@ -2,7 +2,7 @@
 return {
     id = 'sessiontracker',
     name = 'Session tracker',
-    version = '0.2.3',
+    version = '0.2.4',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Time played, kills, gold and experience gained this session, with per-hour rates; lifetime totals and the last sessions are kept.',
