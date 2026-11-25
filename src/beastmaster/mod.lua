@@ -2,7 +2,7 @@
 return {
     id = 'beastmaster',
     name = 'Beastmaster',
-    version = '0.3.1',
+    version = '0.4.0',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     requires = {'sacred-theme'},
