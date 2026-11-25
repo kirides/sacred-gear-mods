@@ -6,7 +6,7 @@ Makes the world busier: every creature the game spawns brings extra ones of its 
 
 ## What you need
 
-Sacred Gear with the `creature.created` event, `gear.world.spawn` with `like`, `creature:copy_allegiance` and `creature:order_attack` on any creature (SacredBild from the build that added them) and the mod in your `mods` folder (see [Install](../Install.md)). Single player only: in a network game the mod does nothing.
+Sacred Gear with the `creature.created` event, `gear.world.spawn` with `like` (allegiance, level, stats), `creature:copy_allegiance`, `creature:copy_stats` and `creature:order_attack` on any creature (SacredBild from the build that added them) and the mod in your `mods` folder (see [Install](../Install.md)). Single player only: in a network game the mod does nothing.
 
 ## How to use it
 
@@ -23,6 +23,8 @@ Only creatures hostile to your hero are multiplied: merchants, villagers, compan
 
 - *Faction.* The engine decides who fights whom from a faction index at creature +0x1F0 (a 16x16 table). A plain create gives a creature the faction of its *type*; the game's sector fill and scripts set it per creature. A soldier the game placed can be hostile to your hero (faction 2) while a plain-created soldier of the same type is neutral (faction 7): measured on 4 of 68 extras. The mod therefore spawns every extra with `like = original`, which copies the faction and the aggression flag from the original.
 - *Noticing you.* A created creature also stands still: a natural monster charges from 450 to 850 units away, the same type made by a plain create 420 units from the hero stood for 14 seconds. The mod gives the extras within 700 units of your hero the attack order a script would give (`creature:order_attack`, every 0.5 s, again after 4 s while they are near).
+
+**The extras have their original's level and health.** A plain `gear.world.spawn` makes a level 1 creature with 100 health whatever its type (a level 10 orc has 312). Every extra is therefore spawned with `like = original`, which also gives it the original's level through the game's own level function (the one the sector fill uses: the experience the level starts at, the derived stats and the health come from the type and the level), the original's maximum health (the game's strong variants, such as level 12 goblins with 467 or 583 health where the level alone gives 233, keep theirs), the original's share of it as current health, and the creature's table of skill values. Not copied: equipment and its bonuses (an orc carries none), and the small per-creature random differences natural creatures have in their damage values.
 
 The extras come nearest first and fairly: all waiting originals take turns, one extra each per round, the ones next to you first, so a crowd far away never starves the creatures around you, and no single creature uses up the whole limit. Originals that are more than 7000 units away (or on another level) when their turn comes are given up and seen again when you return.
 
