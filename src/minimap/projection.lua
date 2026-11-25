@@ -76,6 +76,53 @@ function P.zoom_of(level)
     return P.ZOOMS[level], level
 end
 
+-- The game's own TAB overlay ('Game' map): every sector (64 x 64 tiles) has a 256 x 256 picture MINIMAP<x:3><y:3>.TGA in the game's
+-- Texture.pak, drawn in the game's isometric view: a tile (tx, ty) is at picture pixel (4 (tx - ty), 2 (tx + ty)) and the picture of
+-- sector (sx, sy) has its top left corner at (256 (sx - sy - 1), 128 (sx + sy)). The pictures tile the plane in a brick pattern
+-- (the layout of the engine remake's MinimapRasterizer, which follows the game's own overlay).
+P.SECTOR_TILES = 64
+P.GAME_PX = 256
+P.GAME_ZOOMS = {0.15, 0.25, 0.4, 0.6, 0.9, 1.4}
+
+function P.game_zoom_of(level)
+    level = math.max(1, math.min(#P.GAME_ZOOMS, math.floor((tonumber(level) or 3) + 0.5)))
+    return P.GAME_ZOOMS[level], level
+end
+
+--- Tile position -> isometric picture pixel of the Game map.
+function P.to_iso(tx, ty) return 4 * (tx - ty), 2 * (tx + ty) end
+
+function P.sector_name(sx, sy) return ('MINIMAP%03d%03d.TGA'):format(sx, sy) end
+
+--- Whether sector (sx, sy) has a picture; `rows` is sectors.lua (nil: assume every sector has one).
+function P.has_sector(rows, sx, sy)
+    if sx < 0 or sy < 0 or sx > 127 or sy > 127 then return false end
+    if not rows then return true end
+    return rows[sy + 1]:sub(sx + 1, sx + 1) == '1'
+end
+
+--- The sector pictures a view of `w` x `h` layout units at `zoom` (layout units per picture pixel), centred on isometric pixel (cu, cv),
+--- touches: a list of {sx, sy, x, y, size} (x, y: the picture's top left in zoomed picture pixels, size: its side), drawn back to front.
+function P.game_tiles(cu, cv, w, h, zoom, rows)
+    local px = P.GAME_PX
+    local half_w, half_h = w / 2 / zoom, h / 2 / zoom
+    local left, right, top, bottom = cu - half_w, cu + half_w, cv - half_h, cv + half_h
+    local a0, a1 = math.ceil(left / px), math.floor(right / px) + 1       -- the pictures of column a span x from px (a - 1) to px a
+    local b0, b1 = math.floor((top - px) / (px / 2)), math.floor(bottom / (px / 2))
+    local out = {}
+    for b = b0, b1 do
+        for a = a0, a1 do
+            if (a + b) % 2 == 0 then
+                local sx, sy = (a + b) / 2, (b - a) / 2
+                if P.has_sector(rows, sx, sy) then
+                    out[#out + 1] = {sx = sx, sy = sy, x = px * (a - 1) * zoom, y = (px / 2) * b * zoom, size = px * zoom}
+                end
+            end
+        end
+    end
+    return out
+end
+
 --- The horizontal strips that clip a circle of diameter `d` (an element cannot be cut round, so the circle is stacked from
 --- thin full-clipped rows): a list of {y, h, x, w} in layout units from the circle's top left corner.
 function P.circle_strips(d, step)

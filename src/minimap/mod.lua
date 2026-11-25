@@ -8,8 +8,8 @@ return {
     description = "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
     settings = {
         {id = 'map', type = 'choice', label = 'Map', default = 'render', section = 'Look',
-            choices = {{value = 'render', label = 'Render'}, {value = 'original', label = 'Original'}},
-            tooltip = "Render: the whole world drawn from the game's data (terrain, buildings, trees; black outside the world). Original: the painted map of the game"},
+            choices = {{value = 'render', label = 'Render'}, {value = 'original', label = 'Original'}, {value = 'game', label = 'Game (TAB)'}},
+            tooltip = "Render: the whole world drawn from the game's data (terrain, buildings, trees; black outside the world). Original: the painted map of the game. Game (TAB): the pictures of the game's own TAB overlay, in its isometric view, nothing extra to install"},
         {id = 'shape', type = 'choice', label = 'Shape', default = 'round', section = 'Look',
             choices = {{value = 'round', label = 'Circle'}, {value = 'square', label = 'Rectangle'}}},
         {id = 'width', type = 'number', label = 'Width (layout units)', min = 100, max = 400, step = 10, default = 200, section = 'Look',

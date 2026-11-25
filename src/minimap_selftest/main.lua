@@ -1,6 +1,6 @@
 -- Self test of the minimap for runs without a player:
 --     Sacred.exe -gear-auto -gear-instance=minimap -gear-load=<slot> -gear-mods=minimap,minimap_selftest
--- Loads the savegame, takes a screenshot (mm-*.bmp in GearAutomation\<instance>) of the round view at every zoom level, of the
+-- Loads the savegame, takes a screenshot (mm-*.bmp in GearAutomation\<instance>) of the round view at every zoom level (Render, Original and Game maps), of the
 -- rectangle and of the view without markers, and logs the hero's map position.
 if not gear.auto then
     print('no automation (start the game with -gear-auto): nothing to do')
@@ -18,7 +18,7 @@ gear.task(function()
     local hero = gear.world.hero()
     if hero then print('hero', hero:position()) end
     set('shape', 'round'); set('width', 200); set('markers', true)
-    for _, map in ipairs({'render', 'original'}) do
+    for _, map in ipairs({'render', 'original', 'game'}) do
         set('map', map)
         for level = 1, 6 do
             set('zoom', level)
