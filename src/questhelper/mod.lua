@@ -2,7 +2,7 @@
 return {
     id = 'questhelper',
     name = 'Quest helper',
-    version = '0.2.3',
+    version = '0.2.4',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'A panel with the quest items in your backpack (read here) and the quest records of your hero, with hints, '
