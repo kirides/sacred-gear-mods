@@ -92,6 +92,7 @@
       "version": "0.3.0",
       "author": "Sacred Gear",
       "description": "Animals that travel with your hero: wolves, bears, boars, deer, horses, spiders, scorpions, crabs, lizards, birds ... every animal of the game. Allies fight for you, have the level of the hero you play (so their damage grows with you) and grow bigger every 18 levels up to level 216. Pets are drawn larger, follow you around, cannot be targeted or hurt and do nothing else. Each species has its own base size (big monsters like spiders are drawn smaller). Pick them in the Beastmaster window (Ctrl+B, or the controller's mod menu). Single player only.",
+      "changelog": "mods/beastmaster/changelog/history.md",
       "requires": [
         "sacred-theme"
       ]
@@ -308,7 +309,8 @@
       "name": "Minimap",
       "version": "0.1.1",
       "author": "Sacred Gear",
-      "description": "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT)."
+      "description": "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
+      "changelog": "mods/minimap/changelog/history.md"
     },
     {
       "id": "name-editor",
