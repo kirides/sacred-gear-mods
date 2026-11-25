@@ -5,8 +5,9 @@
 </head>
 <body data-model="model">
 <div id="beasts" class="window" data-panel="beasts" data-title="Beastmaster" data-if="open">
+    <div data-if="dd != ''" id="beasts-ddshade" class="dd-shade"></div>
     <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="window" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
-    <div class="body">
+    <div class="body" data-nav-scroll>
         <p data-if="msg != ''" class="amber">{{ msg }}</p>
         <div class="frow modes">
             <span class="accent lab">Take along as</span>
@@ -35,14 +36,27 @@
         <div class="sep"></div>
         <div class="head"><span class="accent">With you now</span></div>
         <p data-if="!has_followers" class="muted">Nobody yet.</p>
+        <div class="flist" data-nav-scroll>
         <div data-for="f : followers" class="frow">
             <span class="fname">{{ f.name }}</span>
             <span class="muted small frole">{{ f.role }} {{ f.level }}</span>
             <div class="hbar" data-if="f.show_hp"><div class="hfill" data-style-width="f.hp"></div></div><div class="hbar nobar" data-if="!f.show_hp"></div>
+            <div class="dd" data-class-open="dd == f.ord_dd"><button class="game-dropdown ord" data-attr-id="f.id_ord" data-attr-title="f.tip_order"><span class="padkey a"></span>{{ f.order }}</button></div>
+            <button class="ibtn" data-attr-id="f.id_me" title="Stuck or left behind? This animal joins you where you stand"><span class="padkey a"></span><span class="icon icon-my-location"></span> To me</button>
             <button class="ibtn" data-attr-id="f.id" title="Send this animal away"><span class="padkey a"></span><span class="icon icon-close"></span> Dismiss</button>
+        </div>
+        </div>
+        <div class="frow" data-if="has_followers">
+            <span class="accent lab">All animals</span>
+            <div class="dd" data-class-open="dd == 'oall'"><button class="game-dropdown ord" id="oall" title="Gives every animal the same orders (a pet can only follow or wait)"><span class="padkey a"></span>{{ all_order }}</button></div>
+            <button id="bring-all" class="ibtn" title="Every animal joins you where you stand"><span class="padkey a"></span><span class="icon icon-my-location"></span> All to me</button>
         </div>
         <button id="dismiss-all" class="game-button" data-attrif-disabled="!has_followers"><span class="padkey a"></span>Dismiss all</button>
     </div>
 </div>
+<!-- The list of the open drop-down: a top-level element of the document, so the scrolling lists never clip it. Placed by the Lua side under its
+     button (above it near the screen's bottom); beasts-origin is where the document's (0, 0) lies. -->
+<div id="beasts-origin" class="dd-origin"></div>
+<div data-if="pop.open" id="beasts-pop" class="dd-list dd-pop" data-nav-scroll data-style-left="pop.left" data-style-top="pop.top" data-style-width="pop.width"><button data-for="o : pop.options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div>
 </body>
 </rml>

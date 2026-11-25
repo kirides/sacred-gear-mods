@@ -28,4 +28,11 @@ ok(#species > 100 and bad == 0, 'the species list has every animal once, with a 
 local small = {}
 for _, sp in ipairs(species) do small[sp.family] = sp.scale end
 ok(small.gigant_spider < 0.5 and small.scorpion < 0.7 and small.wolf == 1, 'big monsters are drawn smaller by default, a wolf as it is')
+-- orders
+ok(core.order_of('ally', nil, 'aggressive') == 'aggressive' and core.order_of('ally', 'hold', 'aggressive') == 'hold' and core.order_of('ally', nil, 'passive') == 'passive', 'an ally has its own order, else the default')
+ok(core.order_of('ally', 'nonsense', 'defensive') == 'defensive' and core.order_of('ally', nil, nil) == 'aggressive', 'an unknown order falls back to the default, then aggressive')
+ok(core.order_of('pet', 'aggressive', 'aggressive') == 'passive' and core.order_of('pet', 'defensive', nil) == 'passive' and core.order_of('pet', 'hold', 'aggressive') == 'hold', 'a pet only follows or waits')
+ok(core.order_label('pet', 'passive') == 'Follow' and core.order_label('ally', 'passive') == 'Passive' and core.order_label('ally', 'hold') == 'Wait here', 'labels: a pet that follows reads Follow')
+ok(core.engage_range('passive', 12, 54) == 0 and core.engage_range('aggressive', 12, 54) == 648 and core.engage_range('defensive', 12, 54) == 8 * 54 and core.engage_range('defensive', 4, 54) == 4 * 54 and core.engage_range('hold', 12, 54) == 6 * 54, 'engage range per order')
+ok(core.joins_hero('aggressive') and core.joins_hero('passive') and not core.joins_hero('hold'), 'only a waiting animal is not called back to the hero')
 os.exit(fails == 0 and 0 or 1)

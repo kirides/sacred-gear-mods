@@ -158,6 +158,50 @@ gear.task(function()
     gear.wait(0.5)
     check('the shared buffs end for the animals when they end for the heroes', not has(wolf_id, 'beastmaster:test:1') and not has(rabbit_id, 'beastmaster:test:1') and not has(wolf_id, 'beastmaster:test:2') and not has(rabbit_id, 'beastmaster:test:3'))
 
+    -- orders: an ally told to wait stays where it stands (the hero far away, beyond the catch-up distance), "To me" calls it, a pet only
+    -- follows or waits, and the order shows in the state
+    local function index_of(id)
+        for i, f in ipairs(state().followers) do if f.id == id then return i end end
+    end
+    if not (wolf and wolf:exists() and not wolf:is_dead()) then wolf_id = recruit(567, 'ally'); wolf = wolf_id and W.object(wolf_id); gear.wait(1) end
+    local wi = index_of(wolf_id)
+    check('the ally is found in the state with the default orders', wi ~= nil and state().followers[wi].order == 'aggressive')
+    gear.emit('beastmaster.order', wi, 'hold')
+    gear.wait(1)
+    check('the order of the ally is wait', state().followers[wi].order == 'hold')
+    local wx, wy, wl = wolf:position()
+    local hxo, hyo, hlo = hero:position()
+    hero:teleport(wx + 3600, wy, wl)
+    gear.wait(8)
+    local nx, ny = wolf:position()
+    local away = nx and math.sqrt((nx - wx) ^ 2 + (ny - wy) ^ 2) or 1e9
+    check('an ally told to wait stays put with the hero 3600 away', away < 200, away)
+    check('and is far from the hero', (near(wolf, hero)) > 2600, near(wolf, hero))
+    gear.emit('beastmaster.bring', wi)
+    gear.wait(1)
+    check('"To me" brings it to the hero', near(wolf, hero) < 600, near(wolf, hero))
+    gear.emit('beastmaster.order', wi, nil)
+    gear.emit('beastmaster.order', index_of(rabbit_id), 'aggressive')
+    gear.wait(0.5)
+    local ri = index_of(rabbit_id)
+    check('a pet cannot be aggressive: it follows', state().followers[ri].order == 'passive')
+    gear.emit('beastmaster.order', ri, 'hold')
+    check('a pet can wait', state().followers[ri].order == 'hold')
+    gear.emit('beastmaster.order_all', nil)
+    check('orders for all: back to the default', state().followers[wi].order == 'aggressive' and state().followers[ri].order == 'passive')
+    gear.emit('beastmaster.window', true)
+    gear.emit('beastmaster.order', wi, 'defensive')
+    gear.wait(1)
+    A.screenshot('beasts_orders')
+    gear.emit('beastmaster.dropdown', 'ord-' .. wi)
+    gear.wait(1)
+    A.screenshot('beasts_orders_open')
+    gear.emit('beastmaster.dropdown', 'oall')
+    gear.wait(1)
+    A.screenshot('beasts_orders_all')
+    gear.emit('beastmaster.dropdown', '')
+    gear.emit('beastmaster.order_all', nil)
+
     -- the hero levels up: the allies follow (level, growth); a wolf that fell in the fights on the way is replaced first
     if not (wolf and wolf:exists() and not wolf:is_dead()) then
         wolf_id = recruit(567, 'ally')

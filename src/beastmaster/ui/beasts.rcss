@@ -1,18 +1,20 @@
-#beasts { position: absolute; left: 150dp; top: 40dp; width: 640dp; }
+#beasts { position: absolute; left: 60dp; top: 24dp; width: 900dp; }
 .head { margin: 2dp 0 6dp 0; }
 .small { font-size: 13dp; }
 .amber { color: #ffc060; }
 .lab { width: 130dp; flex: none; }
 .frow { display: flex; flex-direction: row; align-items: center; margin: 3dp 0; }
 .modes button.on { color: #ffc060; }
-.splist { height: 330dp; overflow-y: auto; margin: 6dp 0; }
+.splist { height: 160dp; flex: none; overflow-y: auto; margin: 6dp 0; }
 .srow { display: flex; flex-direction: row; align-items: center; margin: 0 0 3dp 0; }
-button.game-button.sp { min-width: 0; width: 360dp; margin: 0 8dp 0 0; padding: 0 20dp; font-size: 16dp; }
+button.game-button.sp { min-width: 0; width: 420dp; margin: 0 8dp 0 0; padding: 0 20dp; font-size: 16dp; }
 button.sz { width: 44dp; min-width: 0; margin: 0; font-size: 20dp; }
 .szv { width: 60dp; text-align: center; font-size: 15dp; }
 .sep { height: 1px; background-color: #6a5a3c80; margin: 8dp 0; }
-.fname { width: 190dp; font-size: 16dp; }
-.frole { width: 100dp; }
+.fname { width: 230dp; font-size: 16dp; }
+.flist { max-height: 132dp; flex: none; overflow-y: auto; }
+button.game-dropdown.ord { min-width: 0; width: 160dp; box-sizing: border-box; }
+.frole { width: 90dp; }
 .hbar { width: 100dp; height: 6dp; background-color: #000000c0; margin-right: 12dp; }
 .hfill { height: 6dp; background-color: #60c060; }
 .hbar.nobar { background-color: transparent; }
@@ -21,3 +23,4 @@ input.search { flex: 1 1 0px; margin-right: 8dp; }
 .oskrow { display: flex; flex-direction: row; margin: 2dp 0; }
 button.key { min-width: 40dp; text-align: center; padding: 0 4dp; margin-right: 3dp; }
 button.key.wide { min-width: 120dp; }
+button.mini { margin: 0 3dp 0 0; }

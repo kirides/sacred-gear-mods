@@ -63,4 +63,37 @@ function M.excess(list, role, max)
     return ids
 end
 
+-- Orders (the orders menu: the same ones as the Companions mod's behaviours, for the animals). An ally: 'aggressive' (fights what comes
+-- near the hero), 'defensive' (only what is close), 'passive' (only follows), 'hold' (waits where it stands, fights what comes near
+-- that spot). A pet cannot fight: it only follows ('passive') or waits ('hold'). `order` is the animal's own (nil: the default of
+-- the Mods screen), `default` the setting. Returns the order that counts.
+M.ORDERS = {'aggressive', 'defensive', 'passive', 'hold'}
+M.PET_ORDERS = {'passive', 'hold'}
+M.ORDER_LABEL = {aggressive = 'Aggressive', defensive = 'Defensive', passive = 'Passive', hold = 'Wait here', follow = 'Follow'}
+local VALID = {aggressive = true, defensive = true, passive = true, hold = true}
+function M.order_of(role, order, default)
+    local o = VALID[order] and order or (VALID[default] and default or 'aggressive')
+    if role == 'pet' then return o == 'hold' and 'hold' or 'passive' end
+    return o
+end
+-- The label of an order for a role (a pet that only follows reads 'Follow').
+function M.order_label(role, order)
+    if role == 'pet' and order == 'passive' then return M.ORDER_LABEL.follow end
+    return M.ORDER_LABEL[order] or '?'
+end
+
+-- How far an ally looks for an enemy: `engage` (the setting, in tiles) for aggressive, a few tiles for defensive, around its own spot
+-- when it waits. In world units (`tile` units per tile). 0: it does not fight.
+M.DEFENSIVE_TILES, M.HOLD_TILES = 8, 6
+function M.engage_range(order, engage_tiles, tile)
+    if order == 'passive' then return 0 end
+    if order == 'hold' then return M.HOLD_TILES * tile end
+    if order == 'defensive' then return math.min(engage_tiles, M.DEFENSIVE_TILES) * tile end
+    return engage_tiles * tile
+end
+
+-- Whether an animal in this order is called back to the hero when it is far away or on another layer. One that waits stays where it is
+-- ("To me" calls it).
+function M.joins_hero(order) return order ~= 'hold' end
+
 return M
