@@ -56,4 +56,40 @@ ok(#set == 4 and set[1].r == 1 and set[1].c == 1 or #set == 4, 'scale 4 tiles: '
 set = P.visible_tiles(2040, 2800, 400, 400, 1, 4)
 ok(#set >= 1 and set[#set].r <= 43 and set[#set].c <= 31, 'scale 4 clamped to 32 x 44 tiles')
 
+-- the Game map: the game's sector pictures in the isometric view
+do
+    local gx, gy = P.to_iso(64, 64)
+    ok(gx == 0 and gy == 256, 'iso of a sector corner')
+    ok(P.sector_name(52, 38) == 'MINIMAP052038.TGA', 'sector picture name')
+    local rows = {}
+    for i = 1, 128 do rows[i] = string.rep('0', 128) end
+    rows[39] = string.rep('0', 52) .. '1' .. string.rep('0', 75)
+    ok(P.has_sector(rows, 52, 38) and not P.has_sector(rows, 53, 38) and not P.has_sector(rows, -1, 0) and not P.has_sector(rows, 128, 0), 'has_sector')
+    ok(P.has_sector(nil, 5, 5), 'no sector list: every sector')
+    -- the hero in the middle of sector (52, 38): its own picture covers the view's centre, a neighbour the right of it
+    local cu, cv = P.to_iso(52.5 * 64, 38.5 * 64)
+    local tiles = P.game_tiles(cu, cv, 40, 40, 1, nil)
+    local seen = {}
+    for _, t in ipairs(tiles) do seen[t.sx .. ',' .. t.sy] = t end
+    ok(seen['52,38'] and seen['53,38'], 'both pictures at the hero: ' .. #tiles)
+    ok(seen['52,38'] and seen['52,38'].x == 256 * (52 - 38 - 1) and seen['52,38'].y == 128 * (52 + 38) and seen['52,38'].size == 256, 'picture corner of sector 52,38')
+    -- every point of the view lies in exactly one picture (the pictures tile the plane)
+    for _, off in ipairs({{-90, -70}, {0, 0}, {33, 41}, {80, -10}}) do
+        local n = 0
+        for _, t in ipairs(P.game_tiles(cu, cv, 400, 400, 1, nil)) do
+            local x, y = cu + off[1], cv + off[2]
+            if x >= t.x and x < t.x + t.size and y >= t.y and y < t.y + t.size then n = n + 1 end
+        end
+        ok(n == 1, 'one picture at offset ' .. off[1] .. ',' .. off[2] .. ': ' .. n)
+    end
+    -- only sectors that have a picture; the list is back to front (rows from the top)
+    tiles = P.game_tiles(cu, cv, 1000, 1000, 0.5, rows)
+    ok(#tiles == 1 and tiles[1].sx == 52 and tiles[1].sy == 38, 'only sectors with a picture')
+    local all = P.game_tiles(cu, cv, 1000, 1000, 0.5, nil)
+    local sorted = true
+    for i = 2, #all do if all[i].y < all[i - 1].y then sorted = false end end
+    ok(sorted, 'back to front')
+    ok(select(2, P.game_zoom_of(9)) == #P.GAME_ZOOMS and #P.GAME_ZOOMS == #P.ZOOMS, 'game zoom levels')
+end
+
 if failures == 0 then print('minimap_test: all passed') else os.exit(1) end

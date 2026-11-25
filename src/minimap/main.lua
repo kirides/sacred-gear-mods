@@ -1,5 +1,5 @@
--- Minimap: the world map, either the whole world drawn from the game's data ('Render': megamap/ tiles, black where the world ends)
--- or the game's own map (its texture tiles UI_WORLDMAP*.TGA, 'Original') as a small overlay that follows the hero.
+-- Minimap: the world map, either the whole world drawn from the game's data ('High-Res': megamap/ tiles, black where the world ends)
+-- or the game's own map (its texture tiles UI_WORLDMAP*.TGA, 'World Map') as a small overlay that follows the hero.
 --
 -- * The view is a rectangle or a circle (settings 'shape', 'width', 'height'), always centred on the hero, at one of six zoom
 --   levels (setting 'zoom', the keys 'zoom_in' / 'zoom_out', the +/- buttons that show while the mouse is over the map, and the
@@ -14,6 +14,8 @@
 -- The geometry (tile position -> map pixel, which tiles a view needs) is in projection.lua and tested without the game.
 
 local P = require('projection')
+local okrows, SECTORS = pcall(require, 'sectors')   -- which sectors have a picture (the Game map)
+if not okrows then SECTORS = nil end
 local ui = gear.ui
 local guard = gear.guard
 
@@ -41,7 +43,7 @@ local function load_markers()
     for _, m in ipairs(list) do
         local px, py = P.to_map(m.x, m.y)
         if px >= 0 and px < P.WIDTH and py >= 0 and py < P.HEIGHT then
-            markers[#markers + 1] = {px = px, py = py, kind = m.kind}
+            markers[#markers + 1] = {px = px, py = py, tx = m.x, ty = m.y, kind = m.kind}
         end
     end
     gear.log(('minimap: %d trader symbols on the map'):format(#markers))
@@ -60,12 +62,13 @@ local function hero_map_position()
     if not hero then return nil end
     local x, y, layer = hero:position()
     if not x or (layer or 0) ~= 0 then return nil end
-    local px, py = P.to_map(x / P.TILE, y / P.TILE)
+    local tx, ty = x / P.TILE, y / P.TILE
+    local px, py = P.to_map(tx, ty)
     if not logged then
         logged = true
-        gear.log(('minimap: hero at world %d, %d -> tile %.1f, %.1f -> map pixel %.0f, %.0f'):format(x, y, x / P.TILE, y / P.TILE, px, py))
+        gear.log(('minimap: hero at world %d, %d -> tile %.1f, %.1f -> map pixel %.0f, %.0f'):format(x, y, tx, ty, px, py))
     end
-    return px, py
+    return px, py, tx, ty
 end
 
 -- The strips of the current shape (cached per size).
@@ -158,38 +161,57 @@ local function strip_tiles(set, z, wy, s, scale)
     return out, table.concat(parts, ',')
 end
 
+-- The Game map: the game's own sector pictures (gear:texture/MINIMAP<x><y>.TGA, the same Texture.pak entries the game's TAB overlay draws).
+-- The tiles of a strip, as {src, x, y, w, h} in the zoomed picture's coordinates; `set` is P.game_tiles (back to front).
+local function game_strip_tiles(set, wy, s)
+    local out, parts = {}, {}
+    local top, bottom = s.y - wy, s.y + s.h - wy
+    for _, t in ipairs(set) do
+        local y0, y1 = math.floor(t.y), math.floor(t.y + t.size)
+        if y1 > top and y0 < bottom then
+            local x0, x1 = math.floor(t.x), math.floor(t.x + t.size)
+            out[#out + 1] = {src = 'gear:texture/' .. P.sector_name(t.sx, t.sy), x = x0, y = y0, w = x1 - x0 + 1, h = y1 - y0 + 1}
+            parts[#parts + 1] = t.sy * 128 + t.sx
+        end
+    end
+    return out, table.concat(parts, ',')
+end
+
 local function snapshot()
     -- Every key the document binds must exist from the first model on (a key added later is not seen by its bindings).
     local m = {vis = false, round = true, w = 200, h = 200, wx = 0, wy = 0, shade = '#00000000', compass = true,
         level_text = '', strips = {}, markers = {}, strips_sig = '', markers_sig = ''}
     if not setting('show', true) then return m end
-    local px, py = hero_map_position()
+    local px, py, htx, hty = hero_map_position()
     if not px then return m end
+    local game = setting('map', 'render') == 'game'
+    if game then px, py = P.to_iso(htx, hty) end
     local round = setting('shape', 'round') == 'round'
     local w = math.floor(tonumber(setting('width', 200)) or 200)
     local h = round and w or math.floor(tonumber(setting('height', 150)) or 150)
-    local z, level = P.zoom_of(setting('zoom', 3))
+    local z, level = (game and P.game_zoom_of or P.zoom_of)(setting('zoom', 3))
     local wx, wy = w / 2 - px * z, h / 2 - py * z       -- where the map's top left lies in the view
     local scale = setting('map', 'render') == 'render' and P.render_scale(z) or nil   -- nil: the game's own map tiles
-    local set = P.visible_tiles(px, py, w, h, z, scale)
+    local set = game and P.game_tiles(px, py, w, h, z, SECTORS) or P.visible_tiles(px, py, w, h, z, scale)
     frame = frame + 1
     if scale then prefetch(px, py, w, h, z, scale) end
-    if frame % 15 == 0 or not scale then release_tiles(not scale) end
+    if frame % 15 == 0 or not scale then release_tiles(not scale) end   -- no scale: the pictures are the game's own textures, nothing of ours to release
     local opacity = math.max(30, math.min(100, tonumber(setting('opacity', 90)) or 90))
     local alpha = math.floor(255 * (1 - opacity / 100) + 0.5)
 
     m.vis, m.round, m.w, m.h, m.wx, m.wy = true, round, w, h, wx, wy
     m.shade = ('#000000%02x'):format(alpha)
-    m.compass = setting('compass', true) and true or false
+    m.compass = (not game) and setting('compass', true) and true or false   -- the Game map is isometric: no north up
     m.level_text = tostring(level) .. '/' .. #P.ZOOMS
 
     -- Strips with their tiles; the signature says whether the set changed since the last frame (rebuilding the model's lists is
     -- what costs, moving the map is only wx / wy).
     -- Lists keep their length (padded with empty entries): RmlUi warns for every binding of an element that outlives a shrinking list.
-    local tile_slots = (math.ceil(w / (P.TILE_PX / (scale or 1) * z)) + 1) * 2
-    local strips, sig = {}, {tostring(w), tostring(h), tostring(z), tostring(scale)}
+    local tile_slots = (math.ceil(w / ((game and P.GAME_PX or P.TILE_PX / (scale or 1)) * z)) + 1) * 2
+    local strips, sig = {}, {tostring(w), tostring(h), tostring(z), tostring(scale), tostring(game)}
     for i, s in ipairs(strips_for(round, w, h)) do
-        local tiles, key = strip_tiles(set, z, wy, s, scale)
+        local tiles, key
+        if game then tiles, key = game_strip_tiles(set, wy, s) else tiles, key = strip_tiles(set, z, wy, s, scale) end
         while #tiles < tile_slots do tiles[#tiles + 1] = {src = DUMMY, x = 0, y = 0, w = 0, h = 0} end
         strips[i] = {x = s.x, y = s.y, w = s.w, h = s.h, tiles = tiles}
         sig[#sig + 1] = key
@@ -199,12 +221,14 @@ local function snapshot()
     -- Markers inside the view (round: inside the circle), as map pixels times the zoom.
     local list, msig = {}, {tostring(z)}
     if setting('markers', true) then
-        local rx, ry = w / 2 / z + 12, h / 2 / z + 12
+        local rx, ry = w / 2 / z + 12, h / 2 / z + 12   -- (the marker test below is in picture pixels too)
         local rr = (w / 2 - MARKER_SIZE / 2) / z
         for i, mk in ipairs(load_markers()) do
-            local dx, dy = mk.px - px, mk.py - py
+            local mx, my = mk.px, mk.py
+            if game then mx, my = P.to_iso(mk.tx, mk.ty) end
+            local dx, dy = mx - px, my - py
             if math.abs(dx) < rx and math.abs(dy) < ry and (not round or dx * dx + dy * dy <= rr * rr) then
-                list[#list + 1] = {x = mk.px * z - MARKER_SIZE / 2, y = mk.py * z - MARKER_SIZE / 2, s = MARKER_SIZE,
+                list[#list + 1] = {x = mx * z - MARKER_SIZE / 2, y = my * z - MARKER_SIZE / 2, s = MARKER_SIZE,
                     src = 'gear:texture/' .. (MARKER_TEXTURE[mk.kind] or MARKER_TEXTURE[0]) .. '.TGA'}
                 msig[#msig + 1] = i
                 if #list >= MARKER_SLOTS then break end
@@ -291,7 +315,7 @@ end))
 ---------------------------------------------------------------------------------------------------------------
 local function zoom_by(d)
     local _, level = P.zoom_of(setting('zoom', 3))
-    level = math.max(1, math.min(#P.ZOOMS, level + d))
+    level = math.max(1, math.min(#P.ZOOMS, level + d))   -- both zoom tables have six levels
     gear.settings.set('zoom', level)
 end
 local function toggle() gear.settings.set('show', not setting('show', true)) end
