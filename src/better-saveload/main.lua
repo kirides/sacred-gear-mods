@@ -64,7 +64,7 @@ local view = {
     page = 8,           -- rows per page (set while drawing)
     name = '',          -- the name the next save gets (save mode); the player may type it
     name_edited = false, name_for = nil,  -- typed by the player / the selection the default name was made for
-    osk = nil,          -- the on-screen keyboard is open: {shift = bool, target = 'name' | 'search'}
+    osk_target = nil,   -- what the on-screen keyboard (kb) types into while it is open: 'name' | 'search'
 }
 
 -- UTF-8: the number of characters, and the text without its last one.
@@ -427,25 +427,22 @@ local function move(d)
     view.follow = true
 end
 
-local OSK_ROWS = {
-    {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'ß'},
-    {'q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'ü'},
-    {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ö', 'ä'},
-    {'y', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '-', '!'},
-}
-local OSK_UPPER = {['ü'] = 'Ü', ['ö'] = 'Ö', ['ä'] = 'Ä', [','] = ';', ['.'] = ':', ['-'] = '_', ['!'] = '?'}
-
-local function osk_type(text)
-    if view.osk.target == 'search' then add_to_search(text) else add_to_name(text) end
-end
-
-local function osk_back()
-    if view.osk.target == 'search' then
-        set_search(utf8_pop(view.search))
+-- The on-screen keyboard (gear.kit.osk): a small window of its own. It types into the search or the name like the player's own keys; this mod
+-- handles B itself (input), so the keyboard is asked first (kb:back()).
+local kb = gear.kit.osk and gear.kit.osk{layout = 'qwertz', back = false}
+local function open_osk(target)
+    if not kb then return end
+    view.focus = target
+    local function closed() view.osk_target = nil end
+    if target == 'search' then
+        view.osk_target = 'search'
+        kb:toggle{title = 'Search', text = view.search, max = SEARCH_MAX, on_change = set_search, get = function() return view.search end, on_close = closed}
     else
-        view.name = utf8_pop(view.name)
-        view.name_edited = true
+        view.osk_target = 'name'
+        kb:toggle{title = 'Name of the savegame', text = view.name, max = NAME_MAX, on_close = closed,
+            on_change = function(t) view.name = t; view.name_edited = true end, get = function() return view.name end}
     end
+    if not kb:is_open() then view.osk_target = nil end
 end
 
 ---------------------------------------------------------------------------------------------------------------
@@ -546,22 +543,6 @@ local function details_model(s)
     return d
 end
 
-local function osk_model()
-    local o = view.osk
-    if not o then return '', {}, '' end
-    local rows = {}
-    for r, rowkeys in ipairs(OSK_ROWS) do
-        local keys = {}
-        for i, k in ipairs(rowkeys) do
-            local label = k
-            if o.shift then label = OSK_UPPER[k] or k:upper() end
-            keys[i] = {id = ('osk%d_%d'):format(r, i), label = label}
-        end
-        rows[r] = keys
-    end
-    return o.target == 'search' and 'On-screen keyboard: search' or 'On-screen keyboard: the name of the savegame', rows, o.shift and 'SHIFT' or 'Shift'
-end
-
 local ROW_H_UNITS = 56      -- a row (50 and its 1px border on both sides) and its gap (4)
 local VIEW_ROWS = 8
 
@@ -573,13 +554,10 @@ local function snapshot()
         dd = view.dd or '', dd_hero = {}, dd_class = {}, dd_sort = {},
         hero_label = view.heroes[view.hero_i] or '', class_label = view.class_i == 1 and 'All classes' or (CLASS_LABEL[view.classes[view.class_i]] or ''),
         sort_label = SORTS[view.sort_i].label, count_text = ('%d of %d'):format(#view.shown, #view.all), no_rows = #view.shown == 0,
-        search_kbd = (view.osk and view.osk.target == 'search') and 'Close' or 'Keyboard',
-        name_kbd = (view.osk and view.osk.target == 'name') and 'Close keyboard' or 'Keyboard',
-        osk = view.osk ~= nil, rows = {}, spacer_top = '0dp', spacer_bot = '0dp', empty_msg = '',
+        rows = {}, spacer_top = '0dp', spacer_bot = '0dp', empty_msg = '',
         confirm = view.confirm ~= nil, confirm_text = view.confirm and view.confirm.text or '', msg = '', msg_ok = true,
         can_primary = view.sel ~= nil, primary_label = view.sel == 'new' and 'Save' or 'Overwrite',
         can_load = false, can_delete = false,
-        osk_title = '', osk_rows = {}, shift_label = 'Shift',
         d = {pic = '', nopic = '', title = '', sub = '', fields = {}, note = ''},
     }
     if not view.open then return m end
@@ -587,7 +565,6 @@ local function snapshot()
     m.can_load = s ~= nil and s.compatible
     m.can_delete = s ~= nil
     if view.message and gear.time() < view.message_until then m.msg, m.msg_ok = view.message, view.message_ok end
-    m.osk_title, m.osk_rows, m.shift_label = osk_model()
     -- the open drop-down list of one of the three filters
     -- (a list of its own for each: an element id must be unique in the document)
     if view.dd == 'hero' then
@@ -652,11 +629,13 @@ local function load_doc()
         doc:on(sel, 'click', guarded)
     end
     on('#mode-load', function()
-        view.mode, view.confirm, view.osk = 'load', nil, nil
+        view.mode, view.confirm = 'load', nil
+        if kb then kb:close() end
         apply_filters()
     end)
     on('#mode-save', function()
-        view.mode, view.confirm, view.osk, view.sel = 'save', nil, nil, 'new'
+        view.mode, view.confirm, view.sel = 'save', nil, 'new'
+        if kb then kb:close() end
         apply_filters()
     end)
     -- the three filters are drop-down lists: a click on the button opens (or closes) its list, a click on an entry picks it
@@ -676,14 +655,12 @@ local function load_doc()
         apply_filters()
     end)
     on('#ddshade', function() view.dd = '' end)
-    on('#search_kbd', function()
-        view.focus = 'search'
-        view.osk = not (view.osk and view.osk.target == 'search') and {shift = false, target = 'search'} or nil
-    end)
-    on('#kbd', function()
-        view.osk = not (view.osk and view.osk.target == 'name') and {shift = false, target = 'name'} or nil
-        view.focus = 'name'
-    end)
+    if kb then   -- (the buttons show only while the pad is the input; A on a field opens the keyboard too)
+        kb:attach(doc, {field = '#search', button = '#search_kbd', open = function() open_osk('search') end})
+        kb:attach(doc, {field = '#name', button = '#kbd', open = function() open_osk('name') end})
+    end
+    pressers['#search_kbd'] = function() open_osk('search') end   -- (the self test presses the buttons by selector)
+    pressers['#kbd'] = function() open_osk('name') end
     on('#search', function() view.focus = 'search' end)
     on('#name', function() view.focus = 'name' end)
     on('[id^=jump]', function(e)
@@ -715,36 +692,6 @@ local function load_doc()
         end
     end)
     on('#no', function() view.confirm = nil end)
-    -- the on-screen keyboard
-    local function type_text(text)
-        if not view.osk then return end
-        if view.osk.target == 'search' then
-            add_to_search(text)
-            set_field('q', view.search)
-        else
-            add_to_name(text)
-            set_field('name', view.name)
-        end
-    end
-    on('[id^=osk]', function(e)
-        local id = tostring(e.current)
-        local o = view.osk
-        if not o then return end
-        if id == 'osk_shift' then o.shift = not o.shift
-        elseif id == 'osk_space' then type_text(' ')
-        elseif id == 'osk_back' then
-            osk_back()
-            set_field(o.target == 'search' and 'q' or 'name', o.target == 'search' and view.search or view.name)
-        elseif id == 'osk_done' then view.osk = nil
-        else
-            local r, i = id:match('^osk(%d+)_(%d+)$')
-            local k = r and OSK_ROWS[tonumber(r)] and OSK_ROWS[tonumber(r)][tonumber(i)]
-            if k then
-                type_text(o.shift and (OSK_UPPER[k] or k:upper()) or k)
-                o.shift = false
-            end
-        end
-    end)
 end
 
 -- Where the typed text goes by default when the screen opens: the name (save mode) or the search (load mode).
@@ -771,6 +718,7 @@ local function screen()
         focus_default()
     end
     doc:draw({layer = LAYER, modal = true})
+    if kb then kb:draw() end
     local panel = doc:query('#screen')
     local rect = panel and panel:rect()
     if rect then
@@ -820,7 +768,8 @@ local function opened(name)
         if s.id == S.get('sort') then view.sort_i = i end
     end
     view.sel = nil
-    view.name, view.name_edited, view.name_for, view.osk = '', false, nil, nil
+    view.name, view.name_edited, view.name_for = '', false, nil
+    if kb then kb:close() end
     view.search, view.focus = '', 'name'
     refresh()
     if name == WND_GAME and S.get('current_hero') then
@@ -840,6 +789,7 @@ end
 local function closed()
     view.open = nil
     view.dd = ''
+    if kb then kb:close() end
 
     view.confirm = nil
 
@@ -849,9 +799,10 @@ end
 local function input()
     local back = ui.back_pressed() or ui.key_pressed('escape')
     if back then
-        if view.dd and view.dd ~= '' then view.dd = ''
+        if kb and kb:back() then
+            -- (the keyboard first: the one press closes it and nothing else)
+        elseif view.dd and view.dd ~= '' then view.dd = ''
         elseif view.confirm then view.confirm = nil
-        elseif view.osk then view.osk = nil
         elseif view.search ~= '' then set_search('') view.focus = 'name'      -- the first Back clears the search
         else close() end
         return
@@ -901,9 +852,9 @@ gear.on('better-saveload.query', function(out)
     out.count, out.shown = #view.all, #view.shown
     out.heroes, out.classes, out.hero_i, out.class_i, out.sort = view.heroes, view.classes, view.hero_i, view.class_i, sort_id()
     out.message = view.message
-    out.name, out.osk = view.name, view.osk ~= nil
+    out.name, out.osk = view.name, kb ~= nil and kb:is_open()
     out.search, out.focus, out.page = view.search, view.focus, view.page
-    out.osk_target = view.osk and view.osk.target or nil
+    out.osk_target = view.osk_target
     out.scroll_top = scroll_top
     out.dd, out.hero_i, out.class_i, out.sort_i = view.dd, view.hero_i, view.class_i, view.sort_i
     out.order = {}

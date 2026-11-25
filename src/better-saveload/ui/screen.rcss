@@ -6,8 +6,6 @@
 button.tab.on { color: #ffe030; }
 button.mini { margin: 0 3dp 0 0; }
 button.cyc { min-width: 140dp; }
-button.mini.key { min-width: 38dp; text-align: center; }
-button.mini.wide { min-width: 110dp; }
 button.game-button { min-width: 0; padding: 0 38dp 0 37dp; font-size: 16dp; margin-right: 6dp; }
 button.game-button.tab { padding: 0 30dp 0 29dp; }
 .srow { display: flex; flex-direction: row; align-items: center; margin: 4dp 0; }
@@ -18,9 +16,6 @@ button.game-button.tab { padding: 0 30dp 0 29dp; }
 .right { width: 250dp; }
 #list { height: 356dp; overflow-y: auto; }
 #list.save { height: 324dp; }
-.osk { height: 356dp; background-color: #101018c0; padding: 6dp; }
-.osk.save { height: 324dp; }
-.orow { display: flex; flex-direction: row; margin: 3dp 0; }
 button.row { display: flex; flex-direction: row; align-items: center; width: 420dp; height: 50dp; overflow: hidden; margin: 0 0 4dp 0; padding: 0 4dp; text-align: left; background-color: #12121c; border: 1px #4a4030; }
 button.row:hover { border-color: #ffe030; }
 button.row.sel { background-color: #4a3f2a; border-color: #ffd780; }

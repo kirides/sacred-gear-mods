@@ -18,7 +18,7 @@ The mod ships an overlay rule (`overlay.txt`: `bin\balance.bin = patch:balance.l
 **Ctrl+Shift+B** (rebind it in the Mods screen) or the controller's mod menu entry *Balance editor* opens it in the game (the screen is also set up to draw in the menus; that was not tested). Tabs: Difficulty, Creatures, Hero, Loot, Items, World, Share patches. The tab label shows how many values you changed there.
 
 - **Group**: the drop-down narrows a tab to one group of values (for example *Hit points*).
-- **Search** looks in every tab (names, groups and the help text); **Kbd** opens an on-screen keyboard for the controller. **Changed only** lists what you changed.
+- **Search** looks in every tab (names, groups and the help text); the keyboard button opens an on-screen keyboard for the controller. **Changed only** lists what you changed.
 - **Sliders**: mouse, the arrow orbs, or the controller (nudging the slider; not tested with a real pad). Hover a name for what the value does and what is known of it.
 - **Reset** (per value), **Reset group / all shown**, **Reset tab**, **Reset all** (asks twice).
 

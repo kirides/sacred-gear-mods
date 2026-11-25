@@ -198,12 +198,11 @@ end
 local TABS = {{'browse', 'Browse'}, {'sell', 'Sell'}, {'mine', 'My auctions'}, {'mail', 'Mailbox'}}
 local STEPS = {-1000, -100, 100, 1000, 10000}
 local REASON = {sold = 'sold', expired = 'not sold', cancelled = 'cancelled', bought = 'bought', withdrawn = 'gold'}
-local OSK_ROWS = {'1234567890', 'qwertyuiop', 'asdfghjkl', "zxcvbnm-'"}
 
 local doc
 local last = {}
 local panel_open = false
-local osk                 -- {target = 'q' | 'price' | 'gold', text, digits, max}
+local kb = gear.kit.osk and gear.kit.osk{}   -- the on-screen keyboard (a Gear without gear.kit.osk has none: the Kbd buttons do nothing)
 local ids = {}            -- element id -> what a click does
 local search_at           -- gear.time() when the typed search text is sent
 local pending_client
@@ -377,21 +376,6 @@ local function mail_model(client, m)
     end
 end
 
-local function osk_model(m)
-    m.osk_open = osk ~= nil
-    if not osk then return end
-    m.osk_text, m.osk_digits = osk.text, osk.digits and true or false
-    for r, row in ipairs(OSK_ROWS) do
-        local keys = {}
-        for i = 1, #row do
-            local ch = row:sub(i, i)
-            keys[i] = {id = ('osk%d_%d'):format(r, i), label = ch:upper(), dis = osk.digits and not ch:match('%d') and true or false}
-            ids[keys[i].id] = ch
-        end
-        m.osk_rows[r] = keys
-    end
-end
-
 local function snapshot(client, cfg, st)
     local m = {
         open_shown = st.button ~= nil, open_enabled = st.button == 'on', open_label = panel_open and 'Close' or 'Open the market',
@@ -407,7 +391,6 @@ local function snapshot(client, cfg, st)
         mine_title = '', mine_rows = {}, mine_more = '', busy = view.busy and true or false,
         wallet = '', can_dep = false, can_all = false, mail_title = '', can_collect = false, returns = {}, mails = {}, mail_more = '',
         msg_ok = true, footer = '',
-        osk_open = false, osk_text = '', osk_digits = false, osk_rows = {},
     }
     ids = {}
     for i, t in ipairs(TABS) do m.tabs[i] = {id = 'tab-' .. t[1], name = t[2], on = view.tab == t[1]} end
@@ -437,20 +420,24 @@ local function snapshot(client, cfg, st)
     elseif note then m.footer, m.msg_ok = note.text, note.ok
     elseif view.hover and view.hover.why then m.footer = view.hover.why
     else m.footer = ('Wallet %s gold'):format(gold(client:wallet())) end
-    osk_model(m)
     return m
 end
 
+-- The on-screen keyboard types into the market's own fields: the text goes where the player's own typing would.
 local function open_osk(target, value, digits, max)
-    osk = {target = target, text = value or '', digits = digits, max = max}
-end
-
-local function apply_osk()
-    if not osk then return end
-    if osk.target == 'q' then view.q.text = osk.text; set_field('q_text', osk.text); search_at = gear.time() + 0.1
-    elseif osk.target == 'price' then view.sell.price = osk.text; set_field('price_in', osk.text)
-    else view.gold_amount = osk.text; set_field('gold_in', osk.text) end
-    osk = nil
+    if not kb then return end
+    local function put(text)
+        if target == 'q' then
+            if text ~= view.q.text then view.q.text = text; search_at = gear.time() + 0.7 end
+            set_field('q_text', text)
+        elseif target == 'price' then view.sell.price = text; set_field('price_in', text)
+        else view.gold_amount = text; set_field('gold_in', text) end
+    end
+    local function current()
+        if target == 'q' then return view.q.text elseif target == 'price' then return view.sell.price else return view.gold_amount end
+    end
+    kb:toggle{title = target == 'q' and 'Search' or target == 'price' and 'Price' or 'Gold', text = value, digits = digits, max = max,
+        on_change = put, get = current}
 end
 
 local function load_doc(client, cfg, st)
@@ -482,7 +469,8 @@ local function load_doc(client, cfg, st)
         local t = tostring(e.current):match('^tab%-(%a+)$')
         local cl = c()
         if not (t and cl) then return end
-        view.tab, osk = t, nil
+        view.tab = t
+        if kb then kb:close() end
         if t == 'browse' then M.search(cl, view.page) end
         if t == 'mail' then view.mail_asked = nil end
         if t == 'mine' then view.mine_asked = nil end
@@ -636,21 +624,12 @@ local function load_doc(client, cfg, st)
         end)
     end)
     -- the on-screen keyboard
-    on('#kbd-q', function() open_osk('q', view.q.text, false, 40) end)
-    on('#kbd-price', function() open_osk('price', view.sell.price, true, 10) end)
-    on('#kbd-gold', function() open_osk('gold', view.gold_amount, true, 10) end)
-    on('[id^=osk]', function(e)
-        local id = tostring(e.current)
-        if not osk then return end
-        if id == 'osk-space' then if not osk.digits and #osk.text < osk.max then osk.text = osk.text .. ' ' end
-        elseif id == 'osk-back' then osk.text = osk.text:sub(1, -2)
-        elseif id == 'osk-clear' then osk.text = ''
-        elseif id == 'osk-done' then apply_osk()
-        else
-            local ch = ids[id]
-            if ch and #osk.text < osk.max and (not osk.digits or ch:match('%d')) then osk.text = osk.text .. ch end
-        end
-    end)
+    -- (the buttons show only while the pad is the input; A on a field opens the keyboard too)
+    if kb then
+        kb:attach(doc, {field = '#q-in', button = '#kbd-q', open = function() open_osk('q', view.q.text, false, 40) end})
+        kb:attach(doc, {field = '#price-in', button = '#kbd-price', open = function() open_osk('price', view.sell.price, true, 10) end})
+        kb:attach(doc, {field = '#gold-in', button = '#kbd-gold', open = function() open_osk('gold', view.gold_amount, true, 10) end})
+    end
     doc:on('.listing', 'mouseover', function(e) view.hover = ids[tostring(e.current)] end)
     doc:on('.listing', 'mouseout', function() view.hover = nil end)
 end
@@ -669,6 +648,10 @@ function M.draw(client, cfg, st)
         if k ~= 'q_text' and k ~= 'price_in' and k ~= 'gold_in' and not same(v, last[k]) then doc.model[k] = v; last[k] = v end
     end
     doc:draw({layer = 'hud'})
+    if kb then
+        if not m.market_open then kb:close() end
+        kb:draw()
+    end
     if view.hover and m.market_open then
         if view.hover.listing then tooltip(client:fetch_item(view.hover.listing))
         elseif view.hover.item then tooltip(view.hover.item) end
@@ -678,7 +661,8 @@ end
 function M.is_open() return panel_open end
 function M.open() panel_open = true end
 function M.close()
-    panel_open, osk = false, nil
+    panel_open = false
+    if kb then kb:close() end
 end
 function M.rect(sel) local e = doc and doc:query(sel); return e and e:rect() or nil end
 

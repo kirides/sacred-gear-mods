@@ -202,6 +202,11 @@ button.ibtn {
     cursor: pointer;
     transform: none;
 }
+button.ibtn { align-self: center; }
+/* The keyboard button of a text field (gear.kit.field, or any `ibtn kit-kbd`): only while the controller is the input. */
+button.ibtn.kit-kbd { display: none; }
+body.pad button.ibtn.kit-kbd { display: inline-block; }
+.kit-field { display: flex; flex-direction: row; align-items: center; }
 button.ibtn:hover, button.ibtn:focus { color: #fff6d0; background-color: transparent; transform: none; font-effect: glow(2dp 6dp 0px 0px #ffb840e6); }
 /* Icon / text buttons side by side are separated by a thin vertical bar, as the tabs of a .tabbar are: */
 button.ibtn + button.ibtn { border-left: 1px #8c744099; margin-left: 4dp; padding-left: 12dp; }
@@ -209,6 +214,25 @@ button.ibtn + button.ibtn:hover, button.ibtn + button.ibtn:focus, button.ibtn + 
 button.ibtn:active { color: #ffffff; font-effect: glow(3dp 8dp 0px 0px #ffe9a8ff); }
 button.ibtn:disabled, button.ibtn[disabled] { color: #6a6a6a; font-effect: none; }
 
+/* The on-screen keyboard (gear.kit.osk): the typed text in a dark field, rows of keys. The keys are plain bordered buttons (a thin gold edge on a dark fill, no game orb):
+   a keyboard has too many of them for the big game buttons, and the pad cursor reads better on a bright edge. */
+.kit-osk > .body { background-color: #0d0c12f5; }
+.kit-osk .osk-line { display: flex; flex-direction: row; align-items: center; height: 32dp; margin: 0 0 10dp 0; padding: 0 10dp; background-color: #0c0c14; border: 1px #6e5e3a; white-space: pre; overflow: hidden; }
+.kit-osk .osk-text { color: #f0f0f0; font-size: 16dp; }
+.kit-osk .osk-caret { color: #ffd780; font-size: 16dp; }
+.kit-osk .osk-count { margin-left: auto; padding-left: 10dp; color: #8c8c8c; font-size: 12dp; }
+.kit-osk .osk-row { display: flex; flex-direction: row; justify-content: center; margin: 4dp 0; }
+button.osk-key { display: inline-block; flex: none; width: 42dp; height: 34dp; margin: 0 3dp; padding: 0; border: 1px #8c7440; background-color: #14141f; color: #e4e4e4; font-family: "Sacred Game"; font-size: 16dp; line-height: 32dp; text-align: center; cursor: pointer; transform: none; }
+button.osk-key:hover, button.osk-key:focus { color: #ffe030; border-color: #ffe030; background-color: #262636; transform: none; }
+button.osk-key:active { color: #fff2a0; background-color: #34344e; }
+button.osk-key.wide { width: 62dp; font-size: 14dp; }
+button.osk-key.space { width: 182dp; font-size: 14dp; }
+button.osk-key.pad { width: 64dp; height: 44dp; line-height: 42dp; font-size: 20dp; }
+button.osk-key.txt { font-size: 14dp; }
+button.osk-key.half { width: 100dp; font-size: 14dp; }
+button.osk-key.on { color: #ffd54a; border-color: #ffd54a; background-color: #3a3020; }
+button.osk-key.done { border-color: #c8aa5a; color: #ffd780; }
+button.osk-key .icon { font-size: 16dp; }
 /* Tab buttons (class tab on a <button>, where a window keeps its own tab row): the look of the .tabbar links, the open one (.on) bright with a bar under it. */
 button.tab { display: inline-block; flex: none; margin: 0 4dp 0 0; padding: 3dp 12dp; border: 0; background-color: transparent; color: #e8d8a8; font-family: "Sacred Game"; font-size: 15dp; white-space: nowrap; cursor: pointer; transform: none; }
 button.tab:hover, button.tab:focus { color: #ffe030; background-color: transparent; border: 0; transform: none; }

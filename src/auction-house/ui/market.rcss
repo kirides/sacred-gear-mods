@@ -2,7 +2,6 @@
 #open { position: absolute; left: 780dp; top: 572dp; width: 150dp; }
 button.open-btn { display: block; width: 100%; margin: 0; }
 #market { position: absolute; left: 228dp; top: 16dp; width: 640dp; }
-#osk { position: absolute; left: 300dp; top: 260dp; width: 470dp; }
 .tabs { display: flex; flex-direction: row; margin-bottom: 4dp; }
 button.tab { margin-right: 4dp; font-family: "Sacred Game"; }
 button.tab.on { border-color: #ffd780; color: #ffd780; }
@@ -32,8 +31,5 @@ button.cell.sel { background-color: #806020a0; border-color: #ffe080; }
 button.cell.off { opacity: 0.4; }
 button.cell img.icon { position: absolute; left: 1px; top: 1px; }
 .foot { margin-top: 6dp; min-height: 18dp; border-top: 1px #ffffff40; padding-top: 3dp; }
-.oskrow { display: flex; flex-direction: row; margin: 2dp 0; }
-.oskline { height: 24dp; padding: 2dp 6dp; background-color: #202030; margin-bottom: 4dp; }
-button.key { min-width: 34dp; margin-right: 4dp; text-align: center; }
 
 /* the buttons keep their label and its controller prompt on one line, whatever the row does (flex-shrink wraps and clips them otherwise) */

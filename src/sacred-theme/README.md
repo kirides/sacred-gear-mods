@@ -18,6 +18,10 @@ The widgets of Sacred Gear's `gear.kit` (window, tabs, buttons, check boxes, sli
 
 The theme ships a bigger icon set than Sacred Gear's built-in one (`icons.ttf`, 172 icons of Google's Material Symbols Sharp, Apache License 2.0; `<span class="icon icon-swords"></span>`). Without this mod the same classes work for the 85 icons Gear has built in, so a mod that only needs those looks right everywhere. To add or update icons edit `tools/icons.txt` and run `python tools/make_icons.py <MaterialSymbolsSharp-Regular.ttf>` (writes `icons.ttf` and the ICONS block of `theme.rcss`, then `theme-dp.rcss`); no new Gear is needed.
 
+## On-screen keyboard
+
+`gear.kit.osk` (Sacred Gear) is the shared on-screen keyboard of the mods: a small window with the typed text and rows of plain bordered keys (`.kit-osk`, `button.osk-key`; a thin gold edge on a dark fill, no game orbs, so forty keys stay readable and the pad's cursor shows on the bright edge), a number pad for amounts, and Shift, Space, Backspace, Clear, Paste and Done. This stylesheet gives it the look of the game; without the mod Gear's base style draws the same classes plainer. The mods open it from a `keyboard` icon button (`class="ibtn kit-kbd"`), which is shown only while the controller is the player's input (A on the field opens it too). Details: Gear docs, `docs/RmlKit.md`.
+
 ## Text fields
 
 `<input type="text" class="field">` (and `textarea`) support Ctrl+A / C / X / V, Shift+arrows / Home / End, click-drag and double-click selection; the theme colours the selection (`input.field selection`). Without this mod Gear's base style gives a plain highlight, so mods need no code or markup of their own. Details: Gear docs, "Text fields of RmlUi documents".

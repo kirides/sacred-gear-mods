@@ -19,7 +19,7 @@
 
     <div class="srow">
         <div class="sfield"><input id="search" type="text" class="field grow" data-value="q" maxlength="40" placeholder="Search: hero, class, name, date, number"/><span class="cnt">{{ count_text }}</span></div>
-        <button class="ibtn" id="search_kbd" title="Type the search with an on-screen keyboard (for a controller)"><span class="padkey a"></span>{{ search_kbd }}</button>
+        <button class="ibtn kit-kbd" id="search_kbd" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
         <button class="ibtn" id="jump1" data-attrif-disabled="no_rows"><span class="padkey a"></span>Top</button>
         <button class="ibtn" id="jump2" data-attrif-disabled="no_rows"><span class="padkey a"></span>Page up</button>
         <button class="ibtn" id="jump3" data-attrif-disabled="no_rows"><span class="padkey a"></span>Page down</button>
@@ -28,7 +28,7 @@
 
     <div class="main">
         <div class="left">
-            <div data-if="!osk" id="list" data-nav-scroll data-class-save="save_on">
+            <div id="list" data-nav-scroll data-class-save="save_on">
                 <div data-style-height="spacer_top"></div>
                 <button data-for="r : rows" class="row" data-attr-id="r.id" data-attrif-data-nav-home="r.first" data-class-sel="r.sel" data-class-bad="!r.ok">
                     <img data-if="r.pic != ''" class="thumb" data-attr-src="r.pic"/>
@@ -38,11 +38,6 @@
                 </button>
                 <div data-style-height="spacer_bot"></div>
                 <p data-if="empty_msg != ''" class="muted pad">{{ empty_msg }}</p>
-            </div>
-            <div data-if="osk" class="osk" data-class-save="save_on">
-                <p class="accent">{{ osk_title }}</p>
-                <div data-for="row : osk_rows" class="orow"><button data-for="k : row" class="mini key" data-attr-id="k.id"><span class="padkey a"></span>{{ k.label }}</button></div>
-                <div class="orow"><button class="mini wide" id="osk_shift"><span class="padkey a"></span>{{ shift_label }}</button><button class="mini wide" id="osk_space"><span class="padkey a"></span>Space</button><button class="mini wide" id="osk_back"><span class="padkey a"></span>Backspace</button><button class="mini wide" id="osk_done"><span class="padkey a"></span>Done</button></div>
             </div>
         </div>
         <div class="right">
@@ -56,7 +51,7 @@
 
     <div data-if="save_on &amp;&amp; in_game" class="namerow">
         <span class="muted lab">Name</span><input id="name" type="text" class="field grow" data-value="name" maxlength="60"/>
-        <button class="ibtn" id="kbd" title="Type the name with an on-screen keyboard (for a controller)"><span class="padkey a"></span><span class="icon icon-keyboard"></span> {{ name_kbd }}</button>
+        <button class="ibtn kit-kbd" id="kbd" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
     </div>
 
     <div class="btns">
