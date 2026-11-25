@@ -17,7 +17,7 @@
     </div>
 
     <!-- the hero is always in the middle -->
-    <div class="hero" data-style-left="(w / 2 - 5) + 'dp'" data-style-top="(h / 2 - 5) + 'dp'"></div>
+    <div class="hero" data-style-left="(w / 2 - hero / 2) + 'dp'" data-style-top="(h / 2 - hero / 2) + 'dp'" data-style-width="hero + 'dp'" data-style-height="hero + 'dp'"></div>
 
     <!-- the frame: gold lines, a ring for the circle -->
     <div class="frame outer" data-if="!round" data-style-width="(w - 4) + 'dp'" data-style-height="(h - 4) + 'dp'"></div>

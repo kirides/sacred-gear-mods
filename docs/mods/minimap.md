@@ -5,7 +5,7 @@
 The game's own world map as a small overlay that follows the hero: the same map pictures the world map window shows,
 cut to a rectangle or a circle, with a gold frame, compass letters and the trader symbols of the map.
 
-- **Centred on the hero** at every zoom level. **Six zoom levels** (1 is the widest): the keys *Minimap: zoom in / out*
+- **Centred on the hero** at every zoom level. **Eight zoom levels** (1 is the widest): the keys *Minimap: zoom in / out*
   (unbound by default, set them in the Mods screen), the **+ / -** buttons that appear while the mouse is over the map,
   the setting *Zoom level*, and the controller's mod menu (**LT + LB**, then *Minimap: zoom in* / *zoom out* / *show / hide*).
 - **Map:** *High-Res* (default) is the whole world drawn from the game's data, with terrain, water, trees and buildings but no creatures, where the world has no data the game's own map fills in, matched to the render's colours; *World Map* is the game's painted map; *Game* is the picture of the game's own TAB overlay: the sector pictures `MINIMAP<x><y>.TGA` of Texture.pak (256 x 256 per sector, in the game's isometric view, so no north-up compass), read straight from the game, nothing extra to install.
