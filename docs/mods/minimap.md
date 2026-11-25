@@ -8,7 +8,7 @@ cut to a rectangle or a circle, with a gold frame, compass letters and the trade
 - **Centred on the hero** at every zoom level. **Six zoom levels** (1 is the widest): the keys *Minimap: zoom in / out*
   (unbound by default, set them in the Mods screen), the **+ / -** buttons that appear while the mouse is over the map,
   the setting *Zoom level*, and the controller's mod menu (**LT + LB**, then *Minimap: zoom in* / *zoom out* / *show / hide*).
-- **Map:** *Render* (default) is the whole world drawn from the game's data, with terrain, water, trees and buildings but no creatures, where the world has no data the game's own map fills in, matched to the render's colours; *Original* is the game's painted map; *Game (TAB)* is the picture of the game's own TAB overlay: the sector pictures `MINIMAP<x><y>.TGA` of Texture.pak (256 x 256 per sector, in the game's isometric view, so no north-up compass), read straight from the game, nothing extra to install.
+- **Map:** *High-Res* (default) is the whole world drawn from the game's data, with terrain, water, trees and buildings but no creatures, where the world has no data the game's own map fills in, matched to the render's colours; *World Map* is the game's painted map; *Game* is the picture of the game's own TAB overlay: the sector pictures `MINIMAP<x><y>.TGA` of Texture.pak (256 x 256 per sector, in the game's isometric view, so no north-up compass), read straight from the game, nothing extra to install.
 - **Shape and size:** *Circle* or *Rectangle*, width and height, opacity, compass letters, trader symbols (merchant,
   blacksmith, combo master, horse trader; needs a SacredBild with `gear.game.map_markers`).
 - **Position:** the layout editor (ALT) moves it like any other mod panel.

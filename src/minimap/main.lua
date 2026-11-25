@@ -1,5 +1,5 @@
--- Minimap: the world map, either the whole world drawn from the game's data ('Render': megamap/ tiles, black where the world ends)
--- or the game's own map (its texture tiles UI_WORLDMAP*.TGA, 'Original') as a small overlay that follows the hero.
+-- Minimap: the world map, either the whole world drawn from the game's data ('High-Res': megamap/ tiles, black where the world ends)
+-- or the game's own map (its texture tiles UI_WORLDMAP*.TGA, 'World Map') as a small overlay that follows the hero.
 --
 -- * The view is a rectangle or a circle (settings 'shape', 'width', 'height'), always centred on the hero, at one of six zoom
 --   levels (setting 'zoom', the keys 'zoom_in' / 'zoom_out', the +/- buttons that show while the mouse is over the map, and the
