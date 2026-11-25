@@ -501,7 +501,7 @@ end
 
 -- Run away (tactics: below a share of health): from the nearest enemy to the leader's far side, until the health is back
 -- (the threshold and 20 points) or no enemy is near. True while running.
-local function flee_step(c, s, now, lx, ly, opts, tactics)
+local function flee_step(c, s, now, lx, ly, opts, tactics, hold)
     local thr = tactics.flee
     if not thr then s.fleeing = nil return false end
     local f = hp_frac(c)
@@ -523,7 +523,15 @@ local function flee_step(c, s, now, lx, ly, opts, tactics)
     end
     s.target = nil
     local tx, ty = lx, ly
-    if nearest then
+    if hold then
+        -- waiting: a few steps away from the enemy, not to the leader (the spot is taken up again afterwards)
+        tx, ty = hold.x, hold.y
+        if nearest then
+            local ax, ay = cx - nearest[1], cy - nearest[2]
+            local len = math.max(1, math.sqrt(ax * ax + ay * ay))
+            tx, ty = cx + ax / len * (W.TILE or 54) * 6, cy + ay / len * (W.TILE or 54) * 6
+        end
+    elseif nearest then
         -- the leader's side, one step further from the enemy than the leader
         local ax, ay = lx - nearest[1], ly - nearest[2]
         local len = math.max(1, math.sqrt(ax * ax + ay * ay))
@@ -627,7 +635,8 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     end
     -- Left behind (a portal, another level, a cave, a teleport) or stuck: join the leader, close to them (a cave has
     -- little room: the spot in the formation may lie in rock, then right beside the leader, then on the leader's spot).
-    if cl ~= ll or (not holding and (d > opts.teleport or stuck)) then
+    -- A companion told to wait stays where they are, also when the leader leaves for another level ("Move to me" calls them).
+    if not holding and (cl ~= ll or d > opts.teleport or stuck) then
         if now - s.teleported > 2 then
             M.join(c, lx, ly, ll, slot, count, opts.follow)
             s.teleported, s.target, s.stuck_at = now, nil, nil
@@ -642,7 +651,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     finish_heal(c, s, now)
     share_step(c, s, now, heroes, opts)
     if action ~= 'ability' and heal_step(c, s, now, leader, heroes, opts, tactics) then return end
-    if flee_step(c, s, now, lx, ly, opts, tactics) then return end
+    if flee_step(c, s, now, lx, ly, opts, tactics, holding and s.hold or nil) then return end
     local target
     if tactics.style == 'protector' and behaviour ~= 'passive' and not holding then
         return protect(c, s, now, lx, ly, ll, slot, count, opts)
@@ -701,7 +710,7 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
             -- combat arts only: no weapon; between casts they keep back with the hero they protect
             if action == 'attacking' then c:order_stop() end
             s.target = target.id
-            if d > opts.follow and now - s.ordered > 0.5 then
+            if not holding and d > opts.follow and now - s.ordered > 0.5 then
                 local fx, fy = place(c, lx, ly, heroes, opts, slot, count)
                 if c:order_move(fx, fy) then s.ordered = now end
             end

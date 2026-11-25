@@ -44,10 +44,42 @@ local function main()
     gear.emit('companions.set', {id = c.id, behaviour = 'hold'})
     gear.wait(1)
     local sx, sy = c:position()
-    hero:teleport(x + 2000, y, layer)
+    hero:teleport(x + 4500, y, layer)
     gear.wait(12)
     local cx, cy = c:position()
-    check(dist(cx, cy, sx, sy) < 150, ('Wait here: stays at its spot while the hero is 2000 away (moved %.0f)'):format(dist(cx, cy, sx, sy)))
+    check(dist(cx, cy, sx, sy) < 150, ('Wait here: stays at its spot while the hero is 4500 away (beyond the catch-up distance) (moved %.0f)'):format(dist(cx, cy, sx, sy)))
+
+    -- 1b. Wait here: a fallen companion is helped up where they fell, not beside the hero.
+    hero:teleport(x + 1900, y, layer)   -- (fights are not simulated far from the hero)
+    gear.wait(1)
+    local killer = gear.world.object(1267)   -- one of the save's wolves (hostile, reachable)
+    if killer then used[killer.id] = true end
+    if killer then
+        killer:set_modifiers({damage = 50})
+        killer:teleport(sx + 150, sy, layer)
+        c:set_hp(1)
+        c:order_attack(killer)
+        for _ = 1, 15 do
+            gear.wait(1)
+            if c:is_dead() then break end
+        end
+        local fell = c:is_dead()
+        killer:teleport(sx + 6000, sy, layer)
+        if fell then
+            for _ = 1, 20 do
+                gear.wait(1)
+                if not c:is_dead() then break end
+            end
+            local rx, ry = c:position()
+            check(not c:is_dead() and rx and dist(rx, ry, sx, sy) < 300,
+                ('Wait here: helped up at their spot, not beside the hero (1900 away) (%.0f from the spot)'):format(rx and dist(rx, ry, sx, sy) or -1))
+        else
+            print('SKIP 1b: the companion did not fall')
+            c:set_hp(c:max_hp())
+        end
+    else
+        print('SKIP 1b: no foe')
+    end
 
     -- 2. Wait here: an enemy comes close, the companion fights it (the enemy loses health), then goes back to its spot.
     local foe = pick_foe(hero)
