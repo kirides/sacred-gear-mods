@@ -29,8 +29,8 @@
             <img data-if="d.filled" class="sicon" data-attr-src="d.icon" data-style-image-color="d.tint"/>
         </button>
         <div class="info regen">{{ regen }}</div>
-        <button id="make" class="game-button act a1" data-attrif-disabled="!can_make" data-attr-title="create_tip">{{ t_create }}</button>
-        <button id="clear" class="game-button act a2">Empty slot</button>
+        <button id="make" class="mini act a1" data-attrif-disabled="!can_make" data-attr-title="create_tip">{{ t_create }}</button>
+        <button id="clear" class="mini act a2">Empty slot</button>
         <div class="sub">Combat arts of the hero (click to add)</div>
         <div class="grid" data-nav-scroll>
             <button data-for="a : arts" class="cell acell" data-attr-id="a.id" data-class-full="a.full" data-attr-title="a.tip">
@@ -52,9 +52,11 @@
         <div class="resinfo">
             <div data-if="!result" class="muted small">{{ hint }}</div>
             <div data-if="result">
+                <div class="rtext">
                 <div class="rname">{{ res_name }}</div>
                 <div class="muted small">{{ res_kind }}</div>
                 <div data-class-good="fee_ok" data-class-bad="!fee_ok" class="small fee">{{ fee }}</div>
+                </div>
                 <div data-if="choose" class="choose">
                     <a id="prev" class="arrow prev"></a><span class="cname">{{ choice_name }}</span><a id="next" class="arrow next"></a>
                 </div>

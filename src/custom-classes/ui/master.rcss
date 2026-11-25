@@ -1,23 +1,23 @@
 /* The combo master window in the look of the game's own (cUI_MasterCombo): measured from the game's window at 1600x900 (the layout is
    1024x768: the window is 640 wide, the main panel 512, the right panel 128 for the master's portrait, the bars 6 thick).
-   Taller than the game's (520 instead of 336) for the list of arts / runes. Images are the game's own (gear:image/<id>):
+   As tall as the game's (336): the inventory's tabs (backpack, combat arts, combos) lie right under it, so it must not reach further. Small slots and a two row list of arts / runes make it fit. Images are the game's own (gear:image/<id>):
    21 / 34 the bars (32x6 / 6x32), 1 to 4 the bottom bar, 54 / 55 the ornaments, 246 the empty rune slot, 247 the full one, 356 the blank
    frame, 248 to 250 the coin of the exchange. */
-#cm { position: absolute; left: 0px; top: 0px; width: 640dp; height: 520dp; font-family: "Sacred Game"; color: #e4e4e4; }
+#cm { position: absolute; left: 0px; top: 0px; width: 640dp; height: 336dp; font-family: "Sacred Game"; color: #e4e4e4; }
 #cm * { box-sizing: border-box; }
 
 .fill { position: absolute; background-color: #00000070; }
-.fill.main { left: 0px; top: 53dp; width: 512dp; height: 447dp; }
-.fill.side { left: 517dp; top: 22dp; width: 122dp; height: 478dp; }
+.fill.main { left: 0px; top: 53dp; width: 512dp; height: 263dp; }
+.fill.side { left: 517dp; top: 22dp; width: 122dp; height: 294dp; }
 .bar-top { position: absolute; left: 0px; top: 47dp; width: 512dp; height: 6dp; decorator: image(gear:image/21?dp repeat-x); }
 .bar-top.side-top { left: 549dp; top: 17dp; width: 64dp; }
-.bar-v { position: absolute; top: 22dp; width: 6dp; height: 478dp; decorator: image(gear:image/34?dp repeat-y); }
+.bar-v { position: absolute; top: 22dp; width: 6dp; height: 294dp; decorator: image(gear:image/34?dp repeat-y); }
 .bar-v.v1 { left: 511dp; }
 .bar-v.v2 { left: 634dp; }
 .orn { position: absolute; width: 38dp; }
 .orn.o1 { left: 511dp; top: 11dp; height: 20dp; decorator: image(gear:image/54?dp scale-none left top); }
 .orn.o2 { left: 602dp; top: 10dp; height: 18dp; decorator: image(gear:image/55?dp scale-none left top); }
-.bt { position: absolute; top: 500dp; width: 64dp; height: 20dp; }
+.bt { position: absolute; top: 316dp; width: 64dp; height: 20dp; }
 .t1 { left: 0px;   decorator: image(gear:image/1?dp scale-none left top); }
 .t2 { left: 64dp;  decorator: image(gear:image/2?dp scale-none left top); }
 .t3 { left: 128dp; decorator: image(gear:image/3?dp scale-none left top); }
@@ -41,69 +41,71 @@ button.t-exch { left: 143dp; }
 /* text */
 .line { position: absolute; left: 17dp; top: 58dp; width: 480dp; font-size: 17dp; color: #ffff90; }
 .line.muted { color: #9a9a9a; }
-.sub { position: absolute; left: 17dp; top: 292dp; width: 480dp; font-size: 15dp; color: #ffff90; }
+.sub { position: absolute; left: 17dp; top: 198dp; width: 480dp; font-size: 15dp; color: #ffff90; }
 .info { position: absolute; left: 17dp; width: 490dp; font-size: 13dp; color: #b8b8b8; }
-.info.regen { top: 216dp; }
+.info.regen { top: 182dp; font-size: 12dp; }
 .muted { color: #9a9a9a; }
 .good { color: #60d060; }
 .bad { color: #e04848; }
 .pad { padding: 8dp; }
 
 /* combo slots (the four of the hero) */
-button.cslot { position: absolute; top: 84dp; width: 118dp; height: 30dp; margin: 0; padding: 0; text-align: center; font-size: 14dp; line-height: 28dp;
+button.cslot { position: absolute; top: 80dp; width: 118dp; height: 28dp; margin: 0; padding: 0; text-align: center; font-size: 14dp; line-height: 28dp;
     color: #cfcfcf; background-color: #00000060; border: 1px #6a6a6a; cursor: pointer; }
 button.cslot:hover, button.cslot:focus { color: #ffe030; border-color: #ffe030; }
 button.cslot.on { color: #ffd040; border-color: #c8aa5a; background-color: #3a301880; }
 
 /* rune slots: the game's frames (the empty one with the grey rune, the full one with the green glow), the icon inside */
-button.slotbtn, div.slotbtn { position: absolute; width: 89dp; height: 88dp; margin: 0; padding: 0; border: 0; background-color: transparent;
-    decorator: image(gear:image/246?dp scale-none left top); cursor: pointer; }
-button.slotbtn.filled, div.slotbtn.filled { decorator: image(gear:image/247?dp scale-none left top); }
+button.slotbtn, div.slotbtn { position: absolute; width: 64dp; height: 64dp; margin: 0; padding: 0; border: 0; background-color: transparent;
+    decorator: image(gear:image/246?dp contain); cursor: pointer; }
+button.slotbtn.filled, div.slotbtn.filled { decorator: image(gear:image/247?dp contain); }
 button.slotbtn:hover, button.slotbtn:focus { image-color: #ffffd0; opacity: 1; }
-button.slotbtn:hover, button.slotbtn:focus { decorator: image(gear:image/247?dp scale-none left top); }
-button.dtop { top: 122dp; }
-button.ptop { top: 92dp; }
-div.rslot { left: 169dp; top: 202dp; cursor: default; }
-.sicon { position: absolute; left: 14dp; top: 14dp; width: 60dp; height: 60dp; }
+button.slotbtn:hover, button.slotbtn:focus { decorator: image(gear:image/247?dp contain); }
+button.dtop { top: 112dp; }
+button.ptop { top: 82dp; }
+div.rslot { left: 345dp; top: 82dp; cursor: default; }
+.sicon { position: absolute; left: 10dp; top: 10dp; width: 44dp; height: 44dp; }
 
 /* the exchange's result and the coin */
-.resinfo { position: absolute; left: 268dp; top: 200dp; width: 158dp; }
+.resinfo { position: absolute; left: 17dp; top: 148dp; width: 485dp; }
+.resinfo .rtext { width: 320dp; }
 .resinfo .muted { white-space: pre-line; font-size: 11dp; line-height: 13dp; }
 .rname { font-size: 16dp; color: #ffd780; }
 .fee { margin-top: 2dp; }
 .choose { margin-top: 2dp; }
 .choose .cname { display: inline-block; width: 48dp; text-align: center; font-size: 14dp; vertical-align: middle; }
-button.coin { position: absolute; left: 433dp; top: 213dp; width: 60dp; height: 59dp; margin: 0; padding: 0; border: 0; background-color: transparent;
+button.coin { position: absolute; left: 433dp; top: 82dp; width: 60dp; height: 59dp; margin: 0; padding: 0; border: 0; background-color: transparent;
     decorator: image(gear:image/249?dp scale-none center center), image(gear:image/250?dp scale-none center center);
     font-size: 10dp; line-height: 59dp; color: #f0e8c0; text-align: center; cursor: pointer; }
 button.coin:hover, button.coin:focus { color: #ffe030; image-color: #fff0c0; }
 button.coin:disabled { opacity: 0.5; }
 
 /* the lists of arts / runes: cells in the blank frame of the game */
-.grid { position: absolute; left: 17dp; top: 314dp; width: 485dp; height: 178dp; overflow-y: auto; }
-button.cell { position: relative; display: inline-block; width: 56dp; height: 56dp; margin: 0 4dp 4dp 0; padding: 0; border: 0; background-color: transparent;
+.grid { position: absolute; left: 17dp; top: 220dp; width: 485dp; height: 94dp; overflow-y: auto; }
+button.cell { position: relative; display: inline-block; width: 44dp; height: 44dp; margin: 0 4dp 4dp 0; padding: 0; border: 0; background-color: transparent;
     decorator: image(gear:image/356?dp contain); cursor: pointer; vertical-align: top; }
 button.cell:hover, button.cell:focus { decorator: image(gear:image/246?dp contain); }
 button.cell.on { decorator: image(gear:image/247?dp contain); }
-.cicon { position: absolute; left: 9dp; top: 9dp; width: 38dp; height: 38dp; }
+.cicon { position: absolute; left: 7dp; top: 7dp; width: 30dp; height: 30dp; }
 
 /* buttons of the game: Create / Empty slot */
-button.act { position: absolute; top: 240dp; }
-button.a1 { left: 17dp; }
-button.a2 { left: 215dp; }
+button.mini.act { position: absolute; left: 345dp; width: 150dp; }
+button.a1 { top: 112dp; }
+button.a2 { top: 148dp; }
 
 /* the right panel */
 .side-text { position: absolute; left: 524dp; top: 26dp; width: 108dp; }
 .hname { font-size: 15dp; color: #ffd780; text-align: center; }
-.master { position: absolute; left: 0px; top: 176dp; width: 108dp; text-align: center; font-size: 15dp; color: #3a50ff; }
-.gold { position: absolute; left: 0px; top: 210dp; width: 108dp; text-align: center; font-size: 13dp; color: #d8c060; }
-.msg { position: absolute; left: 0px; top: 250dp; width: 108dp; font-size: 12dp; text-align: center; }
+.master { position: absolute; left: 0px; top: 90dp; width: 108dp; text-align: center; font-size: 15dp; color: #3a50ff; }
+.gold { position: absolute; left: 0px; top: 118dp; width: 108dp; text-align: center; font-size: 13dp; color: #d8c060; }
+.msg { position: absolute; left: 0px; top: 142dp; width: 108dp; font-size: 12dp; text-align: center; }
 button.mini { position: absolute; left: 0px; width: 108dp; height: 30dp; margin: 0; padding: 0 4dp; text-align: center; font-size: 13dp; line-height: 28dp;
     color: #e4e4e4; background-color: #00000060; border: 1px #8c7440; cursor: pointer; }
 button.mini:hover, button.mini:focus { color: #ffe030; border-color: #ffe030; transform: none; }
-.side-text button.mini { top: 340dp; }
-.side-text button.closebtn { top: 430dp; }
-.resinfo button.mini { position: relative; width: 120dp; margin-top: 4dp; }
+.side-text button.mini { top: 205dp; }
+.side-text button.closebtn { top: 238dp; }
+.resinfo .choose, .resinfo button.mini { position: absolute; left: 328dp; top: 2dp; }
+.resinfo button.mini { width: 120dp; }
 
 /* the buttons keep their label and its controller prompt on one line */
 button.game-button, button.mini, button.cslot, button.coin { flex: none; white-space: nowrap; }
