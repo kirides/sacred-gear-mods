@@ -69,7 +69,7 @@ function P.visible_tiles(cx, cy, w, h, zoom, scale)
 end
 
 --- The zoom levels, layout units per picture pixel: level 1 is the widest.
-P.ZOOMS = {0.4, 0.7, 1, 1.5, 2.2, 3.2}
+P.ZOOMS = {0.4, 0.7, 1, 1.5, 2.2, 3.2, 4.6, 6.5}
 
 function P.zoom_of(level)
     level = math.max(1, math.min(#P.ZOOMS, math.floor((tonumber(level) or 3) + 0.5)))
@@ -82,7 +82,7 @@ end
 -- (the layout of the engine remake's MinimapRasterizer, which follows the game's own overlay).
 P.SECTOR_TILES = 64
 P.GAME_PX = 256
-P.GAME_ZOOMS = {0.15, 0.25, 0.4, 0.6, 0.9, 1.4}
+P.GAME_ZOOMS = {0.15, 0.25, 0.4, 0.6, 0.9, 1.4, 2, 2.8}
 
 function P.game_zoom_of(level)
     level = math.max(1, math.min(#P.GAME_ZOOMS, math.floor((tonumber(level) or 3) + 0.5)))

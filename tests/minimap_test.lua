@@ -89,7 +89,7 @@ do
     local sorted = true
     for i = 2, #all do if all[i].y < all[i - 1].y then sorted = false end end
     ok(sorted, 'back to front')
-    ok(select(2, P.game_zoom_of(9)) == #P.GAME_ZOOMS and #P.GAME_ZOOMS == #P.ZOOMS, 'game zoom levels')
+    ok(select(2, P.game_zoom_of(99)) == #P.GAME_ZOOMS and #P.GAME_ZOOMS == #P.ZOOMS and #P.ZOOMS == 8, 'game zoom levels')
 end
 
 if failures == 0 then print('minimap_test: all passed') else os.exit(1) end

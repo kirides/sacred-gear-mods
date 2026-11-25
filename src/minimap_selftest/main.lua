@@ -20,13 +20,16 @@ gear.task(function()
     set('shape', 'round'); set('width', 200); set('markers', true)
     for _, map in ipairs({'render', 'original', 'game'}) do
         set('map', map)
-        for level = 1, 6 do
+        for level = 1, 8 do
             set('zoom', level)
             gear.wait(0.5)
             A.screenshot('mm-' .. map .. '-round-z' .. level)
         end
     end
     set('map', 'render')
+    set('zoom', 1); set('hero_size', 28); set('marker_size', 40)
+    A.screenshot('mm-big-icons')
+    set('hero_size', 6); set('marker_size', 22); set('zoom', 3)
     local function panel() for _, p in ipairs(gear.ui.panels()) do if p.key == 'minimap:minimap' then return p end end end
     local p = panel()
     if p then
