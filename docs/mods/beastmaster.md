@@ -7,7 +7,7 @@ Animals that travel with your hero, in two roles. One mod, because both share th
 
 ## What you need
 
-Sacred Gear with `creature:set_level`, `creature:set_pet`, `creature:copy_allegiance` and `creature:order_move` on any creature, and SacredBild with the pets module (draw scale of the model and its shadow, pick filter). Single player only.
+Sacred Gear with the speed buffs (`gear.buffs` `speeds`), `creature:set_level`, `creature:set_pet`, `creature:copy_allegiance` and `creature:order_move` on any creature, and SacredBild with the pets module (draw scale of the model and its shadow, pick filter). Single player only.
 
 ## How to use it
 
@@ -17,9 +17,7 @@ The window uses the shared theme; every button is a stop for the controller (A p
 
 ## Party buffs
 
-The buffs a companion shares with the heroes (Steinhaut, Wieselflink, Sturm und Drang ... see the Companions mod) are shared with your animals too: the Companions mod announces each one (`companions.buff`, `companions.buff_end`), Beastmaster gives it to the animals at the same strength (times *Allies get* / *Pets get*, default 100%) and takes it away when the companion's own ends. An **ally gets all of it** (damage bonuses, attack factor, resistances, regeneration ...; measured on a spawned wolf: +40 damage took its bite from 8 to 55, attack factor 3 from 8 to 25), a **pet only the speed factor**. An animal taken along while a buff runs gets it at once. Switch it off with *Companions' shared buffs also help the animals*. Only the buffs the Companions mod shares today (those of its four self-buff arts) arrive; Beastmaster accepts any other mod's `companions.buff` event too.
-
-Not verified: that the speed factor makes a pet *walk* faster (the buff changes the creature's speed factor; whether the engine uses it for walking was not measurable in the test area).
+The buffs a companion shares with the heroes (Steinhaut, Wieselflink, Sturm und Drang ... see the Companions mod) are shared with your animals too: the Companions mod announces each one (`companions.buff`, `companions.buff_end`), Beastmaster gives it to the animals at the same strength (times *Allies get* / *Pets get*, default 100%) and takes it away when the companion's own ends. An **ally gets all of it** (damage bonuses, attack factor, resistances, regeneration, attack, cast and movement speed ...; measured on a spawned wolf: +40 damage took its bite from 8 to 55, attack factor 3 from 8 to 25), a **pet only the movement speed** (Wieselflink and the like: Gear's `speeds` / `speed_factors` `move_speed`, applied past the engine's cap; measured on a spawned creature: move speed 131 to 431 made it walk 181 to 328 units in 1.5 s). An animal taken along while a buff runs gets it at once. Switch it off with *Companions' shared buffs also help the animals*. Only the buffs the Companions mod shares arrive; Beastmaster accepts any other mod's `companions.buff` event too.
 
 ## Species
 

@@ -99,8 +99,12 @@ local function clock_now() return gear.time() end
 
 local function buff_for(role, def)
     if role == 'ally' then return def end
-    if not (def.factors and def.factors.speed_factor) then return nil end
-    return {id = def.id, name = def.name, overlay = def.overlay, factors = {speed_factor = def.factors.speed_factor}}
+    -- a pet: how fast it walks (the movement speed part, past the engine's cap), nothing else
+    local move = def.speeds and def.speeds.move_speed
+    local factor = def.speed_factors and def.speed_factors.move_speed
+    if not (move or factor) then return nil end
+    return {id = def.id, name = def.name, overlay = def.overlay, speeds = move and {move_speed = move} or nil,
+        speed_factors = factor and {move_speed = factor} or nil}
 end
 
 local function give(c, role, key, b)
