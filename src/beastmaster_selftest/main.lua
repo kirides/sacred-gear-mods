@@ -77,6 +77,24 @@ gear.task(function()
     check('the ally follows the hero', d_wolf ~= nil and d_wolf < 900, d_wolf)
     check('the pet follows the hero', d_rabbit ~= nil and d_rabbit < 900, d_rabbit)
     gear.wait(2)
+    -- pace: with the hero standing, the animals have the hero's pace
+    local hs = gear.buffs.speeds(hero)
+    local ws = wolf and gear.buffs.speeds(wolf)
+    local rs = rabbit and gear.buffs.speeds(rabbit)
+    print(('NOTE move speed: hero %s, ally %s, pet %s'):format(tostring(hs and hs.move_speed), tostring(ws and ws.move_speed), tostring(rs and rs.move_speed)))
+    check("the ally has the hero's pace", hs and ws and math.abs(ws.move_speed - hs.move_speed * 2.8) <= 12, ('%s vs %s'):format(tostring(ws and ws.move_speed), tostring(hs and hs.move_speed)))
+    check("the pet has the hero's pace", hs and rs and math.abs(rs.move_speed - hs.move_speed * 2.8) <= 12, ('%s vs %s'):format(tostring(rs and rs.move_speed), tostring(hs and hs.move_speed)))
+    -- far behind: faster than the hero, to catch up
+    if wolf then
+        local wx2, wy2, wl2 = wolf:position()
+        hero:teleport(wx2 + 1400, wy2, wl2)
+        gear.wait(1.0)
+        local fs = gear.buffs.speeds(wolf)
+        print(('NOTE far behind: ally %s'):format(tostring(fs and fs.move_speed)))
+        check('far behind the ally is faster than the hero', fs and hs and fs.move_speed > hs.move_speed * 2.8 * 1.3, ('%s vs %s'):format(tostring(fs and fs.move_speed), tostring(hs and hs.move_speed)))
+        gear.wait(8)
+    end
+    -- probe: real walking speed (units per second) of the hero and the animals, without and with the pace buff
     A.screenshot('beasts_follow')
 
     -- fight: a hostile creature the game placed, with the ally next to it

@@ -33,6 +33,10 @@ Under *With you now* every animal has an **orders** drop-down, the same idea as 
 
 ![The orders drop-down of an ally](../images/beastmaster-orders.jpg)
 
+## Pace
+
+A creature that is ordered to move *walks*, and there is no order for the run animation, so animals fell far behind a running hero. Beastmaster gives each animal a movement speed buff of its own (`beastmaster:pace`): the hero's movement speed times `core.WALK_TO_RUN` (2.8: a walk covers about a third of the ground of the hero's run at the same speed value), and 1.5 times that when the animal is more than about three follow distances away, so it catches up. It never slows an animal down (a shared speed buff stays) and is off while an ally is going for an enemy. The walk animation runs faster with it; the Mods screen has *Animals keep up with the hero* to switch it off. The factor comes from rough measurements: adjust `WALK_TO_RUN` if the animals still lag or race ahead.
+
 ## Party buffs
 
 The buffs a companion shares with the heroes (Steinhaut, Wieselflink, Sturm und Drang ... see the Companions mod) are shared with your animals too: the Companions mod announces each one (`companions.buff`, `companions.buff_end`), Beastmaster gives it to the animals at the same strength (times *Allies get* / *Pets get*, default 100%) and takes it away when the companion's own ends. An **ally gets all of it** (damage bonuses, attack factor, resistances, regeneration, attack, cast and movement speed ...; measured on a spawned wolf: +40 damage took its bite from 8 to 55, attack factor 3 from 8 to 25), a **pet only the movement speed** (Wieselflink and the like: Gear's `speeds` / `speed_factors` `move_speed`, applied past the engine's cap; measured on a spawned creature: move speed 131 to 431 made it walk 181 to 328 units in 1.5 s). An animal taken along while a buff runs gets it at once. Switch it off with *Companions' shared buffs also help the animals*. Only the buffs the Companions mod shares arrive; Beastmaster accepts any other mod's `companions.buff` event too.

@@ -193,6 +193,24 @@ local function order_for(e)
     return core.order_of(e.role, e.order, setting('behaviour', 'aggressive'))
 end
 
+-- Pace: an animal keeps up with the hero, and goes faster when it is far behind (so it catches up). A creature ordered to move walks, the
+-- hero runs (measured: a wolf at the same speed value covers about a third of the hero's ground), and there is no order for the run animation,
+-- so the movement speed is set with a buff of ours ('speeds' are added past the engine's cap, and the animation runs value / 100 as fast):
+-- the hero's speed times core.WALK_TO_RUN, and 1.5 times that beyond about 3 follow distances.
+-- `e.pace` is what the buff adds now, so the animal's own speed (with other buffs) is what the speed reads without it.
+local pace_off = false     -- (the self test switches it off to measure the animals' own speed)
+local function pace(c, e, hero, d, follow, fighting)
+    if not (gear.buffs and gear.buffs.speeds and setting('match_speed', true)) or pace_off then return end
+    local mine, theirs = gear.buffs.speeds(c), gear.buffs.speeds(hero)
+    if not (mine and theirs and mine.move_speed and theirs.move_speed) then return end
+    local base = mine.move_speed - (e.pace or 0)
+    local want = theirs.move_speed * core.WALK_TO_RUN * (d > follow * 3 and 1.5 or 1)
+    local delta = fighting and 0 or math.max(0, math.floor(math.min(600, want) - base + 0.5))   -- never slower than it is (a shared speed buff stays)
+    if math.abs(delta - (e.pace or 0)) < 6 then return end
+    e.pace = delta
+    gear.buffs.apply(c, {id = 'beastmaster_pace', name = 'Pace', speeds = {move_speed = delta}}, {key = 'beastmaster:pace', strength = 1, seconds = 0})
+end
+
 local function think()
     local hero = W.hero()
     if not hero or hero:is_dead() or #followers == 0 then return end
@@ -221,6 +239,7 @@ local function think()
             local order = order_for(e)
             local x, y, l = c:position()
             local d = x and dist(x, y, hx, hy) or 0
+            if x then pace(c, e, hero, d, follow, s.target ~= nil) end
             if order == 'hold' then
                 -- waiting: stays where it stands (also when the hero leaves for another layer; "To me" calls it). An ally fights what
                 -- comes near that spot and goes back to it afterwards.
@@ -387,7 +406,7 @@ local function after_load()
         if not c then
             forget(i)
         else
-            e.level, e.damage, e.scale = nil, nil, nil
+            e.level, e.damage, e.scale, e.pace = nil, nil, nil, nil
             if e.role == 'pet' then dress_pet(c) end
         end
     end
@@ -412,6 +431,10 @@ gear.on('beastmaster.recruit', function(type_id, role, answer)
     if answer then answer(c and c.id or nil, err) end
 end)
 gear.on('beastmaster.dismiss_all', dismiss_all)
+gear.on('beastmaster.pace', function(on)
+    pace_off = on == false
+    if pace_off then for _, e in ipairs(followers) do gear.buffs.remove(e.id, 'beastmaster:pace'); e.pace = nil end end
+end)
 gear.on('beastmaster.order', function(i, order) set_order(i, order) end)
 gear.on('beastmaster.order_all', function(order) set_order_all(order) end)
 gear.on('beastmaster.bring', function(i) bring(i) end)
