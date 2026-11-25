@@ -6,13 +6,13 @@
     "sacred-gear>=0.4.1"
   ],
   "auction-house": [
-    "sacred-gear>=0.4.1"
+    "sacred-gear>=0.14.0"
   ],
   "autosave": [
     "sacred-gear>=0.4.1"
   ],
   "better-saveload": [
-    "sacred-gear>=0.4.1"
+    "sacred-gear>=0.14.0"
   ],
   "bounty": [
     "sacred-gear>=0.4.1"
@@ -70,5 +70,11 @@
   ],
   "world-events": [
     "sacred-gear>=0.4.1"
+  ],
+  "balance-editor": [
+    "sacred-gear>=0.14.0"
+  ],
+  "beastmaster": [
+    "sacred-gear>=0.14.0"
   ]
 }
