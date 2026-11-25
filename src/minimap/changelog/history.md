@@ -1,3 +1,9 @@
+## v0.2.1 (2026-11-25)
+
+- New: the map choice "Game" shows the pictures of the game's own TAB map, sector by sector, centred on the hero. The other two are now named "High-Res" (the render, as before) and "World Map" (the painted world map).
+- New: eight zoom levels (were six).
+- New: settings "Hero marker size" and "Trader symbol size". The hero marker is smaller by default (6, was 10).
+
 ## v0.2.0 (2026-11-25)
 
 - New: setting "Map": Render or Original. Render is the whole world drawn from the game's data (terrain, water, trees, buildings, no creatures), lined up with the game's own map; where the world has no data (its edge, the sea beyond it) the game's own map shows through, matched to the render's colours. Original is the painted map as before. Render is the default.
