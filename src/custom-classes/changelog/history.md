@@ -1,3 +1,8 @@
+## v0.3.2 (2026-11-25)
+
+- Fixed: The combo master window no longer covers the inventory's Backpack, Combat arts and Combos tabs. It is as tall as the game's own window again.
+- Improved: Smaller rune slots, a two-row list of arts and runes, and the Create and Empty slot buttons beside the combo slots, so everything fits.
+
 ## v0.3.1 (2026-11-24)
 
 - New: Close button in the class window's title bar.
