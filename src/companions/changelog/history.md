@@ -1,3 +1,7 @@
+## v0.5.5 (2026-11-25)
+
+- Fixed: a companion set to "Wait here" now stays where they are: they are no longer called to you when you change level (a cave, stairs, a portal), helped up beside you after a fall (they get up where they fell), or sent running to your side when badly hurt (they back away from the enemy instead), and a battle mage on "combat arts only" no longer walks back to you between casts. "Move to me" still calls them.
+
 ## v0.5.4 (2026-11-25)
 
 - New: the mod manager offers to install the Sacred theme along with this mod (optional).
