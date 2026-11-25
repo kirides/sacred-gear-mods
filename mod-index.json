@@ -86,6 +86,17 @@
       "changelog": "mods/balance-editor/changelog/history.md"
     },
     {
+      "id": "beastmaster",
+      "path": "mods/beastmaster",
+      "name": "Beastmaster",
+      "version": "0.3.0",
+      "author": "Sacred Gear",
+      "description": "Animals that travel with your hero: wolves, bears, boars, deer, horses, spiders, scorpions, crabs, lizards, birds ... every animal of the game. Allies fight for you, have the level of the hero you play (so their damage grows with you) and grow bigger every 18 levels up to level 216. Pets are drawn larger, follow you around, cannot be targeted or hurt and do nothing else. Each species has its own base size (big monsters like spiders are drawn smaller). Pick them in the Beastmaster window (Ctrl+B, or the controller's mod menu). Single player only.",
+      "requires": [
+        "sacred-theme"
+      ]
+    },
+    {
       "id": "better-saveload",
       "path": "mods/better-saveload",
       "name": "Better SaveLoad",
@@ -139,7 +150,7 @@
       "id": "companions",
       "path": "mods/companions",
       "name": "Companions",
-      "version": "0.5.2",
+      "version": "0.5.3",
       "author": "Sacred Gear",
       "description": "A party of heroes in single player: recruit companions of any class, each with their own inventory, equipment, attributes, skills, combat arts and experience. Click a portrait (or use the controller's mod menu) to play that hero; the others follow and fight on their own, with their combat arts and spells.",
       "tags": [
@@ -155,7 +166,7 @@
       "id": "custom-classes",
       "path": "mods/custom-classes",
       "name": "Custom classes",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "author": "Sacred Gear",
       "description": "Heroes with a class of your own: a Seraphim body with Battle Mage fire, a Gladiator that casts. A class is a profile on one of the eight hero bodies (skills, arts from any class, runes) made with the Sacred Class Editor or by hand. Needs the mod on every computer in a LAN game.",
       "tags": [
@@ -290,6 +301,14 @@
       "requires": [
         "sacred-gear>=0.4.1"
       ]
+    },
+    {
+      "id": "minimap",
+      "path": "mods/minimap",
+      "name": "Minimap",
+      "version": "0.1.1",
+      "author": "Sacred Gear",
+      "description": "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT)."
     },
     {
       "id": "name-editor",
