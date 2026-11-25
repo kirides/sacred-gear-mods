@@ -1,3 +1,7 @@
+## v0.3.3 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v0.3.2 (2026-11-25)
 
 - Fixed: The combo master window no longer covers the inventory's Backpack, Combat arts and Combos tabs. It is as tall as the game's own window again.

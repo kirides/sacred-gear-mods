@@ -1,3 +1,7 @@
+## v0.1.2 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v0.1.1 (2026-11-25)
 
 - Improved: the hero marker is now a small gold diamond.

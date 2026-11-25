@@ -1,3 +1,7 @@
+## v0.5.4 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v0.5.3 (2026-11-25)
 
 - Fixed: shared speed buffs (Katarakt der Wendigkeit) now really make the other heroes faster: attack, cast and move speed.

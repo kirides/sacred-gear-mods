@@ -1,3 +1,7 @@
+## v1.4.8 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v1.4.7 (2026-11-24)
 
 - Improved: buttons and drop-down lists on the savegame screen use the game's own style, with icons.

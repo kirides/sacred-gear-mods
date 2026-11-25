@@ -1,3 +1,7 @@
+## v0.3.4 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v0.3.3 (2026-11-24)
 
 - New: Close button in the stash window's title bar.
