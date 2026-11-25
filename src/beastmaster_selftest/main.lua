@@ -125,6 +125,30 @@ gear.task(function()
     check('the giant spider is drawn much smaller than its wild kind', sscale ~= nil and sscale < 0.5, sscale)
     A.screenshot('beasts_spider')
 
+    -- the companions' shared buffs (the event the companions mod sends) reach the allies fully and the pets with their speed part only
+    local function has(id, key)
+        for _, b in ipairs(gear.buffs.list(id) or {}) do
+            if b.key == key then return true end
+        end
+        return false
+    end
+    if not (wolf and wolf:exists() and not wolf:is_dead()) then wolf_id = recruit(567, 'ally'); wolf = wolf_id and W.object(wolf_id) end
+    gear.emit('companions.buff', {key = 'test:1', strength = 1, seconds = 0, def = {id = 'test_party', name = 'Test',
+        stats = {damage_min_physical = 20, damage_max_physical = 20}, factors = {attack_factor = 1.5, speed_factor = 1.5}}})
+    gear.wait(0.5)
+    check('a shared buff reaches the ally', wolf ~= nil and has(wolf_id, 'beastmaster:test:1'))
+    check('a shared buff with a speed part reaches the pet', has(rabbit_id, 'beastmaster:test:1'))
+    local late_id = recruit(567, 'ally')
+    check('an animal taken along while the buff runs gets it too', late_id ~= nil and has(late_id, 'beastmaster:test:1'))
+    gear.emit('companions.buff', {key = 'test:2', strength = 1, seconds = 0, def = {id = 'test_armor', name = 'Armor', factors = {armor_factor = 2}}})
+    gear.wait(0.5)
+    check('a buff without a speed part reaches the ally', wolf ~= nil and has(wolf_id, 'beastmaster:test:2'))
+    check('a buff without a speed part does not reach the pet', not has(rabbit_id, 'beastmaster:test:2'))
+    gear.emit('companions.buff_end', 'test:1')
+    gear.emit('companions.buff_end', 'test:2')
+    gear.wait(0.5)
+    check('the shared buffs end for the animals when they end for the heroes', not has(wolf_id, 'beastmaster:test:1') and not has(rabbit_id, 'beastmaster:test:1') and not has(wolf_id, 'beastmaster:test:2'))
+
     -- the hero levels up: the allies follow (level, growth); a wolf that fell in the fights on the way is replaced first
     if not (wolf and wolf:exists() and not wolf:is_dead()) then
         wolf_id = recruit(567, 'ally')

@@ -15,6 +15,12 @@ Press **Ctrl+B** (or open the controller's mod menu) for the Beastmaster window.
 
 The window uses the shared theme; every button is a stop for the controller (A presses).
 
+## Party buffs
+
+The buffs a companion shares with the heroes (Steinhaut, Wieselflink, Sturm und Drang ... see the Companions mod) are shared with your animals too: the Companions mod announces each one (`companions.buff`, `companions.buff_end`), Beastmaster gives it to the animals at the same strength (times *Allies get* / *Pets get*, default 100%) and takes it away when the companion's own ends. An **ally gets all of it** (damage bonuses, attack factor, resistances, regeneration ...; measured on a spawned wolf: +40 damage took its bite from 8 to 55, attack factor 3 from 8 to 25), a **pet only the speed factor**. An animal taken along while a buff runs gets it at once. Switch it off with *Companions' shared buffs also help the animals*. Only the buffs the Companions mod shares today (those of its four self-buff arts) arrive; Beastmaster accepts any other mod's `companions.buff` event too.
+
+Not verified: that the speed factor makes a pet *walk* faster (the buff changes the creature's speed factor; whether the engine uses it for walking was not measurable in the test area).
+
 ## Species
 
 The game has no fox or dove creature types. `species.lua` is the list: a creature type id, the model family (WOLF.GRN covers Silberwolf, Grauwolf, Panzerwolf ...) and the default base scale (spiders 0.3 to 0.7, scorpion 0.5, crabs 0.4 to 0.5, lizards 0.6 and so on; a wolf 1.0). The names come from the game, in your language. The default sizes are set by eye: adjust them in the window.

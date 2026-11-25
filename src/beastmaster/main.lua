@@ -89,6 +89,36 @@ local function dress_ally(c, e, level)
     end
 end
 
+---------------------------------------------------------------------------------------------------------------
+-- Party buffs. The companions mod tells (event 'companions.buff') which buff it shares with the heroes; the animals get it too: an ally all of
+-- it (damage, attack speed, resistances ...), a pet the speed factor only. 'companions.buff_end' ends it. A buff that is running when an animal
+-- is taken along is given to it then.
+---------------------------------------------------------------------------------------------------------------
+local active = {}       -- key -> {def, strength, seconds, since}
+local function clock_now() return gear.time() end
+
+local function buff_for(role, def)
+    if role == 'ally' then return def end
+    if not (def.factors and def.factors.speed_factor) then return nil end
+    return {id = def.id, name = def.name, overlay = def.overlay, factors = {speed_factor = def.factors.speed_factor}}
+end
+
+local function give(c, role, key, b)
+    local pct = tonumber(setting(role == 'ally' and 'buff_allies' or 'buff_pets', 100)) or 100
+    local def = buff_for(role, b.def)
+    if not def or pct <= 0 then return end
+    local left = b.seconds and b.seconds > 0 and math.max(1, b.seconds - (clock_now() - b.since)) or 0
+    gear.buffs.apply(c, def, {key = 'beastmaster:' .. key, strength = (b.strength or 1) * pct / 100, seconds = left})
+end
+
+-- (a buff with a time runs out by itself: forget it too)
+local function expire_buffs()
+    local now = clock_now()
+    for key, b in pairs(active) do
+        if b.seconds and b.seconds > 0 and now - b.since > b.seconds then active[key] = nil end
+    end
+end
+
 local function forget(i)
     table.remove(followers, i)
     store:changed()
@@ -112,6 +142,9 @@ local function recruit(type_id, role)
     if not ok then c:remove() return nil, why or 'Could not join your side.' end
     local e = {id = c.id, type = c:type(), role = role}
     followers[#followers + 1] = e
+    if setting('party_buffs', true) then
+        for key, bf in pairs(active) do give(c, role, key, bf) end
+    end
     if role == 'pet' then dress_pet(c) else dress_ally(c, e, hero:level() or 1) end
     store:changed()
     return c
@@ -231,9 +264,23 @@ gear.on('frame', guard('frame', function(dt)
     think_t = 0
     if not W.can_change() then return end
     think()
-    if dress_t >= 2 then dress_t = 0; redress() end
+    if dress_t >= 2 then dress_t = 0; redress(); expire_buffs() end
 end))
 
+gear.on('companions.buff', guard('companions.buff', function(ev)
+    if not (gear.buffs and setting('party_buffs', true) and type(ev) == 'table' and ev.key and type(ev.def) == 'table') then return end
+    local b = {def = ev.def, strength = ev.strength or 1, seconds = ev.seconds or 0, since = clock_now()}
+    active[ev.key] = b
+    for _, e in ipairs(followers) do
+        local c = object_of(e)
+        if c then give(c, e.role, ev.key, b) end
+    end
+end))
+gear.on('companions.buff_end', guard('companions.buff_end', function(key)
+    if not (gear.buffs and key) then return end
+    active[key] = nil
+    for _, e in ipairs(followers) do gear.buffs.remove(e.id, 'beastmaster:' .. key) end
+end))
 -- The limits shrank (Mods screen): the newest beyond them go. A size or level setting changed: every animal is dressed again.
 gear.on('settings.changed', guard('settings', function(id)
     if id == 'max_allies' or id == 'max_pets' then
@@ -258,6 +305,7 @@ end))
 local function after_load()
     followers = store.data.list
     state = {}
+    active = {}
     for i = #followers, 1, -1 do
         local e = followers[i]
         local c = object_of(e)

@@ -25,6 +25,10 @@ return {
             tooltip = 'How many pets follow you at once'},
         {id = 'pet_scale', type = 'number', label = 'Pet size (% of the base size)', min = 50, max = 250, step = 5, default = 130, section = 'Pets',
             tooltip = "Pets are drawn this much larger than their species' base size (needs a SacredBild with pets)"},
+        {id = 'party_buffs', type = 'bool', label = "Companions' shared buffs also help the animals", default = true, section = 'Buffs',
+            tooltip = 'The buffs a companion shares with the heroes (Steinhaut, Wieselflink ...) also go to your allies (all their effects: damage, attack speed, resistances ...) and to your pets (the speed part only)'},
+        {id = 'buff_allies', type = 'number', label = 'Allies get (% of what a hero gets)', min = 0, max = 200, step = 10, default = 100, section = 'Buffs'},
+        {id = 'buff_pets', type = 'number', label = 'Pets get (% of what a hero gets)', min = 0, max = 200, step = 10, default = 100, section = 'Buffs'},
         {id = 'follow', type = 'number', label = 'Follow distance (tiles)', min = 2, max = 12, step = 1, default = 4, section = 'Behaviour'},
     },
     keys = {
