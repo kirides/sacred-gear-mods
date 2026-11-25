@@ -203,6 +203,10 @@ button.ibtn {
     transform: none;
 }
 button.ibtn { align-self: center; }
+/* The keyboard button of a text field (gear.kit.field, or any `ibtn kit-kbd`): only while the controller is the input. */
+button.ibtn.kit-kbd { display: none; }
+body.pad button.ibtn.kit-kbd { display: inline-block; }
+.kit-field { display: flex; flex-direction: row; align-items: center; }
 button.ibtn:hover, button.ibtn:focus { color: #fff6d0; background-color: transparent; transform: none; font-effect: glow(2dp 6dp 0px 0px #ffb840e6); }
 /* Icon / text buttons side by side are separated by a thin vertical bar, as the tabs of a .tabbar are: */
 button.ibtn + button.ibtn { border-left: 1px #8c744099; margin-left: 4dp; padding-left: 12dp; }

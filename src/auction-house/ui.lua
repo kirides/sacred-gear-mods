@@ -624,9 +624,12 @@ local function load_doc(client, cfg, st)
         end)
     end)
     -- the on-screen keyboard
-    on('#kbd-q', function() open_osk('q', view.q.text, false, 40) end)
-    on('#kbd-price', function() open_osk('price', view.sell.price, true, 10) end)
-    on('#kbd-gold', function() open_osk('gold', view.gold_amount, true, 10) end)
+    -- (the buttons show only while the pad is the input; A on a field opens the keyboard too)
+    if kb then
+        kb:attach(doc, {field = '#q-in', button = '#kbd-q', open = function() open_osk('q', view.q.text, false, 40) end})
+        kb:attach(doc, {field = '#price-in', button = '#kbd-price', open = function() open_osk('price', view.sell.price, true, 10) end})
+        kb:attach(doc, {field = '#gold-in', button = '#kbd-gold', open = function() open_osk('gold', view.gold_amount, true, 10) end})
+    end
     doc:on('.listing', 'mouseover', function(e) view.hover = ids[tostring(e.current)] end)
     doc:on('.listing', 'mouseout', function() view.hover = nil end)
 end

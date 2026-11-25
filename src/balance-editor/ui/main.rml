@@ -19,7 +19,7 @@
                 </div>
                 <span class="label" data-if="q != ''">Search, all tabs:</span>
                 <input id="search" type="text" class="field search" data-value="q" maxlength="30" placeholder="Search values"/>
-                <button class="ibtn" id="kbd-search" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
+                <button class="ibtn kit-kbd" id="kbd-search" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
                 <button class="mini" id="clear-search" data-attrif-disabled="q == ''"><span class="padkey a"></span>Clear</button>
                 <button class="mini" id="only-changed" data-class-on="only_changed" title="Show only the values you changed"><span class="padkey a"></span>Changed only</button>
             </div>
@@ -50,7 +50,7 @@
             <div class="row">
                 <span class="label">Name</span>
                 <input id="pname" type="text" class="field pname" data-value="pname" maxlength="40" placeholder="Name of the patch"/>
-                <button class="ibtn" id="kbd-name" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
+                <button class="ibtn kit-kbd" id="kbd-name" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
             </div>
             <div class="row">
                 <button class="game-button small" id="export" data-attrif-disabled="total_changed == 0" title="Writes export.json in the mod's folder and copies it to the clipboard"><span class="padkey a"></span>Export</button>

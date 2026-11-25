@@ -160,7 +160,7 @@ function M.new(env)
             if i then env.dismiss(i) end
             msg = ''
         end)
-        on('#kbd-q', function() open_osk() end)
+        if kb then kb:attach(doc, {field = '#search', button = '#kbd-q', open = function() open_osk(true) end}) end   -- (the button shows only while the pad is the input)
         on('#clear-q', function() set_q('') end)
         on('#mode-ally', function() mode = 'ally' end)
         on('#mode-pet', function() mode = 'pet' end)

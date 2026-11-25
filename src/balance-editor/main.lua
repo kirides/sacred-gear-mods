@@ -435,8 +435,10 @@ local function load_doc()
     end)
     click('#only-changed', function() view.only_changed = not view.only_changed; rows_dirty = true end)
     click('#clear-search', function() view.q = ''; doc.model.q = ''; last.q = ''; rows_dirty = true end)
-    click('#kbd-search', function() open_osk('q') end)
-    click('#kbd-name', function() open_osk('name') end)
+    if kb then   -- (the buttons show only while the pad is the input; A on a field opens the keyboard too)
+        kb:attach(doc, {field = '#search', button = '#kbd-search', open = function() open_osk('q') end})
+        kb:attach(doc, {field = '#pname', button = '#kbd-name', open = function() open_osk('name') end})
+    end
     click('#reset-group', function()
         reset_fields(fields_in_view())
         view.confirm_all = false

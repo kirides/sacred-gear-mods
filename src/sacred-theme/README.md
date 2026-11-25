@@ -20,7 +20,7 @@ The theme ships a bigger icon set than Sacred Gear's built-in one (`icons.ttf`, 
 
 ## On-screen keyboard
 
-`gear.kit.osk` (Sacred Gear) is the shared on-screen keyboard of the mods: a small window with the typed text and rows of plain bordered keys (`.kit-osk`, `button.osk-key`; a thin gold edge on a dark fill, no game orbs, so forty keys stay readable and the pad's cursor shows on the bright edge), a number pad for amounts, and Shift, Space, Backspace, Clear, Paste and Done. This stylesheet gives it the look of the game; without the mod Gear's base style draws the same classes plainer. The mods open it from a `keyboard` icon button (`class="ibtn"`). Details: Gear docs, `docs/RmlKit.md`.
+`gear.kit.osk` (Sacred Gear) is the shared on-screen keyboard of the mods: a small window with the typed text and rows of plain bordered keys (`.kit-osk`, `button.osk-key`; a thin gold edge on a dark fill, no game orbs, so forty keys stay readable and the pad's cursor shows on the bright edge), a number pad for amounts, and Shift, Space, Backspace, Clear, Paste and Done. This stylesheet gives it the look of the game; without the mod Gear's base style draws the same classes plainer. The mods open it from a `keyboard` icon button (`class="ibtn kit-kbd"`), which is shown only while the controller is the player's input (A on the field opens it too). Details: Gear docs, `docs/RmlKit.md`.
 
 ## Text fields
 

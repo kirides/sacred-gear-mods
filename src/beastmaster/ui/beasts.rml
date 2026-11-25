@@ -16,7 +16,7 @@
         </div>
         <div class="frow">
             <input id="search" type="text" class="field search" data-value="q_text" maxlength="30" placeholder="Filter animals (wolf, bear, spider ...)"/>
-            <button class="ibtn" id="kbd-q" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
+            <button class="ibtn kit-kbd" id="kbd-q" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
             <button class="ibtn" id="clear-q" data-attrif-disabled="q_text == ''" title="Clear the filter"><span class="padkey a"></span><span class="icon icon-close"></span></button>
         </div>
         <div class="muted small">A click on an animal takes it along as {{ mode_text }}. The percentage is the species' base size: change it with the minus and plus buttons.</div>
