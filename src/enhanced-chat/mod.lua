@@ -2,7 +2,7 @@
 return {
     id = 'enhanced-chat',
     name = 'Enhanced Chat',
-    version = '1.1.5',
+    version = '1.1.6',
     author = 'kirides',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'A chat window in place of the lines at the top of the screen that fade and are gone: it keeps the '
