@@ -2,7 +2,7 @@
 return {
     id = 'shared-stash',
     name = 'Shared stash',
-    version = '0.3.3',
+    version = '0.3.4',
     author = 'kirides',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'A stash shared by all your heroes, in a panel beside the chest window.',
