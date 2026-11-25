@@ -5,11 +5,11 @@
 Animals that travel with your hero, in two roles. One mod, because both share the same spawning, following, savegame storage and window. Every animal of the game is on the list (122 species: wolves, bears, boars, deer, horses, cows, pigs, sheep, chickens, birds, bats, snakes, spiders, scorpions, crabs, lizards, insects, worms ...).
 
 - **Allies** follow you in a half circle behind, attack the enemy nearest to you, and have the **level of the hero you play** (the engine derives their health and damage from their type and level, as for the creatures it places, so they grow with you; *Ally level* scales it, *Ally damage* multiplies their bites). They are drawn at the species' base size times a growth factor that **steps up every 18 levels until level 216** (75% at level 1 to 125% at level 216 by default: 12 steps of about 4%).
-- **Pets** follow you around, are drawn larger (130% of the base size by default), cannot be clicked or targeted (not by the mouse, the hover cursor or the controller's aim) and take no damage. They do nothing else.
+- **Pets** follow you around, are drawn larger (130% of the base size by default), cannot be clicked or targeted (not by the mouse, the hover cursor or the controller's aim) and take no damage. They do nothing else (they can be told to wait).
 
 ## What you need
 
-Sacred Gear with the speed buffs (`gear.buffs` `speeds`), `creature:set_level`, `creature:set_pet`, `creature:copy_allegiance` and `creature:order_move` on any creature, and SacredBild with the pets module (draw scale of the model and its shadow, pick filter). Single player only.
+Sacred Gear with the speed buffs (`gear.buffs` `speeds`), `creature:gait` (running), `creature:set_level`, `creature:set_pet`, `creature:copy_allegiance` and `creature:order_move` on any creature, and SacredBild with the pets module (draw scale of the model and its shadow, pick filter). Single player only.
 
 ## How to use it
 
@@ -18,6 +18,24 @@ Press **Ctrl+B** (or open the controller's mod menu) for the Beastmaster window.
 ![A pet next to an ordinary animal of its kind](../images/beastmaster-pets.jpg)
 
 The window uses the shared theme (`sacred-theme`, required); every button is a stop for the controller (A presses).
+
+## Orders
+
+Under *With you now* every animal has an **orders** drop-down, the same idea as a companion's behaviour in the Party window:
+
+- **Aggressive**: an ally fights the enemy nearest to you within *Fight enemies within* (default for allies).
+- **Defensive**: an ally only fights what comes close to you (8 tiles at most).
+- **Passive**: only follows, never attacks.
+- **Wait here**: stays where it stands, however far you go (also when you leave for another level), fights what comes within 6 tiles of that spot and walks back to it afterwards. **To me** (or *All to me*) calls it to your side, where it goes on waiting.
+- A **pet** cannot fight: its choices are *Follow* and *Wait here*.
+
+*Default* uses the *Default orders* setting of the Mods screen. *All animals* gives every animal the same orders at once (a pet takes what it can). The orders belong to the savegame with the animal.
+
+![The orders drop-down of an ally](../images/beastmaster-orders.jpg)
+
+## Pace
+
+A creature that is ordered to move *walks*, and the hero runs about 2.5 times as fast, so animals fell far behind. When an animal is more than about two follow distances behind, Beastmaster follows its move order with Gear's `creature:gait(2)`: the run animation the game's creatures use when they chase an enemy (measured on a wolf: 133 units a second walking, 335 running). An animal slower than the hero also gets a movement speed buff of its own (`beastmaster:pace`) up to the hero's speed (a shared speed buff or a faster animal keeps what it has). The Mods screen has *Animals run to keep up with the hero* to switch both off. Needs a Sacred Gear with `creature:gait`; without it the animals walk as before.
 
 ## Party buffs
 
@@ -29,9 +47,9 @@ The game has no fox or dove creature types. `species.lua` is the list: a creatur
 
 ## Development
 
-- **Files:** `src/beastmaster/mod.lua` (manifest, settings, keys), `core.lua` (growth steps, limits: logic without the game), `species.lua` (the animal list with model families and default base sizes), `main.lua` (spawning, following, orders, buffs, the savegame store), `window.lua` and `ui/beasts.rml` / `beasts.rcss` (the window, on the shared theme).
+- **Files:** `src/beastmaster/mod.lua` (manifest, settings, keys), `core.lua` (growth steps, limits, orders: logic without the game), `species.lua` (the animal list with model families and default base sizes), `main.lua` (spawning, following, orders, buffs, the savegame store), `window.lua` and `ui/beasts.rml` / `beasts.rcss` (the window, on the shared theme: the orders drop-down uses its `.dd`, `.dd-list`, `.dd-pop` and `.dd-origin` classes).
 - **Depends on:** Sacred Gear (`gear.buffs`, `creature:set_level`, `set_pet`, `copy_allegiance`, `order_move`), SacredBild's pets module, `sacred-theme`; optional: Companions (shared buffs, `companions.buff` events).
-- **Test it:** `luajit tests/beastmaster_test.lua` runs the logic outside the game. `src/beastmaster_selftest` (`Sacred.exe -gear-auto -gear-instance=beasts -gear-load=10 -gear-mods=sacred-theme,beastmaster,beastmaster_selftest`, in a copy of the game folder) takes an ally and two pets along and checks following, fighting, the shared buffs, growth with the hero's level and the filter row; `src/beastmaster_buffs_selftest` covers the buffs alone. The pictures on this page come from the first one ([Screenshots](../Screenshots.md)).
+- **Test it:** `luajit tests/beastmaster_test.lua` runs the logic outside the game. `src/beastmaster_selftest` (`Sacred.exe -gear-auto -gear-instance=beasts -gear-load=10 -gear-mods=sacred-theme,beastmaster,beastmaster_selftest`, in a copy of the game folder) takes an ally and two pets along and checks following, fighting, the orders (an ally told to wait stays put with the hero 3600 units away; *To me*), the shared buffs, growth with the hero's level and the filter row; `src/beastmaster_buffs_selftest` covers the buffs alone. The pictures on this page come from the first one ([Screenshots](../Screenshots.md)).
 
 - Pets are `creature:set_pet{scale, untargetable}` plus `set_modifiers{taken = 0}`. SacredBild scales the model about the object's render position (object +0x7C / +0x80) with a matrix applied before the draw, so the shadow grows with it.
 - Allies are spawned plain, join the hero's side with `copy_allegiance` (enemies fight them), get `set_level(hero level * Ally level %)` and are ordered with `order_attack` / `order_move` every few tenths of a second. Measured: a level 1 wolf bites for about 8.5 with 65 health, a level 50 one for about 84 with 1990 health, so the damage grows steeply with the level.

@@ -10,7 +10,7 @@ return {
         .. 'animal of the game. Allies fight for you, have the level of the hero you play (so their damage grows with you) and grow bigger '
         .. 'every 18 levels up to level 216. Pets are drawn larger, follow you around, cannot be targeted or hurt and do nothing else. Each '
         .. 'species has its own base size (big monsters like spiders are drawn smaller). Pick them in the Beastmaster window (Ctrl+B, or the '
-        .. "controller's mod menu). Single player only.",
+        .. "controller's mod menu), where each animal also gets orders (aggressive, defensive, passive, wait here). Single player only.",
     settings = {
         {id = 'max_allies', type = 'number', label = 'Allies at most', min = 0, max = 8, step = 1, default = 3, section = 'Allies',
             tooltip = 'How many fighting animals follow you at once'},
@@ -30,6 +30,12 @@ return {
             tooltip = 'The buffs a companion shares with the heroes (Steinhaut, Wieselflink ...) also go to your allies (all their effects: damage, attack speed, resistances ...) and to your pets (the speed part only)'},
         {id = 'buff_allies', type = 'number', label = 'Allies get (% of what a hero gets)', min = 0, max = 200, step = 10, default = 100, section = 'Buffs'},
         {id = 'buff_pets', type = 'number', label = 'Pets get (% of what a hero gets)', min = 0, max = 200, step = 10, default = 100, section = 'Buffs'},
+        {id = 'behaviour', type = 'choice', label = 'Default orders', default = 'aggressive', section = 'Behaviour',
+            choices = {{value = 'aggressive', label = 'Aggressive (fight what comes near you)'}, {value = 'defensive', label = 'Defensive (only what comes close)'},
+                {value = 'passive', label = 'Passive (only follow)'}, {value = 'hold', label = 'Wait here (stay where they stand)'}},
+            tooltip = 'What an animal does unless you gave it other orders in the Beastmaster window. A pet only follows (any order but Wait here) or waits'},
+        {id = 'match_speed', type = 'bool', label = "Animals run to keep up with the hero", default = true, section = 'Behaviour',
+            tooltip = "Their own walk is slow: they run (the run animation of a chase) when they are far behind, and are as fast as the hero, so they catch up"},
         {id = 'follow', type = 'number', label = 'Follow distance (tiles)', min = 2, max = 12, step = 1, default = 4, section = 'Behaviour'},
     },
     keys = {

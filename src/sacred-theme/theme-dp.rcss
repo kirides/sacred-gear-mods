@@ -254,6 +254,10 @@ button.game-dropdown:disabled, button.game-dropdown[disabled], button.game-dropd
 .dd-list button.opt { display: block; width: auto; margin: 0 0 1px 0; text-align: left; white-space: nowrap; padding: 4dp 10dp; }
 .dd-list button.opt.on { color: #ffe030; border-color: #ffd780; }
 .dd-shade { position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 5; }
+/* A list that floats above everything (windows whose scrolling lists would clip a .dd-list): a top-level element <div class="dd-list dd-pop">, placed by the mod
+   (left / top in dp) under its button, and an empty <div class="dd-origin"> as the marker where the document's (0, 0) lies, for the mod to measure from. */
+.dd-origin { position: absolute; left: 0px; top: 0px; width: 1px; height: 1px; visibility: hidden; }
+.dd-pop { position: absolute; z-index: 300; }
 
 /* The game's own button (class game-button on a <button>): the orb caps (images 280 / 282) keep their size, only the middle (281) is tiled, so a button
    of any width works; the label is centred in the middle part and the pad prompt (.padkey) sits in front of it. Normal grey-white label, hover
