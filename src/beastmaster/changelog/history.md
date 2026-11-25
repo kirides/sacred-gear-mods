@@ -1,3 +1,12 @@
+## v0.4.0 (2026-11-25)
+
+- New: an orders drop-down for each animal in the Beastmaster window: Aggressive, Defensive, Passive, Wait here (pets: Follow, Wait here), plus To me / All to me.
+- New: an animal told to wait stays where it stands, even when you are far away; allies fight what comes near their spot and return to it.
+- New: setting Default orders.
+- New: animals keep up with you: they run when far behind and are as fast as the hero (setting Animals run to keep up with the hero).
+- New: the filter uses the shared on-screen keyboard, shown only for the controller.
+- Needs Sacred Gear 0.14.0.
+
 ## v0.3.1 (2026-11-25)
 
 - New: the mod manager offers to install the Sacred theme along with this mod (optional).

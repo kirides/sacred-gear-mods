@@ -1,3 +1,9 @@
+## v0.3.0 (2026-11-25)
+
+- New: the search, price and amount fields use the shared on-screen keyboard; the keyboard button shows only while you play with the controller (A on a field opens it too).
+- Improved: the number pad opens for price and gold amounts.
+- Needs Sacred Gear 0.14.0.
+
 ## v0.2.6 (2026-11-25)
 
 - New: the mod manager offers to install the Sacred theme along with this mod (optional).

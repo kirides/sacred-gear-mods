@@ -1,3 +1,9 @@
+## v0.4.0 (2026-11-25)
+
+- New: the look of the shared on-screen keyboard (dark keys with a thin gold edge, number pad, text line).
+- New: the keyboard button of a text field shows only while you play with the controller; icon buttons sit centred next to their field.
+- New: floating drop-down lists (.dd-pop) for windows with scrolling lists.
+
 ## v0.3.0 (2026-11-25)
 
 - New: selected text in text fields and text boxes has a brown-gold highlight with light text.
