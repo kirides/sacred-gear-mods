@@ -393,7 +393,7 @@
       "id": "minimap",
       "path": "mods/minimap",
       "name": "Minimap",
-      "version": "0.1.3",
+      "version": "0.2.0",
       "author": "Sacred Gear",
       "description": "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/minimap.jpg",
