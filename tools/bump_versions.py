@@ -6,7 +6,7 @@ mod that was never bumped, the commit that added its mod.lua):
   * any change to a non-test file of the mod                       -> patch   (1.2.3 -> 1.2.4)
   * a commit message containing  feat(<mod>)                        -> minor   (1.2.3 -> 1.3.0)
   * a commit message containing  break(<mod>)                       -> major   (1.2.3 -> 2.0.0)
-The highest level wins. Without a non-test change nothing is bumped. Test files are: folders called test, tests or tools, any folder or
+The highest level wins. Without a non-test change nothing is bumped. Test files are: folders called test, tests or tools (and the release notes in a `changelog` folder, which never change the mod), any folder or
 file whose name ends with "test"/"tests", and files called test_*. Scopes are compared trimmed, case-insensitive, with '-' and '_' alike;
 `feat(a, b)` counts for both mods. Mod folders whose name ends with "test" and sector-tools are skipped like in the release.
 
@@ -37,7 +37,7 @@ def is_test_path(rel):
     """rel: path inside the mod folder (forward slashes)."""
     parts = rel.lower().split('/')
     for d in parts[:-1]:
-        if d in ('test', 'tests', 'tools') or d.endswith(('test', 'tests')):
+        if d in ('test', 'tests', 'tools', 'changelog') or d.endswith(('test', 'tests')):
             return True
     stem = os.path.splitext(parts[-1])[0]
     return stem.endswith(('test', 'tests')) or stem.startswith('test_')
