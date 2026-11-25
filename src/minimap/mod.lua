@@ -2,7 +2,7 @@
 return {
     id = 'minimap',
     name = 'Minimap',
-    version = '0.1.0',
+    version = '0.1.1',
     author = 'Sacred Gear',
     description = "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
     settings = {
