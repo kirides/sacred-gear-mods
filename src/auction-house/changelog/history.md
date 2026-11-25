@@ -19,7 +19,7 @@
 
 ## v0.2.1 (2026-11-21)
 
-- Small fixes and improvements.
+- No changes to this mod in this release.
 
 ## v0.2.0 (2026-11-21)
 
@@ -30,7 +30,7 @@
 
 ## v0.1.2 (2026-11-20)
 
-- Small fixes and improvements.
+- Documentation only: the readme gained a picture of the market panel; nothing changes in the game.
 
 ## v0.1.1 (2026-11-19)
 

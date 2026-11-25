@@ -17,7 +17,7 @@
 
 ## v0.3.1 (2026-11-21)
 
-- Small fixes and improvements.
+- No changes to this mod in this release.
 
 ## v0.3.0 (2026-11-21)
 
