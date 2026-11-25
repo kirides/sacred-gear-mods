@@ -33,7 +33,7 @@
     </div>
 
     <!-- mouse: the buttons show while the pointer is over the map; the keys and the controller's mod menu zoom as well -->
-    <div class="zoombtns" data-style-left="(w / 2 - 34) + 'dp'" data-style-top="(h - 38) + 'dp'">
+    <div class="zoombtns" data-style-left="(w / 2 - 42) + 'dp'" data-style-top="(h - 40) + 'dp'">
         <button class="ibtn" data-event-click="zoom_out" title="Zoom out"><span class="icon icon-remove"></span></button>
         <span class="level">{{ level_text }}</span>
         <button class="ibtn" data-event-click="zoom_in" title="Zoom in"><span class="icon icon-add"></span></button>

@@ -16,7 +16,7 @@ body { font-size: 13dp; color: #ffd780; }
 .dir { position: absolute; font-family: "Sacred Game"; font-size: 14dp; color: #ffd780; text-align: center; }
 .dir.n { left: 0dp; top: 4dp; }
 .dir.w { left: 5dp; }
-.zoombtns { position: absolute; display: none; flex-direction: row; align-items: center; justify-content: center; width: 68dp; height: 24dp; background-color: #000000a0; }
+.zoombtns { position: absolute; display: none; flex-direction: row; align-items: center; width: 84dp; height: 26dp; background-color: #000000b0; border: 1dp #806a3c; }
 #mm:hover .zoombtns { display: flex; }
-.zoombtns .level { margin: 0 2dp; color: #f0f0f0; font-size: 12dp; }
-.zoombtns button.ibtn { margin: 0; padding: 0 4dp; font-size: 16dp; border: 0; }
+.zoombtns .level { flex: none; width: 34dp; height: 26dp; line-height: 26dp; text-align: center; color: #f0f0f0; font-size: 12dp; }
+.zoombtns button.ibtn { flex: none; width: 24dp; height: 26dp; margin: 0; padding: 0; border: 0; line-height: 26dp; font-size: 15dp; text-align: center; }
