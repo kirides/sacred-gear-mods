@@ -2,7 +2,7 @@
 return {
     id = 'name-editor',
     name = 'Name editor',
-    version = '0.1.2',
+    version = '0.1.3',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Build character names with the game\'s colors and little pictures: type, pick colors and icons, or color a name with a gradient, '
