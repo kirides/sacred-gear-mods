@@ -165,7 +165,9 @@ The defaults fit this repository (`--src src`, `--prefix mods`, `--out mod-index
 --download-url URL --version latest --thumb-base https://raw.githubusercontent.com/me/repo/main --exclude 'wip_*'`.
 The download URL defaults to the `releases/latest/download/mods.zip` of the `origin` remote (`--asset` changes the file name). A thumbnail is
 taken from `thumbnail.png|jpg|webp` inside the mod folder, or from `docs/images/<id>.png|jpg|webp` when `--thumb-base`
-is given.
+is given (it defaults to the raw.githubusercontent.com address of the `origin` remote's `main`, so a plain run finds them).
+When `docs/images` holds more pictures of a mod (`<id>-*.png|jpg|webp`, plus the few listed in `DOC_EXTRA` of the tool), they become the entry's `images`, the mod
+manager's carousel, with the main picture first.
 
 ### Minimum versions of requirements
 

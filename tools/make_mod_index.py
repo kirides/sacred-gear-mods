@@ -121,6 +121,23 @@ def clean_recommended(listed, mod_id, requires):
     return out or None
 
 
+DOC_EXTRA = {'bounty': ['quests'], 'realms': ['realm-more']}   # pictures of docs/images whose name does not start with the mod's id
+
+
+def doc_pictures(mod_id):
+    """docs/images files of a mod, the main picture (<id>.*) first, the others by name."""
+    exts = ('.png', '.jpg', '.jpeg', '.webp')
+    try:
+        names = sorted(os.listdir('docs/images'))
+    except OSError:
+        return []
+    base = {os.path.splitext(n)[0]: n for n in names if n.lower().endswith(exts)}
+    out = [base[mod_id]] if mod_id in base else []
+    out += [n for k, n in base.items() if k.startswith(mod_id + '-') and n not in out]
+    out += [base[k] for k in DOC_EXTRA.get(mod_id, []) if k in base]
+    return ['docs/images/' + n for n in out]
+
+
 def git_remote():
     try:
         url = subprocess.check_output(['git', 'remote', 'get-url', 'origin'], stderr=subprocess.DEVNULL, text=True).strip()
@@ -145,6 +162,8 @@ def main():
             old_text = fh.read()
         old = json.loads(old_text)
     remote = git_remote()
+    if not o.thumb_base and remote:
+        o.thumb_base = 'https://raw.githubusercontent.com/%s/%s/main' % remote
     idx = {k: v for k, v in old.items() if k not in ('schema', 'mods', 'indexes')}
     for k in ('name', 'author', 'description', 'homepage'):
         if getattr(o, k):
@@ -201,6 +220,10 @@ def main():
         e.pop('changelog', None)  # regenerated: the history.md that tools/make_changelog.py writes, as a path inside the zip
         if os.path.isfile(os.path.join(o.src, folder, 'changelog', 'history.md')):
             e['changelog'] = '%s/changelog/history.md' % zpath
+        if not e.get('images') and o.thumb_base:  # the docs' pictures of the mod: docs/images/<id>.*, then <id>-*.* and the DOC_EXTRA ones; more than one makes a carousel
+            pics = doc_pictures(f['id'])
+            if len(pics) > 1:
+                e['images'] = [o.thumb_base.rstrip('/') + '/' + x for x in pics[:24]]
         if not e.get('images'):  # pictures for the viewer: <mod>/images/ or <mod>/screenshots/ (png, jpg, webp), in name order
             for sub in ('images', 'screenshots'):
                 d = os.path.join(o.src, folder, sub)
