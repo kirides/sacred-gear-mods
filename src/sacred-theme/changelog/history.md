@@ -1,3 +1,8 @@
+## v0.3.0 (2026-11-25)
+
+- New: selected text in text fields and text boxes has a brown-gold highlight with light text.
+- Under the hood: the theme's README gained a Text fields section on the selection colour.
+
 ## v0.2.0 (2026-11-24)
 
 - New: drop-down buttons in the game's style, with a list of options.

@@ -1,3 +1,10 @@
+## v0.5.2 (2026-11-25)
+
+- Fixed: party window drop-down lists work even where they reach past the window.
+- Improved: drop-down lists open above their button when they would run off the screen.
+- Improved: drop-down lists are as wide as their longest entry.
+- Improved: party window is wider, so each hero row fits its buttons.
+
 ## v0.5.1 (2026-11-24)
 
 - Improved: party window buttons have icons, and text buttons use the game's glow style.
