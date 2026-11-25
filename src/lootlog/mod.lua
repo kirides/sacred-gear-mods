@@ -2,7 +2,7 @@
 return {
     id = 'lootlog',
     name = 'Loot log',
-    version = '0.2.6',
+    version = '0.2.7',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'A log of the items that dropped near the hero and the items that ended up in the backpack, filterable by quality, category and kind; kept between sessions.',
