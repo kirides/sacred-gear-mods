@@ -2,7 +2,7 @@
 return {
     id = 'beastmaster',
     name = 'Beastmaster',
-    version = '0.2.0',
+    version = '0.3.0',
     author = 'Sacred Gear',
     requires = {'sacred-theme'},
     description = 'Animals that travel with your hero: wolves, bears, boars, deer, horses, spiders, scorpions, crabs, lizards, birds ... every '
