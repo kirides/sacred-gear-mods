@@ -18,9 +18,9 @@ local function finish()
     A.write('beastmaster.json', gear.json.encode(results))
     if cfg.quit then A.quit(results.failed == 0 and 0 or 1) end
 end
-local function recruit(key)
+local function recruit(type_id, role)
     local id, err
-    gear.emit('beastmaster.recruit', key, function(i, e) id, err = i, e end)
+    gear.emit('beastmaster.recruit', type_id, role, function(i, e) id, err = i, e end)
     return id, err
 end
 local function state()
@@ -41,19 +41,22 @@ gear.task(function()
     local hero = W.hero()
     local hx, hy, layer = hero:position()
 
-    local wolf_id, e1 = recruit('wolf')
+    local wolf_id, e1 = recruit(567, 'ally')
     check('an ally was recruited', wolf_id ~= nil, e1)
-    local rabbit_id, e2 = recruit('rabbit')
+    local rabbit_id, e2 = recruit(516, 'pet')
     check('a pet was recruited', rabbit_id ~= nil, e2)
-    local crow_id, e3 = recruit('crow')
+    local crow_id, e3 = recruit(513, 'pet')
     check('a second pet was recruited', crow_id ~= nil, e3)
     local s = state()
     check('state: 1 ally, 2 pets', s.ally == 1 and s.pet == 2, ('%d/%d'):format(s.ally, s.pet))
     local wolf, rabbit = W.object(wolf_id), W.object(rabbit_id)
     check('the ally is not an enemy of the hero', wolf and wolf:is_enemy(hero) ~= true)
-    check('the ally has health', wolf and wolf:max_hp() >= 1, wolf and wolf:max_hp())
-    local mods = wolf and wolf:modifiers()
-    check('the ally has modifiers', mods ~= nil and mods.max_hp ~= nil)
+    local hl = hero:level() or 1
+    check('the ally has the level of the hero', wolf and wolf:level() == math.min(250, hl), ('%s vs hero %d'):format(tostring(wolf and wolf:level()), hl))
+    local st = state()
+    local grown
+    for _, f in ipairs(st.followers) do if f.id == wolf_id then grown = f.scale end end
+    check('the ally has a growth size (75 to 125 % of its base size)', grown ~= nil and grown >= 0.74 and grown <= 1.26, grown)
     local pm = rabbit and rabbit:modifiers()
     check('the pet takes no damage', pm ~= nil and pm.taken == 0)
 
@@ -80,7 +83,7 @@ gear.task(function()
     local hxx, hyy = hx, hy
     if not (wolf and wolf:exists() and not wolf:is_dead()) then
         print('NOTE the first ally fell on the way: a new one fights')
-        local nid = recruit('wolf')
+        local nid = recruit(567, 'ally')
         wolf = nid and W.object(nid) or wolf
     end
     local foe
@@ -109,6 +112,33 @@ gear.task(function()
         check('the ally bites for real when it hits (damage above 3 per hit; passes with 0 hits, they are rare)', ally_hits == 0 or ally_damage / ally_hits > 3,
               ('%d hits, %d damage'):format(ally_hits, ally_damage))
     end
+
+    -- a big monster as an ally is drawn smaller (the giant spider's base size is 30 %)
+    hero:teleport(hx, hy, layer)
+    gear.wait(3)
+    local spider_id, e4 = recruit(55, 'ally')
+    check('a giant spider ally was recruited', spider_id ~= nil, e4)
+    gear.wait(2)
+    local sst = state()
+    local sscale
+    for _, f in ipairs(sst.followers) do if f.id == spider_id then sscale = f.scale end end
+    check('the giant spider is drawn much smaller than its wild kind', sscale ~= nil and sscale < 0.5, sscale)
+    A.screenshot('beasts_spider')
+
+    -- the hero levels up: the allies follow (level, growth)
+    local before = {}
+    for _, f in ipairs(state().followers) do before[f.id] = f end
+    local lvl0 = hero:level() or 1
+    print('NOTE experience: ' .. tostring(hero:add_experience(300000000)))
+    gear.wait(5)
+    local lvl1 = hero:level() or 1
+    print(('NOTE hero level %d -> %d'):format(lvl0, lvl1))
+    check('the hero gained levels', lvl1 > lvl0, ('%d -> %d'):format(lvl0, lvl1))
+    local after = {}
+    for _, f in ipairs(state().followers) do after[f.id] = f end
+    check('the wolf ally follows the hero level', after[wolf_id] and after[wolf_id].level == math.min(250, lvl1), ('%s vs %d'):format(tostring(after[wolf_id] and after[wolf_id].level), lvl1))
+    check('the wolf ally has grown', after[wolf_id] and before[wolf_id] and after[wolf_id].scale > before[wolf_id].scale, ('%s -> %s'):format(tostring(before[wolf_id] and before[wolf_id].scale), tostring(after[wolf_id] and after[wolf_id].scale)))
+    A.screenshot('beasts_grown')
 
     -- window and screenshot
     gear.emit('beastmaster.window', true)
