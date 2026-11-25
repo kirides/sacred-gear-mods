@@ -2,7 +2,7 @@
 return {
     id = 'bounty',
     name = 'Bounty board',
-    version = '0.5.4',
+    version = '0.5.5',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Bounties to hunt, plus daily and weekly quests with streak rewards: in single player the mod posts, counts and pays them itself, in a network game it shows the '
