@@ -2,7 +2,7 @@
 return {
     id = 'achievements',
     name = 'Achievements and login streak',
-    version = '0.2.3',
+    version = '0.2.4',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Toasts for the achievements and the daily login streak of the game server\'s achievements.lua '
