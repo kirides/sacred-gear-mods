@@ -35,6 +35,9 @@
   "improved-shops": [
     "sacred-gear>=0.13.0"
   ],
+  "npc-example": [
+    "sacred-gear>=0.14.0"
+  ],
   "item-compare": [
     "sacred-gear>=0.4.1"
   ],

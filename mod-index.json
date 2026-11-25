@@ -438,6 +438,19 @@
       ]
     },
     {
+      "id": "npc-example",
+      "path": "mods/npc-example",
+      "name": "NPC example",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "An example of gear.npc, Sacred Gear's custom NPCs: Nirael the Collector stands near your hero, uses a model of the game, has a name of her own, talks in dialog pages, opens a window of the mod from her buttons and walks between two places by the game's clock. Copy it as the start of an NPC mod of your own.",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/npc-example.jpg",
+      "changelog": "mods/npc-example/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.14.0"
+      ]
+    },
+    {
       "id": "questhelper",
       "path": "mods/questhelper",
       "name": "Quest helper",
