@@ -8,7 +8,7 @@
 .splist { height: 330dp; overflow-y: auto; margin: 6dp 0; }
 .srow { display: flex; flex-direction: row; align-items: center; margin: 0 0 3dp 0; }
 button.game-button.sp { min-width: 0; width: 360dp; margin: 0 8dp 0 0; padding: 0 20dp; font-size: 16dp; }
-button.sz { width: 44dp; min-width: 0; margin: 0; }
+button.sz { width: 44dp; min-width: 0; margin: 0; font-size: 20dp; }
 .szv { width: 60dp; text-align: center; font-size: 15dp; }
 .sep { height: 1px; background-color: #6a5a3c80; margin: 8dp 0; }
 .fname { width: 190dp; font-size: 16dp; }
@@ -16,3 +16,8 @@ button.sz { width: 44dp; min-width: 0; margin: 0; }
 .hbar { width: 100dp; height: 6dp; background-color: #000000c0; margin-right: 12dp; }
 .hfill { height: 6dp; background-color: #60c060; }
 .hbar.nobar { background-color: transparent; }
+input.search { flex: 1 1 0px; margin-right: 8dp; }
+.osk { margin: 4dp 0; }
+.oskrow { display: flex; flex-direction: row; margin: 2dp 0; }
+button.key { min-width: 40dp; text-align: center; padding: 0 4dp; margin-right: 3dp; }
+button.key.wide { min-width: 120dp; }

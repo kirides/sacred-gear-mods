@@ -11,7 +11,7 @@ Sacred Gear with `creature:set_level`, `creature:set_pet`, `creature:copy_allegi
 
 ## How to use it
 
-Press **Ctrl+B** (or open the controller's mod menu) for the Beastmaster window. Choose *Ally* or *Pet*, then pick an animal from the scrolling list to take it along; *Dismiss* sends one away. Next to each species the **base size** is changed with - and + (5% a step, kept for all games): big monsters such as spiders, scorpions and crabs start much smaller than their wild kind, so they fit beside a hero. The animals belong to the savegame. The Mods screen (**F11**) has the limits (allies and pets at most), ally strength, pet size, follow distance and how far allies fight from you.
+Press **Ctrl+B** (or open the controller's mod menu) for the Beastmaster window. Choose *Ally* or *Pet*, type in the **filter row** (a forgiving search over the names: words in any order, a beginning is enough, one typo is forgiven; the keyboard button opens an on-screen keyboard for the controller), then pick an animal from the list to take it along; *Dismiss* sends one away. Next to each species the **base size** is changed with - and + (5% a step, kept for all games): big monsters such as spiders, scorpions and crabs start much smaller than their wild kind, so they fit beside a hero. The animals belong to the savegame. The Mods screen (**F11**) has the limits (allies and pets at most), ally strength, pet size, follow distance and how far allies fight from you.
 
 The window uses the shared theme; every button is a stop for the controller (A presses).
 

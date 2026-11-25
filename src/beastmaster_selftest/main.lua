@@ -125,7 +125,12 @@ gear.task(function()
     check('the giant spider is drawn much smaller than its wild kind', sscale ~= nil and sscale < 0.5, sscale)
     A.screenshot('beasts_spider')
 
-    -- the hero levels up: the allies follow (level, growth)
+    -- the hero levels up: the allies follow (level, growth); a wolf that fell in the fights on the way is replaced first
+    if not (wolf and wolf:exists() and not wolf:is_dead()) then
+        wolf_id = recruit(567, 'ally')
+        wolf = wolf_id and W.object(wolf_id)
+        gear.wait(1)
+    end
     local before = {}
     for _, f in ipairs(state().followers) do before[f.id] = f end
     local lvl0 = hero:level() or 1
@@ -139,6 +144,28 @@ gear.task(function()
     check('the wolf ally follows the hero level', after[wolf_id] and after[wolf_id].level == math.min(250, lvl1), ('%s vs %d'):format(tostring(after[wolf_id] and after[wolf_id].level), lvl1))
     check('the wolf ally has grown', after[wolf_id] and before[wolf_id] and after[wolf_id].scale > before[wolf_id].scale, ('%s -> %s'):format(tostring(before[wolf_id] and before[wolf_id].scale), tostring(after[wolf_id] and after[wolf_id].scale)))
     A.screenshot('beasts_grown')
+
+    -- the filter row: a forgiving search over the names of all the animals
+    local function filter(text)
+        local names
+        gear.emit('beastmaster.filter', text, function(n) names = n end)
+        return names or {}
+    end
+    local all = filter('')
+    check('the list has every animal', #all > 100, #all)
+    local spiders = filter('spider')
+    check('"spider" keeps spiders only (a handful, not all)', #spiders > 0 and #spiders < #all / 3, #spiders)
+    local typo = filter('spyder')
+    check('a typo is forgiven ("spyder" still finds spiders)', #typo > 0 and #typo < #all, #typo)
+    local nothing = filter('qqqqzzzz')
+    check('nothing matches nonsense', #nothing == 0, #nothing)
+    gear.emit('beastmaster.window', true)
+    filter('bear')
+    gear.emit('beastmaster.osk', true)
+    gear.wait(1)
+    A.screenshot('beasts_filter')
+    gear.emit('beastmaster.osk', false)
+    filter('')
 
     -- window and screenshot
     gear.emit('beastmaster.window', true)

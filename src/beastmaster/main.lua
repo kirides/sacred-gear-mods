@@ -289,6 +289,8 @@ gear.on('beastmaster.recruit', function(type_id, role, answer)
     if answer then answer(c and c.id or nil, err) end
 end)
 gear.on('beastmaster.dismiss_all', dismiss_all)
+gear.on('beastmaster.filter', function(text, answer) answer(window.set_filter(text)) end)
+gear.on('beastmaster.osk', function(on) window.set_osk(on) end)
 gear.on('beastmaster.window', function(on) window.open(on) end)
 
 window = require('window').new({species = species, count = count, limit = limit, recruit = recruit, dismiss = dismiss,
