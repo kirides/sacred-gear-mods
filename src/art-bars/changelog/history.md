@@ -1,3 +1,7 @@
+## v0.2.5 (2026-11-25)
+
+- Fixed: the "+", "?", "C1" ... marks and the cool-down seconds in a slot sit in the middle of the slot again instead of a little too low; the key label stays at the bottom.
+
 ## v0.2.4 (2026-11-25)
 
 - New: the mod manager offers to install the Sacred theme along with this mod (optional).

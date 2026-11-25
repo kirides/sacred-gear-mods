@@ -1,3 +1,7 @@
+## v0.2.2 (2026-11-25)
+
+- Improved: the minimap costs much less time per frame while the hero stands still: it keeps its map tiles as they are until the hero moves, the zoom changes or a setting changes (about 0.15 ms less per frame and far less memory churn).
+
 ## v0.2.1 (2026-11-25)
 
 - New: the map choice "Game" shows the pictures of the game's own TAB map, sector by sector, centred on the hero. The other two are now named "High-Res" (the render, as before) and "World Map" (the painted world map).
