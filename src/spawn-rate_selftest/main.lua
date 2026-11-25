@@ -145,11 +145,23 @@ gear.task(function()
             configure({rate = 5, max_extra = 200, budget = 20, existing = true})
             hero:teleport(ox + 450, oy, layer)
             local reached, near_ids, first_seen = {}, {}, {}
+            -- level and maximum health of the originals by type and level (seen while the test runs: some die before it ends): an extra
+            -- must have what an original of its type and level has
+            local original_max, is_extra = {}, {}
             local worst = 1e9
             for step = 1, 48 do                        -- 24 s
                 gear.wait(0.5)
                 local hx, hy = hero:position()
                 local st = stats()
+                for _, id in ipairs(st.ids) do is_extra[id] = true end
+                for _, m in ipairs(W.creatures_near(hx, hy, 3600, {layer = layer, limit = 800})) do
+                    if not is_extra[m.id] and not m:is_dead() and m:is_enemy(hero) == true then
+                        local t, lv = m:type(), m:level() or 0
+                        original_max[t] = original_max[t] or {}
+                        original_max[t][lv] = original_max[t][lv] or {}
+                        original_max[t][lv][m:max_hp()] = true
+                    end
+                end
                 for _, id in ipairs(st.ids) do
                     local c = W.object(id)
                     if c and c:exists() and not c:is_dead() then
@@ -164,8 +176,37 @@ gear.task(function()
             end
             local st = stats()
             local enemies, total = 0, 0
+            local lvl_ok, lvl_total, level_one, lvl_exact, lvl_unmatched = 0, 0, 0, 0, 0
             for _, id in ipairs(st.ids) do
                 local c = W.object(id)
+                if c and c:exists() and not c:is_dead() then
+                    lvl_total = lvl_total + 1
+                    local lv, mx = c:level() or 0, c:max_hp()
+                    -- the same level, and a maximum health like an original's: exactly, or within 25% (an original's armour and weapon
+                    -- bonuses are not copied: its equipment is its own)
+                    local seen = original_max[c:type()] and original_max[c:type()][lv]
+                    if not seen and lvl_unmatched < 6 then
+                        lvl_unmatched = lvl_unmatched + 1
+                        local known = {}
+                        for l2 in pairs(original_max[c:type()] or {}) do known[#known + 1] = l2 end
+                        table.sort(known)
+                        note('unmatched_' .. id, {type = c:type_name(), level = lv, max_hp = mx, originals_levels = known})
+                    end
+                    if seen then
+                        local exact, close = seen[mx] == true, false
+                        for m in pairs(seen) do if mx and math.abs(m - mx) <= 0.25 * m then close = true end end
+                        if not close and lvl_unmatched < 8 then
+                            lvl_unmatched = lvl_unmatched + 1
+                            local maxes = {}
+                            for m in pairs(seen) do maxes[#maxes + 1] = m end
+                            table.sort(maxes)
+                            note('far_' .. id, {type = c:type_name(), level = lv, max_hp = mx, hp = c:hp(), originals_max = maxes})
+                        end
+                        if exact then lvl_exact = lvl_exact + 1 end
+                        if close then lvl_ok = lvl_ok + 1 end
+                    end
+                    if lv <= 1 and mx == 100 then level_one = level_one + 1 end
+                end
                 if c and c:exists() then
                     total = total + 1
                     if c:is_enemy(hero) == true and hero:is_enemy(c) == true then enemies = enemies + 1
@@ -185,6 +226,9 @@ gear.task(function()
             end
             note('hostility', {extras = total, hostile = enemies, near = near_n, came = came, ordered = st.ordered, made = st.made})
             check('hostility: extras exist', total > 0, total)
+            note('stats', {extras = lvl_total, like_original = lvl_ok, exactly = lvl_exact, level1_100hp = level_one})
+            check('stats: the extras have the level and about the maximum health of an original of their type (90%)', lvl_total > 0 and lvl_ok >= lvl_total * 0.9,
+                  ('%d of %d (%d exactly), %d are level 1 with 100 health'):format(lvl_ok, lvl_total, lvl_exact, level_one))
             check('hostility: every extra is hostile to the hero, both ways (like its original)', total > 0 and enemies == total, ('%d of %d'):format(enemies, total))
             check('hostility: the mod gave attack orders', st.ordered > 0, st.ordered)
             check('hostility: at least 80% of the extras that started within 650 units came to fight (within 260)', near_n > 0 and came >= near_n * 0.8,
