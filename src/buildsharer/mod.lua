@@ -2,7 +2,7 @@
 return {
     id = 'buildsharer',
     name = 'Build sharer',
-    version = '0.2.5',
+    version = '0.2.6',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Publish your hero build to the game server and browse the builds other players shared. '
