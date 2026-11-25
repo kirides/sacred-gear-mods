@@ -2,7 +2,7 @@
 return {
     id = 'balance-editor',
     name = 'Balance editor',
-    version = '0.1.2',
+    version = '0.2.0',
     author = 'kirides',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Edit the game\'s balance.bin from inside the game: difficulty multipliers and levels, creature health, skill curves, loot chances, '
