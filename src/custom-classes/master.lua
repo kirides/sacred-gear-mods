@@ -409,7 +409,7 @@ function M.new(env)
             end
             for i = 1, 4 do
                 local id = st.draft[i]
-                local d = {id = 'd' .. i, left = (17 + 105 * (i - 1)) .. 'dp', filled = id ~= nil, icon = '', tint = '#ffffffff', tip = game_text('draft_slot', 'Empty')}
+                local d = {id = 'd' .. i, left = (17 + 80 * (i - 1)) .. 'dp', filled = id ~= nil, icon = '', tint = '#ffffffff', tip = game_text('draft_slot', 'Empty')}
                 if id then
                     d.icon, d.tint = icon_of(id)
                     d.tip = ('%d. %s - click to remove'):format(i, name_of(id))
@@ -438,7 +438,7 @@ function M.new(env)
             m.n_picked = n
             for i = 1, 4 do
                 local p = picked[i]
-                local d = {id = 'p' .. i, left = (17 + 105 * (i - 1)) .. 'dp', filled = p ~= nil, icon = '', tint = '#ffffffff', tip = game_text('swap_slots', 'Empty')}
+                local d = {id = 'p' .. i, left = (17 + 80 * (i - 1)) .. 'dp', filled = p ~= nil, icon = '', tint = '#ffffffff', tip = game_text('swap_slots', 'Empty')}
                 if p then
                     d.icon, d.tint = icon_of(p.art)
                     d.tip = name_of(p.art) .. ' - click to take back'
