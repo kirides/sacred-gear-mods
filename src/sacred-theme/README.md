@@ -16,4 +16,8 @@ The widgets of Sacred Gear's `gear.kit` (window, tabs, buttons, check boxes, sli
 
 ## Icons
 
-The theme ships a bigger icon set than Sacred Gear's built-in one (`icons.ttf`, 172 icons of Google's Material Symbols Sharp, Apache License 2.0; `<span class="icon icon-swords"></span>`). Without this mod the same classes work for the 85 icons Gear has built in, so a mod that only needs those looks right everywhere. To add or update icons edit `tools/icons.txt` and run `python tools/make_icons.py <MaterialSymbolsSharp-Regular.ttf>` (writes `icons.ttf` and the ICONS block of `theme.rcss`, then `theme-dp.rcss`); no new Gear is needed.
+The theme ships a bigger icon set than Sacred Gear's built-in one (`icons.ttf`, 172 icons of Google's Material Symbols Sharp, Apache License 2.0; `<span class="icon icon-swords"></span>`). Without this mod the same classes work for the 85 icons Gear has built in, so a mod that only needs those looks right everywhere. To add or update icons edit `tools/icons.txt` and run `python tools/make_icons.py <MaterialSymbolsSharp-Regular.ttf>` (writes `icons.ttf` and the ICONS block of `theme.rcss`, then `theme-dp.rcss`); no new Gear is needed.
+
+## Text fields
+
+`<input type="text" class="field">` (and `textarea`) support Ctrl+A / C / X / V, Shift+arrows / Home / End, click-drag and double-click selection; the theme colours the selection (`input.field selection`). Without this mod Gear's base style gives a plain highlight, so mods need no code or markup of their own. Details: Gear docs, "Text fields of RmlUi documents".
