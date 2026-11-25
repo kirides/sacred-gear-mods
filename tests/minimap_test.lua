@@ -47,4 +47,13 @@ for i, s in ipairs(strips) do
     ok(s.x >= -1e-9 and s.x + s.w <= 200 + 1e-9, 'strip ' .. i .. ' inside the box')
 end
 
+-- the render's tiles: finer grid, same view
+ok(P.render_scale(0.4) == 1 and P.render_scale(1) == 1 and P.render_scale(1.5) == 2 and P.render_scale(3.2) == 4, 'render scale per zoom')
+ok(P.render_tile(4, 5, 12) == 'megamap/s4/005_012.jpg', 'render tile path')
+ok(P.render_tile_file(4, 5, 12) == 'ui/megamap/s4/005_012.jpg', 'render tile file')
+set = P.visible_tiles(128, 128, 100, 100, 1, 4)           -- a tile is 64 map pixels at scale 4
+ok(#set == 4 and set[1].r == 1 and set[1].c == 1 or #set == 4, 'scale 4 tiles: ' .. #set)
+set = P.visible_tiles(2040, 2800, 400, 400, 1, 4)
+ok(#set >= 1 and set[#set].r <= 43 and set[#set].c <= 31, 'scale 4 clamped to 32 x 44 tiles')
+
 if failures == 0 then print('minimap_test: all passed') else os.exit(1) end

@@ -33,15 +33,34 @@ function P.tile_name(r, c)
     return ('UI_WORLDMAPX%d%d.TGA'):format(r - P.UW_ROWS, c)
 end
 
+--- The render's tiles (ui/megamap/s<scale> (in tiles.gpak)/<row>_<col>.jpg: the whole world drawn offline, 256 px per tile, pixel (u, v) is map pixel
+--- (u / scale, v / scale)): the resolution that suits a zoom (layout units per map pixel), and a tile's path.
+function P.render_scale(zoom)
+    if zoom <= 1 then return 1 elseif zoom <= 2.2 then return 2 end
+    return 4
+end
+
+function P.render_tile(scale, r, c)
+    return ('megamap/s%d/%03d_%03d.jpg'):format(scale, r, c)
+end
+
+--- The same file as a path in the mod's folder (for gear.ui.texture.load); `render_tile` is relative to the document in ui/.
+function P.render_tile_file(scale, r, c)
+    return 'ui/' .. P.render_tile(scale, r, c)
+end
+
 --- The picture tiles a view of `w` x `h` layout units at `zoom` (layout units per picture pixel), centred on picture pixel
 --- (cx, cy), touches: a list of {r, c} sorted by row then column, with the view's top left in picture pixels in the second result.
-function P.visible_tiles(cx, cy, w, h, zoom)
+--- `scale` (default 1) is the render's resolution: tiles of P.TILE_PX / scale map pixels, 8 * scale columns, 11 * scale rows.
+function P.visible_tiles(cx, cy, w, h, zoom, scale)
+    scale = scale or 1
+    local tile, cols, rows = P.TILE_PX / scale, P.COLS * scale, P.ROWS * scale
     local half_w, half_h = w / 2 / zoom, h / 2 / zoom
     local left, top = cx - half_w, cy - half_h
-    local c0 = math.max(0, math.floor(left / P.TILE_PX))
-    local c1 = math.min(P.COLS - 1, math.floor((cx + half_w) / P.TILE_PX))
-    local r0 = math.max(0, math.floor(top / P.TILE_PX))
-    local r1 = math.min(P.ROWS - 1, math.floor((cy + half_h) / P.TILE_PX))
+    local c0 = math.max(0, math.floor(left / tile))
+    local c1 = math.min(cols - 1, math.floor((cx + half_w) / tile))
+    local r0 = math.max(0, math.floor(top / tile))
+    local r1 = math.min(rows - 1, math.floor((cy + half_h) / tile))
     local out = {}
     for r = r0, r1 do
         for c = c0, c1 do out[#out + 1] = {r = r, c = c} end

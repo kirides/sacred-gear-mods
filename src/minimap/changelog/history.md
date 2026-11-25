@@ -1,3 +1,10 @@
+## v0.2.0 (2026-11-25)
+
+- New: setting "Map": Render or Original. Render is the whole world drawn from the game's data (terrain, water, trees, buildings, no creatures), lined up with the game's own map; where the world has no data (its edge, the sea beyond it) the game's own map shows through, matched to the render's colours. Original is the painted map as before. Render is the default.
+- Under the hood: the render ships as 256 px JPEG tiles in three resolutions (about 16.8 MB, in one `tiles.gpak` instead of 1848 files; needs a Sacred Gear with packs), chosen by zoom level. `tools/make_minimap_tiles.py` rebuilds them from SacredEngineRemake's `--mega` output.
+- Fixed: a faint horizontal hairline between two rows of map tiles (tiles now overlap by one unit, and the map has a dark base).
+- Improved: the map tiles around the view are loaded ahead of time (one per frame), and tiles that stay out of that ring for a moment are released at once instead of piling up (reference counted textures; needs a Sacred Gear with `gear.ui.texture`, older ones load tiles as before).
+
 ## v0.1.3 (2026-11-25)
 
 - Fixed: the minimap always stays fully on screen, at any resolution or UI scale, even if a saved layout was made on another screen.

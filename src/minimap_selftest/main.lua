@@ -18,11 +18,15 @@ gear.task(function()
     local hero = gear.world.hero()
     if hero then print('hero', hero:position()) end
     set('shape', 'round'); set('width', 200); set('markers', true)
-    for level = 1, 6 do
-        set('zoom', level)
-        gear.wait(0.5)
-        A.screenshot('mm-round-z' .. level)
+    for _, map in ipairs({'render', 'original'}) do
+        set('map', map)
+        for level = 1, 6 do
+            set('zoom', level)
+            gear.wait(0.5)
+            A.screenshot('mm-' .. map .. '-round-z' .. level)
+        end
     end
+    set('map', 'render')
     local function panel() for _, p in ipairs(gear.ui.panels()) do if p.key == 'minimap:minimap' then return p end end end
     local p = panel()
     if p then

@@ -1,4 +1,5 @@
--- Minimap: the game's own world map (its texture tiles UI_WORLDMAP*.TGA) as a small overlay that follows the hero.
+-- Minimap: the world map, either the whole world drawn from the game's data ('Render': megamap/ tiles, black where the world ends)
+-- or the game's own map (its texture tiles UI_WORLDMAP*.TGA, 'Original') as a small overlay that follows the hero.
 --
 -- * The view is a rectangle or a circle (settings 'shape', 'width', 'height'), always centred on the hero, at one of six zoom
 --   levels (setting 'zoom', the keys 'zoom_in' / 'zoom_out', the +/- buttons that show while the mouse is over the map, and the
@@ -79,18 +80,79 @@ local function strips_for(round, w, h)
     return s
 end
 
+---------------------------------------------------------------------------------------------------------------
+-- The render's tiles as reference counted textures (gear.ui.texture): the tiles of the view are loaded, the ring of tiles around it is loaded ahead
+-- (one per frame, so a step does not decode them all at once), and a tile that has been outside that ring for a while is released.
+---------------------------------------------------------------------------------------------------------------
+local tex_api = gear.ui and gear.ui.texture
+local tile_cache = {}           -- 's<scale>:<r>:<c>' -> {tex = texture, used = frame}
+local tile_count = 0
+local frame = 0
+local RELEASE_AFTER = 45       -- frames outside the ring (about 0.75 s at 60 fps) before a tile is released
+local PREFETCH_PER_FRAME = 1
+
+-- The source of a tile for the document; loads it if it is not loaded (falls back to the file path when Sacred Gear has no textures).
+local function tile_source(scale, r, c)
+    if not tex_api then return P.render_tile(scale, r, c) end
+    local key = ('s%d:%d:%d'):format(scale, r, c)
+    local e = tile_cache[key]
+    if not e then
+        local t = tex_api.load(P.render_tile_file(scale, r, c))
+        if not t then return P.render_tile(scale, r, c) end
+        e = {tex = t}
+        tile_cache[key] = e
+        tile_count = tile_count + 1
+    end
+    e.used = frame
+    return e.tex.src
+end
+
+-- Loads the ring around the view ahead of time (a few per frame).
+local function prefetch(px, py, w, h, z, scale)
+    if not tex_api then return end
+    local size = P.TILE_PX / scale * z
+    local ring = P.visible_tiles(px, py, w + 2 * size, h + 2 * size, z, scale)
+    local loaded = 0
+    for _, t in ipairs(ring) do
+        local key = ('s%d:%d:%d'):format(scale, t.r, t.c)
+        local e = tile_cache[key]
+        if e then
+            e.used = frame
+        elseif loaded < PREFETCH_PER_FRAME then
+            loaded = loaded + 1
+            tile_source(scale, t.r, t.c)
+        end
+    end
+end
+
+local function release_tiles(all)
+    local released = 0
+    for key, e in pairs(tile_cache) do
+        if all or frame - e.used > RELEASE_AFTER then
+            e.tex:release()
+            tile_cache[key] = nil
+            tile_count = tile_count - 1
+            released = released + 1
+        end
+    end
+    if released > 0 then gear.log(('minimap: %d map tiles released, %d loaded'):format(released, tile_count)) end
+end
+
 -- The tiles a strip needs: those of the view's set whose rows meet the strip's vertical range.
-local function strip_tiles(set, z, wy, s)
+local function strip_tiles(set, z, wy, s, scale)
     local out, parts = {}, {}
     local top, bottom = s.y - wy, s.y + s.h - wy          -- the strip in world (zoomed map) coordinates
+    local size = P.TILE_PX / (scale or 1) * z             -- a tile in layout units
     for _, t in ipairs(set) do
-        local y0 = math.floor(t.r * P.TILE_PX * z)
-        local y1 = math.floor((t.r + 1) * P.TILE_PX * z)
+        local y0 = math.floor(t.r * size)
+        local y1 = math.floor((t.r + 1) * size)
         if y1 > top and y0 < bottom then
-            local x0 = math.floor(t.c * P.TILE_PX * z)
-            local x1 = math.floor((t.c + 1) * P.TILE_PX * z)
-            out[#out + 1] = {src = 'gear:texture/' .. P.tile_name(t.r, t.c), x = x0, y = y0, w = x1 - x0, h = y1 - y0}
-            parts[#parts + 1] = t.r * 8 + t.c
+            local x0 = math.floor(t.c * size)
+            local x1 = math.floor((t.c + 1) * size)
+            local src = scale and tile_source(scale, t.r, t.c) or ('gear:texture/' .. P.tile_name(t.r, t.c))
+            -- one layout unit more each way: the edges between tiles are rounded to pixels separately, which left a hairline of what lies behind
+            out[#out + 1] = {src = src, x = x0, y = y0, w = x1 - x0 + 1, h = y1 - y0 + 1}
+            parts[#parts + 1] = t.r * 8 * (scale or 1) + t.c
         end
     end
     return out, table.concat(parts, ',')
@@ -108,7 +170,11 @@ local function snapshot()
     local h = round and w or math.floor(tonumber(setting('height', 150)) or 150)
     local z, level = P.zoom_of(setting('zoom', 3))
     local wx, wy = w / 2 - px * z, h / 2 - py * z       -- where the map's top left lies in the view
-    local set = P.visible_tiles(px, py, w, h, z)
+    local scale = setting('map', 'render') == 'render' and P.render_scale(z) or nil   -- nil: the game's own map tiles
+    local set = P.visible_tiles(px, py, w, h, z, scale)
+    frame = frame + 1
+    if scale then prefetch(px, py, w, h, z, scale) end
+    if frame % 15 == 0 or not scale then release_tiles(not scale) end
     local opacity = math.max(30, math.min(100, tonumber(setting('opacity', 90)) or 90))
     local alpha = math.floor(255 * (1 - opacity / 100) + 0.5)
 
@@ -120,10 +186,10 @@ local function snapshot()
     -- Strips with their tiles; the signature says whether the set changed since the last frame (rebuilding the model's lists is
     -- what costs, moving the map is only wx / wy).
     -- Lists keep their length (padded with empty entries): RmlUi warns for every binding of an element that outlives a shrinking list.
-    local tile_slots = (math.ceil(w / (P.TILE_PX * z)) + 1) * 2
-    local strips, sig = {}, {tostring(w), tostring(h), tostring(z)}
+    local tile_slots = (math.ceil(w / (P.TILE_PX / (scale or 1) * z)) + 1) * 2
+    local strips, sig = {}, {tostring(w), tostring(h), tostring(z), tostring(scale)}
     for i, s in ipairs(strips_for(round, w, h)) do
-        local tiles, key = strip_tiles(set, z, wy, s)
+        local tiles, key = strip_tiles(set, z, wy, s, scale)
         while #tiles < tile_slots do tiles[#tiles + 1] = {src = DUMMY, x = 0, y = 0, w = 0, h = 0} end
         strips[i] = {x = s.x, y = s.y, w = s.w, h = s.h, tiles = tiles}
         sig[#sig + 1] = key
