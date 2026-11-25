@@ -1,3 +1,7 @@
+## v0.3.6 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v0.3.5 (2026-11-24)
 
 - Improved: Drop-down settings use the game's own drop-down style, with the list right below.

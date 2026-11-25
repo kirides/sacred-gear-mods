@@ -1,3 +1,7 @@
+## v1.1.6 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v1.1.5 (2026-11-24)
 
 - Improved: The player list uses the game theme's drop-down look.

@@ -1,3 +1,7 @@
+## v0.2.3 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v0.2.2 (2026-11-23)
 
 - Under the hood: the event pill, rings and boss bar use resolution-independent sizes.

@@ -1,3 +1,7 @@
+## v0.1.3 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v0.1.2 (2026-11-24)
 
 - Improved: Editor buttons use the game's compact style, with small icons on copy, paste, cursor and clear.

@@ -1,3 +1,7 @@
+## v0.3.1 (2026-11-25)
+
+- New: the mod manager offers to install the Sacred theme along with this mod (optional).
+
 ## v0.3.0 (2026-11-25)
 
 - New: companions' shared buffs also reach your allies, and pets get their speed part.
