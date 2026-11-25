@@ -8,7 +8,7 @@ local COLOR_RULES = {{value = 'default', label = 'As their kind'}, {value = 'tak
 return {
     id = 'lootfilter',
     name = 'Loot filter',
-    version = '0.3.5',
+    version = '0.3.6',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Picks up only the items you want: by class, quality and category; dims the rest on the ground.',
