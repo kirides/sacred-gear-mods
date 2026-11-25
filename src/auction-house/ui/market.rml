@@ -18,7 +18,7 @@
         <div data-if="tab == 'browse'">
             <div class="frow">
                 <input type="text" class="field grow" data-value="q_text" maxlength="40" placeholder="Search name or any tooltip line"/>
-                <button class="ibtn" id="kbd-q" title="Type with an on-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span> Kbd</button>
+                <button class="ibtn" id="kbd-q" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
                 <div class="dd ah-dd" data-class-open="dd == 'cat'"><button class="game-dropdown" id="ah-cat"><span class="padkey a"></span>{{ cat }}</button><div data-if="dd == 'cat'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_cat" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
                 <div class="dd ah-dd" data-class-open="dd == 'qual'"><button class="game-dropdown" id="ah-qual"><span class="padkey a"></span>{{ qual }}</button><div data-if="dd == 'qual'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_qual" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div>
             </div>
@@ -53,7 +53,7 @@
             <p data-if="!has_sel" class="muted">Pick the item to sell above.</p>
             <div data-if="has_sel">
                 <div class="listing"><img class="mi" data-attr-src="sel.src"/><div class="lbody"><div data-style-color="sel.color" class="lname">{{ sel.name }}</div><div class="muted small">{{ sel.detail }}</div></div></div>
-                <div class="frow"><span class="lab">Price</span><input type="text" class="field price" data-value="price_in" maxlength="10" placeholder="gold"/><button class="ibtn" id="kbd-price"><span class="padkey a"></span><span class="icon icon-keyboard"></span> Kbd</button>
+                <div class="frow"><span class="lab">Price</span><input type="text" class="field price" data-value="price_in" maxlength="10" placeholder="gold"/><button class="ibtn" id="kbd-price" title="On-screen number pad"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
                     <button data-for="s : steps" class="mini" data-attr-id="s.id"><span class="padkey a"></span>{{ s.label }}</button></div>
                 <div class="frow"><span class="lab">For</span><div class="dd ah-dd" data-class-open="dd == 'days'"><button class="game-dropdown" id="ah-days"><span class="padkey a"></span>{{ days }}</button><div data-if="dd == 'days'" class="dd-list ah-ddlist" data-nav-scroll><button data-for="o : dd_days" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button></div></div><span class="muted small">{{ fee }}</span></div>
                 <button class="game-button" id="ah-list" data-attrif-disabled="!can_list" title="The item leaves your inventory now; it comes back by the mailbox if it does not sell"><span class="padkey a"></span>Put up for sale</button>
@@ -74,7 +74,7 @@
 
         <div data-if="tab == 'mail'">
             <p class="gold">{{ wallet }}</p>
-            <div class="frow"><input type="text" class="field price" data-value="gold_in" maxlength="10" placeholder="amount"/><button class="ibtn" id="kbd-gold"><span class="padkey a"></span><span class="icon icon-keyboard"></span> Kbd</button>
+            <div class="frow"><input type="text" class="field price" data-value="gold_in" maxlength="10" placeholder="amount"/><button class="ibtn" id="kbd-gold" title="On-screen number pad"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
                 <button class="ibtn" id="ah-dep" data-attrif-disabled="!can_dep" title="Gold you carry into the wallet (buying and fees use it)"><span class="padkey a"></span><span class="icon icon-savings"></span> Deposit</button>
                 <button class="ibtn" id="ah-wd" data-attrif-disabled="!can_dep" title="Gold from the wallet to your hero"><span class="padkey a"></span><span class="icon icon-payments"></span> Withdraw</button>
                 <button class="ibtn" id="ah-wall" data-attrif-disabled="!can_all" title="The whole wallet"><span class="padkey a"></span>All</button></div>
@@ -95,15 +95,6 @@
         </div>
 
         <p data-class-good="msg_ok" data-class-bad="!msg_ok" class="foot small">{{ footer }}</p>
-    </div>
-</div>
-
-<div id="osk" class="window" data-panel="osk" data-title="Type" data-if="osk_open">
-    <div class="titlebar">Type</div>
-    <div class="body">
-        <div class="oskline">{{ osk_text }}|</div>
-        <div data-for="row : osk_rows" class="oskrow"><button data-for="k : row" class="mini key" data-attrif-disabled="k.dis" data-attr-id="k.id"><span class="padkey a"></span>{{ k.label }}</button></div>
-        <div class="frow"><button class="mini" id="osk-space" data-attrif-disabled="osk_digits"><span class="padkey a"></span>Space</button><button class="mini" id="osk-back"><span class="padkey a"></span>Backspace</button><button class="mini" id="osk-clear"><span class="padkey a"></span>Clear</button><button class="mini" id="osk-done"><span class="padkey a"></span>Done</button></div>
     </div>
 </div>
 </body>
