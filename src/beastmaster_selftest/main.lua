@@ -97,6 +97,34 @@ gear.task(function()
         check('far behind the ally runs (gait 2)', gait == 2, gait)
         gear.wait(8)
     end
+    -- a cow has no run animation: far behind the hero it still has to close the distance at about the hero's pace
+    do
+        local cid, cerr = recruit(523, 'pet')
+        check('a cow pet was recruited', cid ~= nil, cerr)
+        local cow = cid and W.object(cid)
+        if cow then
+            gear.wait(1)
+            -- the open ground where the hero started (the cow's spawn spot may be walled in): the cow stands there, the hero 700 away to the north west
+            local cx, cy, cl = hx, hy, layer
+            cow:teleport(cx, cy, cl)
+            gear.wait(1)
+            hero:teleport(cx - 600, cy - 360, cl)
+            local rates = {}
+            local last = near(cow, hero)
+            for _ = 1, 12 do
+                gear.wait(0.5)
+                local now = near(cow, hero)
+                rates[#rates + 1] = (last - now) / 0.5
+                last = now
+                print(('NOTE cow step: distance %.0f, gait %s, speed %s'):format(now, tostring(cow:gait()), tostring(gear.buffs.speeds(cow).move_speed)))
+            end
+            local best = 0
+            for _, r in ipairs(rates) do best = math.max(best, r) end
+            local cs = gear.buffs.speeds(cow)
+            print(('NOTE cow closes the distance at %.0f units a second at best (speed %s, hero %s)'):format(best, tostring(cs and cs.move_speed), tostring(gear.buffs.speeds(hero).move_speed)))
+            check('the cow keeps up with the hero (closes in at 190 units a second or more)', best >= 190, best)
+        end
+    end
     A.screenshot('beasts_follow')
 
     -- fight: a hostile creature the game placed, with the ally next to it

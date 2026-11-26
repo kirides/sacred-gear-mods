@@ -198,19 +198,35 @@ end
 -- hero's with a buff of ours ('speeds' are added past the engine's cap) when it is slower. `e.pace` is what the buff adds now, so the
 -- animal's own speed (with other buffs) is what the speed reads without it.
 -- Ordered to a spot: running when far from the hero (Gear's creature:gait, 2 = run), else walking.
-local function go(c, x, y, run)
+local function go(c, x, y, run, s)
     if not c:order_move(x, y) then return false end
-    if run and c.gait and setting('match_speed', true) then c:gait(2) end
+    if run and c.gait and setting('match_speed', true) then
+        c:gait(2)
+        if s then s.run_at = clock end
+    end
     return true
 end
 
 local pace_off = false     -- (the self test switches it off to measure the animals' own speed)
-local function pace(c, e, hero, d, follow, fighting)
+local ground = {}          -- species type -> units of ground per second for one point of movement speed, while it runs (learned)
+local function pace(c, e, s, hero, d, follow, fighting)
     if not (gear.buffs and gear.buffs.speeds and setting('match_speed', true)) or pace_off then return end
     local mine, theirs = gear.buffs.speeds(c), gear.buffs.speeds(hero)
     if not (mine and theirs and mine.move_speed and theirs.move_speed) then return end
+    -- What it covers while it runs: an animal without a run animation (cows, bulls ...) runs at walking pace whatever the gait says.
+    -- Learned from how far it really gets between two thinks right after a run order, per species.
+    local x, y = c:position()
+    if x and s.run_at and clock - s.run_at < 1.2 and s.px and clock > s.pt then
+        local g = dist(x, y, s.px, s.py) / (clock - s.pt)
+        -- (the first step of a run is a start from standing: only the steps after a step that moved count)
+        if g > 25 and s.pg and s.pg > 25 then ground[e.type] = core.learn(ground[e.type], g / math.max(1, mine.move_speed)) end
+        s.pg = g
+    else
+        s.pg = nil
+    end
+    s.px, s.py, s.pt = x, y, clock
     local base = mine.move_speed - (e.pace or 0)
-    local want = theirs.move_speed
+    local want = core.speed_to_match(theirs.move_speed, ground[e.type])
     local delta = fighting and 0 or math.max(0, math.floor(math.min(600, want) - base + 0.5))   -- never slower than it is (a shared speed buff stays)
     if math.abs(delta - (e.pace or 0)) < 6 then return end
     e.pace = delta
@@ -245,7 +261,7 @@ local function think()
             local order = order_for(e)
             local x, y, l = c:position()
             local d = x and dist(x, y, hx, hy) or 0
-            if x then pace(c, e, hero, d, follow, s.target ~= nil) end
+            if x then pace(c, e, s, hero, d, follow, s.target ~= nil) end
             if order == 'hold' then
                 -- waiting: stays where it stands (also when the hero leaves for another layer; "To me" calls it). An ally fights what
                 -- comes near that spot and goes back to it afterwards.
@@ -294,7 +310,7 @@ local function think()
                         s.target = nil
                         if d > follow * 1.6 and clock - s.at > 0.8 then
                             local tx, ty = core.spot(hx, hy, slot.ally, total.ally, follow * 0.8, 0)
-                            if go(c, tx, ty, d > follow * 2) then s.at = clock end
+                            if go(c, tx, ty, d > follow * 2, s) then s.at = clock end
                         end
                     end
                 else
@@ -303,7 +319,7 @@ local function think()
                     local ally = e.role == 'ally'
                     if d > follow * (ally and 1.6 or 1.4) and clock - s.at > 0.8 then
                         local tx, ty = core.spot(hx, hy, slot[e.role], total[e.role], follow * (ally and 0.8 or 0.7), 0)
-                        if go(c, tx, ty, d > follow * 2) then s.at = clock end
+                        if go(c, tx, ty, d > follow * 2, s) then s.at = clock end
                     end
                 end
             end
