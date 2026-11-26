@@ -592,7 +592,10 @@
       "author": "kirides",
       "description": "Multiplies the creatures the game spawns, from 1x (the game as it is) up to 100x. Every hostile creature around you, those the world creates and those already there, brings extra ones of its kind with it. Single player only; safeguards keep the frame rate up.",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/spawn-rate.jpg",
-      "changelog": "mods/spawn-rate/changelog/history.md"
+      "changelog": "mods/spawn-rate/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.9.0"
+      ]
     },
     {
       "id": "spell-tuning",

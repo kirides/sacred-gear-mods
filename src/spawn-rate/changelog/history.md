@@ -1,3 +1,7 @@
+## v1.0.6 (2026-11-26)
+
+- Fixed: extra creatures are level 1 with 100 health on a Sacred Gear older than 0.9.0, which does not copy the level of the original. The mod index now asks for Sacred Gear 0.9.0 or newer, and the log names the problem once if it happens anyway.
+
 ## v1.0.5 (2026-11-24)
 
 - Fixed: Switching to a companion no longer multiplies the creatures around you again.
