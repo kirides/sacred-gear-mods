@@ -35,4 +35,9 @@ ok(core.order_of('pet', 'aggressive', 'aggressive') == 'passive' and core.order_
 ok(core.order_label('pet', 'passive') == 'Follow' and core.order_label('ally', 'passive') == 'Passive' and core.order_label('ally', 'hold') == 'Wait here', 'labels: a pet that follows reads Follow')
 ok(core.engage_range('passive', 12, 54) == 0 and core.engage_range('aggressive', 12, 54) == 648 and core.engage_range('defensive', 12, 54) == 8 * 54 and core.engage_range('defensive', 4, 54) == 4 * 54 and core.engage_range('hold', 12, 54) == 6 * 54, 'engage range per order')
 ok(core.joins_hero('aggressive') and core.joins_hero('passive') and not core.joins_hero('hold'), 'only a waiting animal is not called back to the hero')
+-- pace
+ok(core.speed_to_match(114, nil) == 114 and core.speed_to_match(114, 0) == 114, "pace: unknown ground speed, the hero's speed")
+ok(math.abs(core.speed_to_match(114, 2.28) - 114) < 1e-9, 'pace: an animal that covers as much ground per point as the hero needs the same speed')
+ok(core.speed_to_match(114, 1.0) > 250 and core.speed_to_match(114, 1.0) < 270, 'pace: a cow that runs at walking pace (1.0 per point) needs 2.3 times the speed')
+ok(core.learn(nil, 2) == 2 and math.abs(core.learn(2, 1) - 1.7) < 1e-9, 'pace: a measurement is folded into a moving average')
 os.exit(fails == 0 and 0 or 1)

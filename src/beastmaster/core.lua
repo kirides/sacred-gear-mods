@@ -96,4 +96,20 @@ end
 -- ("To me" calls it).
 function M.joins_hero(order) return order ~= 'hold' end
 
+-- Pace. The hero runs at about 2.28 units of ground per second for one point of movement speed (260 at 114, measured). An animal runs at
+-- `ratio` units per point (a wolf 2.58; a cow, which has no run animation, about 1: it walks, only faster). The movement speed it needs
+-- to keep up with a hero of speed `hero_speed` is the hero's ground speed over its own ratio (the hero's speed itself when the ratio is
+-- not known yet).
+M.HERO_GROUND_PER_SPEED = 2.28
+function M.speed_to_match(hero_speed, ratio)
+    hero_speed = tonumber(hero_speed) or 100
+    if not ratio or ratio <= 0.1 then return hero_speed end
+    return hero_speed * M.HERO_GROUND_PER_SPEED / ratio
+end
+-- A new measurement folded into what is known (a moving average: one bad step, a turn or a stop, does not throw it off).
+function M.learn(known, sample)
+    if not known then return sample end
+    return known * 0.7 + sample * 0.3
+end
+
 return M
