@@ -64,7 +64,7 @@ local resume = {}           -- 'id:type' -> extras still owed (from a savegame: 
 local stats = {made = 0, refused = 0, failed = 0, gave_up = 0, from_scan = 0, from_events = 0, ordered = 0}
 local prune_t, scan_t, drop_t, awaken_t, clock = 0, 0, 0, 0, 0
 local ordered = {}          -- extra id -> clock when it was last ordered to attack
-local order_failed_logged, like_failed_logged = false, false
+local order_failed_logged, like_failed_logged, level_failed_logged = false, false, false
 
 local function rate() return tonumber(S.get('rate', 1)) or 1 end
 local function key(id, ty) return id .. ':' .. tostring(ty) end
@@ -137,6 +137,17 @@ local function awaken(hero, hx, hy, hlayer)
                 end
             end
         end
+    end
+end
+
+-- The extra has the level of its original: `like` copies it in Sacred Gear 0.9.0 and newer; an older Sacred Gear copies only the
+-- faction and leaves a plain create's level 1 (and has nothing to set it afterwards). Name that once in the log.
+local function check_level(c, original)
+    if level_failed_logged then return end
+    local want = original:level()
+    if want and want > 1 and c:level() ~= want then
+        level_failed_logged = true
+        print('spawn-rate: the extras have level 1 instead of the level of their original: update Sacred Gear to 0.9.0 or newer')
     end
 end
 
@@ -239,6 +250,7 @@ gear.on('frame', gear.guard('frame', function(dt)
             local x, y = core.scatter(one.x, one.y, RING_INNER, RING_OUTER, math.random)
             local c, err = W.spawn(one.type, x, y, {layer = one.layer, like = original})
             if c then
+                check_level(c, original)
                 alive[c.id] = one.type
                 alive_count = alive_count + 1
                 known[key(c.id, one.type)] = true
