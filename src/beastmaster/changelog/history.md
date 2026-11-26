@@ -1,3 +1,7 @@
+## v0.4.1 (2026-11-26)
+
+- Fixed: animals without a run animation, such as cows and bulls, now keep up with the hero instead of trailing at walking pace.
+
 ## v0.4.0 (2026-11-25)
 
 - New: an orders drop-down for each animal in the Beastmaster window: Aggressive, Defensive, Passive, Wait here (pets: Follow, Wait here), plus To me / All to me.
