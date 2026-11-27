@@ -649,6 +649,25 @@
       ]
     },
     {
+      "id": "town-portal",
+      "path": "mods/town-portal",
+      "name": "Town Portal",
+      "version": "0.1.0",
+      "author": "Sacred Gear",
+      "description": "The Town Portal Potion: drinking it saves where you stand and opens the list of the game's teleport portals (the ones you have found), made again as a window you can use with the mouse, the keys or the controller. You arrive at the portal you pick, a portal of the mod opens there for you, and stepping through it takes you back to the spot you left and closes it. The potion is sold by merchants. The portal and the spot are kept with the savegame. Single player only.",
+      "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/town-portal.jpg",
+      "images": [
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/town-portal.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/town-portal-arrived.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/town-portal-dialog.jpg",
+        "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/town-portal-item.jpg"
+      ],
+      "changelog": "mods/town-portal/changelog/history.md",
+      "requires": [
+        "sacred-theme"
+      ]
+    },
+    {
       "id": "twi_sacred",
       "path": "mods/twi_sacred",
       "name": "Twitch Integration: actions",

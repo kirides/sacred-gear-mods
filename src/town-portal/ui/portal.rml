@@ -1,0 +1,19 @@
+<rml>
+<head>
+    <title>Town Portal</title>
+    <link type="text/rcss" href="portal.rcss"/>
+</head>
+<body data-model="model">
+<div id="portal" class="window" data-panel="portal" data-title="Town Portal" data-if="open">
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-close-key="close" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
+    <div class="body">
+        <p data-if="msg != ''" class="amber">{{ msg }}</p>
+        <p data-if="none" class="muted note">{{ nothing }}</p>
+        <div class="spots">
+            <button data-for="s : spots" class="spot" data-attr-id="s.id" data-attrif-disabled="s.locked" data-class-locked="s.locked"><span class="padkey a"></span>{{ s.name }}</button>
+        </div>
+        <div class="foot"><button id="cancel" class="game-button"><span class="padkey b"></span>{{ cancel }}</button></div>
+    </div>
+</div>
+</body>
+</rml>
