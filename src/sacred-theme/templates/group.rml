@@ -1,0 +1,8 @@
+<!-- Inline template "sacred-group": a framed group of controls that flows with its content, for a screen's sections
+     (the heading is the first child of the content: <p class="heading">Title</p>). -->
+<template name="sacred-group" content="sacred-group-content">
+<head></head>
+<body>
+<div class="sacred-group"><div class="sacred-group-body" id="sacred-group-content"></div></div>
+</body>
+</template>

@@ -1,0 +1,23 @@
+<rml>
+<head>
+    <title>Shared templates</title>
+    <link type="text/template" href="@sacred-theme/templates/screen.rml"/>
+    <link type="text/template" href="@sacred-theme/templates/group.rml"/>
+    <link type="text/template" href="@sacred-theme/templates/dropdown.rml"/>
+    <link type="text/rcss" href="demo.rcss"/>
+</head>
+<body data-model="model" template="sacred-screen">
+    <template src="sacred-group">
+        <p class="heading">Sorting</p>
+        <div class="row">
+            <span class="label">Order the list by</span>
+            <div class="dd" data-class-open="dd == key"><template src="sacred-dropdown"></template></div>
+        </div>
+    </template>
+    <template src="sacred-group">
+        <p class="heading">A second group</p>
+        <p class="muted">Groups flow one under the other; nothing in these templates is positioned.</p>
+        <div class="row space"><span class="label">Gold</span><span class="value gold">12 345</span></div>
+    </template>
+</body>
+</rml>

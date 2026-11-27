@@ -1,0 +1,15 @@
+<!-- Body template "sacred-screen": a window with the game's frame, a title bar (the title comes from the model's `title`; the close button has the id
+     close-x: `doc:on('#close-x', 'click', fn)`) and a body that flows with its content (set the width in the mod's own stylesheet: `.sacred-screen { width: 460dp; }`).
+     Use: the document's body element gets the attributes data-model="model" and template="sacred-screen"; its own content goes into the body of the window.
+     The mod says `requires = {'sacred-theme'}` and links this file in its head (see the README of sacred-theme).
+     A window that the player moves and the layout editor knows needs data-panel on its own markup, which a template cannot set: write that one out.
+     RmlUi finds the tags of a template file by a plain text search: this comment must not contain the angle-bracket form of any of them, nor a slash followed by the word template. -->
+<template name="sacred-screen" content="sacred-screen-content">
+<head></head>
+<body>
+<div class="window sacred-screen">
+    <div class="titlebar"><button id="close-x" class="ibtn titlex" data-no-padkey="" title="Close"><span class="icon icon-close"></span></button>{{ title }}</div>
+    <div class="body" id="sacred-screen-content" data-nav-scroll></div>
+</div>
+</body>
+</template>
