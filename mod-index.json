@@ -281,7 +281,10 @@
         "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/drop-tuning.jpg",
         "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/drop-tuning-more.jpg"
       ],
-      "changelog": "mods/drop-tuning/changelog/history.md"
+      "changelog": "mods/drop-tuning/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.15.4"
+      ]
     },
     {
       "id": "enhanced-chat",
@@ -352,7 +355,10 @@
         "tools"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/key-bindings.jpg",
-      "changelog": "mods/key-bindings/changelog/history.md"
+      "changelog": "mods/key-bindings/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.15.4"
+      ]
     },
     {
       "id": "layout",
@@ -365,7 +371,10 @@
         "ui"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/layout.jpg",
-      "changelog": "mods/layout/changelog/history.md"
+      "changelog": "mods/layout/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.15.4"
+      ]
     },
     {
       "id": "lootfilter",
@@ -415,6 +424,9 @@
       "description": "The game's own world map as a small overlay that follows the hero: a clipped square or circle with a gold frame and compass, several zoom levels, the trader symbols of the map. Move it in the layout editor (ALT).",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/minimap.jpg",
       "changelog": "mods/minimap/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.15.4"
+      ],
       "recommended": [
         "sacred-theme"
       ]
@@ -509,7 +521,10 @@
         "tools"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/region-counter.jpg",
-      "changelog": "mods/region-counter/changelog/history.md"
+      "changelog": "mods/region-counter/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.15.4"
+      ]
     },
     {
       "id": "sacred-theme",
@@ -538,7 +553,10 @@
         "server"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/serverfeed.jpg",
-      "changelog": "mods/serverfeed/changelog/history.md"
+      "changelog": "mods/serverfeed/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.15.4"
+      ]
     },
     {
       "id": "sessiontracker",
@@ -605,7 +623,10 @@
       "author": "kirides",
       "description": "Changes what spells do, by who casts them: the hero you play, companions, enemies, neutral creatures or traps. Shorten (or lengthen) root, stun and fear, weaken (or strengthen) the changes of attack, defence and speed, and the damage. Single player only.",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/spell-tuning.jpg",
-      "changelog": "mods/spell-tuning/changelog/history.md"
+      "changelog": "mods/spell-tuning/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.15.4"
+      ]
     },
     {
       "id": "sprite-browser",
@@ -640,7 +661,8 @@
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/twi_sacred.jpg",
       "changelog": "mods/twi_sacred/changelog/history.md",
       "requires": [
-        "twitch_integration"
+        "twitch_integration",
+        "sacred-gear>=0.15.4"
       ]
     },
     {
@@ -652,7 +674,10 @@
         "twitch"
       ],
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/twitch_integration.jpg",
-      "changelog": "mods/twitch_integration/changelog/history.md"
+      "changelog": "mods/twitch_integration/changelog/history.md",
+      "requires": [
+        "sacred-gear>=0.15.4"
+      ]
     },
     {
       "id": "world-events",
