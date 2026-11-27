@@ -7,7 +7,7 @@ local S = gear.settings
 local spots = require('spots')
 
 local SCROLL_BASE = 5144            -- a potion of the game (blue-green bottle): the model and size of the new item
-local SCROLL_TYPE = 16000           -- the mod's item type (gear.inv.TYPE_FIRST .. TYPE_LAST)
+local SCROLL_TYPE = 6150            -- the mod's item type (gear.inv.TYPE_FIRST .. TYPE_LAST)
 local KIND = 'town-portal.gate'
 local ANIM_WAIT = 1.0               -- seconds the game needs to put the hero in the new place before the portal is made
 
@@ -53,20 +53,24 @@ local points = gear.store.file('custom_points.json', {list = {}}, {every = 5, ch
     return d
 end})
 local MAX_POINTS = 40
-local function file_points()
+local file_cache = {}
+-- custom_teleports.lua is read once when the mod starts (a missing file is fine; edits need the mod switched off and on, or a restart).
+do
     local ok, list = pcall(require, 'custom_teleports')
-    if not ok or type(list) ~= 'table' then
-        if not ok and not tostring(list):find("module 'custom_teleports' not found", 1, true) then
-            gear.log('town-portal: custom_teleports.lua: ' .. tostring(list))
-        end
-        return {}
+    if ok and type(list) == 'table' then
+        file_cache = list
+    elseif not ok and not tostring(list):find('not found', 1, true) then
+        gear.log('town-portal: custom_teleports.lua: ' .. tostring(list))
     end
-    return list
 end
+local function reload_file_points() end
+local function file_points() return file_cache end
+reload_file_points()
 
 local dialog_open, message = false, ''
 local edit_only = false                       -- opened by the key to edit the points: nothing to travel with
 local new_name = ''
+local test_chance = nil                    -- for the self test
 local test_ignore_combat = false          -- for the self test (the test savegame has wolves about)
 local doc
 
@@ -253,6 +257,7 @@ local function draw()
 end
 
 local function open_dialog(edit)
+    reload_file_points()
     edit_only = edit == true
     local ok, why = true, nil
     if not edit_only then ok, why = can_read() end
@@ -357,10 +362,11 @@ gear.on('shop.stock', function(e)
     end
     if not sells_potions then return end
     batch.rolled = true
-    if math.random() * 100 >= (S.get('shop_chance') or 70) then return end
+    if math.random() * 100 >= (test_chance or S.get('shop_chance') or 70) then return end
     for _ = 1, math.random(1, math.max(1, math.floor(S.get('shop_count') or 2))) do
         local id, err = gear.shop.add{container = page.container, type = SCROLL_TYPE, quality = 0}
         if not id then gear.log('town-portal: could not stock a potion: ' .. tostring(err)) break end
+        gear.log('town-portal: stocked a potion, item ' .. id)
     end
 end)
 
@@ -370,6 +376,7 @@ gear.on('town-portal.state', function(answer)
 end)
 gear.on('town-portal.read', gear.guard('read event', function() open_dialog() end))
 gear.on('town-portal.travel', gear.guard('travel event', function(i) travel(i) end))
+gear.on('town-portal.chance', function(c) test_chance = c end)
 gear.on('town-portal.combat', gear.guard('combat', function(off) test_ignore_combat = off end))
 gear.on('town-portal.talk', gear.guard('talk event', function() local c = portal_creature() if c then gear.npc.talk(c) end end))
 gear.on('town-portal.addpoint', gear.guard('addpoint', function(name) new_name = name add_point() end))
