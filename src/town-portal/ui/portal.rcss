@@ -1,10 +1,15 @@
-#portal { position: absolute; left: 332dp; top: 70dp; width: 360dp; }
+#portal { position: absolute; left: 332dp; top: 16dp; width: 360dp; }
 .amber { color: #ffc060; text-align: center; margin: 0 0 6dp 0; }
 .note { text-align: center; }
-.spots { display: block; margin: 4dp 0 8dp 0; }
+.spots { display: block; margin: 4dp 0 8dp 0; max-height: 500dp; overflow-y: auto; }
+.srow { display: flex; flex-direction: row; align-items: center; }
+.sep { height: 1px; background-color: #6a5a3c80; margin: 6dp 20dp; }
+.frow { display: flex; flex-direction: row; align-items: center; margin: 4dp 0; }
+input.field { flex: 1 1 0px; margin-right: 6dp; }
 /* the game's list: plain centred lines, gold under the cursor, dim for a portal that is not found yet */
-button.spot { display: block; width: 100%; box-sizing: border-box; height: 31dp; line-height: 31dp; margin: 0; padding: 0; text-align: center; font-size: 19dp;
+button.spot { display: block; flex: 1 1 0px; box-sizing: border-box; height: 31dp; line-height: 31dp; margin: 0; padding: 0; text-align: center; font-size: 19dp;
     background-color: transparent; border-width: 0; decorator: none; color: #f0e6d0; }
 button.spot:hover, button.spot:focus { color: #ffe860; }
 button.spot.locked { color: #6a6358; }
+button.del { width: 36dp; min-width: 0; margin: 0 0 0 4dp; }
 .foot { text-align: center; margin: 6dp 0 2dp 0; }

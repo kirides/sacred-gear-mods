@@ -1,0 +1,7 @@
+-- Copy this file to custom_teleports.lua (same folder) to add teleport points of your own to the Town Portal list. Optional: without the file
+-- nothing changes. A name is a string or {en = ..., de = ...}; x and y are world units (the hero's `position()`), layer 0 is the surface.
+-- Points from this file always show bright and cannot be removed in the window (points the window adds are kept in custom_points.json).
+return {
+    {name = 'My tower', x = 150000, y = 120000},
+    {name = {en = 'The old camp', de = 'Das alte Lager'}, x = 160000, y = 130000, layer = 0},
+}

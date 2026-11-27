@@ -33,6 +33,29 @@ gear.task(function()
         A.quit(0)
         return
     end
+    -- custom points: the file's, the window's own (add / remove), and a trip to one of them
+    local list
+    gear.emit('town-portal.entries', function(v) list = v end)
+    local base = #list
+    check('custom_teleports.lua point is listed', list[14] and list[14].name == 'File point' and list[14].known, gear.json.encode(list[14]))
+    gear.world.portals(0)
+    gear.emit('town-portal.edit')
+    gear.wait(1)
+    gear.emit('town-portal.addpoint', 'My spot')
+    gear.emit('town-portal.addpoint', 'Camp by the lake')
+    gear.wait(0.5)
+    A.screenshot('own-points')
+    gear.emit('town-portal.entries', function(v) list = v end)
+    check('a point is added', #list == base + 2 and list[#list - 1].name == 'My spot' and list[#list].own == 2, #list .. ' vs ' .. base)
+    gear.emit('town-portal.entries', function(v) list = v end)
+    check('found portals only: none found, game points not known', not list[1].known and not list[13].known)
+    gear.emit('town-portal.remove', #list)
+    gear.emit('town-portal.remove', #list - 1)
+    gear.emit('town-portal.entries', function(v) list = v end)
+    check('a point is removed', #list == base, tostring(#list))
+    gear.emit('town-portal.cancel')
+    gear.emit('town-portal.addpoint', 'Stays')
+    gear.world.portals(0x1FFF)
     local nm, err = gear.data.object_types:display_name(s.scroll_type)
     check('the potion type has its name', nm and nm:lower():find('portal'), tostring(nm) .. ' ' .. tostring(err))
 

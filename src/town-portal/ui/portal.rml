@@ -9,8 +9,19 @@
     <div class="body">
         <p data-if="msg != ''" class="amber">{{ msg }}</p>
         <p data-if="none" class="muted note">{{ nothing }}</p>
-        <div class="spots">
-            <button data-for="s : spots" class="spot" data-attr-id="s.id" data-attrif-disabled="s.locked" data-class-locked="s.locked"><span class="padkey a"></span>{{ s.name }}</button>
+        <div class="spots" data-nav-scroll>
+            <div data-for="s : spots">
+                <div data-if="s.sep" class="sep"></div>
+                <div class="srow">
+                    <button class="spot" data-attr-id="s.id" data-attrif-disabled="s.locked" data-class-locked="s.locked"><span class="padkey a"></span>{{ s.name }}</button>
+                    <button data-if="s.own" class="ibtn del" data-attr-id="s.del" title="Remove"><span class="padkey a"></span><span class="icon icon-delete"></span></button>
+                </div>
+            </div>
+        </div>
+        <div class="frow">
+            <input id="name" type="text" class="field" data-value="new_name" maxlength="32" data-attr-placeholder="placeholder"/>
+            <button class="ibtn kit-kbd" id="kbd-name" title="On-screen keyboard"><span class="padkey a"></span><span class="icon icon-keyboard"></span></button>
+            <button id="add" class="ibtn" data-attr-title="add"><span class="padkey a"></span><span class="icon icon-add"></span></button>
         </div>
         <div class="foot"><button id="cancel" class="game-button"><span class="padkey b"></span>{{ cancel }}</button></div>
     </div>

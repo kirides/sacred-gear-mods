@@ -8,7 +8,7 @@ return {
     requires = {'sacred-theme'},
     description = 'The Town Portal Potion: drinking it saves where you stand and opens the list of the game\'s teleport portals (the ones you have found), '
         .. 'made again as a window you can use with the mouse, the keys or the controller. You arrive at the portal you pick, a portal of the mod opens there '
-        .. 'for you, and stepping through it takes you back to the spot you left and closes it. The potion is sold by merchants. '
+        .. 'for you, and stepping through it takes you back to the spot you left and closes it. The potion is sold by merchants. You can add points of your own (the window, or a custom_teleports.lua). '
         .. 'The portal and the spot are kept with the savegame. Single player only.',
     settings = {
         {id = 'in_shops', type = 'bool', label = 'Merchants sell the potion', default = true, section = 'Potion',
@@ -20,6 +20,7 @@ return {
     },
     keys = {
         {id = 'read', label = 'Drink a Town Portal Potion from the backpack', default = 'ctrl+shift+t'},
+        {id = 'points', label = 'Edit your own teleport points (add / remove)', default = 'ctrl+shift+p'},
         {id = 'close', label = 'Close the portal list', default = ''},
     },
     config = {},

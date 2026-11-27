@@ -46,7 +46,27 @@ local store = gear.store.game('state.json', {}, {every = 10, check = function(d)
     return d
 end})
 
+-- Points of the player's own (the window adds and removes them; all games share them) and of an optional custom_teleports.lua in the mod's folder:
+-- `return {{name = 'My tower', x = 150000, y = 120000, layer = 0}, ...}` (a name may be {en = ..., de = ...}); those cannot be removed in the window.
+local points = gear.store.file('custom_points.json', {list = {}}, {every = 5, check = function(d)
+    if type(d) ~= 'table' or type(d.list) ~= 'table' then return {list = {}} end
+    return d
+end})
+local MAX_POINTS = 40
+local function file_points()
+    local ok, list = pcall(require, 'custom_teleports')
+    if not ok or type(list) ~= 'table' then
+        if not ok and not tostring(list):find("module 'custom_teleports' not found", 1, true) then
+            gear.log('town-portal: custom_teleports.lua: ' .. tostring(list))
+        end
+        return {}
+    end
+    return list
+end
+
 local dialog_open, message = false, ''
+local edit_only = false                       -- opened by the key to edit the points: nothing to travel with
+local new_name = ''
 local test_ignore_combat = false          -- for the self test (the test savegame has wolves about)
 local doc
 
@@ -60,6 +80,25 @@ end
 local function spot_name(i)
     local id = spot_text[i]
     return id and gear.text.get(id) or spots[i].name.en
+end
+
+-- Every point of the window: the game's portals (found ones only can be used), then the mod's file, then the player's own.
+local function entries()
+    local mask = gear.world.portals() or 0
+    local out = {}
+    for i, sp in ipairs(spots) do
+        out[#out + 1] = {name = spot_name(i), x = sp.x, y = sp.y, layer = 0, known = (mask & (1 << sp.bit)) ~= 0}
+    end
+    for n, p in ipairs(file_points()) do
+        if type(p) == 'table' and tonumber(p.x) and tonumber(p.y) then
+            local nm = type(p.name) == 'table' and (gear.text.get(gear.text.key('town-portal.file.' .. n, p.name) or 0) or p.name.en) or tostring(p.name or 'Point ' .. n)
+            out[#out + 1] = {name = nm, x = p.x, y = p.y, layer = p.layer or 0, known = true, custom = true}
+        end
+    end
+    for n, p in ipairs(points.data.list) do
+        out[#out + 1] = {name = p.name, x = p.x, y = p.y, layer = p.layer or 0, known = true, custom = true, own = n}
+    end
+    return out
 end
 
 local function title_text() return gear.text.get(802) or 'Transfer portal' end
@@ -98,12 +137,14 @@ end
 -- Teleport list window ---------------------------------------------------------------------------------------------------------------------------------
 
 local function snapshot()
-    local mask = gear.world.portals() or 0
-    local m = {open = dialog_open, title = title_text(), msg = message, spots = {}, any = false, cancel = L('cancel', 'Cancel', 'Abbrechen'), nothing = L('nothing', 'You have not found a portal yet.', 'Du hast noch kein Portal gefunden.')}
-    for i, s in ipairs(spots) do
-        local known = (mask & (1 << s.bit)) ~= 0
-        if known then m.any = true end
-        m.spots[#m.spots + 1] = {id = 'spot-' .. i, name = spot_name(i), known = known, locked = not known}
+    local m = {open = dialog_open, title = title_text(), msg = message, spots = {}, any = false, cancel = L('cancel', 'Cancel', 'Abbrechen'), nothing = L('nothing', 'You have not found a portal yet.', 'Du hast noch kein Portal gefunden.'),
+        new_name = new_name, add = L('add', 'Add this spot', 'Diesen Ort hinzufügen'), placeholder = L('placeholder', 'Name of this spot', 'Name dieses Ortes'),
+        edit_only = edit_only, own_title = L('own', 'Your own points', 'Eigene Punkte'), has_own = false}
+    local es = entries()
+    for i, e in ipairs(es) do
+        if e.known then m.any = true end
+        m.spots[#m.spots + 1] = {id = 'spot-' .. i, del = 'del-' .. i, name = e.name, locked = not e.known or edit_only, own = e.own ~= nil, sep = e.custom and not es[i - 1].custom or false}
+        if e.own then m.has_own = true end
     end
     m.none = not m.any
     return m
@@ -115,16 +156,15 @@ local function close_dialog()
 end
 
 local function travel(i)
-    local s = spots[i]
-    local mask = gear.world.portals() or 0
-    if not s or (mask & (1 << s.bit)) == 0 then return end
+    local s = entries()[i]
+    if not s or not s.known or edit_only then return end
     local ok, why = can_read()
     if not ok then message = why return end
     local scroll, container = find_scroll()
     if not scroll then message = L('gone', 'The potion is gone from your backpack.', 'Der Trank ist nicht mehr im Rucksack.') return end
     local h = hero()
     local hx, hy, hl = h:position()
-    local done, err = h:teleport(s.x, s.y, 0)
+    local done, err = h:teleport(s.x, s.y, s.layer or 0)
     if not done then message = L('refused', 'The game refused the teleport: ', 'Das Spiel hat die Teleportation abgelehnt: ') .. tostring(err) return end
     gear.inv.remove(container, scroll)
     store.data.home = {x = hx, y = hy, layer = hl}
@@ -151,14 +191,44 @@ local function travel(i)
     end)
 end
 
+local kb = gear.kit.osk and gear.kit.osk{}
+local function set_name(t)
+    new_name = tostring(t or ''):sub(1, 32)
+    if doc then doc.model.new_name = new_name end
+end
+local function open_osk()
+    if kb then kb:toggle{title = L('placeholder', 'Name of this spot', 'Name dieses Ortes'), text = new_name, max = 32, on_change = set_name, get = function() return new_name end} end
+end
+
+-- Adds the hero's place as a point of the player's own.
+local function add_point()
+    local h = hero()
+    local name = new_name:gsub('^%s+', ''):gsub('%s+$', '')
+    if not h then return end
+    if name == '' then message = L('needname', 'Give the spot a name first.', 'Gib dem Ort zuerst einen Namen.') return end
+    if #points.data.list >= MAX_POINTS then message = L('full', 'That is enough points.', 'Das sind genug Punkte.') return end
+    local x, y, layer = h:position()
+    points.data.list[#points.data.list + 1] = {name = name, x = math.floor(x), y = math.floor(y), layer = layer}
+    points:changed()
+    set_name('')
+    message = ''
+end
+
 local function load_doc()
-    doc = gear.ui.rml.load('ui/portal.rml', {dp = true, model = snapshot()})
+    doc = gear.ui.rml.load('ui/portal.rml', {dp = true, model = snapshot(), on_change = function(_, model) new_name = tostring(model.new_name or '') end})
     if not doc then return end
     doc:on('[id^=spot-]', 'click', gear.guard('spot', function(e)
         local i = tonumber(tostring(e.current):match('^spot%-(%d+)$'))
         if i then travel(i) end
     end))
     doc:on('#cancel', 'click', gear.guard('cancel', close_dialog))
+    doc:on('[id^=del-]', 'click', gear.guard('del', function(e)
+        local i = tonumber(tostring(e.current):match('^del%-(%d+)$'))
+        local en = i and entries()[i]
+        if en and en.own then table.remove(points.data.list, en.own) points:changed() end
+    end))
+    doc:on('#add', 'click', gear.guard('add', function() add_point() end))
+    if kb then kb:attach(doc, {field = '#name', button = '#kbd-name', open = function() open_osk() end}) end
 end
 
 local last = {}
@@ -168,6 +238,10 @@ local function same(a, b)
 end
 
 local function draw()
+    if kb then
+        if not dialog_open then kb:close() end
+        kb:draw()
+    end
     if not dialog_open then return end
     if not doc then load_doc() end
     if not doc then return end
@@ -178,8 +252,10 @@ local function draw()
     doc:draw({layer = 'hud'})
 end
 
-local function open_dialog()
-    local ok, why = can_read()
+local function open_dialog(edit)
+    edit_only = edit == true
+    local ok, why = true, nil
+    if not edit_only then ok, why = can_read() end
     if not ok then gear.log('town-portal: ' .. why) say(why) return false end
     message = ''
     dialog_open = true
@@ -201,6 +277,7 @@ gear.keys.on('read', gear.guard('read', function()
     open_dialog()
 end))
 gear.keys.on('close', gear.guard('close', close_dialog))
+gear.keys.on('points', gear.guard('points', function() if dialog_open then close_dialog() else open_dialog(true) end end))
 
 -- The portal -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -295,6 +372,10 @@ gear.on('town-portal.read', gear.guard('read event', function() open_dialog() en
 gear.on('town-portal.travel', gear.guard('travel event', function(i) travel(i) end))
 gear.on('town-portal.combat', gear.guard('combat', function(off) test_ignore_combat = off end))
 gear.on('town-portal.talk', gear.guard('talk event', function() local c = portal_creature() if c then gear.npc.talk(c) end end))
+gear.on('town-portal.addpoint', gear.guard('addpoint', function(name) new_name = name add_point() end))
+gear.on('town-portal.entries', gear.guard('entries', function(answer) local out = {} for _, e in ipairs(entries()) do out[#out + 1] = {name = e.name, known = e.known, own = e.own, x = e.x, y = e.y} end answer(out) end))
+gear.on('town-portal.remove', gear.guard('remove', function(i) local e = entries()[i] if e and e.own then table.remove(points.data.list, e.own) points:changed() end end))
+gear.on('town-portal.edit', gear.guard('edit', function() open_dialog(true) end))
 gear.on('town-portal.cancel', function() close_dialog() end)
 gear.on('town-portal.step', gear.guard('step event', function() step_through() end))
 

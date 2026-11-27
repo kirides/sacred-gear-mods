@@ -28,6 +28,13 @@ While a portal is open another potion does nothing (the toast says so), and whil
 
 The game's own scrolls are logbook entries and cannot be used up, so the item is a potion (a copy of one of the game's bottles with a name of its own); its type id is 16000, in the range Sacred Gear gives mods (`gear.inv.TYPE_FIRST` to `TYPE_LAST`). In a game without Sacred Gear a savegame that holds one shows an unknown item.
 
+## Your own points
+
+Below the game's portals the list shows points of your own, always bright and not tied to the portals you have found:
+
+- **Add or remove in the window.** Press **Ctrl+Shift+P** (rebindable; the controller's mod menu offers it) to open the list for editing without a potion. Type a name (the on-screen keyboard button helps on a controller) and press **+** to add the spot where your hero stands; the bin button beside a point removes it. Up to 40 points, kept in `custom_points.json` in the mod's folder and shared by all your games.
+- **Or a file.** Copy `custom_teleports.lua.example` to `custom_teleports.lua` in the mod's folder; it returns a list of `{name = 'My tower', x = 150000, y = 120000, layer = 0}` (a name may be `{en = ..., de = ...}`). It is optional: without it nothing changes. These points cannot be removed in the window.
+
 ## For modders
 
 `src/town-portal/main.lua` is the mod:
