@@ -5,3 +5,4 @@
 - New: merchants that sell potions may stock it (settings: chance and number); the potion does nothing while enemies are near (a setting).
 - New: the spot and the portal are kept with the savegame.
 - New: points of your own in the list: add the spot where you stand under a name and remove it again in the window (`Ctrl+Shift+P`), or list points in an optional `custom_teleports.lua`.
+- Needs Sacred Gear 0.16.0 or newer (for the potion's item type).

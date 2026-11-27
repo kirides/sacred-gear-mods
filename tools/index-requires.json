@@ -106,5 +106,8 @@
   ],
   "twi_sacred": [
     "sacred-gear>=0.15.4"
+  ],
+  "town-portal": [
+    "sacred-gear>=0.16.0"
   ]
 }
