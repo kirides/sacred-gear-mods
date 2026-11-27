@@ -47,6 +47,17 @@ gear.task(function()
     A.screenshot('own-points')
     gear.emit('town-portal.entries', function(v) list = v end)
     check('a point is added', #list == base + 2 and list[#list - 1].name == 'My spot' and list[#list].own == 2, #list .. ' vs ' .. base)
+    for n = 1, 38 do gear.emit('town-portal.addpoint', 'Point ' .. n) end
+    gear.emit('town-portal.entries', function(v) list = v end)
+    check('40 own points', #list == base + 40, tostring(#list - base))
+    gear.wait(1)
+    A.move(800, 300)
+    gear.wait(0.5)
+    A.screenshot('scroll-top')
+    for _ = 1, 70 do A.pad_scroll(1) gear.wait(0.05) end
+    gear.wait(0.5)
+    A.screenshot('scroll-bottom')
+    for _ = 1, 38 do gear.emit('town-portal.remove', #list) gear.emit('town-portal.entries', function(v) list = v end) end
     gear.emit('town-portal.entries', function(v) list = v end)
     check('found portals only: none found, game points not known', not list[1].known and not list[13].known)
     gear.emit('town-portal.remove', #list)
