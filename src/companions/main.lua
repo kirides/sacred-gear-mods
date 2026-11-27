@@ -494,6 +494,55 @@ local function ai_opts()
     }
 end
 
+-- Fallen companions: the game removes a fallen companion (with what they wear and carry) 25 s after they fell. The mod helps
+-- them up at the side of a living hero once the fight is over (3 s), or after 12 s at the latest. A failure of one companion's
+-- check never stops the others, and the first failure of each fall is written to the log.
+local failed = {}   -- companion id -> the failure already logged for this fall
+local function revive_fallen(heroes, leader, hardcore)
+    if not setting('revive', true) then return end
+    -- the anchor: the leader, or a living companion while the leader is down (none: a wiped party stays down)
+    local anchor = leader
+    if leader:is_dead() then
+        anchor = nil
+        for i = 2, #heroes do
+            if not heroes[i]:is_dead() then anchor = heroes[i] break end
+        end
+    end
+    for i = 2, #heroes do
+        local c = heroes[i]
+        local ok, err = pcall(function()
+            if c:is_dead() and not (c.id >= party.FIRST_ID and (hardcore or record(c.id).fallen)) then
+                if not anchor then fallen[c.id] = nil return end
+                fallen[c.id] = fallen[c.id] or clock
+                local x, y, l = anchor:position()
+                local near_ok, near = pcall(ai.enemy_near, anchor, setting('engage', 12) * TILE)
+                local quiet = near_ok and not near
+                local waited = clock - fallen[c.id]
+                if quiet and waited > 3 or waited > 12 then
+                    local revived, why = c:revive()
+                    if revived then
+                        -- a companion told to wait is helped up where they fell
+                        if x and (tactics(c.id).behaviour or setting('behaviour', 'aggressive')) ~= 'hold' then c:teleport(x + 60, y + 60, l) end
+                        fallen[c.id] = nil
+                        failed[c.id] = nil
+                        toast(name_of(c) .. ' is back on their feet')
+                    elseif failed[c.id] ~= why then
+                        failed[c.id] = why
+                        print('[companions] cannot help ' .. tostring(c.id) .. ' up after ' .. string.format('%.0f', waited) .. ' s: ' .. tostring(why))
+                    end
+                end
+            else
+                fallen[c.id] = nil
+                failed[c.id] = nil
+            end
+        end)
+        if not ok and failed[c.id] ~= err then
+            failed[c.id] = err
+            print('[companions] revive check failed for ' .. tostring(c.id) .. ': ' .. tostring(err))
+        end
+    end
+end
+
 gear.on('frame', guard('frame', function(dt)
     clock = clock + (dt or 0)
     if not party.available() then return end
@@ -524,30 +573,12 @@ gear.on('frame', guard('frame', function(dt)
                 end
             end
         end
+        -- the fallen companions still get up while the leader is down (the game removes them, with what they carry, 25 s
+        -- after they fell, whatever happens to the leader)
+        revive_fallen(heroes, leader, hardcore)
         return
     end
-    -- Fallen companions: the game removes a fallen companion (with what it carries) about 25 s after it fell, so the
-    -- mod helps it up at the leader's side once the fight is over, or after 12 s at the latest.
-    if setting('revive', true) then
-        for i = 2, #heroes do
-            local c = heroes[i]
-            if c:is_dead() and not (c.id >= party.FIRST_ID and (hardcore or record(c.id).fallen)) then
-                fallen[c.id] = fallen[c.id] or clock
-                local x, y, l = leader:position()
-                local quiet = not ai.enemy_near(leader, setting('engage', 12) * TILE)
-                if x and (quiet and clock - fallen[c.id] > 3 or clock - fallen[c.id] > 12) then
-                    if c:revive() then
-                        -- a companion told to wait is helped up where they fell
-                        if (tactics(c.id).behaviour or setting('behaviour', 'aggressive')) ~= 'hold' then c:teleport(x + 60, y + 60, l) end
-                        fallen[c.id] = nil
-                        toast(name_of(c) .. ' is back on their feet')
-                    end
-                end
-            else
-                fallen[c.id] = nil
-            end
-        end
-    end
+    revive_fallen(heroes, leader, hardcore)
     if not setting('ai', true) then return end
     local opts = ai_opts()
     local merc_behaviour = prefs.data.merc_behaviour or 'vanilla'
