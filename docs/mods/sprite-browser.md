@@ -16,5 +16,5 @@ Open the Mods screen (**F11**), pick *Sprite browser* and its page. *Next*, *Pre
 
 ## Development
 
-- **Files:** `src/sprite-browser/` (`mod.lua`, `main.lua` with `gear.mods.page_rml`, `ui/page.rml`, `ui/page.rcss`). It needs the Sacred theme mod to run next to it: the classes live in `src/sacred-theme/theme.rcss` (and the generated `theme-dp.rcss`), between the `SPRITES BEGIN` and `SPRITES END` lines.
-- **The classes are generated:** `python tools/make_sprites_rcss.py` writes them from `tools/sprite-sizes.json` (`[[id, width, height, sheet], ...]`, dumped from the game with `gear.ui.images()`) and then regenerates `theme-dp.rcss`; `--check` fails when `theme.rcss` is out of date. Dump the sizes again when the image set changes.
+- **Files:** `src/sprite-browser/` (`mod.lua`, `main.lua` with `gear.mods.page_rml`, `ui/page.rml`, `ui/page.rcss`). It needs the Sacred theme mod to run next to it: the classes live in `src/sacred-theme/sprites.rcss` (and the generated `sprites-dp.rcss`), a sheet of their own that Gear links only into documents that mention `sprite-`.
+- **The classes are generated:** `python tools/make_sprites_rcss.py` writes them from `tools/sprite-sizes.json` (`[[id, width, height, sheet], ...]`, dumped from the game with `gear.ui.images()`) and then regenerates the `-dp` files; `--check` fails when `sprites.rcss` is out of date. Dump the sizes again when the image set changes.

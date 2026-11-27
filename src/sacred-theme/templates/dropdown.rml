@@ -1,0 +1,12 @@
+<!-- Inline template "sacred-dropdown": the game's drop-down button and its list, driven by the model (no content). Put it where the button belongs, inside
+     a div of class dd with data-class-open="dd == key", and give the model for each drop-down: `key` (the button's id), `title` (its tooltip), `label` (the text on the button),
+     `dd` (the key of the open one, or ''), `options` ({id, label, on} entries; each id is a button the mod's click handler receives). -->
+<template name="sacred-dropdown">
+<head></head>
+<body>
+    <button class="game-dropdown" data-attr-id="key" data-attr-title="title"><span class="padkey a"></span>{{ label }}</button>
+    <div data-if="dd == key" class="dd-list" data-nav-scroll>
+        <button data-for="o : options" class="mini opt" data-attr-id="o.id" data-class-on="o.on">{{ o.label }}</button>
+    </div>
+</body>
+</template>
