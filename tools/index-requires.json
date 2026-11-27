@@ -79,5 +79,32 @@
   ],
   "beastmaster": [
     "sacred-gear>=0.14.0"
+  ],
+  "drop-tuning": [
+    "sacred-gear>=0.15.4"
+  ],
+  "key-bindings": [
+    "sacred-gear>=0.15.4"
+  ],
+  "layout": [
+    "sacred-gear>=0.15.4"
+  ],
+  "minimap": [
+    "sacred-gear>=0.15.4"
+  ],
+  "region-counter": [
+    "sacred-gear>=0.15.4"
+  ],
+  "serverfeed": [
+    "sacred-gear>=0.15.4"
+  ],
+  "spell-tuning": [
+    "sacred-gear>=0.15.4"
+  ],
+  "twitch_integration": [
+    "sacred-gear>=0.15.4"
+  ],
+  "twi_sacred": [
+    "sacred-gear>=0.15.4"
   ]
 }
