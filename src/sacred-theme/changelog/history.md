@@ -1,3 +1,8 @@
+## v0.5.0 (2026-11-27)
+
+- New: shared window templates for other mods: a screen, a group box and a drop-down.
+- Changed: the sprite classes moved to their own style sheet that is only loaded by windows that use a sprite; every other window loads a much smaller theme (225 KB down to 37 KB). Needs a current Sacred Gear.
+
 ## v0.4.0 (2026-11-25)
 
 - New: the look of the shared on-screen keyboard (dark keys with a thin gold edge, number pad, text line).
