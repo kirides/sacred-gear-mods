@@ -770,6 +770,17 @@ function M.think(c, leader, slot, count, now, heroes, opts, tactics)
     end
 end
 
+-- The game's mercenaries of the party: the followers that have a portrait of their own. Summons (the Vampiress's wolves, a
+-- Seraphim's spirits ...) are followers too and the game reserves them an empty slot in its portrait column, but they are no
+-- party members: the portraits of this mod do not count them and the mercenary behaviour does not order them about.
+function M.mercenaries()
+    local out = {}
+    for _, m in ipairs(gear.party.mercenaries()) do
+        if m:portrait() then out[#out + 1] = m end
+    end
+    return out
+end
+
 -- One think of a mercenary (the game's own, following the party). Its own AI keeps running; 'assist' only points it
 -- at the enemy the party fights (the nearest to the hero you play) when it stands idle or fights something else far
 -- away, 'passive' calls it back to you when it strays into a fight. Nothing is teleported or scripted: escorts and
