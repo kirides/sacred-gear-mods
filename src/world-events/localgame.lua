@@ -193,6 +193,15 @@ function G.item(spec, done)
 end
 
 ---------------------------------------------------------------------------------------------------------------
+-- The game's own boss ring (the red spiky circle under a boss, always shown for an enemy of the hero): the boss bit of the behavior word.
+-- Needs a Sacred Gear with creature:set_flags; the bit is set again after a load (the savegame may not keep it).
+local function mark_boss(c)
+    if gear.settings.get('boss_ring') == false then return end
+    local F = gear.world.FLAGS
+    if not c.set_flags or not F then return end
+    pcall(c.set_flags, c, 'behavior', F.behavior.BOSS)
+end
+
 -- world bosses (a `boss` action): a creature with Gear's modifiers (gear.world creature:set_modifiers)
 ---------------------------------------------------------------------------------------------------------------
 -- Does the creature type name have the words `near` ("Orc Warrior" matches ORC_WARRIOR.GRN)? "*" or "any" match every monster.
@@ -257,6 +266,7 @@ function G.make_boss(boss, rnd, skip)
         if not promoted then c:remove() end
         return nil, tostring(err)
     end
+    mark_boss(c)
     local stats = c:modifier_stats() or {}
     boss_counter = boss_counter + 1
     return {
@@ -277,6 +287,7 @@ function G.attach_boss(rec)
     mods.base_hp = rec.base_hp
     local ok, err = c:set_modifiers(mods)
     if not ok then return false, tostring(err) end
+    mark_boss(c)
     return true
 end
 

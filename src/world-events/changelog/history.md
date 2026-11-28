@@ -1,3 +1,7 @@
+## v0.2.4 (2026-11-28)
+
+- New: world bosses get the game's own boss ring, the red spiky circle under them (needs a Sacred Gear with `creature:set_flags`; the setting "Draw the game's boss ring under bosses" switches it off).
+
 ## v0.2.3 (2026-11-25)
 
 - New: the mod manager offers to install the Sacred theme along with this mod (optional).
