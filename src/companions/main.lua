@@ -508,6 +508,7 @@ gear.on('frame', guard('frame', function(dt)
         apply_names()
     end
     local leader = heroes[1]
+    if setting('war_cry', true) then ai.war_cry_step(heroes) end
     local hardcore = setting('hardcore', false)
     if hardcore then
         for i = 1, #heroes do

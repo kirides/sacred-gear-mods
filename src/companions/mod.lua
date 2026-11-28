@@ -67,6 +67,8 @@ return {
             tooltip = 'When a companion casts it, the heroes near them get this much of it, for as long as the caster has it (0: off)'},
         {id = 'buff_32', type = 'number', label = '{ability:32} for others (%)', min = 0, max = 100, step = 5, default = 50, section = 'Buffs',
             tooltip = 'When a companion casts it, the heroes near them get this much of it, for as long as the caster has it (0: off)'},
+        {id = 'war_cry', type = 'bool', label = 'War Cry reaches the whole party', default = true, section = 'Buffs',
+            tooltip = 'The Dwarf\'s War Cry (Kriegsschrei) gives its effect only to the caster, the hero you play and the game\'s own followers: with this on, the heroes of this mod near the caster get it too'},
         {id = 'buff_37', type = 'number', label = '{ability:37} for others (%)', min = 0, max = 100, step = 5, default = 50, section = 'Buffs',
             tooltip = 'When a companion casts it, the heroes near them get this much of it, for as long as the caster has it (0: off)'},
     },

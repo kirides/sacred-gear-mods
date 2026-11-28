@@ -1,3 +1,7 @@
+## v0.5.6 (2026-11-28)
+
+- Fixed: the Dwarf's War Cry (Kriegsschrei) now reaches the companions of this mod. The game gives it only to the caster, the hero you play and its own followers (quest and story companions); now the heroes of the party near the caster get the same effect, for as long as it has left. Setting "War Cry reaches the whole party" under Buffs (default on). Needs Sacred Gear 0.19.0.
+
 ## v0.5.5 (2026-11-25)
 
 - Fixed: a companion set to "Wait here" now stays where they are: they are no longer called to you when you change level (a cave, stairs, a portal), helped up beside you after a fall (they get up where they fell), or sent running to your side when badly hurt (they back away from the enemy instead), and a battle mage on "combat arts only" no longer walks back to you between casts. "Move to me" still calls them.
