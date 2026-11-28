@@ -652,9 +652,9 @@
       "id": "town-portal",
       "path": "mods/town-portal",
       "name": "Town Portal",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": "Sacred Gear",
-      "description": "The Town Portal Potion: drinking it saves where you stand and opens the list of the game's teleport portals (the ones you have found), made again as a window you can use with the mouse, the keys or the controller. You arrive at the portal you pick, a portal of the mod opens there for you, and stepping through it takes you back to the spot you left and closes it. The potion is sold by merchants. You can add points of your own (the window, or a custom_teleports.lua). The portal and the spot are kept with the savegame. Single player only.",
+      "description": "The Town Portal Scroll: reading it saves where you stand and opens the list of the game's teleport portals (the ones you have found), made again as a window you can use with the mouse, the keys or the controller. You arrive at the portal you pick, a portal of the mod opens there for you, and stepping through it takes you back to the spot you left and closes it. The scroll is sold by merchants. You can add points of your own (the window, or a custom_teleports.lua). The portal and the spot are kept with the savegame. Single player only.",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/town-portal.jpg",
       "images": [
         "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/town-portal.jpg",
