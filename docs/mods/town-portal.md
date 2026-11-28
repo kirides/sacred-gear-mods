@@ -39,6 +39,8 @@ Below the game's portals the list shows points of your own, always bright and no
 
 The scroll has a picture of its own: `src/town-portal/textures/scroll.png` is the game's scroll texture (64 x 64, here as 256 x 256) with a blue wax seal and ribbon. Replace it with a picture of your own: `scroll-template.png` is the original with the same layout (the parchment, the wax seal, the ribbon and the rolled end are fixed places of the texture). Both sides must be powers of two (256 x 256 or 512 x 512 are fine). It is drawn in the inventory, the chest and shops, which needs Sacred Gear 0.18.0 and SacredBild 0.5.0 with the Direct3D renderer; without them the game's own scroll is shown.
 
+![The scroll's texture](../images/town-portal-scroll-sheet.png)
+
 ## For modders
 
 `src/town-portal/main.lua` is the mod:
