@@ -1,3 +1,9 @@
+## v0.4.0 (2026-11-28)
+
+- New: merchants can stock the runes of custom arts: `rune.shop_weight` in the art file (percent chance per stock page) and the setting "Runes in shops (%)".
+- Improved: the names and descriptions of custom arts have stable text ids, so reloading the class files no longer piles up new texts.
+- Under the hood: the Vampiress form check and the class bits of the rune exchange come from one helper and from `gear.world.CLASSES` instead of copies of a number table.
+
 ## v0.3.3 (2026-11-25)
 
 - New: the mod manager offers to install the Sacred theme along with this mod (optional).
