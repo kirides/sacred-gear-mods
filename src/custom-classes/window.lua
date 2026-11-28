@@ -46,7 +46,7 @@ function M.new(env)
     local function sorted_profiles(body_id)
         local mine, other = {}, {}
         for _, p in pairs(state.profiles) do
-            if body_id and (p.body_id == body_id or (body_id == 7 and p.body_id == 6)) then mine[#mine + 1] = p else other[#other + 1] = p end
+            if body_id and profiles_lib.same_body(p.body_id, body_id) then mine[#mine + 1] = p else other[#other + 1] = p end
         end
         local by_name = function(a, b) return profiles_lib.text(a.name, a.id):lower() < profiles_lib.text(b.name, b.id):lower() end
         table.sort(mine, by_name)
@@ -116,7 +116,7 @@ function M.new(env)
         if prof then
             m.sel = true
             m.d = details(prof)
-            m.usable = (prof.body_id == body) or (body == 7 and prof.body_id == 6)
+            m.usable = profiles_lib.same_body(prof.body_id, body)
             m.take_tip = m.usable and "The hero gets the class's starting arts; its skills show in the skill window"
                 or ('This class is for the ' .. (profiles_lib.BODY_LABEL[prof.body] or prof.body) .. ' body: play such a hero to take it')
             m.not_usable = 'For the ' .. (profiles_lib.BODY_LABEL[prof.body] or prof.body) .. ' body only'
@@ -149,7 +149,7 @@ function M.new(env)
             if not (hr and prof) then return end
             local _, body = hr:class()
             local current = assignment(hr)
-            local usable = (prof.body_id == body) or (body == 7 and prof.body_id == 6)
+            local usable = profiles_lib.same_body(prof.body_id, body)
             if usable and not (current and current.id == prof.id) then take(hr, prof) end
         end)
     end

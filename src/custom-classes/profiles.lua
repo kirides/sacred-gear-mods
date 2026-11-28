@@ -51,6 +51,30 @@ M.BODY_LABEL = localized_labels({seraphim = 'Seraphim', gladiator = 'Gladiator',
 
 local LEARN = {start = true, level = true, rune = true}
 
+-- The hero type 7 is the Vampiress in her other form: a profile for the Vampiress (6) fits both.
+function M.same_body(profile_body_id, hero_type)
+    return profile_body_id == hero_type or (hero_type == 7 and profile_body_id == 6)
+end
+
+-- The bit of a hero type in an ability's `class_mask` (gear.world.CLASSES has them; the form of the Vampiress shares hers).
+local class_bits
+function M.class_bit(hero_type)
+    if not class_bits then
+        class_bits = {}
+        for _, c in ipairs(gear.world.CLASSES or {}) do class_bits[c.id] = c.bit end
+        class_bits[7] = class_bits[7] or class_bits[6]
+    end
+    return class_bits[hero_type] or 0
+end
+
+-- A text of this mod's own for a name or description. The id comes from `key`, so it is the same in every session and a reload
+-- of the files changes the text instead of making a new one (gear.text.add makes a new text on every call).
+function M.new_text(key, value)
+    local id, err
+    if gear.text.key then id, err = gear.text.key('custom-classes.' .. key, value) else id, err = gear.text.add(value) end
+    return assert(id, err)
+end
+
 -- A text as the profile gives it ({en = ..., de = ...} or a string) for the game's language.
 function M.text(value, fallback)
     if type(value) == 'string' then return value end

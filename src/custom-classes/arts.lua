@@ -17,11 +17,12 @@
 -- action ends, on the enemy nearest to the hero. Its regeneration is the sum of the steps' (`regen_base` and `regen_per_level` of the ability records, the game's
 -- regeneration seconds, whole seconds for spells), so it can never be cheaper than the parts. The steps are learned with the chain.
 
+local profiles_lib = require('profiles')
 local buffs = require('buffs')
 local fx = require('fx')
 local M = {}
 M.fx_rules = {}    -- art id -> number of effect rules made
-M.runes = {}       -- art id -> {type, drop_weight, min_level, price, combo_master}: the rune items of the art files
+M.runes = {}       -- art id -> {type, drop_weight, shop_weight, min_level, price, combo_master}: the rune items of the art files
 
 -- The installed mods that are switched on (data of a mod that is off is not read).
 local function active_mods()
@@ -93,9 +94,9 @@ local function make_copy(d, where)
     local rec, err = gear.classes.copy_ability(d.art_id, base, values)
     if not rec then return nil, err end
     local name = text(d.name, nil)
-    if name then rec.name_text = assert(gear.text.add(name)) end
+    if name then rec.name_text = profiles_lib.new_text('art.' .. d.art_id .. '.name', name) end
     local desc = text(d.description, nil)
-    if desc then rec.description_text = assert(gear.text.add(desc)) end
+    if desc then rec.description_text = profiles_lib.new_text('art.' .. d.art_id .. '.description', desc) end
     if d.icon ~= nil then
         local ok, why = M.set_icon(rec, d.icon)
         if not ok then return nil, why end
@@ -133,23 +134,23 @@ local function make_chain(d, where)
     local names = {}
     for i, s in ipairs(steps) do names[i] = ability_name(s) end
     local name = text(d.name, nil)
-    if name then rec.name_text = assert(gear.text.add(name)) end
+    if name then rec.name_text = profiles_lib.new_text('art.' .. d.art_id .. '.name', name) end
     local desc = (text(d.description, '') .. '\n' .. 'Chain: ' .. table.concat(names, ' > ')):gsub('^\n', '')
-    rec.description_text = assert(gear.text.add(desc))
+    rec.description_text = profiles_lib.new_text('art.' .. d.art_id .. '.description', desc)
     chains[d.art_id] = {steps = steps, delay = d.delay or 0.1}
     return true
 end
 
--- The rune of an art file: `"rune": {"enabled": true, "drop_weight": 20, "min_level": 10, "price": 5000, "combo_master": true}`; every art copy and chain has a
+-- The rune of an art file: `"rune": {"enabled": true, "drop_weight": 20, "shop_weight": 5, "min_level": 10, "price": 5000, "combo_master": true}`; every art copy and chain has a
 -- rune item (enabled by default). Returns the rune table, or nil (no rune), or nil and a problem text.
 function M.make_rune(d, where)
-    local cfg = {enabled = true, drop_weight = 0, min_level = 1, price = 0, combo_master = true}
+    local cfg = {enabled = true, drop_weight = 0, shop_weight = 0, min_level = 1, price = 0, combo_master = true}
     local r = d.rune
     if r ~= nil then
         if type(r) ~= 'table' then return nil, where .. ': rune must be an object' end
         if r.enabled ~= nil and type(r.enabled) ~= 'boolean' then return nil, where .. ': rune.enabled must be true or false' end
         if r.combo_master ~= nil and type(r.combo_master) ~= 'boolean' then return nil, where .. ': rune.combo_master must be true or false' end
-        for _, k in ipairs({{'drop_weight', 0, 1000}, {'min_level', 1, 200}, {'price', 0, 100000000}}) do
+        for _, k in ipairs({{'drop_weight', 0, 1000}, {'shop_weight', 0, 100}, {'min_level', 1, 200}, {'price', 0, 100000000}}) do
             local v = r[k[1]]
             if v ~= nil and (type(v) ~= 'number' or v < k[2] or v > k[3]) then
                 return nil, ('%s: rune.%s must be a number %d..%d'):format(where, k[1], k[2], k[3])

@@ -171,8 +171,6 @@ function M.new(env)
     ---------------------------------------------------------------------------------------------------------------------
     -- Rune exchange
     ---------------------------------------------------------------------------------------------------------------------
-    local CLASS_BITS = {[1] = 0x1, [2] = 0x2, [3] = 0x4, [4] = 0x8, [5] = 0x10, [6] = 0x20, [7] = 0x20, [8] = 0x400000, [9] = 0x800000}
-
     local function may_learn(h, art)
         local rec = gear.data.abilities[art]
         if not rec then return false end
@@ -183,7 +181,7 @@ function M.new(env)
         end
         local _, body = h:class()
         local mask = rec.class_mask or 0
-        return mask ~= 0 and bit.band(mask, CLASS_BITS[body] or 0) ~= 0
+        return mask ~= 0 and bit.band(mask, profiles_lib.class_bit(body)) ~= 0
     end
 
     -- The runes in the backpack: {item, art}.

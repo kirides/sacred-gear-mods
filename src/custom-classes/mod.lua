@@ -13,6 +13,8 @@ return {
             tooltip = 'A hero at level 1 without a class gets the class window when the game starts'},
         {id = 'rune_drops', type = 'number', label = 'Rune drops (%)', min = 0, max = 300, step = 10, default = 100, section = 'Runes',
             tooltip = 'How often creatures drop the runes of custom arts (their drop weight in the art file times this; 0: never)'},
+        {id = 'rune_shop', type = 'number', label = 'Runes in shops (%)', min = 0, max = 300, step = 10, default = 100, section = 'Runes',
+            tooltip = 'How often merchants stock the runes of custom arts (their shop chance in the art file times this; 0: never)'},
         {id = 'replace_master', type = 'bool', label = 'Combo master window with custom arts', default = true, section = 'Runes',
             tooltip = "When art files exist, the combo master shows this mod's window (combos and rune exchange with custom arts) instead of the game's"},
         {id = 'master_native', type = 'bool', label = 'Combo master in the look of the game', default = true, section = 'Runes',

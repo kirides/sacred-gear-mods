@@ -65,7 +65,7 @@ local function assignment(c)
     local r = c and store.data.heroes[key_of(c)]
     if not r then return nil end
     local p = state.profiles[r.profile]
-    if not p or p.body_id ~= (select(2, c:class())) and not (p.body_id == 6 and select(2, c:class()) == 7) then return nil end
+    if not p or not profiles_lib.same_body(p.body_id, (select(2, c:class()))) then return nil end
     return p, r
 end
 
@@ -239,6 +239,19 @@ gear.on('drops.select', guard('drops', function(ev)
     end
 end))
 
+-- shop.stock: a merchant's page may stock the rune of an art file (`rune.shop_weight`: percent chance per stocked page, times the setting
+-- "Rune shop stock", for heroes of at least `rune.min_level`). The game's own price record of the rune sets the price.
+gear.on('shop.stock', guard('shop', function(e)
+    local scale = setting('rune_shop', 100) / 100
+    if scale <= 0 or not gear.shop or not gear.shop.add then return end
+    for art, r in pairs(arts.runes) do
+        if r.shop_weight > 0 and (e.hero_level or 1) >= r.min_level and math.random() * 100 < r.shop_weight * scale then
+            local id, err = gear.shop.add{container = e.container, type = r.type}
+            log('rune %d stocked in the shop: %s', art, id and 'ok' or tostring(err))
+        end
+    end
+end))
+
 -- ability.hit: the art hit a creature: its buff rules
 gear.on('ability.hit', guard('hit', function(attacker, victim, art)
     if buffs.rules[art] then buffs.hit(attacker, victim, art) end
@@ -294,7 +307,7 @@ end))
 gear.on('rune.usable', guard('rune', function(type_id, ability, vanilla)
     local c = gear.party.available() and gear.party.leader() or gear.world.hero()
     local p = c and assignment(c)
-    if not p or p.body_id ~= type_id then return nil end
+    if not p or not profiles_lib.same_body(p.body_id, type_id) then return nil end
     return art_set(p)[ability] ~= nil
 end))
 
