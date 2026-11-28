@@ -27,6 +27,7 @@ end
 
 -- The game's type table exists only once the game runs: the type is defined as soon as it does, every session (a savegame keeps the id).
 local type_defined = false
+local scroll_texture = nil            -- the handle of the item's own texture (kept: the texture lives as long as it)
 local function ensure_type()
     if type_defined then return end
     local ok, err = gear.inv.define_type(SCROLL_TYPE, SCROLL_BASE, text_name, {look = SCROLL_LOOK, size = {1, 1}, icon_scale = 2.3})
@@ -35,6 +36,14 @@ local function ensure_type()
     elseif not tostring(err):find('type table is not there', 1, true) then
         type_defined = true     -- the record is taken by the game: no use trying again
         gear.log('town-portal: could not define the scroll type: ' .. tostring(err))
+    end
+    if type_defined and gear.inv.set_type_texture and not scroll_texture then
+        -- the scroll's own picture (textures/scroll.png has the layout of the game's scroll texture: textures/scroll-template.png)
+        scroll_texture = gear.ui.texture and gear.ui.texture.load('textures/scroll.png')
+        if scroll_texture then
+            local tok, terr = gear.inv.set_type_texture(SCROLL_TYPE, scroll_texture.picture)
+            if not tok then gear.log('town-portal: the scroll texture: ' .. tostring(terr)) end
+        end
     end
 end
 ensure_type()

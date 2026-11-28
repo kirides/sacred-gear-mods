@@ -35,11 +35,16 @@ Below the game's portals the list shows points of your own, always bright and no
 - **Add or remove in the window.** Press **Ctrl+Shift+P** (rebindable; the controller's mod menu offers it) to open the list for editing without a scroll. Type a name (the on-screen keyboard button helps on a controller) and press **+** to add the spot where your hero stands; the bin button beside a point removes it. Up to 40 points, kept in `custom_points.json` in the mod's folder and shared by all your games.
 - **Or a file.** Copy `custom_teleports.lua.example` to `custom_teleports.lua` in the mod's folder; it returns a list of `{name = 'My tower', x = 150000, y = 120000, layer = 0}` (a name may be `{en = ..., de = ...}`). It is optional: without it nothing changes; it is read when the mod starts. These points cannot be removed in the window.
 
+## The scroll's picture
+
+The scroll has a picture of its own: `src/town-portal/textures/scroll.png` is the game's scroll texture (64 x 64, here as 256 x 256) with a blue wax seal and ribbon. Replace it with a picture of your own: `scroll-template.png` is the original with the same layout (the parchment, the wax seal, the ribbon and the rolled end are fixed places of the texture). Both sides must be powers of two (256 x 256 or 512 x 512 are fine). It is drawn in the inventory, the chest and shops, which needs Sacred Gear 0.18.0 and SacredBild 0.5.0 with the Direct3D renderer; without them the game's own scroll is shown.
+
 ## For modders
 
 `src/town-portal/main.lua` is the mod:
 
 - `gear.inv.define_type(type, base, name_text)` makes an item type of your own from a copy of a game item type; `gear.text.key` gives it a name that is the same in every session. Define it each time the mod starts.
+- `gear.inv.set_type_texture(type, gear.ui.texture.load('textures/scroll.png').picture)` gives every item of the type a texture of the mod (keep the handle).
 - `gear.on('item.use', fn)` hears the scroll used; `'keep'` leaves it in the pack (the mod removes it with `gear.inv.remove` when the trip happens).
 - `gear.world.portals()` is the hero's word of found portals, one bit per line of the game's list (`spots.lua` has the 13 positions the game teleports to).
 - The portal is a `gear.npc` kind; the saved spot is in `gear.store.game`.
