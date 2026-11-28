@@ -1,7 +1,7 @@
 ## v0.3.0 (2026-11-28)
 
 - Improved: the Town Portal item now looks like a scroll (the model and inventory icon of a game scroll) and takes one grid cell and is called the Town Portal Scroll / Stadtportal-Schriftrolle. It is used as before: a right click in the backpack or the `Ctrl+Shift+T` key. Items you already had keep working and take the new look.
-- New: the scroll has a picture of its own (a blue wax seal and ribbon, `textures/scroll.png`; `scroll-template.png` is the game's original to draw your own on). Shown with SacredBild 0.5.0 on the Direct3D renderer; otherwise the game's own scroll look.
+- New: the scroll has a picture of its own (a blue wax seal and ribbon, `textures/scroll.png`; `scroll-template.png` is the game's original to draw your own on). Shown with SacredBild 0.5.0 on any renderer (Direct3D 9, NVRHI on Direct3D 12 and Vulkan); otherwise the game's own scroll look.
 - Needs Sacred Gear 0.18.0 or newer (for the item's look).
 
 ## v0.2.0 (2026-11-28)
