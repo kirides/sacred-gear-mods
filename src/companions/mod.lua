@@ -2,7 +2,7 @@
 return {
     id = 'companions',
     name = 'Companions',
-    version = '0.5.5',
+    version = '0.6.0',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'A party of heroes in single player: recruit companions of any class, each with their own inventory, '
