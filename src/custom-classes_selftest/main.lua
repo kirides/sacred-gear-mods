@@ -343,15 +343,22 @@ gear.task(function()
         gear.wait(1)
         A.screenshot('cc-master-exchange')
         local gold0 = gla:gold()
+        local function backpack_runes()
+            local list = {}
+            for _, it in ipairs(gear.inv.container(gla.id):items()) do local a = gear.classes.rune_art_of_type(it.type) if a then list[#list + 1] = a end end
+            return list
+        end
+        local runes_before = #backpack_runes()   -- loot picked up earlier may add runes: count the change, not the total
         gear.emit('custom-classes.master', 'pick', ids)
         gear.emit('custom-classes.master', 'choose', 1)
         gear.wait(1)
         A.screenshot('cc-master-exchange4')
         gear.emit('custom-classes.master', 'exchange')
         gear.wait(2.5)
-        local runes_now = {}
-        for _, it in ipairs(gear.inv.container(gla.id):items()) do local a = gear.classes.rune_art_of_type(it.type) if a then runes_now[#runes_now + 1] = a end end
-        check('four runes became one chosen custom rune', #runes_now == 1 and arts_known_custom(runes_now[1]), table.concat(runes_now, ','))
+        local runes_now = backpack_runes()
+        local custom = 0
+        for _, a in ipairs(runes_now) do if arts_known_custom(a) then custom = custom + 1 end end
+        check('four runes became one chosen custom rune', #runes_now == runes_before - 3 and custom >= 1, ('%d -> %d: %s'):format(runes_before, #runes_now, table.concat(runes_now, ',')))
         check('the exchange fee was taken', gold0 - gla:gold() > 0, gold0 - gla:gold())
         -- the same art's runes more than once: six identical runes, four of them exchanged (every rune of the backpack is its own cell in the list)
         local function count_runes()
