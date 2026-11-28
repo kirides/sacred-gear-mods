@@ -191,6 +191,7 @@ local function take_ranged(c, s, now)
         if M.is_ranged(sl.main) then
             s.weapon_at = now
             local ok = c:use_weapon_slot(i)
+            if M.note then M.note('hero ' .. c.id .. ' took weapon slot ' .. i) end
             if M.debug then print('ranged slot', c.id, i, ok) end
             return ok and true or false
         end

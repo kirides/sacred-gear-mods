@@ -494,6 +494,48 @@ local function ai_opts()
     }
 end
 
+-- Gear watchdog (diagnosis): players report companions that suddenly stand there without their worn gear (the backpack and the
+-- other weapon slots stay), once with a creature (a goblin) in the weapon slot where the weapon was. The game frees the objects
+-- of the lost items and later reuses their ids. This watches every hero once a second and, when worn items vanish or a weapon
+-- slot points at a creature, writes what happened shortly before (falls, get-ups, control changes, weapon switches) to the log.
+local events = {}   -- the last few things that happened to the party: {clock, text}
+local function note(text)
+    events[#events + 1] = {clock, text}
+    if #events > 14 then table.remove(events, 1) end
+end
+local gear_seen = {}   -- hero id -> {worn = {slot = item id}, count = n}
+ai.note = note
+local function recent_events()
+    local out = {}
+    for _, e in ipairs(events) do out[#out + 1] = string.format('-%.1fs %s', clock - e[1], e[2]) end
+    return table.concat(out, '; ')
+end
+local function watch_gear(c)
+    local worn, count = {}, 0
+    for _, e in ipairs(c:equipment() or {}) do
+        if e.item then worn[e.slot] = e.item.id; count = count + 1 end
+    end
+    local before = gear_seen[c.id]
+    gear_seen[c.id] = {worn = worn, count = count}
+    if before and before.count >= 3 and count <= before.count - 3 then
+        local gone = {}
+        for slot, id in pairs(before.worn) do if worn[slot] ~= id then gone[#gone + 1] = slot .. '=' .. tostring(id) end end
+        print(string.format('[companions] GEAR LOST on hero %d (%s): %d worn items -> %d, gone: %s; hp %s, dead %s; events: %s',
+            c.id, tostring(c:class()), before.count, count, table.concat(gone, ' '), tostring(c:hp()), tostring(c:is_dead()), recent_events()))
+    end
+    local ws = c:weapon_slots()
+    if ws then
+        for i, sl in ipairs(ws.slots) do
+            for _, it in ipairs({sl.main or false, sl.off or false}) do
+                local o = it and gear.world.object(it.id)
+                if o and o.is_creature and o:is_creature() then
+                    print(string.format('[companions] WEAPON SLOT %d of hero %d holds a creature (id %d), not a weapon; events: %s', i, c.id, it.id, recent_events()))
+                end
+            end
+        end
+    end
+end
+
 -- Fallen companions: the game removes a fallen companion (with what they wear and carry) 25 s after they fell. The mod helps
 -- them up at the side of a living hero once the fight is over (3 s), or after 12 s at the latest. A failure of one companion's
 -- check never stops the others, and the first failure of each fall is written to the log.
@@ -513,6 +555,7 @@ local function revive_fallen(heroes, leader, hardcore)
         local ok, err = pcall(function()
             if c:is_dead() and not (c.id >= party.FIRST_ID and (hardcore or record(c.id).fallen)) then
                 if not anchor then fallen[c.id] = nil return end
+                if not fallen[c.id] then note('hero ' .. c.id .. ' fell') end
                 fallen[c.id] = fallen[c.id] or clock
                 local x, y, l = anchor:position()
                 local near_ok, near = pcall(ai.enemy_near, anchor, setting('engage', 12) * TILE)
@@ -521,6 +564,7 @@ local function revive_fallen(heroes, leader, hardcore)
                 if quiet and waited > 3 or waited > 12 then
                     local revived, why = c:revive()
                     if revived then
+                        note('hero ' .. c.id .. ' got up after ' .. string.format('%.0f', waited) .. ' s')
                         -- a companion told to wait is helped up where they fell
                         if x and (tactics(c.id).behaviour or setting('behaviour', 'aggressive')) ~= 'hold' then c:teleport(x + 60, y + 60, l) end
                         fallen[c.id] = nil
@@ -557,6 +601,13 @@ gear.on('frame', guard('frame', function(dt)
         apply_names()
     end
     local leader = heroes[1]
+    if clock >= (next_think.gear_watch or 0) then
+        next_think.gear_watch = clock + 1
+        for i = 1, #heroes do
+            local ok, err = pcall(watch_gear, heroes[i])
+            if not ok and not next_think.gear_watch_err then next_think.gear_watch_err = true; print('[companions] gear watch failed: ' .. tostring(err)) end
+        end
+    end
     local hardcore = setting('hardcore', false)
     if hardcore then
         for i = 1, #heroes do
@@ -613,6 +664,7 @@ gear.on('settings.changed', guard('settings', function()
     if not separate() then merge_purses() end
 end))
 gear.on('party.control', guard('control', function(from, to)
+    note('control ' .. tostring(type(from) == 'table' and from.id or from) .. ' -> ' .. tostring(type(to) == 'table' and to.id or to))
     ai.reset()
     purses_on_control(from, to)
 end))
