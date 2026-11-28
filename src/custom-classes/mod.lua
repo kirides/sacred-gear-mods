@@ -2,7 +2,7 @@
 return {
     id = 'custom-classes',
     name = 'Custom classes',
-    version = '0.3.3',
+    version = '0.4.0',
     author = 'Sacred Gear',
     recommended = {'sacred-theme'}, -- optional: the look of the game for the windows (the manager offers it on install)
     description = 'Heroes with a class of your own: a Seraphim body with Battle Mage fire, a Gladiator that casts. A class is a '
