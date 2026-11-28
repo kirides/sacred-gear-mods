@@ -652,7 +652,7 @@
       "id": "town-portal",
       "path": "mods/town-portal",
       "name": "Town Portal",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": "Sacred Gear",
       "description": "The Town Portal Potion: drinking it saves where you stand and opens the list of the game's teleport portals (the ones you have found), made again as a window you can use with the mouse, the keys or the controller. You arrive at the portal you pick, a portal of the mod opens there for you, and stepping through it takes you back to the spot you left and closes it. The potion is sold by merchants. You can add points of your own (the window, or a custom_teleports.lua). The portal and the spot are kept with the savegame. Single player only.",
       "thumbnail": "https://raw.githubusercontent.com/kirides/sacred-gear-mods/main/docs/images/town-portal.jpg",
@@ -703,7 +703,7 @@
       "id": "world-events",
       "path": "mods/world-events",
       "name": "World events",
-      "version": "0.2.3",
+      "version": "0.3.0",
       "author": "kirides",
       "description": "Shows the game server's world event (a realm-wide goal such as \"slay 1000 orcs in 2 hours\") as a small movable indicator (a pill with progress and time rings). Needs a Sacred Gear game server with the world_events script.",
       "tags": [
