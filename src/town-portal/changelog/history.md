@@ -1,3 +1,9 @@
+## v0.2.0 (2026-11-28)
+
+- Fixed: merchants now stock the Town Portal Potion. The game's shop refuses item types from 0x2000, so the potion's type id moved to 6150 (a potion made earlier with id 16000 no longer exists).
+- Fixed: a missing `custom_teleports.lua` no longer fills the log; the file is read once when the mod starts (switch the mod off and on, or restart, after editing it).
+- Improved: the portal NPC shows the game's talk cursor when the mouse is over it (needs Sacred Gear 0.17.0).
+
 ## v0.1.0 (2026-11-27)
 
 - New: the Town Portal Potion, an item of its own. Drinking it (from the backpack or with the `Ctrl+Shift+T` key) saves where you stand and opens the list of the game's teleport portals you have found, as a window for the mouse, the keys and the controller.
