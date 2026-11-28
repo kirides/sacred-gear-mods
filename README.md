@@ -36,7 +36,7 @@ The pictures are screenshots from the game, taken by a script ([how](docs/Screen
 | [**Session tracker**](docs/mods/sessiontracker.md) | <img src="docs/images/sessiontracker.jpg" width="220" alt="Session tracker"> | Time played, kills, gold and experience, with rates per hour. F2. |
 | [**Spawn rate**](docs/mods/spawn-rate.md) | <img src="docs/images/spawn-rate.jpg" width="220" alt="Spawn rate"> | Multiply the creatures the game spawns, from 1x to 100x, with safeguards for the frame rate. Single player. |
 | [**Improved shops**](docs/mods/improved-shops.md) | <img src="docs/images/improved-shops.jpg" width="220" alt="Improved shops"> | Merchants that sell gear sometimes stock magic and rare pieces made for your hero's level. They stay until the game resets the shop, so reopening it shows the same wares. |
-| [**Town Portal**](docs/mods/town-portal.md) | <img src="docs/images/town-portal.jpg" width="220" alt="Town Portal"> | The Town Portal Potion: drinking it saves where you stand and opens the game's list of teleport portals you have found, as a window for mouse, keys and controller. You arrive at the portal you pick, a portal of the mod opens there, and stepping through takes you back. Sold by merchants. Single player. |
+| [**Town Portal**](docs/mods/town-portal.md) | <img src="docs/images/town-portal.jpg" width="220" alt="Town Portal"> | The Town Portal Scroll: reading it saves where you stand and opens the game's list of teleport portals you have found, as a window for mouse, keys and controller. You arrive at the portal you pick, a portal of the mod opens there, and stepping through takes you back. Sold by merchants. Single player. |
 | [**NPC example**](docs/mods/npc-example.md) | <img src="docs/images/npc-example.jpg" width="220" alt="NPC example"> | A custom NPC to read and copy: Nirael the Collector has a name of her own, dialog pages whose buttons open a window of the mod, and walks between two places by the game's clock. Click her to talk; Ctrl+Shift+M calls her. Single player. |
 | [**Spell tuning**](docs/mods/spell-tuning.md) | <img src="docs/images/spell-tuning.jpg" width="220" alt="Spell tuning"> | Shorten or strengthen root, stun, fear, spell strength and damage by who casts the spell: you, companions, enemies, neutrals or traps. Single player. |
 | [**Minimap**](docs/mods/minimap.md) | <img src="docs/images/minimap.jpg" width="220" alt="Minimap"> | The game's world map as a round or square overlay that follows the hero, with zoom levels, a frame and compass, and the trader symbols. |
@@ -100,7 +100,7 @@ Each mod is a folder in `src`: `mod.lua` is the manifest (id, version, settings,
 | `src/autosave_selftest` | Automation self test of the autosave mod |
 | `src/npc-example` | An example of Sacred Gear's custom NPCs (`gear.npc`). [Doc](docs/mods/npc-example.md) |
 | `src/npc-example_selftest` | Automation self test of the NPC example |
-| `src/town-portal` | Town Portal Potion and portal. [Doc](docs/mods/town-portal.md) |
+| `src/town-portal` | Town Portal Scroll and portal. [Doc](docs/mods/town-portal.md) |
 | `src/town-portal_selftest` | Automation self test of Town Portal |
 | `src/improved-shops` | Better pieces in merchants' stock, added when the game stocks a shop. [Doc](docs/mods/improved-shops.md) |
 | `src/improved-shops_selftest` | Automation self test of Improved shops (opens a merchant, checks the finds and that a reopened shop keeps its stock) |

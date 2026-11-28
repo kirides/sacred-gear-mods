@@ -1,3 +1,8 @@
+## v0.3.0 (2026-11-28)
+
+- Improved: the Town Portal item now looks like a scroll (the model and inventory icon of a game scroll) and takes one grid cell and is called the Town Portal Scroll / Stadtportal-Schriftrolle. It is used as before: a right click in the backpack or the `Ctrl+Shift+T` key. Items you already had keep working and take the new look.
+- Needs Sacred Gear 0.18.0 or newer (for the item's look).
+
 ## v0.2.0 (2026-11-28)
 
 - Fixed: merchants now stock the Town Portal Potion. The game's shop refuses item types from 0x2000, so the potion's type id moved to 6150 (a potion made earlier with id 16000 no longer exists).

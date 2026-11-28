@@ -1,17 +1,18 @@
--- Town Portal (Sacred Gear 0.16.0 or later). The Town Portal Potion is an item type of its own (gear.inv.define_type, a copy of one of the game's potions:
--- the game's potions are logbook entries and cannot be used up). Using it (`item.use` when it is drunk, or the key) saves where the hero stands and opens a window that lists the game's teleport portals (the ones the hero has
--- found: gear.world.portals) in the manner of the game's own "Transferportal" list. A pick teleports the hero there, uses the potion up and puts a
+-- Town Portal (Sacred Gear 0.18.0 or later). The Town Portal Scroll is an item type of its own (gear.inv.define_type): a potion of the game, which is used
+-- through `item.use` (the game's scrolls are logbook entries and cannot be used up), made to look like a scroll (`look`). Using it (`item.use`, or the key) saves where the hero stands and opens a window that lists the game's teleport portals (the ones the hero has
+-- found: gear.world.portals) in the manner of the game's own "Transferportal" list. A pick teleports the hero there, uses the scroll up and puts a
 -- portal (an NPC of the mod, gear.npc) near the arrival; talking to the portal and stepping through takes the hero back to the saved spot and removes
 -- the portal. The saved spot is kept with the savegame (gear.store.game); the portal is a creature of the savegame (gear.npc keeps it).
 local S = gear.settings
 local spots = require('spots')
 
-local SCROLL_BASE = 5144            -- a potion of the game (blue-green bottle): the model and size of the new item
+local SCROLL_BASE = 5144            -- a potion of the game: what the item does (it is used with a right click and goes to `item.use`)
+local SCROLL_LOOK = 4302            -- a plain scroll of the game (the last of its generic 'Schriftrolle' types, which has an item record of its own): how it looks. size = {1, 1} sets the size in that record, so that game scroll is 1x1 as well
 local SCROLL_TYPE = 6150            -- the mod's item type (gear.inv.TYPE_FIRST .. TYPE_LAST)
 local KIND = 'town-portal.gate'
 local ANIM_WAIT = 1.0               -- seconds the game needs to put the hero in the new place before the portal is made
 
-local text_name = gear.text.key('town-portal.scroll', {en = 'Town Portal Potion', de = 'Stadtportal-Trank'})
+local text_name = gear.text.key('town-portal.scroll', {en = 'Town Portal Scroll', de = 'Stadtportal-Schriftrolle'})
 local texts = {}
 -- A text of the mod in the game's language (en / de; others get en).
 local function L(key, en, de)
@@ -28,12 +29,12 @@ end
 local type_defined = false
 local function ensure_type()
     if type_defined then return end
-    local ok, err = gear.inv.define_type(SCROLL_TYPE, SCROLL_BASE, text_name)
+    local ok, err = gear.inv.define_type(SCROLL_TYPE, SCROLL_BASE, text_name, {look = SCROLL_LOOK, size = {1, 1}, icon_scale = 2.3})
     if ok then
         type_defined = true
     elseif not tostring(err):find('type table is not there', 1, true) then
         type_defined = true     -- the record is taken by the game: no use trying again
-        gear.log('town-portal: could not define the potion type: ' .. tostring(err))
+        gear.log('town-portal: could not define the scroll type: ' .. tostring(err))
     end
 end
 ensure_type()
@@ -111,7 +112,7 @@ local function say(...)
     gear.toast.show(L('title', 'Town Portal', 'Stadtportal'), ...)
 end
 
--- The hero and the potion ---------------------------------------------------------------------------------------------------------------------------
+-- The hero and the scroll ---------------------------------------------------------------------------------------------------------------------------
 
 local function hero() return gear.world.hero() end
 
@@ -130,11 +131,11 @@ local function portal_creature()
 end
 
 local function can_read()
-    if not gear.world.can_change() then return false, L('sp', 'The potion works in single player games only.', 'Der Trank wirkt nur im Einzelspieler.') end
+    if not gear.world.can_change() then return false, L('sp', 'The scroll works in single player games only.', 'Die Schriftrolle wirkt nur im Einzelspieler.') end
     local h = hero()
     if not h then return false, L('nohero', 'There is no hero.', 'Es gibt keinen Helden.') end
     if store.data.home then return false, L('open', 'A portal is open already: step through it to come back first.', 'Ein Portal ist schon offen: geh erst hindurch, um zurückzukehren.') end
-    if S.get('block_in_combat') and not test_ignore_combat and h:in_combat() then return false, L('enemy', 'Enemies are near: the potion does nothing.', 'Feinde in der Nähe: der Trank wirkt nicht.') end
+    if S.get('block_in_combat') and not test_ignore_combat and h:in_combat() then return false, L('enemy', 'Enemies are near: the scroll does nothing.', 'Feinde in der Nähe: die Schriftrolle wirkt nicht.') end
     return true
 end
 
@@ -165,7 +166,7 @@ local function travel(i)
     local ok, why = can_read()
     if not ok then message = why return end
     local scroll, container = find_scroll()
-    if not scroll then message = L('gone', 'The potion is gone from your backpack.', 'Der Trank ist nicht mehr im Rucksack.') return end
+    if not scroll then message = L('gone', 'The scroll is gone from your backpack.', 'Die Schriftrolle ist nicht mehr im Rucksack.') return end
     local h = hero()
     local hx, hy, hl = h:position()
     local done, err = h:teleport(s.x, s.y, s.layer or 0)
@@ -191,7 +192,7 @@ local function travel(i)
         end
         store.data.portal = {x = px, y = py, layer = al}
         store:changed()
-        say(L('opens', 'A portal opens.', 'Ein Portal öffnet sich.'), L('opens2', 'Talk to it to step back to where you drank the potion.', 'Sprich es an, um dorthin zurückzukehren, wo du den Trank getrunken hast.'))
+        say(L('opens', 'A portal opens.', 'Ein Portal öffnet sich.'), L('opens2', 'Talk to it to step back to where you read the scroll.', 'Sprich es an, um dorthin zurückzukehren, wo du die Schriftrolle gelesen hast.'))
     end)
 end
 
@@ -267,9 +268,9 @@ local function open_dialog(edit)
     return true
 end
 
--- Reading the potion -------------------------------------------------------------------------------------------------------------------------------
+-- Reading the scroll -------------------------------------------------------------------------------------------------------------------------------
 
--- The potion stays in the pack until a portal was picked; the dialog uses it up.
+-- The scroll stays in the pack until a portal was picked; the dialog uses it up.
 gear.on('item.use', function(e)
     if e.type ~= SCROLL_TYPE then return nil end
     open_dialog()
@@ -278,7 +279,7 @@ end)
 
 gear.keys.on('read', gear.guard('read', function()
     if dialog_open then return end
-    if not find_scroll() then say(L('none', 'You carry no Town Portal Potion.', 'Du trägst keinen Stadtportal-Trank.')) return end
+    if not find_scroll() then say(L('none', 'You carry no Town Portal Scroll.', 'Du trägst keine Stadtportal-Schriftrolle.')) return end
     open_dialog()
 end))
 gear.keys.on('close', gear.guard('close', close_dialog))
@@ -308,7 +309,7 @@ gear.npc.define(KIND, {
         start = 'gate',
         pages = {
             gate = {
-                text = function() return L('gate', 'A shimmering gate. It leads back to the place where you drank the potion.', 'Ein schimmerndes Tor. Es führt zurück zu dem Ort, an dem du den Trank getrunken hast.') end,
+                text = function() return L('gate', 'A shimmering gate. It leads back to the place where you read the scroll.', 'Ein schimmerndes Tor. Es führt zurück zu dem Ort, an dem du die Schriftrolle gelesen hast.') end,
                 options = {
                     {id = 'enter', label = function() return L('step', 'Step through', 'Hindurchgehen') end, on = step_through, close = true},
                     {id = 'stay', label = function() return L('notyet', 'Not yet', 'Noch nicht') end, close = true},
@@ -319,7 +320,7 @@ gear.npc.define(KIND, {
 })
 
 -- Keeps the portal and the saved spot together: after a load a portal that is in the savegame stays; one the game lost is made again; a spot
--- without a portal (a failed spawn, a portal the game removed) is dropped so the potion works again.
+-- without a portal (a failed spawn, a portal the game removed) is dropped so the scroll works again.
 local checked = false
 gear.on('session.start', function() checked = false end)
 gear.on('savegame.changed', function() checked = false; dialog_open = false end)
@@ -365,8 +366,8 @@ gear.on('shop.stock', function(e)
     if math.random() * 100 >= (test_chance or S.get('shop_chance') or 70) then return end
     for _ = 1, math.random(1, math.max(1, math.floor(S.get('shop_count') or 2))) do
         local id, err = gear.shop.add{container = page.container, type = SCROLL_TYPE, quality = 0}
-        if not id then gear.log('town-portal: could not stock a potion: ' .. tostring(err)) break end
-        gear.log('town-portal: stocked a potion, item ' .. id)
+        if not id then gear.log('town-portal: could not stock a scroll: ' .. tostring(err)) break end
+        gear.log('town-portal: stocked a scroll, item ' .. id)
     end
 end)
 
