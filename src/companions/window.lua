@@ -105,7 +105,7 @@ function M.new(env)
             -- the window's own place, not what it drew last frame (its portraits shake when the hero takes heavy damage, and
             -- the column slid sideways with them); its rows: the hero you play and each mercenary
             x = (w.x or 0) + (w.frame_x or 0)
-            y = (w.y or 0) + (w.frame_y or 0) + 16 + (1 + #party.mercenaries()) * ROW
+            y = (w.y or 0) + (w.frame_y or 0) + 16 + (1 + #ai.mercenaries()) * ROW
         elseif w then
             local st = ui.state()
             x, y = (st.screen_right or 1024) - PW, 16
@@ -329,7 +329,7 @@ function M.new(env)
         for i, b in ipairs(MB) do if prefs.data.merc_behaviour == b then mi = i end end
         m.merc_label = ML[mi]
         for i, label in ipairs(ML) do m.dd_mercs[i] = {id = 'merc-' .. i, label = label, on = i == mi} end
-        m.merc_count = ('%d with the party'):format(#party.mercenaries())
+        m.merc_count = ('%d with the party'):format(#ai.mercenaries())
         m.purses_on = separate() and true or false
         if m.purses_on then
             m.amount_label = AMOUNT_LABELS[win.amount]

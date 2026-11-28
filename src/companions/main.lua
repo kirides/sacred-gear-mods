@@ -595,7 +595,7 @@ gear.on('frame', guard('frame', function(dt)
         next_think.fallen_check = clock + 1
         forget_fallen()
     end
-    if #heroes < 2 and #party.mercenaries() == 0 then return end
+    if #heroes < 2 and #ai.mercenaries() == 0 then return end
     if clock >= next_names then
         next_names = clock + 2
         apply_names()
@@ -636,7 +636,7 @@ gear.on('frame', guard('frame', function(dt)
     local merc_behaviour = prefs.data.merc_behaviour or 'vanilla'
     if merc_behaviour ~= 'vanilla' and clock >= (next_think.mercs or 0) then
         next_think.mercs = clock + 0.5
-        for _, m in ipairs(party.mercenaries()) do ai.think_merc(m, leader, clock, opts, merc_behaviour) end
+        for _, m in ipairs(ai.mercenaries()) do ai.think_merc(m, leader, clock, opts, merc_behaviour) end
     end
     -- the formation's roles (combat styles) and its front, once per round
     opts.styles = {}
