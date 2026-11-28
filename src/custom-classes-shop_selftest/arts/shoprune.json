@@ -1,0 +1,2 @@
+{ "format": 1, "id": "shop-rune", "kind": "copy", "art_id": 2090, "base": 1059, "name": {"en": "Shop Rune Probe"}, "description": {"en": "probe"},
+  "rune": {"drop_weight": 0, "shop_weight": 100, "min_level": 1} }

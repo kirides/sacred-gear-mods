@@ -179,14 +179,15 @@ levels it) when the class may: a hero with a class profile can read only the run
 runes; a hero without a profile follows the art's class mask.
 
 ```json
-"rune": { "enabled": true, "drop_weight": 200, "min_level": 1, "price": 3000, "combo_master": true }
+"rune": { "enabled": true, "drop_weight": 200, "shop_weight": 5, "min_level": 1, "price": 3000, "combo_master": true }
 ```
 
 | Field | Meaning |
 |---|---|
 | `enabled` | `false`: no rune for this art (default true). |
 | `drop_weight` | Chances in 10000 per equipment pick of a creature's loot that the pick is this rune instead (0: never dropped). The setting *Rune drops (%)* scales all of them. |
-| `min_level` | Creatures below this level do not drop it. |
+| `shop_weight` | Percent chance that a merchant's stock page (the game fills three per merchant) holds this rune (0: never, default; max 100). The setting *Runes in shops (%)* scales all of them. |
+| `min_level` | Creatures below this level do not drop it; heroes below it are not offered it in shops. |
 | `price` | Gold the combo master takes when this rune is what you get from an exchange (0: the usual fee, see below). |
 | `combo_master` | `true` (default): the combo master's rune exchange offers it. |
 
