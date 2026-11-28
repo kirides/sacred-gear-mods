@@ -797,4 +797,65 @@ function M.think_merc(m, leader, now, opts, behaviour)
     end
 end
 
+-- War Cry (the Dwarf's Kriegsschrei, art 1089): the game gives its effect to the caster, to the caster's followers (quest and story
+-- companions) and to the hero you play, but not to companions of this mod, who are heroes of their own. When a hero gets the effect, the
+-- other heroes near them get a copy of it (the same entries, put there by the game's own function, so they last as long and work as well).
+local WAR_CRY = 1089
+local WAR_CRY_RANGE = 500    -- the game's own reach of the cry, in world units
+local war_seen = {}          -- hero id -> the longest remaining time of the effect when last looked at (nil: none)
+
+local function war_entries(h)
+    local list = {}
+    for _, e in ipairs(h:effects() or {}) do
+        if e.source == WAR_CRY then list[#list + 1] = e end
+    end
+    return list
+end
+
+local function war_left(list)
+    local m = 0
+    for _, e in ipairs(list) do m = math.max(m, e.scale) end
+    return m
+end
+
+-- Called often (a few times a second). A hero is "fresh" when they have the effect and did not a moment ago, or have it with more time left
+-- than before (a second cry while the first lasts): the cast they come from is shared with the heroes near them that have less of it.
+function M.war_cry_step(heroes)
+    if not heroes[1] or not heroes[1].effects then return end
+    local has, left = {}, {}
+    for _, h in ipairs(heroes) do
+        if not h:is_dead() then
+            local list = war_entries(h)
+            if #list > 0 then has[h.id] = list; left[h.id] = war_left(list) end
+        end
+    end
+    local fresh
+    for _, h in ipairs(heroes) do
+        local l = left[h.id]
+        if l and (not war_seen[h.id] or l > war_seen[h.id] + 0.5) then
+            fresh = fresh or {}
+            fresh[#fresh + 1] = h
+        end
+    end
+    if fresh then
+        local src = fresh[1]
+        for _, h in ipairs(fresh) do
+            if h:casting() == WAR_CRY then src = h break end
+        end
+        local sx, sy, sl = src:position()
+        if sx then
+            for _, h in ipairs(heroes) do
+                local hx, hy, hl = h:position()
+                if h ~= src and not h:is_dead() and hx and hl == sl and dist(sx, sy, hx, hy) <= WAR_CRY_RANGE
+                    and (left[h.id] or 0) + 0.5 < left[src.id] then
+                    for _, e in ipairs(has[src.id]) do h:add_effect(e.effect, e.value, e.scale, e.source) end
+                    left[h.id] = left[src.id]
+                    if M.debug then print('war cry', src.id, '->', h.id) end
+                end
+            end
+        end
+    end
+    war_seen = left
+end
+
 return M
